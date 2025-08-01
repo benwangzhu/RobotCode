@@ -1,0 +1,136 @@
+&access rvo
+&comment App128 Main 250122
+def sbt_comm128_main( )
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; file Name: sbt_comm128_main.src
+;
+; Description:
+;   Language             ==   KRL for KUKA ROBOT
+;   Date                 ==   2022 - 02 - 26
+;   Modification Data    ==   2024 - 02 - 26
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+; This is the main task that runs in the foreground
+; The driver must be initialized by running this program first
+; This program is used to drive the robot's motion
+;
+;***********************************************************
+
+;FOLD BCO
+    bas(#initmov, 0)
+    bas(#base, DefineBase)
+    bas(#tool, DefineTool)
+    ptp cur_jpos_()
+;ENDFOLD
+
+;FOLD SPEEDBOT COMM128 MOTION CONTROL
+    OnlyCollect = false
+    sbt_comm128_state()     ; Call Status Interface
+    sbt_comm128_motion()    ; Call Control Interface   
+    sbt_comm128_tj()        ; Call Trajectory Interface
+;ENDFOLD
+end
+
+def sbt_comm128_tj()
+
+;FOLD CHECK MOTION ENABLE
+    ; When in data collection mode, exit
+    if OnlyCollect then  
+        return
+    endif
+;ENDFOLD
+
+;FOLD STOP CONDITION
+    ; Define a Stop Motion Interrupt to Halt Robot Movement When a Stop Command Is Received
+    global interrupt decl 21 when StopMoving == true do stop_move()
+    interrupt on 21
+;ENDFOLD
+    
+;FOLD INIT MOTION CONTROL
+    ; Set Maximum Pre-advance Pointer
+    $advance = 5
+    DEF_ACC_PTP = 100
+    $flag[FLG_ACK_MOV_NUM] = false
+    NewTrajeSize = 0
+;ENDFOLD    
+   
+;FOLD ROBOT CONTROL
+    loop
+        exec_trajectorys()
+    endloop
+;ENDFOLD
+end
+
+;FOLD COPY TRAJECTORYS
+def copy_trajectorys()
+    NewTrajeSize = GlbTrajectorySize
+    GlbTrajectorySize = 0
+    for J = 1 to NewTrajeSize
+        NewTrajes[J] = GlbTrajectorys[J]
+    endfor
+end
+;ENDFOLD
+
+;FOLD EXEC TRAJECTORYS
+def exec_trajectorys()
+    ; Wait for Control Interface to Issue New Control Commands
+    continue
+    wait for $flag[FLG_ACK_MOV_NUM]
+    
+    ; Copy Trajectory
+    copy_trajectorys()
+
+    continue
+    $flag[FLG_ACK_MOV_NUM] = false
+    
+    ; Feedback Issued Control Command, Allow the Control Interface to Continue Receiving New Control Commands
+    Status = new_ack_()
+
+    if Status == OK then
+
+        ; Move as Many Times as There Are Trajectory Groups
+        for J = 1 to NewTrajeSize step 1
+            
+            ; Store MOVE ID for Status Task Feedback
+            CopyMoveId = NewTrajes[J].TrjMoveId
+            trigger when distance = 0 delay = 0.0 do GlbMoveId = CopyMoveId
+    
+            if NewTrajes[J].TrjMoveType == MTN_MOVJ then
+                move_j_(NewTrajes[J].TrajePose, NewTrajes[J].TrjSpeed, NewTrajes[J].TrjSmoot, DefineBase, DefineTool, NewTrajes[J].TrjAcc)
+            else 
+                if NewTrajes[J].TrjMoveType == MTN_MOVL then
+                    move_l_(NewTrajes[J].TrajePose, NewTrajes[J].TrjSpeed, NewTrajes[J].TrjSmoot, DefineBase, DefineTool, NewTrajes[J].TrjAcc)
+                else
+                    
+                    if NewTrajes[J + 1].TrjMoveType <> MTN_MOVC2 then
+                        err_write_(" ", "MTN_MOVC2 Type Error")
+                    endif
+                    smove_c_(NewTrajes[J].TrajePose, NewTrajes[J + 1].TrajePose, NewTrajes[J].TrjSpeed, NewTrajes[J].TrjSmoot, DefineBase, DefineTool, NewTrajes[J].TrjAcc)
+                
+                    J = J + 1
+                endif
+            endif
+        endfor
+    endif
+
+    NewTrajeSize = 0
+end
+;ENDFOLD
+
+;FOLD STOP MOVE
+def stop_move()
+    interrupt off 21
+    brake
+    $flag[FLG_ACK_MOV_NUM] = false
+    NewTrajeSize = 0
+    StopMoving = false
+    interrupt on 21
+    ; resume
+end
+;ENDFOLD

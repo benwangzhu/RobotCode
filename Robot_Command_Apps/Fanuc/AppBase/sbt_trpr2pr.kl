@@ -1,0 +1,51 @@
+program sbt_trpr2pr
+--***********************************************************
+--
+-- file Name: sbt_trpr2pr.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 04 - 26
+--   Modification Data    ==   2025 - 04 - 26
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--
+%comment = 'pr2pr 250426'
+%nolockgroup 
+%nopause = error + tpenable + command
+%include include\lib_math_t
+%include include\lib_logs_t
+%include include\lib_transform_t
+
+var
+
+    OffsPos                     : xyzwpr
+    OffsPos2                    : XYZWPREXT
+
+    OffsUfNum                   : integer
+    NewUfNum                    : integer
+
+    
+    
+%include include\lib_logs_h
+%include include\lib_math_h
+%include include\lib_motion_h
+%include include\lib_string_h
+%include include\lib_tp_if_h
+
+begin
+    OffsPos = get_preg_(get_iparm_(1))
+    OffsUfNum = get_iparm_(2)
+    NewUfNum = get_iparm_(3)
+
+
+    OffsPos2 = ts_frame_((OffsPos), OffsUfNum, NewUfNum, 1)
+    set_preg_(get_iparm_(4), OffsPos2)
+  
+end sbt_trpr2pr

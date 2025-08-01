@@ -1,0 +1,14 @@
+ER_SetAutoLoadPrg1	ER_SetAutoLoadPrg
+ER_LoadProgram1	ER_LoadProgram
+ER_ProgramStart1	ER_ProgramStart
+ER_RobotPowerOn1	ER_RobotPowerOn
+ER_RobotPowerOff1	ER_RobotPowerOff
+ER_ProgramPause1	ER_ProgramPause
+ER_Reset1	ER_Reset
+ER_ProgramStop1	ER_ProgramStop
+ER_KillProject1	ER_KillProject
+ER_GetRobPowerOnState1	ER_GetRobPowerOnState
+ER_GetProgRunState1	ER_GetProgRunState
+ER_GetSystemMode1	ER_GetSystemMode
+ER_GetSystemState1	ER_GetSystemState
+ER_GetProgRunMode1	ER_GetProgRunMode

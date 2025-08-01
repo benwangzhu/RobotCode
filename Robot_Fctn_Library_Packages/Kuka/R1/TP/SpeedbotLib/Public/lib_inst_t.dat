@@ -1,0 +1,66 @@
+&access RP
+&comment Lib Inst -h 250504
+defdat  lib_inst_t public
+;***********************************************************
+;
+; Copyright 2018 - 2023 speedbot All Rights reserved.
+;
+; File Name: lib_inst_t.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2025 - 05 - 05
+;   Modification Data    ==   2025 - 05 - 09
+;
+; Author: speedbot
+;
+; Version: 1.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+
+decl global pack_head_t InstSendHead, InstReadHead
+decl global busout_t InstSendBody
+decl global busin_t InstReadBody
+decl global pack_tail_t InstSendTail, InstReadTail
+
+decl global char WritePackages[470],  ReadPackages[470]
+
+extfct int f000_it00_(sock_cfg_t : out)
+
+extfct int f001_it01_(sock_cfg_t : out, e6pos : in, int : in, int : in)
+
+extfct int f002_it01_(sock_cfg_t : out, int : in, int : in, int : out)
+
+extfct int f003_it01_(sock_cfg_t : out, int : in, int : in, int : out, real : out)
+
+extfct int f004_it01_(sock_cfg_t : out, int : in, int : in, int : in, real : in, e6pos[] : out, int[] : out, int : out)
+
+enddat

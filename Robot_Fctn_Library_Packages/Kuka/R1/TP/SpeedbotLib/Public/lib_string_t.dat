@@ -1,0 +1,279 @@
+&ACCESS REO
+&REL 2
+&COMMENT Lib String-h 221122
+defdat lib_string_t public
+;***********************************************************
+;
+; Copyright 2018 - 2023 speedbot All Rights reserved.
+;
+; File Name: lib_string.dat
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2021 - 08 - 29
+;   Modification Data    ==   2021 - 08 - 29
+;
+; Author: speedbot
+;
+; Version: 1.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+global const int STR_SUCCESS	  = 0
+
+;***********************************************************
+; func str_clear_
+;***********************************************************
+;    out : src          * char *    * String to be cleared *
+;***********************************************************
+; Clear the string
+;***********************************************************
+ext str_clear_(char[] : out)
+
+;***********************************************************
+; func str_copy_
+;***********************************************************
+;     in : StrSource          * char *    * Source string *
+; return :                            * char *    * Copied string *
+;***********************************************************
+; Copy the string
+;***********************************************************
+extfct char[256] str_copy_(char[] : in)
+
+;***********************************************************
+; func str_add_
+;***********************************************************
+;     out : SrcDest         * char *    * Destination string *
+;     in : StrToAdd         * char *    * String to add *
+; return :                              * char *    * Resultant concatenated string *
+;***********************************************************
+; Concatenate strings
+;***********************************************************
+extfct char[256] str_add_(char[] : in, char[] : in)
+
+;***********************************************************
+; func sub_str_
+;***********************************************************
+;     in : src[]        * char *       * String to be truncated *
+;     in : SrcS         * int *        * Starting position *
+;     in : Len          * int *        * Length of the substring *
+; return :                              * char *    * Resultant substring *
+;***********************************************************
+; Truncate string
+;***********************************************************
+extfct char[256] sub_str_(char[] : in, int : in, int : in)
+
+;***********************************************************
+; func str_to_int_
+;***********************************************************
+;     in : StrVal       * char *       * String to be converted *
+; return :                              * int *     * Converted integer value *
+;***********************************************************
+; Convert string to integer
+;***********************************************************
+extfct int str_to_int_(char[] : in)
+
+;***********************************************************
+; func str_to_rel_
+;***********************************************************
+;     in : StrVal       * char *       * String to be converted *
+; return :                              * real *    * Converted real number *
+;***********************************************************
+; Convert string to real number
+;***********************************************************
+extfct real str_to_rel_(char[] : in)
+
+;***********************************************************
+; func str_to_pos_
+;***********************************************************
+;     in : StrVal       * char *	    * String representing Cartesian coordinates x, y, z, a, b, c *
+; return :              * pos *		    * Returns Cartesian position *
+;***********************************************************
+; Convert string to Cartesian position
+; This function converts a comma-separated string of Cartesian coordinates into a position structure.
+;***********************************************************
+extfct pos str_to_pos_(char[] : in)
+
+;***********************************************************
+; func str_to_ais_
+;***********************************************************
+;     in : StrVal       * char * 	    * String representing joint coordinates A1, A2, A3, A4, A5, A6 *
+; return :              * axis *		* Returns joint position *
+;***********************************************************
+; Convert string to joint position
+; This function converts a comma-separated string of joint coordinates into a joint position structure.
+;***********************************************************
+extfct axis str_to_ais_(char[] : in)
+
+;***********************************************************
+; func str_to_bol_
+;***********************************************************
+;     in : StrVal       * char * 	    * String to be converted *
+; return :              * bool *		* Returns boolean value *
+;***********************************************************
+; Convert string to boolean
+; This function converts a string into a boolean value.
+;***********************************************************
+extfct bool str_to_bol_(char[] : in)
+
+;***********************************************************
+; func str_2e6pos_
+;***********************************************************
+;     in : StrVal       * char * 	    * String to be converted *
+; return :              * e6pos *		* Returns E6POS *
+;***********************************************************
+; Convert string to E6POS
+; This function converts a string that conforms to the E6POS standard structure into an E6POS object.
+;***********************************************************
+extfct e6pos str_2e6pos_(char[] : in)
+
+;***********************************************************
+; func str_2e6axis_
+;***********************************************************
+;     in : StrVal       * char * 	    * String to be converted *
+; return :              * e6axis *		* Returns E6AXIS *
+;***********************************************************
+; Convert string to E6AXIS
+; This function converts a string that conforms to the E6AXIS standard structure into an E6AXIS object.
+;***********************************************************
+extfct e6axis str_2e6axis_(char[] : in)
+
+;***********************************************************
+; func str_2frame_
+;***********************************************************
+;     in : StrVal       * char * 	    * String to be converted *
+; return :              * frame *		* Returns FRAME *
+;***********************************************************
+; Convert string to FRAME
+; This function converts a string that conforms to the FRAME standard structure into a FRAME object.
+;***********************************************************
+extfct frame str_2frame_(char[] : in)
+
+;***********************************************************
+; func int_to_str_
+;***********************************************************
+;     in : IntVal       * int *		    * Integer to be converted *
+; return :              * char *	    * Returns string *
+;***********************************************************
+; Convert integer to string
+; This function converts an integer into a string.
+;***********************************************************
+extfct char[24] int_to_str_(int : in)
+
+;***********************************************************
+; func rel_to_str_
+;***********************************************************
+;     in : RelVal       * real *	* Real number to be converted *
+; return :              * char *	* Returns string *
+;***********************************************************
+; Convert real number to string
+; This function converts a floating-point (real) number into a string.
+;***********************************************************
+extfct char[24] rel_to_str_(real : in)
+
+;***********************************************************
+; func pos_to_str_
+;***********************************************************
+;     in : PosVal       * pos *		    * Cartesian position to be converted *
+; return :              * char *	    * Returns string *
+;***********************************************************
+; Convert Cartesian position to string
+; This function converts a Cartesian position into a string.
+;***********************************************************
+extfct char[256] pos_to_str_(pos : in)
+
+;***********************************************************
+; func ais_to_str_
+;***********************************************************
+;     in : AxisVal      * axis *	* Joint position to be converted *
+; return :              * char *	* Returns string *
+;***********************************************************
+; Convert joint position to string
+; This function converts a joint position into a string.
+;***********************************************************
+extfct char[256] ais_to_str_(axis : in)
+
+;***********************************************************
+; func bol_to_str_
+;***********************************************************
+;     in : BoolVal      * bool *	* Boolean value to be converted *
+; return :              * char *	* Returns string *
+;***********************************************************
+; Convert boolean to string
+; This function converts a boolean value into a string, returning "true" or "false".
+;***********************************************************
+extfct char[12] bol_to_str_(bool : in)
+
+;***********************************************************
+; func decode_data_
+;***********************************************************
+;     in : Str             * char *	    * String to be decoded *
+;     in : Separator       * char *	    * String separator *
+;    out £ºTmpStr          * char *     * Array of decoded substrings
+; return :                 * bool *     * Returns whether decoding was successful *
+;***********************************************************
+; Decode a string into multiple substrings using a separator
+; This function splits a given string into multiple substrings based on the provided separator.
+; Example: "#11#22#33#44#55#" or "11#22#33#44#55#"
+;***********************************************************
+extfct bool decode_data_(char[] : in, char[] : in, char[, ] : out)
+
+;***********************************************************
+; func sprintf_
+;***********************************************************
+;     in : FormatStr       * char *	    * Formatting string *
+;     in : I1              * int *	    * Integer 1 to be formatted *
+;     in : I2              * int *	    * Integer 2 to be formatted *
+;     in : R1              * real *	    * Floating-point number 1 to be formatted *
+;     in : R2              * real *	    * Floating-point number 2 to be formatted *
+;     in : S1              * char *	    * String 1 to be formatted *
+;     in : S2              * char *	    * String 2 to be formatted *
+;     in : P1              * pos *	    * Cartesian position 1 to be formatted *
+;     in : P2              * pos *	    * Cartesian position 2 to be formatted *
+;     in : A1              * axis *	    * Joint position 1 to be formatted *
+;     in : A2              * axis *	    * Joint position 2 to be formatted *
+;     in : B1              * bool *	    * Boolean 1 to be formatted *
+;     in : B2              * bool *	    * Boolean 2 to be formatted *
+; return :                 * char *     * Returns formatted string *
+;***********************************************************
+; Format and output a string according to the specified format
+; This function formats various types of data into a single string according to the provided formatting string.
+; Integer format specifier: %d
+; Floating-point format specifier: %f
+; String format specifier: %s
+; Cartesian position format specifier: %p
+; Joint position format specifier: %a
+; Boolean format specifier: %b
+; Example: sprintf_("abc %d %f", 1, 1.1) results in "abc 1 1.1"
+;***********************************************************
+extfct char[512] sprintf_(char[] : in, int : in, int : in, real : in, real : in, char[] : in, char[] : in, pos : in, pos : in, axis : in, axis : in, bool : in, bool : in)
+
+
+enddat

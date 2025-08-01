@@ -1,0 +1,24 @@
+&ACCESS RVEO
+defdat sbt_comm002 public
+;***********************************************************
+;
+; file Name: sbt_comm002
+;
+; Description:
+;   Language             ==   KRL for KUKA ROBOT
+;   Date                 ==   2024 - 06 - 03
+;   Modification Data    ==   2022 - 06 - 03
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+
+
+decl cmd_typ01_t CmdType01   
+decl cmd_typ03_t CmdType03
+decl int Status                        = 0   
+decl axis CurJointPos                                                                           ; 存储当前关节坐标        
+decl pos CurPos
+
+enddat

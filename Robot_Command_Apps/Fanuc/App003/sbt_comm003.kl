@@ -1,0 +1,253 @@
+program sbt_comm003
+--***********************************************************
+--
+-- file Name: sbt_comm003.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2024 - 04 - 01
+--   Modification Data    ==   2024 - 07 - 28
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--
+%comment = 'GapMeas 240728'
+%nolockgroup 
+%nopause = error + tpenable + command
+%include include\lib_busio_t
+%include include\lib_buscmd_t
+%include include\lib_math_t
+%include include\lib_logs_t
+%include include\lib_transform_t
+const
+
+    CMD_VPARM                           = 1                 -- 初始化和车型信息交互
+    CMD_SCAN                            = 2
+    CMD_POS                             = 3
+    CMD_OVER                            = 4
+var
+    --
+    -- 总线通讯接口
+    BusInput    in cmos from sbt_comm003    : busin_t               
+    BusOutput   in cmos from sbt_comm003    : busout_t
+
+    CommType03                              : cmd_typ03_t
+    CommType01                              : cmd_typ01_t
+
+    BusTimeout  in cmos from sbt_comm003    : integer
+
+    Pid                                     : integer
+    VinRegIdx                               : integer
+
+    Status                                  : integer
+
+    GetPos                                  : xyzwprext
+
+%include include\lib_logs_h
+%include include\lib_math_h
+%include include\lib_motion_h
+%include include\lib_string_h
+%include include\lib_tp_if_h
+%include include\lib_busio_h
+%include include\lib_buscmd_h
+
+routine err_display_(BusIn : busin_t;
+                     BusOut : busout_t) from sbt_comm003
+
+begin
+
+    while true do 
+    
+        select get_iparm_(1) of
+
+        case(CMD_VPARM):            
+            --
+            -- 默认总线输入开始地址为 513 位
+            --
+            BusInput.BusIoSt = tern_int_(uninit(BusInput.BusIoSt), 513, BusInput.BusIoSt)
+            --
+            -- 默认总线输出开始地址为 513 位
+            --
+            BusOutput.BusIoSt = tern_int_(uninit(BusOutput.BusIoSt), 513, BusOutput.BusIoSt)
+
+            -- 超时默认为 20s
+            BusTimeout = tern_int_(uninit(BusTimeout), 20000, BusTimeout)
+
+            bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+
+            -- 工件编号
+            Pid = get_iparm_(2)
+
+            -- Vin R[] 寄存器起始地址
+            VinRegIdx = get_iparm_(3)
+
+            CommType03[1] = Pid
+            CommType03[2] = get_ireg_(VinRegIdx + 0)
+            CommType03[3] = get_ireg_(VinRegIdx + 1)
+            CommType03[4] = get_ireg_(VinRegIdx + 2)
+            CommType03[5] = get_ireg_(VinRegIdx + 3)
+            CommType03[6] = get_ireg_(VinRegIdx + 4)
+            CommType03[7] = get_ireg_(VinRegIdx + 5)
+            CommType03[8] = get_ireg_(VinRegIdx + 6)
+            CommType03[9] = get_ireg_(VinRegIdx + 7)
+            CommType03[10] = get_ireg_(VinRegIdx + 8)
+            CommType03[11] = get_ireg_(VinRegIdx + 9)
+            CommType03[12] = get_ireg_(VinRegIdx + 10)
+            CommType03[13] = get_ireg_(VinRegIdx + 11)
+            CommType03[14] = get_ireg_(VinRegIdx + 12)
+            CommType03[15] = get_ireg_(VinRegIdx + 13)
+            CommType03[16] = get_ireg_(VinRegIdx + 14)
+            CommType03[17] = get_ireg_(VinRegIdx + 15)
+            CommType03[18] = get_ireg_(VinRegIdx + 16)
+
+            Status = bus_cmd137_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CommType03, 0)
+            Status = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, 5000)
+
+            -- log_info_('VPARM','Init finish')
+
+            if Status = OK then 
+
+                -- 处理成功，返回
+                return
+            else
+                err_display_(BusInput, BusOutput)
+                --post_err(CC_UALARM, ' 100 Sbt Vsn Init Err !!!', 0, CC_PAUSE)
+            endif
+        case(CMD_SCAN):
+
+            CommType01.Byte01 = get_iparm_(2)           -- 触发模式
+
+            select (CommType01.Byte01) of 
+
+            case(1):            -- 单帧触发模式
+
+                CommType01.Byte02 = 0
+
+                CommType01.Short03 = get_iparm_(3)          -- 测量编号
+            
+            case(2):            -- 多帧触发模式
+
+                CommType01.Byte02 = get_iparm_(3)       -- 测量起点或者终点
+
+                if CommType01.Byte02 = 1 then
+
+                    CommType01.Short03 = get_iparm_(4)      -- 测量编号
+                endif
+            else:               -- 未知模式
+
+                post_err(CC_UALARM, '801 相机触发模式未选择', 0, CC_ABORT)
+            endselect
+
+            CommType01.Short04 = 0
+            CommType01.Int05 = 0
+            CommType01.Int06 = 0
+            CommType01.Float07 = 0
+            CommType01.Float08 = 0
+
+            Status = bus_cmd012_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CommType01, 0)
+            Status = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, 2000)
+
+            if Status = OK then
+
+                -- log_info_('SCAN','Photo finish')
+            else
+                err_display_(BusInput, BusOutput)
+                --post_err(CC_UALARM, '101 Scan Err !!!', 0, CC_WARN)
+            endif
+            
+            -- 无论是否处理成功，都返回
+            return
+
+        case(CMD_POS):
+
+            CommType01.Byte01 = 0
+            CommType01.Byte02 = 0
+            CommType01.Short03 = 0
+            CommType01.Short04 = 0
+            CommType01.Int05 = 0
+            CommType01.Int06 = 0
+            CommType01.Float07 = 0
+            CommType01.Float08 = 0
+
+            Status = bus_cmd021_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CommType01, 0)
+            Status = bus_cmd129_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, GetPos, BusTimeout)
+
+            if Status = OK then 
+
+                -- 写入纠偏值
+                set_preg_(get_iparm_(2), GetPos)
+                return   
+            else
+                err_display_(BusInput, BusOutput)
+                --post_err(CC_UALARM, '102 Get Offs Pos Err !!!', 0, CC_PAUSE)
+                bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+            endif
+
+    
+        case(CMD_OVER):
+            
+            CommType01.Byte01 = 100
+            CommType01.Byte02 = 0
+            CommType01.Short03 = 0
+            CommType01.Short04 = 0
+            CommType01.Int05 = 0
+            CommType01.Int06 = 0
+            CommType01.Float07 = 0
+            CommType01.Float08 = 0
+
+            Status = bus_cmd013_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CommType01, 0)
+            Status = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, 5000)
+
+            if Status = OK then 
+
+            else
+                err_display_(BusInput, BusOutput)
+                --post_err(CC_UALARM, '103 Scan Over Err !!!', 0, CC_WARN)
+            endif
+
+            -- 无论是否处理成功，都返回
+            return
+         else:
+
+            -- 第一个参数错误
+            --
+            post_err(CC_UALARM, '999 Cmd Param1 Err !!!', 0, CC_ABORT)
+        endselect
+    
+    endwhile  
+
+end sbt_comm003
+
+routine err_display_
+begin
+    if not BusIn.SysReady then 
+
+        post_err(CC_UALARM, '901 软件未就绪', 0, CC_PAUSE)
+        return
+    endif
+
+    if BusIn.TellId <> BusOut.RobTellId then 
+
+        post_err(CC_UALARM, '902 软件处理超时', 0, CC_PAUSE)
+        return
+    endif
+
+    select BusIn.ErrorId of
+    case(1):
+        post_err(CC_UALARM, '001 相机连接失败', 0, CC_PAUSE)
+    case(2):
+        post_err(CC_UALARM, '002 启动相机拍照失败', 0, CC_WARN)
+    case(3):
+        post_err(CC_UALARM, '003 纠偏定位算法计算失败', 0, CC_PAUSE)
+    case(4):
+        post_err(CC_UALARM, '004 间隙面差算法计算失败', 0, CC_WARN)
+    else:
+        post_err(CC_UALARM, '903 未知错误', 0, CC_PAUSE)
+    endselect
+    
+end err_display_

@@ -1,0 +1,68 @@
+program sbt_lsScanSt
+--***********************************************************
+--
+-- file Name: sbt_lsScanSt
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2024 - 07 - 04
+--   Modification Data    ==   2024 - 07 - 04
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+-- 2D 开始扫描命令
+--
+%nolockgroup
+%comment = '焊接-线扫开始'
+%include include/lib_math_t
+%include sbt_Comm011_t
+%include sbt_Comm011_global
+var
+    SemBool                     : boolean
+    Status                      : integer
+%include include/lib_thread_h
+%include include/lib_socket_h
+%include include/lib_math_h
+%include include/lib_tp_if_h
+%include include/lib_motion_h
+
+begin
+
+    GlbSlodId = get_iparm_(1)               -- 获取焊缝 ID
+
+    clear_sema_(SemRltAck)
+    GlbCommannd = INST_LS_ST
+    SemBool = pead_sema_(SemRltAck, 0)
+    wait for GlbCommannd = INST_UNKNOWN
+end sbt_lsScanSt

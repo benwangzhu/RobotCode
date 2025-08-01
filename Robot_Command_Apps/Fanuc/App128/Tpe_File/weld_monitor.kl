@@ -1,0 +1,46 @@
+program weld_monitor
+--***********************************************************
+--
+-- file Name: weld_monitor
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2022 - 03 - 09
+--   Modification Data    ==   2022 - 03 - 10
+--
+-- Author: 
+--
+-- Version: 1.0
+%comment = 'WELD_MONITOR 1103'
+%nolockgroup
+%nobusylamp
+%nopause = error + command + tpenable
+%include include/lib_tp_if_t
+
+var
+
+    AlarmEnb                            from weld_start    : boolean
+    AlarmNo                             from weld_start    : integer
+%include include/lib_tp_if_h
+
+begin 
+
+    while AlarmNo >= 0 do  
+
+        wait for AlarmEnb = true
+
+        AlarmEnb = false
+
+        select AlarmNo of
+        case(-1):
+        case( 1): post_err(38000, '切割过程中停止', 0, 1)
+        case( 2): post_err(38000, '切割电源未就绪', 0, 1)
+        -- case( 3): post_err(38000, '电弧检测丢失', 0, 1)
+        -- case( 4): post_err(38000, '焊接起弧超时', 0, 1)
+        else:
+            
+        endselect
+
+        delay(8)
+    endwhile
+end weld_monitor

@@ -1,0 +1,46 @@
+(*
+T: FUNCTION_BLOCK ER_Reset
+FW: NO
+CI#: 37
+QSL: 6
+QVE: 6
+QVPC: 6
+QPar: 5
+QFBI: 1
+*)
+@V 1 6 0
+ER_CMD_EXE	1	VAR	@FB:47
+		     
+
+;
+
+@V 1 14 0
+Enable	2	VAR_INPUT	@TYP:1
+		     
+@TYP:1# 0
+;
+
+@V 1 19 0
+Busy	3	VAR_OUTPUT	@TYP:1
+		     
+@TYP:1# 0
+;
+
+@V 1 20 0
+Done	4	VAR_OUTPUT	@TYP:1
+		     
+@TYP:1# 0
+;
+
+@V 1 21 0
+Error	5	VAR_OUTPUT	@TYP:1
+		     
+@TYP:1# 0
+;
+
+@V 1 22 0
+ErrorID	6	VAR_OUTPUT	@TYP:3
+		     
+@TYP:3# 00#0000
+;
+

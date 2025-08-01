@@ -1,0 +1,51 @@
+&ACCESS RP
+&comment Sbt Comm010 Global
+defdat sbt_comm10_global public
+;***********************************************************
+;
+; Copyright 2025 - 2025 speedbot All Rights reserved.
+;
+; file Name: sbt_comm10_global.dat
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2025 - 05 - 08
+;   Modification Data    ==   2025 - 05 - 08
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+
+decl global snr_data_table_t Comm010SensorTable = {Mode 0, TaskNum 0, Area 0, Pip 0, BoxLenght 0.0, BoxWidth 0.0, BoxHigh 0.0, ObliPos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}, PickPos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}, PlacePos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}}
+decl global snr_data_table_t Comm010CopyTable = {Mode 0, TaskNum 0, Area 0, Pip 0, BoxLenght 0.0, BoxWidth 0.0, BoxHigh 0.0, ObliPos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}, PickPos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}, PlacePos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}}
+
+decl global vector_t Comm010LimUp[8]
+Comm010LimUp[1] = {x 3000.0, y 3000.0, z 3000.0}
+Comm010LimUp[2] = {x 3000.0, y 3000.0, z 3000.0}
+Comm010LimUp[3] = {x 3000.0, y 3000.0, z 3000.0}
+Comm010LimUp[4] = {x 3000.0, y 3000.0, z 3000.0}
+Comm010LimUp[5] = {x 3000.0, y 3000.0, z 3000.0}
+Comm010LimUp[6] = {x 3000.0, y 3000.0, z 3000.0}
+Comm010LimUp[7] = {x 3000.0, y 3000.0, z 3000.0}
+Comm010LimUp[8] = {x 3000.0, y 3000.0, z 3000.0}
+
+decl global vector_t Comm010LimDown[8]
+Comm010LimDown[1] = {x -3000.0, y -3000.0, z -3000.0}
+Comm010LimDown[2] = {x -3000.0, y -3000.0, z -3000.0}
+Comm010LimDown[3] = {x -3000.0, y -3000.0, z -3000.0}
+Comm010LimDown[4] = {x -3000.0, y -3000.0, z -3000.0}
+Comm010LimDown[5] = {x -3000.0, y -3000.0, z -3000.0}
+Comm010LimDown[6] = {x -3000.0, y -3000.0, z -3000.0}
+Comm010LimDown[7] = {x -3000.0, y -3000.0, z -3000.0}
+Comm010LimDown[8] = {x -3000.0, y -3000.0, z -3000.0}
+
+decl global char Comm010CurAreaId = "'H00'" 
+decl global char Comm010WorkMode = "'H00'" 
+decl global char Comm010ResultId = "'H00'" 
+decl global bool Comm010ResultFlg = false
+decl global int Comm010CommandId = 0
+
+decl global int SEComm010SortKey = 0
+
+enddat

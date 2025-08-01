@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--For an example how to add menu entries for UserTech InlineForms see file C:\KRC\TP\UserTech\SmartHMI\SmartHMI.exe.UserTech.InlineForms.config-->
+<KukaTechDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	
+	<!-- ===================================================================================== -->
+	<!-- =============================== SbtComm011 ========================================== -->
+	<!-- ===================================================================================== -->
+	<Application Name="SbtComm011" SOT="FALSE" SOC="TRUE">							
+		<!-- ================================ Global Data Type ========================================= -->
+
+		<Param Name="SoldId" ShortName="IN Sold Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="-1" Max="65535" Step="1" Autolimit="" />
+		</Param>
+
+		<Param Name="OutP" ShortName="OUT P Dir: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="P1" />
+		</Param>
+
+		<!-- ================================ Global Script ========================================= -->
+
+		<Script Name="DeclOutPoint">
+			<Redecl Path="%MODULE/" Declaration= "DECL E6POS X%OutP/={X 0,Y 0,Z 0,A 0,B 0,C 0,S 0,T 0,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}" />
+			<Message Text="Define X%OutP/ In %MODULE/" />
+		</Script>
+		
+		<!-- ================================ Open ========================================= -->
+		
+		<Fold Name="OpenFold">									
+			<Line>sbtcomm011_open_()</Line>		
+		</Fold>
+		<InlineForm Name="Open" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="OpenFold" />	
+		</InlineForm>
+
+		<!-- ================================ Close ========================================= -->
+		
+		<Fold Name="CloseFold">	
+			<Line>sbtcomm011_close_()</Line>	
+		</Fold>
+		<InlineForm Name="Close" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="CloseFold" />	
+		</InlineForm>
+
+		<!-- ================================ ScanStart ========================================= -->
+		
+		<Fold Name="ScanStartFold">		
+			<Line>wait sec 0.0</Line>		
+			<Line>sbtcomm011_2dScanStart_(%SoldId/)</Line>		
+		</Fold>
+		<InlineForm Name="ScanStart" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="ScanStartFold" />
+			<PRM Name="SoldId" />
+		</InlineForm>
+
+		<!-- ================================ ScanStop ========================================= -->
+		
+		<Fold Name="ScanStopFold">	
+			<Line>wait sec 0.0</Line>		
+			<Line>sbtcomm011_2dScanStop_()</Line>		
+		</Fold>
+		<InlineForm Name="ScanStop" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="ScanStopFold" />
+		</InlineForm>
+
+
+		<!-- ================================ GetPath ========================================= -->
+		
+		<Fold Name="GetPathFold">								
+			<Line>sbtcomm011_getPath_(%SoldId/)</Line>		
+		</Fold>
+		<InlineForm Name="GetPath" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="GetPathFold" />
+			<PRM Name="SoldId" />
+		</InlineForm>
+
+		<!-- ================================ GetStartPoint ========================================= -->
+		
+		<Fold Name="GetStartPointFold">								
+			<Line>sbtcomm011_getStart_(X%OutP/)</Line>		
+		</Fold>
+		<InlineForm Name="GetStartPoint" IlfType="" Style="" Focus="" Spline="" OnAccept="DeclOutPoint" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="GetStartPointFold" />
+			<PRM Name="OutP" />
+		</InlineForm>
+
+		<!-- ================================ GetEndPoint ========================================= -->
+		
+		<Fold Name="GetEndPointFold">								
+			<Line>sbtcomm011_getEnd_(X%OutP/)</Line>		
+		</Fold>
+		<InlineForm Name="GetEndPoint" IlfType="" Style="" Focus="" Spline="" OnAccept="DeclOutPoint" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="GetEndPointFold" />
+			<PRM Name="OutP" />
+		</InlineForm>
+
+		<!-- ================================ MutilMove ========================================= -->
+		
+		<Param Name="ArcData" ShortName="ArcData: " ShortCut="" Unit="" Var="" Enable="">
+		<Value Type="NAME" Default="WDAT1" />
+		</Param>	
+
+		<Param Name="ApoDist" ShortName="IN Apo Dist: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="100.0" Min="0.1" Max="100.0" Step="1" Autolimit="" />
+		</Param>
+		
+		<Fold Name="MutilMoveFold">								
+			<Line>sbtcomm011_mutMove_(%ArcData/, %ApoDist/)</Line>		
+		</Fold>
+		<InlineForm Name="MutilMove" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="MutilMoveFold" />
+			<PRM Name="ArcData" />
+			<PRM Name="ApoDist" />
+		</InlineForm>
+	</Application>
+</KukaTechDescription>
+<!--checksum 25562007144 -->

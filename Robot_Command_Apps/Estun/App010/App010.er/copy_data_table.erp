@@ -1,0 +1,13 @@
+// InstParseVersion: V1.02
+Start:
+t_p.NewDataTableMode.value = t_p.SnrDataTableMode.value
+t_p.NewDataTableTaskNum.value = t_p.SnrDataTableTaskNum.value
+t_p.NewDataTableArea.value = t_p.SnrDataTableArea.value
+t_p.NewDataTablePip.value = t_p.SnrDataTablePip.value
+t_p.NewDataTableBoxLenght.value = t_p.SnrDataTableBoxLenght.value
+t_p.NewDataTableBoxWidth.value = t_p.SnrDataTableBoxWidth.value
+t_p.NewDataTableBoxHigh.value = t_p.SnrDataTableBoxHigh.value
+t_p.NewDataTableObliPos = t_p.SnrDataTableObliPos
+t_p.NewDataTablePickPos = t_p.SnrDataTablePickPos
+t_p.NewDataTablePlacePos = t_p.SnrDataTablePlacePos
+End;

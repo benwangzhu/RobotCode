@@ -1,0 +1,5 @@
+FUNCTION_BLOCK	modbusTcp_data			PT=1	modbusTcp_data	HIDDEN=0	
+FUNCTION_BLOCK	sim_di_map			PT=1	sim_di_map	HIDDEN=0	<14>
+FUNCTION_BLOCK	sim_do_map			PT=1	sim_do_map	HIDDEN=0	<15>
+PROGRAM	lib_modbustcpV3			PT=1	lib_modbustcpV3	HIDDEN=0	<17>
+FUNCTION_BLOCK	remote_uop			PT=1	remote_uop	HIDDEN=0	<13>

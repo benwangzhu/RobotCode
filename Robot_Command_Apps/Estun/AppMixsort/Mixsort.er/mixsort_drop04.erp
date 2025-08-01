@@ -1,0 +1,16 @@
+// InstParseVersion: V1.02
+Start:
+/**********************************/
+/*放置到 4号传送带或者 4号固定位置程序*/
+/**********************************/
+/*过渡点*/
+MovJ{P=t_l.P0,Tool=t_g.MixTool,Coord=t_s.World}
+/*放置点*/
+MovLOffset{RP=t_l.P2,TP=t_p.DropPosOffs,T="COORD",Tool=t_g.MixTool,Coord=t_s.World,B="FINE"}
+/*获取下一个任务*/
+MixsortAck{Mode="GET_TACK"}
+/*退磁*/
+CALL tool_mag_off
+/*过渡点*/
+MovJ{P=t_l.P1}
+End;

@@ -1,0 +1,255 @@
+program lib_fsetup
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_fsetup
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2022 - 11 - 02
+--   Modification Data    ==   2022 - 11 - 02
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+-- 2022 - 11 - 02 ++ extend_reg_()
+
+-- 2022 - 11 - 02 ++ extend_preg_()
+
+-- 2022 - 11 - 02 ++ extend_dio_()
+
+-- 2022 - 11 - 02 ++ cfr_gpout_()
+
+-- 2022 - 11 - 02 ++ cfr_gpin_()
+
+-- 2022 - 11 - 02 ++ cfr_dout_()
+
+-- 2022 - 11 - 02 ++ cfr_din_()
+
+-- 2022 - 11 - 02 ++ cfr_upout_()
+
+-- 2022 - 11 - 02 ++ cfr_upin_()
+
+-- 2022 - 11 - 02 ++ cfr_macro_()
+
+-- 2022 - 11 - 02 ++ cfr_mixbg_()
+
+-- 2022 - 11 - 02 ++ cfr_home_()
+
+-- 2022 - 11 - 02 ++ cfr_ip_()
+
+-- 2022 - 11 - 02 ++ cfr_client_()
+
+-- 2022 - 11 - 02 ++ cfr_server_()
+
+-- 2022 - 11 - 02 ++ cycle_power_()
+
+--
+
+%nolockgroup
+%nobusylamp
+%nopause = tpenable + command + error
+%comment = 'FuncSet 231129'
+
+%include include/lib_transform_t
+%include include/lib_math_t
+
+%include include/lib_math_h
+	
+%include include/lib_fsetup_h
+%include include/lib_string_h
+%include include/lib_tp_if_h
+
+
+begin
+
+
+end lib_fsetup
+
+
+routine extend_reg_
+var
+    Entry				: integer
+    SetStatus			: integer
+begin
+    set_var(Entry, '*numreg*', '$maxregnum', RegQuan, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check *numreg*', 0, CC_ABORT) ; endif
+end extend_reg_
+
+routine extend_preg_
+var
+    Entry				: integer
+    SetStatus			: integer
+begin
+    set_var(Entry, '*posreg*', '$maxpregnum', PRegQuan, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check *posreg*', 0, CC_ABORT) ; endif
+end extend_preg_
+
+routine extend_dio_
+var
+    Entry				: integer
+    SetStatus			: integer
+begin
+    set_var(Entry, '*system*', '$max_dig_prt', DioQuan, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check *max_dig_prt*', 0, CC_ABORT) ; endif
+end extend_dio_
+
+routine cfr_gpout_
+var
+    SetStatus			: integer
+begin
+    set_port_asg(19, NoIndex, Rack, Slot, 2, StBits, NPorts, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check Go[' + int_2str_(NoIndex) + ']', 0, CC_ABORT) ; endif
+end cfr_gpout_
+
+routine cfr_gpin_
+var
+    SetStatus			: integer
+begin
+    set_port_asg(18, NoIndex, Rack, Slot, 1, StBits, NPorts, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check Gi[' + int_2str_(NoIndex) + ']', 0, CC_ABORT) ; endif
+end cfr_gpin_
+
+routine cfr_dout_
+var
+    SetStatus			: integer
+begin
+    set_port_asg(2, StBits, Rack, Slot, 2, StBits, NPorts, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check Do[' + int_2str_(StBits) + '] - Do[' + int_2str_(StBits + NPorts - 1) + ']', 0, CC_WARN) ; endif
+end cfr_dout_
+
+routine cfr_din_
+var
+    SetStatus			: integer
+begin
+    set_port_asg(1, StBits, Rack, Slot, 1, StBits, NPorts, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check Di[' + int_2str_(StBits) + '] - Di[' + int_2str_(StBits + NPorts - 1) + ']', 0, CC_WARN) ; endif
+end cfr_din_
+
+routine cfr_upout_
+var
+    SetStatus			: integer
+begin
+    set_port_asg(21, 1, Rack, Slot, 2, StBits, 20, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check Uop & Do[' + int_2str_(1) + '] - Do[' + int_2str_(20) + ']', 0, CC_WARN) ; endif
+end cfr_upout_
+
+routine cfr_upin_
+var
+    SetStatus			: integer
+begin
+    set_port_asg(20, 1, Rack, Slot, 1, StBits, 18, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check Uop & Di[' + int_2str_(1) + '] - Di[' + int_2str_(20) + ']', 0, CC_WARN) ; endif
+end cfr_upin_
+
+routine cfr_macro_
+begin
+    set_sys_str_('$macrotable[' + int_2str_(NoIndex) + '].$macro_name', MacroName)
+    set_sys_str_('$macrotable[' + int_2str_(NoIndex) + '].$prog_name', ProgName)
+    if MacroMenu then
+        set_sys_int_('$macrotable[' + int_2str_(NoIndex) + '].$assign_type', 4)
+        set_sys_int_('$macrotable[' + int_2str_(NoIndex) + '].$assign_id', NoIndex)
+    else
+        set_sys_int_('$macrotable[' + int_2str_(NoIndex) + '].$assign_type', 1)
+    endif
+end cfr_macro_
+
+routine cfr_mixbg_
+begin
+    set_sys_str_('$mix_bg[' + int_2str_(NoIndex) + '].$prog_name', ProgName)
+    set_sys_int_('$mix_bg[' + int_2str_(NoIndex) + '].$mode', 4)
+end cfr_mixbg_
+
+routine cfr_home_
+var
+    JposAry          	: array[9] of real
+    CfgurStatus			: integer
+    I					: integer
+begin
+    set_sys_str_('$refpos1[' + int_2str_(NoIndex) + '].$comment', 'HomePos')
+    set_sys_bol_('$refpos1[' + int_2str_(NoIndex) + '].$enabled', true)
+    set_sys_int_('$refpos1[' + int_2str_(NoIndex) + '].$dout_type', 2)
+    set_sys_int_('$refpos1[' + int_2str_(NoIndex) + '].$dout_indx', IoIndex)
+
+    cnv_jpos_rel(HomePos, JposAry, CfgurStatus)
+    if CfgurStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check Input HomePos', 0, CC_ABORT) ; endif
+
+    for I = 1 to array_len(JposAry) do
+        if I < 7 then 
+            JposAry[I] = JposAry[I] * PI / 180 
+            set_sys_rel_('$refpos1[' + int_2str_(NoIndex) + '].$PERCHPOS[' + int_2str_(I) + ']', JposAry[I])
+            set_sys_rel_('$refpos1[' + int_2str_(NoIndex) + '].$PERCHTOL[' + int_2str_(I) + ']', 0.0174532)
+        else
+            if not uninit(JposAry[I]) then
+                set_sys_rel_('$refpos1[' + int_2str_(NoIndex) + '].$PERCHPOS[' + int_2str_(I) + ']', JposAry[I])
+                set_sys_rel_('$refpos1[' + int_2str_(NoIndex) + '].$PERCHTOL[' + int_2str_(I) + ']', 2.0)
+            endif
+        endif
+    endfor
+    set_sys_bol_('$refpos1[' + int_2str_(NoIndex) + '].$homepos', true)
+end cfr_home_
+
+routine cfr_ip_
+begin
+    set_sys_str_('$hostent[17].$h_addr', RobotIp)
+    set_sys_str_('$tmi_snmask[1]', Mask)
+    set_sys_str_('$hostent[20].$h_addr', RouterIp)
+end cfr_ip_
+
+routine cfr_client_
+begin
+    set_sys_int_('$hostc_cfg[' + int_2str_(NoIndex) + '].$state', 1)
+    set_sys_int_('$hostc_cfg[' + int_2str_(NoIndex) + '].$oper', 2)
+    set_sys_str_('$hostc_cfg[' + int_2str_(NoIndex) + '].$protocol', 'SM')
+    set_sys_str_('$hostc_cfg[' + int_2str_(NoIndex) + '].$remote', PcIp)
+    set_sys_str_('$hostc_cfg[' + int_2str_(NoIndex) + '].$strt_remote', PcIp)
+    set_sys_int_('$hostc_cfg[' + int_2str_(NoIndex) + '].$state', 2)
+end cfr_client_
+
+routine cfr_server_
+begin
+    set_sys_int_('$hosts_cfg[' + int_2str_(NoIndex) + '].$state', 1)
+    set_sys_int_('$hosts_cfg[' + int_2str_(NoIndex) + '].$oper', 2)
+    set_sys_str_('$hosts_cfg[' + int_2str_(NoIndex) + '].$protocol', 'SM')
+    set_sys_int_('$hosts_cfg[' + int_2str_(NoIndex) + '].$state', 2)
+    set_sys_int_('$hosts_cfg[' + int_2str_(NoIndex) + '].$oper', 3)
+    set_sys_int_('$hosts_cfg[' + int_2str_(NoIndex) + '].$state', 3)
+end cfr_server_
+
+routine cycle_power_
+var
+    Status					: integer
+begin
+    spruncmd('RE_POWER', Status)
+end cycle_power_

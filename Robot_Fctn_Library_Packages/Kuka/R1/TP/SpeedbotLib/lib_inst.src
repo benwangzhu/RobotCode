@@ -1,0 +1,384 @@
+&ACCESS RP
+&COMMENT Lib Inst Dial 250505
+def lib_inst()
+;***********************************************************
+;
+; Copyright 2025 - 2025 speedbot All Rights reserved.
+;
+; File Name: lib_inst.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2025 - 05 - 05
+;   Modification Data    ==   2025 - 05 - 08
+;
+; Author: speedbot
+;
+; Version: 1.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+; 2025 - 05 - 08 ++ f000_it00_() ==> int
+
+; 2025 - 05 - 08 ++ f001_it01_() ==> int
+
+; 2025 - 05 - 08 ++ f002_it01_() ==> int
+
+; 2025 - 05 - 08 ++ f003_it01_() ==> int
+
+; 2025 - 05 - 08 ++ f004_it01_() ==> int
+
+end
+
+;FOLD ACTIVATION F000_IT00_
+global deffct int f000_it00_(ThisSock : out)
+    decl int Ack, Offset
+    decl int Status 
+    decl sock_cfg_t ThisSock
+
+    Ack                 = 0
+    InstSendHead = {Length 470, PacketCount 1, Cmd 253,  Seq 0, VirtualRob 0}
+    InstSendHead.Head   = PACK_HEADER
+    InstSendHead.Type_  = TYPE_KUKA
+    InstSendTail.Tail   = PACK_TAIL
+
+    repeat  
+        wait sec 0.1 
+        sock_dconn_(ThisSock)                             
+        Status = csock_conn_(ThisSock)    
+    until((Status == OK) and (ThisSock.Connected == true))
+
+    pack_head_(WritePackages[], InstSendHead, Offset)
+    cast_to(WritePackages[], Offset, Ack)
+    pack_tail_(WritePackages[], InstSendTail, Offset)
+    Status = sock_write_(ThisSock, WritePackages[], Offset)
+    if Status <> OK then 
+        return(Status)
+    endif 
+
+    Status = sock_read_(ThisSock, ReadPackages[])
+    if Status <> OK then 
+        return(Status)
+    endif 
+    Status = unpack_head_(ReadPackages[], InstReadHead, Offset)
+    cast_from(ReadPackages[], Offset, Ack)
+    Status = unpack_tail_(ReadPackages[], InstReadTail, Offset)
+
+    return(Status)
+endfct
+;ENDFOLD
+
+;FOLD TRIG PHOTO F001_IT01
+global deffct int f001_it01_(ThisSock : out, PosData : in, CamerNumber : in, PointNumber : in)
+    decl int Offset, Status, TempInt  
+    decl sock_cfg_t ThisSock 
+    decl e6pos PosData 
+    decl int CamerNumber, PointNumber
+    decl cmd_typ07_t SendCmdTyp07
+
+    TempInt = InstSendHead.Seq
+    TempInt = TempInt + 1
+    if TempInt > 255 then 
+       TempInt = 1
+    endif
+    InstSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+    InstSendHead.Head   = PACK_HEADER
+    InstSendHead.Seq    = TempInt  
+    InstSendBody = {RobotId 1, JobId 0, ProtocolId 0, RobMsgType 17}
+
+    SendCmdTyp07.Float01 = PosData.X 
+    SendCmdTyp07.Float02 = PosData.Y
+    SendCmdTyp07.Float03 = PosData.Z
+    SendCmdTyp07.Float04 = PosData.A
+    SendCmdTyp07.Float05 = PosData.B
+    SendCmdTyp07.Float06 = PosData.C
+    if (varstate("PosData.E1") == #initialized) then 
+        SendCmdTyp07.Float07 = PosData.E1
+    else
+        SendCmdTyp07.Float07 = 0.0
+    endif  
+    if (varstate("PosData.E2") == #initialized) then 
+        SendCmdTyp07.Float08 = PosData.E2
+    else 
+        SendCmdTyp07.Float08 = 0.0
+    endif   
+    if (varstate("PosData.E3") == #initialized) then 
+        SendCmdTyp07.Float09 = PosData.E3
+    else 
+        SendCmdTyp07.Float09 = 0.0
+    endif
+    if (varstate("PosData.E4") == #initialized) then 
+        SendCmdTyp07.Float10 = PosData.E4
+    else 
+        SendCmdTyp07.Float10 = 0.0
+    endif 
+    if (varstate("PosData.E5") == #initialized) then 
+        SendCmdTyp07.Float11 = PosData.E5
+    else 
+        SendCmdTyp07.Float11 = 0.0
+    endif
+    if (varstate("PosData.E6") == #initialized) then 
+        SendCmdTyp07.Float12 = PosData.E6
+    else 
+        SendCmdTyp07.Float12 = 0.0
+    endif
+    SendCmdTyp07.Int13   = CamerNumber
+    SendCmdTyp07.Int14   = PointNumber
+
+    pack_head_(WritePackages[], InstSendHead, Offset)
+    pack_body_(WritePackages[], InstSendBody, Offset)
+    pack_cmd017_(WritePackages[], #PACKCMD_WRITE, SendCmdTyp07, Offset)
+    pack_tail_(WritePackages[], InstSendTail, Offset)
+    Status = sock_write_(ThisSock, WritePackages[], Offset)
+    if Status <> OK then 
+        return(Status)
+    endif 
+
+    Status = sock_read_(ThisSock, ReadPackages[])
+    if Status <> OK then 
+        return(Status)
+    endif 
+
+    Status = unpack_head_(ReadPackages[], InstReadHead, Offset)
+    if Status <> OK then 
+        return(Status)
+    endif 
+    unpack_body_(ReadPackages[], InstReadBody, Offset)
+    Status = unpack_tail_(ReadPackages[], InstReadTail, Offset)
+    
+    return(Status)
+endfct
+;ENDFOLD
+
+;FOLD PROCESS SECTION F002_IT01
+global deffct int f002_it01_(ThisSock : out, JobIdData : in, PlanPara : in, ProcNum : out)
+    decl int Offset, Status, TempInt 
+    decl sock_cfg_t ThisSock
+    decl int JobIdData, PlanPara, ProcNum
+    decl cmd_typ01_t SendCmdTyp01, ReadCmdTyp01
+
+    TempInt = InstSendHead.Seq
+    TempInt = TempInt + 1
+    if TempInt > 255 then 
+       TempInt = 1
+    endif
+    InstSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+    InstSendHead.Head   = PACK_HEADER
+    InstSendHead.Seq    = TempInt  
+
+    InstSendBody = {RobotId 2, ProtocolId 0, RobMsgType 21}
+    InstSendBody.JobId = JobIdData
+
+    SendCmdTyp01 = {Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}
+    SendCmdTyp01.Byte01 = PlanPara
+
+    pack_head_(WritePackages[], InstSendHead, Offset)
+    pack_body_(WritePackages[], InstSendBody, Offset)
+    pack_cmd021_(WritePackages[], #PACKCMD_WRITE, SendCmdTyp01, Offset)
+    pack_tail_(WritePackages[], InstSendTail, Offset)
+    Status = sock_write_(ThisSock, WritePackages[], Offset)
+    if Status <> OK then 
+        return(Status)
+    endif 
+
+    Status = sock_read_(ThisSock, ReadPackages[])
+    if Status <> OK then 
+        return(Status)
+    endif 
+    Status = unpack_head_(ReadPackages[], InstReadHead, Offset)
+    if Status <> OK then 
+        return(Status)
+    endif 
+    unpack_body_(ReadPackages[], InstReadBody, Offset)
+    if InstReadBody.ErrorId == 0 then
+        pack_cmd021_(ReadPackages[], #PACKCMD_READ, ReadCmdTyp01, Offset)
+        ProcNum = ReadCmdTyp01.Byte01
+    endif
+    Status = unpack_tail_(ReadPackages[], InstReadTail, Offset)
+    if Status <> OK then 
+        return(Status)
+    endif 
+
+    return(InstReadBody.ErrorId)
+endfct
+;ENDFOLD
+
+;FOLD PROCESS PARAMETERS F003_IT01_
+global deffct int f003_it01_(ThisSock : out, JobIdData : in, ProcNumber : in, GrindNumber : out, GrindSpeed : out)
+    decl int Offset, Status, TempInt   
+    decl sock_cfg_t ThisSock
+    decl int JobIdData, ProcNumber, GrindNumber
+    decl real GrindSpeed
+    decl cmd_typ01_t SendCmdTyp01
+    decl cmd_typ08_t ReadCmdTyp08
+
+    TempInt = InstSendHead.Seq
+    TempInt = TempInt + 1
+    if TempInt > 255 then 
+       TempInt = 1
+    endif
+    InstSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+    InstSendHead.Head   = PACK_HEADER
+    InstSendHead.Seq    = TempInt  
+
+    InstSendBody = {RobotId 3, ProtocolId 0, RobMsgType 21}
+    InstSendBody.JobId = JobIdData
+ 
+    SendCmdTyp01 = {Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}
+    SendCmdTyp01.Byte01 = ProcNumber 
+
+    pack_head_(WritePackages[], InstSendHead, Offset)
+    pack_body_(WritePackages[], InstSendBody, Offset)
+    pack_cmd021_(WritePackages[], #PACKCMD_WRITE, SendCmdTyp01, Offset)
+    pack_tail_(WritePackages[], InstSendTail, Offset)
+    Status = sock_write_(ThisSock, WritePackages[], Offset)
+    if Status <> OK then 
+        return(Status)
+    endif 
+
+    Status = sock_read_(ThisSock, ReadPackages[])
+    if Status <> OK then 
+        return(Status)
+    endif 
+    Status = unpack_head_(ReadPackages[], InstReadHead, Offset)
+    unpack_body_(ReadPackages[], InstReadBody, Offset)
+    if InstReadBody.ErrorId == 0 then
+        pack_cmd148_(ReadPackages[], #PACKCMD_READ, ReadCmdTyp08, Offset)
+        GrindNumber = ReadCmdTyp08.Byte01
+        GrindSpeed  = ReadCmdTyp08.Float13
+    endif    
+    Status = unpack_tail_(ReadPackages[], InstReadTail, Offset)
+    if Status <> OK then 
+        return(Status)
+    endif 
+    return(InstReadBody.ErrorId)
+endfct
+;ENDFOLD
+
+;FOLD PROCESS PATH F004_IT01_
+global deffct int f004_it01_(ThisSock : out, JobIdData : in, PointType : in, ProcNumber : in, PointLen : in, PointData[] : out, SpeedData[] : out, PointNum : out)
+    decl bool CnvStatus
+    decl int ActBase, ActTool
+    decl int Offset, Status, I, TempInt 
+    decl sock_cfg_t ThisSock
+    decl int JobIdData, PointType
+    decl int ProcNumber, SpeedData[], PointNum
+    decl real PointLen
+    decl e6pos PointData[]
+    decl e6axis ConvAxis
+    decl e6Pos ConvPos
+    decl cmd_typ01_t SendCmdTyp01
+    decl cmd_typ07_t ReadCmdTyp07
+
+    PointNum = 0
+    TempInt = InstSendHead.Seq
+
+    InstSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+    InstSendHead.Head   = PACK_HEADER
+
+    InstSendBody = {RobotId 4, ProtocolId 0, RobMsgType 21}
+    InstSendBody.JobId = JobIdData
+
+    SendCmdTyp01 = {Short03 0, Short04 0, Int05 0, Int06 0, Float08 0.0}
+    SendCmdTyp01.Byte01 = PointType
+    SendCmdTyp01.Byte02 = ProcNumber  
+    SendCmdTyp01.Float07 = PointLen
+                                                                                                                  
+    repeat 
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+            TempInt = 1
+        endif
+        InstSendHead.Seq = TempInt  
+
+        pack_head_(WritePackages[], InstSendHead, Offset)
+        pack_body_(WritePackages[], InstSendBody, Offset)
+        pack_cmd021_(WritePackages[], #PACKCMD_WRITE, SendCmdTyp01, Offset)
+        pack_tail_(WritePackages[], InstSendTail, Offset)
+        Status = sock_write_(ThisSock, WritePackages[], Offset)
+        if Status <> OK then 
+            return(Status)
+        endif  
+
+        Status = sock_read_(ThisSock, ReadPackages[])
+        if Status <> OK then 
+            return(Status)
+        endif 
+
+        Status = unpack_head_(ReadPackages[], InstReadHead, Offset)
+        if Status <> OK then 
+            return(Status)
+        endif 
+        unpack_body_(ReadPackages[], InstReadBody, Offset)
+        
+        if InstReadBody.ErrorId == 0 then
+            for I = 1 to InstReadHead.PacketCount
+                pack_cmd133_(ReadPackages[], #PACKCMD_READ, ReadCmdTyp07, Offset) 
+
+                ConvAxis.a1 = ReadCmdTyp07.Float01
+                ConvAxis.a2 = ReadCmdTyp07.Float02
+                ConvAxis.a3 = ReadCmdTyp07.Float03
+                ConvAxis.a4 = ReadCmdTyp07.Float04
+                ConvAxis.a5 = ReadCmdTyp07.Float05
+                ConvAxis.a6 = ReadCmdTyp07.Float06
+                ConvAxis.E1 = ReadCmdTyp07.Float07
+                ConvAxis.E2 = ReadCmdTyp07.Float08
+                ConvAxis.E3 = ReadCmdTyp07.Float09
+                ConvAxis.E4 = ReadCmdTyp07.Float10
+                ConvAxis.E5 = ReadCmdTyp07.Float11
+                ConvAxis.E6 = ReadCmdTyp07.Float12
+
+                PointNum = PointNum + 1
+                continue
+                ActTool = $act_tool
+                continue
+                ActBase = $act_base
+                CnvStatus = jnt_2cart_(ConvAxis, ActBase, ActTool, PointData[PointNum])
+                if (CnvStatus <> true) then 
+                    error_write_("0", "Joint coordinate conversion to Cartesian coordinate failed")
+                endif 
+                
+                on_error_proceed
+                SpeedData[PointNum] = ReadCmdTyp07.Int13
+                if ($err.number > 0) then
+                    err_clear($err)
+                endif
+            endfor 
+        endif
+
+        Status = unpack_tail_(ReadPackages[], InstReadTail, Offset)
+        if Status <> OK then 
+            return(Status)
+        endif 
+    until(InstReadHead.Type_ == 1)
+        
+    return(InstReadBody.ErrorId)
+endfct
+;ENDFOLD

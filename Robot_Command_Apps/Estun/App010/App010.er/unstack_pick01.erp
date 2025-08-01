@@ -1,0 +1,14 @@
+// InstParseVersion: V1.02
+Start:
+/*抓取点上方*/
+MovLOffset{RP=t_p.NewDataTablePickPos,TP=t_l.PickUpOffs01,T="COORD",Tool=t_g.StackTool,Coord=t_s.World}
+/*抓取点*/
+MovL{P=t_p.NewDataTablePickPos,B="FINE"}
+/*吸盘开*/
+/*抓取点上方*/
+MovLOffset{RP=t_p.NewDataTablePickPos,TP=t_l.PickUpOffs02,T="COORD",Tool=t_g.StackTool,Coord=t_s.World}
+/*安全点*/
+MovJ{P=t_l.P0}
+/*反馈离开区域二*/
+SbtComm010Skill{Mode="AREA",AreaId=2}
+End;

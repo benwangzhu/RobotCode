@@ -1,0 +1,55 @@
+// InstParseVersion: V1.02
+Start:
+/**********************************/
+/*数据复制及处理程序*/
+/**********************************/
+t_p.CopyFromRobId.value = t_p.SnrFromRobId.value
+t_p.CopyPartLen.value = t_p.SnrPartLen.value
+t_p.CopyOfsOrt.value = t_p.SnrOfsOrt.value
+t_p.CopyOfsRz.value = t_p.SnrOfsRz.value
+t_p.CopyMagPip01.value = t_p.SnrMagPip01.value
+t_p.CopyMagPip02.value = t_p.SnrMagPip02.value
+t_p.CopyMagPip03.value = t_p.SnrMagPip03.value
+t_p.CopyMagPip04.value = t_p.SnrMagPip04.value
+t_p.CopyMagPip05.value = t_p.SnrMagPip05.value
+t_p.CopyMagPip06.value = t_p.SnrMagPip06.value
+t_p.CopyMagPip07.value = t_p.SnrMagPip07.value
+t_p.CopyMagPip08.value = t_p.SnrMagPip08.value
+t_p.CopyGripDist1.value = t_p.SnrGripDist1.value
+t_p.CopyThickness.value = t_p.SnrThickness.value
+t_p.CopyWeight.value = t_p.SnrWeight.value
+t_p.CopyPlaceId.value = t_p.SnrPlaceId.value
+t_p.CopyGripDist2.value = t_p.SnrGripDist2.value
+t_p.CopyPickPos = t_p.SnrPickPos
+t_p.CopyPlacePos = t_p.SnrPlacePos
+IF t_p.CfgBoxOrConv.value == true THEN
+    t_p.BoxPlaceUpPos = t_p.CopyPlacePos
+    t_p.BoxPlaceUpPos.z = t_p.CfgBoxPlaceUpDst.value [ t_p.CopyPlaceId.value ]
+ELSE
+    IF t_p.CopyOfsOrt.value > t_p.CfgConvMaxOfs.value [ t_p.CopyPlaceId.value ] THEN
+        t_l.Val0.value = t_p.CfgConvMaxOfs.value [ t_p.CopyPlaceId.value ]
+    ELSE
+        t_l.Val0.value = t_p.CopyOfsOrt.value
+    ENDIF
+    IF t_p.CopyOfsOrt.value < t_p.CfgConvMinOfs.value [ t_p.CopyPlaceId.value ] THEN
+        t_l.Val0.value = t_p.CfgConvMinOfs.value [ t_p.CopyPlaceId.value ]
+    ELSE
+        t_l.Val0.value = t_p.CopyOfsOrt.value
+    ENDIF
+    t_p.BoxPlaceUpPos.x = 0
+    t_p.BoxPlaceUpPos.y = 0
+    t_p.BoxPlaceUpPos.z = 0
+    t_p.BoxPlaceUpPos.a = t_p.CopyOfsRz.value
+    t_p.BoxPlaceUpPos.b = 0
+    t_p.BoxPlaceUpPos.c = 0
+    IF t_p.CfgConvCtrlMode.value [ t_p.CopyPlaceId.value ] == 1 THEN
+        t_p.BoxPlaceUpPos.x = t_p.CopyOfsOrt.value
+    ELSIF t_p.CfgConvCtrlMode.value [ t_p.CopyPlaceId.value ] == 2 THEN
+        t_p.BoxPlaceUpPos.y = t_p.CopyOfsOrt.value
+    ELSIF t_p.CfgConvCtrlMode.value [ t_p.CopyPlaceId.value ] == -1 THEN
+        t_p.BoxPlaceUpPos.x = t_p.CopyOfsOrt.value * -1
+    ELSIF t_p.CfgConvCtrlMode.value [ t_p.CopyPlaceId.value ] == -2 THEN
+        t_p.BoxPlaceUpPos.y = t_p.CopyOfsOrt.value * -1
+    ENDIF
+ENDIF
+End;

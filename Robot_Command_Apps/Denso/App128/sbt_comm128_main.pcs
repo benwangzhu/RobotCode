@@ -1,0 +1,98 @@
+'!TITLE "Comm128Ö÷ÈÎÎñ"
+
+#Include "sbt_comm128_main.h"
+#Include "global_variable.h"
+
+Dim SemId1 As Integer
+Dim SemId2 As Integer
+
+Sub Main
+'!***********************************************************
+'!
+'! Copyright 2018 - 2025 speedbot All Rights reserved.
+'!
+'! File Name: sbt_comm128_main.pcs
+'!
+'! Description:
+'!   Language             ==   PacScipt for DENSO ROBOT
+'!   Date                 ==   2025 - 02 - 24
+'!   Modification Data    ==   2025 - 02 - 24
+'!
+'! Author: speedbot
+'!
+'! Version: 1.0
+'!*********************************************************************************************************;
+	Dim TrajectoryJoint(MAX_TRAJ_LENGTH) As Joint
+	Dim TrajectoryIntPrm(MAX_TRAJ_LENGTH, 5) As Integer
+	Dim TrajectoryFloatPrm(MAX_TRAJ_LENGTH, 4) As Single
+	Dim TrajectorySize As Integer
+	Dim Count As Integer
+	
+	TakeArm Keep = 0
+
+#Pragma Encrypt(On) 
+
+	SetPublicValue 0, "sbt_comm128_motion", "GlobalTrajectorySize"
+	I[VARIABLE_I_MOVE_ID] = 0
+	I[VARIABLE_I_STOP_ID] = 0
+
+	SemId1 = CreateMutex("SemName1")
+	SemId2 = CreateMutex("SemName2")
+
+	TakeMutex SemId2
+
+	If Status(tsr0128) <> 3 Then 
+		Kill tsr0128
+
+		Delay 50
+
+		Run tsr0128
+	End If
+
+	Kill sbt_comm128_motion
+
+	Delay 50
+
+	Run sbt_comm128_motion
+
+	Delay 50
+
+#Pragma Encrypt(Off) 
+
+	Do While True
+
+		TakeMutex SemId1
+
+#Pragma Encrypt(On) 
+		
+		GetPublicValue TrajectorySize, "sbt_comm128_motion", "GlobalTrajectorySize"
+		GetPublicValue TrajectoryFloatPrm, "sbt_comm128_motion", "GlobalBufferFloatPrm"
+		GetPublicValue TrajectoryIntPrm, "sbt_comm128_motion", "GlobalBufferIntPrm"
+		GetPublicValue TrajectoryJoint, "sbt_comm128_motion", "GlobalBufferJoint"
+
+		GiveMutex SemId2
+		GiveMutex SemId1
+		TakeMutex SemId2
+
+#Pragma Encrypt(Off) 
+		
+		For Count = 0 To (TrajectorySize - 1)
+
+			I[VARIABLE_I_MOVE_ID] = TrajectoryIntPrm(Count, 0)
+			If TrajectoryIntPrm(Count, 1) = 6 Then
+
+				Move P, @[TrajectoryIntPrm(Count, 4)] TrajectoryJoint(Count), Speed = (TrajectoryFloatPrm(Count, 0), TrajectoryIntPrm(Count, 3), -1)
+			Else
+
+				Move L, @[TrajectoryIntPrm(Count, 4)] TrajectoryJoint(Count), Speed = (TrajectoryFloatPrm(Count, 0), TrajectoryIntPrm(Count, 3), -1)
+			End If
+
+			If I[VARIABLE_I_STOP_ID] = 1 Then
+
+				I[VARIABLE_I_STOP_ID] = 0
+				
+				Exit For
+			End If
+		Next
+	Loop
+End Sub

@@ -1,0 +1,1163 @@
+program lib_socket
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_socket
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 08 - 16
+--   Modification Data    ==   2022 - 05 - 23
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+-- 2021 - 08 - 16 ++ sock_ping_() ==> integer
+
+-- 2021 - 08 - 16 ++ sock_accept_() ==> integer
+
+-- 2021 - 08 - 16 ++ csock_conn_() ==> integer
+
+-- 2021 - 08 - 16 ++ sock_dconn_()
+
+-- 2021 - 08 - 16 ++ file_init_() 							
+
+-- 2021 - 08 - 16 ++ file_ofd_() ==> integer
+
+-- 2021 - 08 - 16 ++ file_cfd_()
+
+-- 2021 - 08 - 16 ++ get_bits_() ==> integer
+
+-- 2021 - 08 - 16 ++ sock_write_() ==> integer
+
+-- 2023 - 03 - 14 ++ sock_send_() ==> integer
+
+-- 2021 - 08 - 16 ++ sock_rjson_() ==> integer
+
+-- 2023 - 03 - 14 ++ sock_rjson2_() ==> integer
+
+-- 2022 - 04 - 15 ++ udp_create_() ==> integer
+
+-- 2022 - 04 - 15 ++ udp_close_()
+
+-- 2022 - 08 - 12 ++ udp_bits_() ==> integer
+
+-- 2022 - 08 - 12 ++ udp_sendto_() ==> integer
+
+-- 2022 - 08 - 12 ++ udp_recvfm_() ==> integer
+
+-- 2021 - 12 - 17 ++ to_int_() ==> integer
+
+-- 2021 - 12 - 17 ++ to_byte_() ==> integer
+
+-- 2021 - 05 - 23 ++ to_short_() ==> integer
+
+-- 2021 - 12 - 17 ++ to_real_() ==> integer
+
+-- 2021 - 12 - 17 ++ to_str_() ==> integer
+
+-- 2022 - 04 - 15 ++ to_struct_() ==> integer
+
+-- 2023 - 03 - 26 ++ to_aryint_() ==> integer
+
+-- 2023 - 03 - 26 ++ to_arybyte_() ==> integer
+
+-- 2023 - 03 - 26 ++ to_aryshort_() ==> integer
+
+-- 2023 - 03 - 26 ++ to_aryreal_() ==> integer
+
+-- 2021 - 12 - 17 ++ to_buffer_() ==> integer
+
+-- 2021 - 12 - 17 ++ from_int_() ==> integer
+
+-- 2021 - 12 - 17 ++ from_byte_() ==> integer
+
+-- 2021 - 12 - 17 ++ from_real_() ==> integer
+
+-- 2021 - 05 - 23 ++ from_short_() ==> integer
+
+-- 2021 - 12 - 17 ++ from_str_() ==> integer
+
+-- 2022 - 04 - 15 ++ from_struct_() ==> integer
+
+-- 2023 - 03 - 26 ++ fm_aryint_() ==> integer
+
+-- 2023 - 03 - 26 ++ fm_arybyte_() ==> integer
+
+-- 2023 - 03 - 26 ++ fm_aryshort_() ==> integer
+
+-- 2023 - 03 - 26 ++ fm_aryreal_() ==> integer
+
+%nolockgroup
+%nobusylamp
+%nopause = tpenable + command + error
+%comment = 'Socket 231129'
+%include include/lib_transform_t
+%include include/lib_math_t
+%include include/lib_socket_t
+
+%include include/lib_socket_h
+%include include/lib_tp_if_h
+%include include/lib_math_h
+
+
+begin
+
+
+end lib_socket
+
+routine sock_ping_
+var
+    PingStat     : integer
+begin
+    msg_ping(ThisSock.Host, PingStat)
+    return(-abs(PingStat))
+end sock_ping_
+
+routine sock_accept_
+var
+    SvEntry		 : integer
+    ConnStat     : integer
+begin
+    ThisSock.Connected = false
+    
+    -- 设置 protocol
+
+    set_sys_str_('$host' + sub_str(ThisSock.PortTag, 1, 1) + '_cfg[' + sub_str(ThisSock.PortTag, 2, 1) + '].$protocol', 'SM')
+
+    if not uninit(ThisSock.Host) then  
+        -- 设置 strt_remote
+
+        set_sys_str_('$host' + sub_str(ThisSock.PortTag, 1, 1) + '_cfg[' + sub_str(ThisSock.PortTag, 2, 1) + '].$strt_remote', ThisSock.Host)
+
+        -- 设置 remote
+
+        set_sys_str_('$host' + sub_str(ThisSock.PortTag, 1, 1) + '_cfg[' + sub_str(ThisSock.PortTag, 2, 1) + '].$remote', ThisSock.Host)
+    endif
+
+    -- 设置 use_udp
+
+    set_sys_bol_('$host' + sub_str(ThisSock.PortTag, 1, 1) + '_cfg[' + sub_str(ThisSock.PortTag, 2, 1) + '].$use_udp', false)
+
+    -- 设置 oper
+
+    set_sys_int_('$host' + sub_str(ThisSock.PortTag, 1, 1) + '_cfg[' + sub_str(ThisSock.PortTag, 2, 1) + '].$oper', 3)
+
+    -- 设置 state
+
+    set_sys_int_('$host' + sub_str(ThisSock.PortTag, 1, 1) + '_cfg[' + sub_str(ThisSock.PortTag, 2, 1) + '].$state', 3)
+
+    -- 设置 server_port
+    set_sys_int_('$host' + sub_str(ThisSock.PortTag, 1, 1) + '_cfg[' + sub_str(ThisSock.PortTag, 2, 1) + '].$server_port', ThisSock.ServerPort)
+
+    mount_dev(ThisSock.PortTag, ConnStat)
+    msg_disco(ThisSock.PortTag, ConnStat)
+    msg_connect(ThisSock.PortTag, ConnStat)
+
+    ThisSock.Connected = (ConnStat = 0)
+    return(-abs(ConnStat))
+end sock_accept_
+
+routine csock_conn_
+var
+    ConnStat      : integer
+begin
+    ThisSock.Connected = false
+
+    -- 设置 protocol
+
+    set_sys_str_('$host' + sub_str(ThisSock.PortTag, 1, 1) + '_cfg[' + sub_str(ThisSock.PortTag, 2, 1) + '].$protocol', 'SM')
+
+    -- 设置 strt_remote
+
+    set_sys_str_('$host' + sub_str(ThisSock.PortTag, 1, 1) + '_cfg[' + sub_str(ThisSock.PortTag, 2, 1) + '].$strt_remote', ThisSock.Host)
+
+    -- 设置 remote
+
+    set_sys_str_('$host' + sub_str(ThisSock.PortTag, 1, 1) + '_cfg[' + sub_str(ThisSock.PortTag, 2, 1) + '].$remote', ThisSock.Host)
+
+    -- 设置 use_udp
+
+    set_sys_bol_('$host' + sub_str(ThisSock.PortTag, 1, 1) + '_cfg[' + sub_str(ThisSock.PortTag, 2, 1) + '].$use_udp', false)
+
+    -- 设置 oper
+
+    set_sys_int_('$host' + sub_str(ThisSock.PortTag, 1, 1) + '_cfg[' + sub_str(ThisSock.PortTag, 2, 1) + '].$oper', 2)
+
+    -- 设置 state
+
+    set_sys_int_('$host' + sub_str(ThisSock.PortTag, 1, 1) + '_cfg[' + sub_str(ThisSock.PortTag, 2, 1) + '].$state', 2)
+
+    -- 设置 server_port
+    set_sys_int_('$host' + sub_str(ThisSock.PortTag, 1, 1) + '_cfg[' + sub_str(ThisSock.PortTag, 2, 1) + '].$server_port', ThisSock.ServerPort)
+
+    mount_dev(ThisSock.PortTag, ConnStat)
+    msg_disco(ThisSock.PortTag, ConnStat)
+    msg_connect(ThisSock.PortTag, ConnStat)
+
+    ThisSock.Connected = (ConnStat = 0)
+    return(-abs(ConnStat))
+end csock_conn_
+
+routine sock_dconn_
+var
+    DconnStat     : integer
+begin
+    msg_disco(ThisSock.PortTag, DconnStat)
+    if DconnStat <> CC_SUCCESS then ; msg_disco(ThisSock.PortTag, DconnStat) ; endif
+    ThisSock.Connected = false
+end sock_dconn_
+
+routine file_init_
+begin
+    if uninit(ThisSock.AtrIntAct) then ; ThisSock.AtrIntAct = true ; endif
+    if uninit(ThisSock.AtrBinary) then ; ThisSock.AtrBinary = false ; endif
+    if uninit(ThisSock.AtrProbably) then ; ThisSock.AtrProbably = true ; endif
+    if uninit(ThisSock.AtrTimeout) then ; ThisSock.AtrTimeout = 0 ; endif
+
+    if ThisSock.AtrIntAct then ; set_file_atr(Filevar, ATR_IA) ; endif
+    if ThisSock.AtrBinary then ; set_file_atr(Filevar, ATR_UF) ; endif
+    if not ThisSock.AtrProbably then ; set_file_atr(Filevar, ATR_REVERSE) ; endif
+    set_file_atr(Filevar, ATR_READAHD, 2)
+    set_file_atr(Filevar, ATR_TIMEOUT, ThisSock.AtrTimeout)
+
+end file_init_
+
+routine file_ofd_
+var
+    Tag			: string[3]
+    OpenStat	: integer
+begin
+    Tag = ThisSock.PortTag
+    open file Filevar('RW', Tag)
+    OpenStat = io_status(Filevar)
+    if OpenStat <> CC_SUCCESS then ; clr_io_stat(Filevar) ; endif
+    ThisSock.Connected = (OpenStat = 0)
+    return(-abs(OpenStat))
+end file_ofd_
+
+routine file_cfd_
+begin
+    close file Filevar
+    if io_status(Filevar) <> CC_SUCCESS then ;clr_io_stat(Filevar) ;close file Filevar ; endif
+end file_cfd_
+
+routine get_bits_
+var
+    Size      : integer
+    GetStat   : integer
+begin
+    bytes_ahead(Filevar, Size, GetStat)
+    if GetStat <> CC_SUCCESS then ; ThisSock.NByte = -abs(GetStat) ; else ; ThisSock.NByte = Size ; endif
+    ThisSock.Connected = (ThisSock.NByte >= 0)
+    return(ThisSock.NByte)
+end get_bits_
+
+routine sock_write_
+var
+    WriteStat 		: integer
+begin
+    write Filevar(Msg)
+    WriteStat = io_status(Filevar)
+    if WriteStat <> CC_SUCCESS then ; clr_io_stat(Filevar) ; endif
+    return(-abs(WriteStat))
+end sock_write_
+
+routine sock_send_
+var
+    WriteStat 		: integer
+begin
+    write Filevar(Msg)
+    WriteStat = io_status(Filevar)
+    if WriteStat <> CC_SUCCESS then ; clr_io_stat(Filevar) ; endif
+    ThisSock.Connected = (WriteStat = 0)
+    return(-abs(WriteStat))
+end sock_send_
+
+routine sock_read_
+var
+    ReadStat        : integer
+    AtTime          : integer
+    Len             : integer
+begin
+    Msg = ''
+    AtTime = get_sys_int_('$fast_clock')
+    repeat
+
+        Len = get_bits_(Filevar, ThisSock)
+        if (ThisSock.AtrTimeout > 0) then  
+
+            if (get_sys_int_('$fast_clock') - AtTime) >= ThisSock.AtrTimeout then ; return(-282) ; endif
+        endif
+        if Len < 0 then ; return(Len) ; endif
+        if Len = 0 then ; delay(1) ; endif
+    until (Len <> 0)
+
+    if Len > 126 then ; Len = 126 ; endif
+        
+    read Filevar(Msg::Len)
+    ReadStat = io_status(Filevar)
+    ThisSock.Connected = ((ReadStat = 0) or (ReadStat = 282))
+    if ReadStat <> CC_SUCCESS then ; clr_io_stat(Filevar) ; return(-abs(ReadStat)) ; endif
+    return(str_len(Msg))
+end sock_read_
+
+routine sock_rjson_
+var
+    Str1            : string[1]
+    Str2            : string[127]
+    TmpStr          : string[127]
+    ReadStat        : integer
+    Comp            : boolean
+    JsonName		: array[JSON_MAX_DAT] of string[24]
+    JsonType		: array[JSON_MAX_DAT] of string[8]
+    NumofKey       	: integer
+    NumofValue      : integer
+    NumofInt		: integer
+    NumofRel		: integer
+    NumofStr		: integer
+    NumofPos        : integer
+    I				: integer
+    J				: integer
+
+begin
+
+    NumofKey = 0	
+    NumofValue = 0
+    NumofInt = 0
+    NumofRel = 0
+    NumofStr = 0
+    NumofPos = 0
+    
+    -- Reading 'key{********************}'
+    --
+    Str1 = '' ;  Str2 = '' 
+    while Str1 <> JSON_DEC_EL1 do
+
+        if Str1 <> JSON_DEC_NUL then ; Str2 = Str2 + Str1 ; endif
+
+        read Filevar(Str1::1)
+        ReadStat = io_status(Filevar)
+
+        if ReadStat <> CC_SUCCESS then 
+            clr_io_stat(Filevar) 
+            return(-abs(ReadStat))
+        endif
+    endwhile
+    
+    if Str2 <> JSON_DEC_KEY then ; return(-abs(SOCK_HED_NAM)) ; endif
+    
+    while Str1 <> JSON_DEC_EL2 do
+        Str1 = '' ;  Str2 = '' 
+        NumofKey = NumofKey + 1	
+
+        if NumofKey > JSON_MAX_DAT then ; return(-abs(SOCK_NUM_DAT)) ; endif
+
+        Comp = false
+        while not Comp do
+            Str2 = Str2 + Str1
+
+            read Filevar(Str1::1)
+            ReadStat = io_status(Filevar)
+
+            if ReadStat <> CC_SUCCESS then 
+                clr_io_stat(Filevar) 
+                return(-abs(ReadStat))
+            endif
+
+            if (Str1 = JSON_DEC_EL2) or (Str1 = JSON_DEC_EL4) then ; Comp = true ; endif
+
+        endwhile
+        JsonName[NumofKey] = sub_str(Str2, 1, index(Str2, JSON_DEC_EL3)-1)
+        JsonType[NumofKey] = sub_str(Str2, index(Str2, JSON_DEC_EL3)+1, str_len(Str2)-index(Str2, JSON_DEC_EL3))
+    endwhile
+    
+    --Reading 'value{********************}'
+    --
+    Str1 = '' ;  Str2 = '' 
+    while Str1 <> JSON_DEC_EL1 do
+        Str2 = Str2 + Str1
+
+        read Filevar(Str1::1)
+        ReadStat = io_status(Filevar)
+
+        if ReadStat <> CC_SUCCESS then 
+            clr_io_stat(Filevar) 
+            return(-abs(ReadStat))
+        endif
+    endwhile
+    
+    if Str2 <> JSON_DEC_VAL then ; return(-abs(SOCK_HED_DAT)) ; endif
+    
+    while Str1 <> JSON_DEC_EL2 do
+        Str1 = '' ;  Str2 = '' 
+        NumofValue = NumofValue + 1
+
+        if NumofValue > NumofKey then ; return(-abs(SOCK_NUM_DAT)) ; endif 
+
+        Comp = false
+        while not COMP do
+            Str2 = Str2 + Str1	
+
+            read Filevar(Str1::1)
+            ReadStat = io_status(Filevar)
+
+            if ReadStat <> CC_SUCCESS then 
+                clr_io_stat(Filevar) 
+                return(-abs(ReadStat))
+            endif
+
+            if (Str1 = JSON_DEC_EL2) or (Str1 = JSON_DEC_EL4) then ; Comp = true ; endif
+
+        endwhile
+
+        for I = 1 to NumofKey do
+
+            if sub_str(Str2, 1, index(Str2, JSON_DEC_EL3)-1) = JsonName[I] then
+
+                if JsonType[I] = JSON_INT_TYP then
+                    NumofInt = NumofInt + 1
+
+                    if NumofInt > array_len(IntData) then ; return(-abs(SOCK_NUM_DAT)) ; endif 
+
+                    cnv_str_int(sub_str(Str2, index(Str2, JSON_DEC_EL3) + 1, str_len(Str2) - index(Str2, JSON_DEC_EL3)), IntData[NumofInt])
+                else
+
+                    if JsonType[I] = JSON_FLT_TYP then
+                        NumofRel = NumofRel + 1
+
+                        if NumofRel > array_len(FloatData) then ; return(-abs(SOCK_NUM_DAT)) ; endif 
+
+                        cnv_str_real(sub_str(Str2, index(Str2, JSON_DEC_EL3) + 1, str_len(Str2) - index(Str2, JSON_DEC_EL3)), FloatData[NumofRel])
+                    else
+
+                        if JsonType[I] = JSON_STR_TYP then
+                            NumofStr = NumofStr + 1
+
+                            if NumofStr > array_len(stringData) then ; return(-abs(SOCK_NUM_DAT)) ; endif 
+
+                            stringData[NumofStr] = sub_str(Str2, index(Str2, JSON_DEC_EL3) + 1, str_len(Str2) - index(Str2, JSON_DEC_EL3))
+                        else
+
+                            if JsonType[I] = JSON_POS_TYP then
+                                NumofPos = NumofPos + 1
+
+                                if NumofPos > array_len(PosData) then ; return(-abs(SOCK_NUM_DAT)) ; endif 
+
+                                TmpStr = sub_str(Str2, index(Str2, JSON_DEC_EL3) + 1, str_len(Str2) - index(Str2, JSON_DEC_EL3)) + JSON_DEC_EL5
+                                for J = 1 to JSON_MAX_AXS do
+                                    cnv_str_real(sub_str(TmpStr, 1, index(TmpStr, JSON_DEC_EL5) - 1), PosData[NumofPos, J])
+                                    TmpStr = sub_str(TmpStr, index(TmpStr, JSON_DEC_EL5) + 1, str_len(TmpStr) - index(TmpStr, JSON_DEC_EL5))
+                                endfor
+
+                            else
+
+                                return(-abs(SOCK_TYP_DAT))
+
+                            endif
+
+                        endif
+
+                    endif
+                
+                endif
+
+            endif
+                
+        endfor
+
+    endwhile
+    
+    return(CC_SUCCESS)
+end sock_rjson_
+
+routine sock_rjson2_
+var
+    Str1            : string[1]
+    Str2            : string[127]
+    TmpStr          : string[127]
+    ReadStat        : integer
+    Comp            : boolean
+    JsonName		: array[JSON_MAX_DAT] of string[24]
+    JsonType		: array[JSON_MAX_DAT] of string[8]
+    NumofKey       	: integer
+    NumofValue      : integer
+    NumofInt		: integer
+    NumofRel		: integer
+    NumofStr		: integer
+    NumofPos        : integer
+    I				: integer
+    J				: integer
+
+begin
+
+    NumofKey = 0	
+    NumofValue = 0
+    NumofInt = 0
+    NumofRel = 0
+    NumofStr = 0
+    NumofPos = 0
+    
+    -- Reading 'key{********************}'
+    --
+    Str1 = '' ;  Str2 = '' 
+    while Str1 <> JSON_DEC_EL1 do
+
+        if Str1 <> JSON_DEC_NUL then ; Str2 = Str2 + Str1 ; endif
+
+        read Filevar(Str1::1)
+        ReadStat = io_status(Filevar)
+
+        if ReadStat <> CC_SUCCESS then 
+            ThisSock.Connected = ((ReadStat = 0) or (ReadStat = 282))
+            clr_io_stat(Filevar) 
+            return(-abs(ReadStat))
+        endif
+    endwhile
+    
+    if Str2 <> JSON_DEC_KEY then ; return(-abs(SOCK_HED_NAM)) ; endif
+    
+    while Str1 <> JSON_DEC_EL2 do
+        Str1 = '' ;  Str2 = '' 
+        NumofKey = NumofKey + 1	
+
+        if NumofKey > JSON_MAX_DAT then ; return(-abs(SOCK_NUM_DAT)) ; endif
+
+        Comp = false
+        while not Comp do
+            Str2 = Str2 + Str1
+
+            read Filevar(Str1::1)
+            ReadStat = io_status(Filevar)
+
+            if ReadStat <> CC_SUCCESS then 
+                ThisSock.Connected = ((ReadStat = 0) or (ReadStat = 282))
+                clr_io_stat(Filevar) 
+                return(-abs(ReadStat))
+            endif
+
+            if (Str1 = JSON_DEC_EL2) or (Str1 = JSON_DEC_EL4) then ; Comp = true ; endif
+
+        endwhile
+        JsonName[NumofKey] = sub_str(Str2, 1, index(Str2, JSON_DEC_EL3)-1)
+        JsonType[NumofKey] = sub_str(Str2, index(Str2, JSON_DEC_EL3)+1, str_len(Str2)-index(Str2, JSON_DEC_EL3))
+    endwhile
+    
+    --Reading 'value{********************}'
+    --
+    Str1 = '' ;  Str2 = '' 
+    while Str1 <> JSON_DEC_EL1 do
+        Str2 = Str2 + Str1
+
+        read Filevar(Str1::1)
+        ReadStat = io_status(Filevar)
+
+        if ReadStat <> CC_SUCCESS then 
+            ThisSock.Connected = ((ReadStat = 0) or (ReadStat = 282))
+            clr_io_stat(Filevar) 
+            return(-abs(ReadStat))
+        endif
+    endwhile
+    
+    if Str2 <> JSON_DEC_VAL then ; return(-abs(SOCK_HED_DAT)) ; endif
+    
+    while Str1 <> JSON_DEC_EL2 do
+        Str1 = '' ;  Str2 = '' 
+        NumofValue = NumofValue + 1
+
+        if NumofValue > NumofKey then ; return(-abs(SOCK_NUM_DAT)) ; endif 
+
+        Comp = false
+        while not COMP do
+            Str2 = Str2 + Str1	
+
+            read Filevar(Str1::1)
+            ReadStat = io_status(Filevar)
+
+            if ReadStat <> CC_SUCCESS then 
+                ThisSock.Connected = ((ReadStat = 0) or (ReadStat = 282))
+                clr_io_stat(Filevar) 
+                return(-abs(ReadStat))
+            endif
+
+            if (Str1 = JSON_DEC_EL2) or (Str1 = JSON_DEC_EL4) then ; Comp = true ; endif
+
+        endwhile
+
+        for I = 1 to NumofKey do
+
+            if sub_str(Str2, 1, index(Str2, JSON_DEC_EL3)-1) = JsonName[I] then
+
+                if JsonType[I] = JSON_INT_TYP then
+                    NumofInt = NumofInt + 1
+
+                    if NumofInt > array_len(IntData) then ; return(-abs(SOCK_NUM_DAT)) ; endif 
+
+                    cnv_str_int(sub_str(Str2, index(Str2, JSON_DEC_EL3) + 1, str_len(Str2) - index(Str2, JSON_DEC_EL3)), IntData[NumofInt])
+                else
+
+                    if JsonType[I] = JSON_FLT_TYP then
+                        NumofRel = NumofRel + 1
+
+                        if NumofRel > array_len(FloatData) then ; return(-abs(SOCK_NUM_DAT)) ; endif 
+
+                        cnv_str_real(sub_str(Str2, index(Str2, JSON_DEC_EL3) + 1, str_len(Str2) - index(Str2, JSON_DEC_EL3)), FloatData[NumofRel])
+                    else
+
+                        if JsonType[I] = JSON_STR_TYP then
+                            NumofStr = NumofStr + 1
+
+                            if NumofStr > array_len(stringData) then ; return(-abs(SOCK_NUM_DAT)) ; endif 
+
+                            stringData[NumofStr] = sub_str(Str2, index(Str2, JSON_DEC_EL3) + 1, str_len(Str2) - index(Str2, JSON_DEC_EL3))
+                        else
+
+                            if JsonType[I] = JSON_POS_TYP then
+                                NumofPos = NumofPos + 1
+
+                                if NumofPos > array_len(PosData) then ; return(-abs(SOCK_NUM_DAT)) ; endif 
+
+                                TmpStr = sub_str(Str2, index(Str2, JSON_DEC_EL3) + 1, str_len(Str2) - index(Str2, JSON_DEC_EL3)) + JSON_DEC_EL5
+                                for J = 1 to JSON_MAX_AXS do
+                                    cnv_str_real(sub_str(TmpStr, 1, index(TmpStr, JSON_DEC_EL5) - 1), PosData[NumofPos, J])
+                                    TmpStr = sub_str(TmpStr, index(TmpStr, JSON_DEC_EL5) + 1, str_len(TmpStr) - index(TmpStr, JSON_DEC_EL5))
+                                endfor
+
+                            else
+
+                                return(-abs(SOCK_TYP_DAT))
+
+                            endif
+
+                        endif
+
+                    endif
+                
+                endif
+
+            endif
+                
+        endfor
+
+    endwhile
+    
+    return(CC_SUCCESS)
+end sock_rjson2_
+
+routine tcp_connect_
+var
+
+    ConnStat                    : integer
+begin
+    ConnStat = csock_conn_(ThisSock)
+    if ConnStat <> CC_SUCCESS then ; return(-abs(ConnStat)) ; endif
+    file_init_(ThisFile, ThisSock)
+    return(file_ofd_(ThisFile, ThisSock))
+end tcp_connect_
+
+routine tcp_accept_
+var
+
+    ConnStat                    : integer
+begin
+    ConnStat = sock_accept_(ThisSock)
+    if ConnStat <> CC_SUCCESS then ; return(-abs(ConnStat)) ; endif
+    file_init_(ThisFile, ThisSock)
+    return(file_ofd_(ThisFile, ThisSock))
+end tcp_accept_
+
+routine tcp_close_
+begin
+    file_cfd_(ThisFile)
+    sock_dconn_(ThisSock)
+end tcp_close_
+
+routine udp_create_
+var
+    ConnStat                : integer
+    Tag			            : string[3]
+begin
+
+    if uninit(ThisUdp.AtrIntAct) then ; ThisUdp.AtrIntAct = true ; endif
+    if uninit(ThisUdp.AtrBinary) then ; ThisUdp.AtrBinary = false ; endif
+    if uninit(ThisUdp.AtrProbably) then ; ThisUdp.AtrProbably = true ; endif
+    if uninit(ThisUdp.AtrTimeout) then ; ThisUdp.AtrTimeout = 0 ; endif
+
+    if ThisUdp.AtrIntAct then ; set_file_atr(ThisFile, ATR_IA) ; endif
+    if ThisUdp.AtrBinary then ; set_file_atr(ThisFile, ATR_UF) ; endif
+    if not ThisUdp.AtrProbably then ; set_file_atr(ThisFile, ATR_REVERSE) ; endif
+    set_file_atr(ThisFile, ATR_READAHD, 2)
+    set_file_atr(ThisFile, ATR_TIMEOUT, ThisUdp.AtrTimeout)
+
+
+    -- 设置 protocol
+
+    set_sys_str_('$host' + sub_str(ThisUdp.PortTag, 1, 1) + '_cfg[' + sub_str(ThisUdp.PortTag, 2, 1) + '].$protocol', 'SM')
+
+    if not uninit(ThisUdp.Host) then  
+        -- 设置 strt_remote
+
+        set_sys_str_('$host' + sub_str(ThisUdp.PortTag, 1, 1) + '_cfg[' + sub_str(ThisUdp.PortTag, 2, 1) + '].$strt_remote', ThisUdp.Host)
+
+        -- 设置 remote
+
+        set_sys_str_('$host' + sub_str(ThisUdp.PortTag, 1, 1) + '_cfg[' + sub_str(ThisUdp.PortTag, 2, 1) + '].$remote', ThisUdp.Host)
+    endif
+
+    -- 设置 use_udp
+
+    set_sys_bol_('$host' + sub_str(ThisUdp.PortTag, 1, 1) + '_cfg[' + sub_str(ThisUdp.PortTag, 2, 1) + '].$use_udp', true)
+
+    -- 设置 oper
+
+    set_sys_int_('$host' + sub_str(ThisUdp.PortTag, 1, 1) + '_cfg[' + sub_str(ThisUdp.PortTag, 2, 1) + '].$oper', 2)
+
+    -- 设置 state
+
+    set_sys_int_('$host' + sub_str(ThisUdp.PortTag, 1, 1) + '_cfg[' + sub_str(ThisUdp.PortTag, 2, 1) + '].$state', 2)
+
+    -- 设置 server_port
+    set_sys_int_('$host' + sub_str(ThisUdp.PortTag, 1, 1) + '_cfg[' + sub_str(ThisUdp.PortTag, 2, 1) + '].$server_port', ThisUdp.Port)
+
+    mount_dev(ThisUdp.PortTag, ConnStat)
+    msg_disco(ThisUdp.PortTag, ConnStat)
+    msg_connect(ThisUdp.PortTag, ConnStat)
+    if ConnStat <> CC_SUCCESS then ; return(-abs(ConnStat)) ; endif 
+
+    Tag = ThisUdp.PortTag
+    open file ThisFile('RW', Tag)
+    ConnStat = io_status(ThisFile)
+    if ConnStat <> CC_SUCCESS then ; clr_io_stat(ThisFile) ; endif
+
+    return(-abs(ConnStat))
+
+end udp_create_
+
+routine udp_close_
+var
+    DconnStat           : integer
+begin
+
+    close file ThisFile
+    if io_status(ThisFile) <> CC_SUCCESS then ; clr_io_stat(ThisFile) ; close file ThisFile ; endif
+    msg_disco(ThisUdp.PortTag, DconnStat)
+    if DconnStat <> CC_SUCCESS then ; msg_disco(ThisUdp.PortTag, DconnStat) ; endif
+end udp_close_
+
+routine udp_bits_
+var
+    Size      : integer
+    GetStat   : integer
+begin
+    bytes_ahead(Filevar, Size, GetStat)
+    if GetStat <> CC_SUCCESS then ; ThisUdp.NByte = -abs(GetStat) ; else ; ThisUdp.NByte = Size ; endif
+    return(ThisUdp.NByte)
+end udp_bits_
+
+routine udp_sendto_
+var
+    WriteStat 		: integer
+begin
+    write Filevar(Msg)
+    WriteStat = io_status(Filevar)
+    if WriteStat <> CC_SUCCESS then ; clr_io_stat(Filevar) ; endif
+    return(-abs(WriteStat))
+end udp_sendto_
+
+routine udp_recvfm_
+var
+    ReadStat        : integer
+    AtTime          : integer
+    Len             : integer
+begin
+
+    Msg = ''
+    AtTime = get_sys_int_('$fast_clock')
+    repeat
+
+        Len = udp_bits_(Filevar, ThisUdp)
+        if (ThisUdp.AtrTimeout > 0) then  
+
+            if (get_sys_int_('$fast_clock') - AtTime) >= ThisUdp.AtrTimeout then ; return(-282) ; endif
+        endif
+        if (len = 1) or (len > 126) then 
+
+            udp_close_(ThisUdp, Filevar)
+            return(udp_create_(ThisUdp, Filevar))
+        endif
+        if Len = 0 then ; delay(1) ; endif
+    until (Len <> 0)
+
+    read Filevar(Msg::Len)
+    ReadStat = io_status(Filevar)
+    if ReadStat <> CC_SUCCESS then ; clr_io_stat(Filevar) ; return(-abs(ReadStat)) ; endif
+    return(str_len(Msg))
+end udp_recvfm_
+
+--routine tcp_sraw_()
+
+
+
+
+routine to_int_
+var
+    WriteStat				: integer
+begin
+
+    write Filevar(IntVal)
+    WriteStat = io_status(Filevar)
+    if WriteStat <> CC_SUCCESS then ; clr_io_stat(Filevar) ; endif
+    return(-abs(WriteStat))
+end to_int_
+
+routine to_byte_
+var
+    WriteStat				: integer
+begin
+
+    write Filevar(chr(ByteVal)::1)
+    WriteStat = io_status(Filevar)
+    if WriteStat <> CC_SUCCESS then ; clr_io_stat(Filevar) ; endif
+    return(-abs(WriteStat))
+end to_byte_
+
+routine to_short_
+var
+    WriteStat				: integer
+begin
+
+    write Filevar(word_2str_(ShortVal)::2)
+    WriteStat = io_status(Filevar)
+    if WriteStat <> CC_SUCCESS then ; clr_io_stat(Filevar) ; endif
+    return(-abs(WriteStat))
+end to_short_
+
+routine to_real_
+var
+    WriteStat				: integer
+begin
+
+    write Filevar(RelVal)
+    WriteStat = io_status(Filevar)
+    if WriteStat <> CC_SUCCESS then ; clr_io_stat(Filevar) ; endif
+    return(-abs(WriteStat))
+end to_real_
+
+routine to_str_
+var
+    WriteStat				: integer
+begin
+
+    write Filevar(StrVal::NumBits)
+    WriteStat = io_status(Filevar)
+    if WriteStat <> CC_SUCCESS then ; clr_io_stat(Filevar) ; endif
+    return(-abs(WriteStat))
+end to_str_
+
+routine to_struct_
+var
+    WriteStat				: integer
+begin
+
+    write Filevar(StructVal[1])
+    WriteStat = io_status(Filevar)
+    if WriteStat <> CC_SUCCESS then ; clr_io_stat(Filevar) ; endif
+    return(-abs(WriteStat))
+end to_struct_
+
+routine to_aryint_
+var
+    WriteStat				: integer
+    WriteLens               : integer
+    I                       : integer
+begin
+    if array_len(IntVal) < lens then WriteLens = array_len(IntVal); else WriteLens = lens; endif
+    for I = 1 to WriteLens do 
+
+        write Filevar(IntVal[I])
+        WriteStat = io_status(Filevar)
+        if WriteStat <> CC_SUCCESS then 
+            clr_io_stat(Filevar)
+        return(-abs(WriteStat))
+        endif
+    endfor
+
+    return(CC_SUCCESS)
+end to_aryint_
+
+routine to_arybyte_
+var
+    WriteStat				: integer
+    WriteLens               : integer
+    I                       : integer
+begin
+    if array_len(ByteVal) < lens then WriteLens = array_len(ByteVal); else WriteLens = lens; endif
+    for I = 1 to WriteLens do 
+
+        write Filevar(chr((ByteVal[I]))::1)
+        WriteStat = io_status(Filevar)
+        if WriteStat <> CC_SUCCESS then 
+            clr_io_stat(Filevar)
+        return(-abs(WriteStat))
+        endif
+    endfor
+
+    return(CC_SUCCESS)
+end to_arybyte_
+
+routine to_aryshort_
+var
+    WriteStat				: integer
+    WriteLens               : integer
+    I                       : integer
+begin
+    if array_len(ShortVal) < lens then WriteLens = array_len(ShortVal); else WriteLens = lens; endif
+    for I = 1 to WriteLens do 
+
+        write Filevar(word_2str_((ShortVal[I]))::2)
+        WriteStat = io_status(Filevar)
+        if WriteStat <> CC_SUCCESS then 
+            clr_io_stat(Filevar)
+        return(-abs(WriteStat))
+        endif
+    endfor
+
+    return(CC_SUCCESS)
+end to_aryshort_
+
+routine to_aryreal_
+var
+    WriteStat				: integer
+    WriteLens               : integer
+    I                       : integer
+begin
+    if array_len(RealVal) < lens then WriteLens = array_len(RealVal); else WriteLens = lens; endif
+    for I = 1 to WriteLens do 
+
+        write Filevar(RealVal[I])
+        WriteStat = io_status(Filevar)
+        if WriteStat <> CC_SUCCESS then 
+            clr_io_stat(Filevar)
+        return(-abs(WriteStat))
+        endif
+    endfor
+
+    return(CC_SUCCESS)
+end to_aryreal_
+
+routine to_buffer_
+var
+    WriteStat				: integer
+begin
+
+    write Filevar(cr)
+    WriteStat = io_status(Filevar)
+    if WriteStat <> CC_SUCCESS then ; clr_io_stat(Filevar) ; endif
+    return(-abs(WriteStat))
+end to_buffer_
+
+routine from_int_
+var
+    ReadStat				: integer
+begin
+
+    read Filevar(IntVal)
+    ReadStat = io_status(Filevar)
+    if ReadStat <> CC_SUCCESS then ; clr_io_stat(Filevar) ; endif
+    return(-abs(ReadStat))
+end from_int_
+
+routine from_byte_
+var
+    ReadStat				: integer
+    ByteStr					: string[1]
+begin
+
+    read Filevar(ByteStr::1)
+    ReadStat = io_status(Filevar)
+    if ReadStat <> CC_SUCCESS then 
+        clr_io_stat(Filevar) 
+    else
+        ByteVal = ord(ByteStr, 1)
+    endif
+    return(-abs(ReadStat))
+end from_byte_
+
+routine from_short_
+var
+    ReadStat				: integer
+    ByteStr1				: string[1]
+    ByteStr2				: string[1]
+begin
+
+    read Filevar(ByteStr1::1, ByteStr2::1)
+    ReadStat = io_status(Filevar)
+    if ReadStat <> CC_SUCCESS then 
+        clr_io_stat(Filevar) 
+    else
+        ShortVal = str_2word_(ByteStr1 + ByteStr2)
+    endif
+    return(-abs(ReadStat))
+end from_short_
+
+routine from_real_
+var
+    ReadStat				: integer
+begin
+
+    read Filevar(RelVal)
+    ReadStat = io_status(Filevar)
+    if ReadStat <> CC_SUCCESS then ; clr_io_stat(Filevar) ; endif
+    return(-abs(ReadStat))
+end from_real_
+
+routine from_str_
+var
+    ReadStat				: integer
+begin
+
+    read Filevar(StrVal::NumBits)
+    ReadStat = io_status(Filevar)
+    if ReadStat <> CC_SUCCESS then ; clr_io_stat(Filevar) ; endif
+    return(-abs(ReadStat))
+end from_str_
+
+routine from_struct_
+var
+    ReadStat				: integer
+begin
+
+    if path_len(StructVal) < 1 then
+        append_node(StructVal, ReadStat)
+        if ReadStat <> CC_SUCCESS then ; return(-abs(ReadStat)) ; endif
+    endif
+    read Filevar(StructVal[1])
+    ReadStat = io_status(Filevar)
+    if ReadStat <> CC_SUCCESS then ; clr_io_stat(Filevar) ; endif
+    return(-abs(ReadStat))
+end from_struct_
+
+routine fm_aryint_
+var
+    ReadStat				: integer
+    FromLen                 : integer
+    I                       : integer
+begin
+    if array_len(IntVal) < lens then FromLen = array_len(IntVal); else FromLen = lens; endif
+    for I = 1 to FromLen do
+        read Filevar(IntVal[I])
+        ReadStat = io_status(Filevar)
+        if ReadStat <> CC_SUCCESS then 
+            clr_io_stat(Filevar) 
+            return(-abs(ReadStat))
+        endif
+    endfor
+    return(CC_SUCCESS)
+end fm_aryint_
+
+routine fm_arybyte_
+var
+    ReadStat				: integer
+    ByteStr					: string[16]
+    FromLen                 : integer
+    I                       : integer
+begin
+    if array_len(ByteVal) < lens then FromLen = array_len(ByteVal); else FromLen = lens; endif
+    for I = 1 to FromLen do
+        read Filevar(ByteStr::1)
+        ReadStat = io_status(Filevar)
+        if ReadStat <> CC_SUCCESS then 
+            clr_io_stat(Filevar) 
+            return(-abs(ReadStat))
+        else
+            ByteVal[I] = ord(ByteStr, 1)
+        endif
+    endfor
+    return(CC_SUCCESS)
+end fm_arybyte_
+
+routine fm_aryshort_
+var
+    ReadStat				: integer
+    ByteStr1				: string[1]
+    ByteStr2				: string[1]
+    FromLen                 : integer
+    I                       : integer
+begin
+    if array_len(ShortVal) < lens then FromLen = array_len(ShortVal); else FromLen = lens; endif
+    for I = 1 to FromLen do
+        read Filevar(ByteStr1::1, ByteStr2::1)
+        ReadStat = io_status(Filevar)
+        if ReadStat <> CC_SUCCESS then 
+            clr_io_stat(Filevar) 
+            return(-abs(ReadStat))
+        else
+            ShortVal[I] = str_2word_(ByteStr1 + ByteStr2)
+        endif
+    endfor
+    return(CC_SUCCESS)
+end fm_aryshort_
+
+routine fm_aryreal_
+var
+    ReadStat				: integer
+    ByteStr					: string[16]
+    FromLen                 : integer
+    I                       : integer
+begin
+    if array_len(RealVal) < lens then FromLen = array_len(RealVal); else FromLen = lens; endif
+    for I = 1 to FromLen do
+        read Filevar(RealVal[I])
+        ReadStat = io_status(Filevar)
+        if ReadStat <> CC_SUCCESS then 
+            clr_io_stat(Filevar) 
+            return(-abs(ReadStat))
+        endif
+    endfor
+    return(CC_SUCCESS)
+end fm_aryreal_
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,3 @@
+;FOLD SbtComm128 Init
+comm128_submit_init_()
+;ENDFOLD (SbtComm128 Init)

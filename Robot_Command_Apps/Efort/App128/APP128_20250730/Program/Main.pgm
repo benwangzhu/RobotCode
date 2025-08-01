@@ -1,0 +1,5 @@
+CALL: comm128_comm_init_();
+WAIT(PcTellId = 0);
+WHILE true DO
+	CALL: sbt_comm128_mtion();
+END_WHILE;

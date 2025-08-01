@@ -1,0 +1,602 @@
+&access RP
+&comment Lib Plc Iface 240227
+def lib_plc_if ()
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: lib_plc_if.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 08 - 17
+;   Modification Data    ==   2025 - 03 - 02
+;
+; Author: speedbot
+;
+; Version: 1.1
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+; 2024 - 06 - 06 ++ echo_channel_() 
+
+; 2024 - 06 - 06 ++ echo_job_info_() 
+
+; 2024 - 06 - 06 ++ servo01_ctrl_() 
+
+; 2024 - 06 - 06 ++ mag_tool_ctrl_() 
+
+; 2024 - 06 - 06 ++ mag_tool_forc_ctrl_() 
+
+; 2024 - 06 - 06 ++ zone_ctrl_() 
+
+; 2024 - 06 - 06 ++ home01_io_() 
+
+; 2024 - 06 - 06 ++ path_segment_() 
+
+; 2024 - 06 - 06 ++ req_to_continue_() 
+
+; 2024 - 06 - 06 ++ check_home01_() 
+
+; 2024 - 06 - 06 ++ mov_to_home01_() 
+end
+
+;FOLD ECHO CHANNEL
+global def echo_channel_(Channecll : in, Channecl2 : in, Channecl3 : in, Channecl4 : in)
+    decl char Channecll
+    decl char Channecl2
+    decl char Channecl3
+    decl char Channecl4
+
+    if varstate("Channecll") <> #initialized then 
+        Channecll = 0
+    endif 
+    if varstate("Channecl2") <> #initialized then 
+        Channecl2 = 0
+    endif 
+    if varstate("Channecl3") <> #initialized then 
+        Channecl3 = 0
+    endif 
+    if varstate("Channecl4") <> #initialized then 
+        Channecl4 = 0
+    endif 
+
+    continue
+    Go007Channel01 = Channecll
+    continue
+    Go008Channel02 = Channecl2
+    continue
+    Go009Channel03 = Channecl3
+    continue
+    Go010Channel04 = Channecl4
+end
+;ENDFOLD
+
+;FOLD ECHO JOB INFO
+global def echo_job_info_(Info1 : in, Info2 : in, Info3 : in, Info4 : in)
+    decl char Info1
+    decl char Info2
+    decl char Info3
+    decl char Info4
+
+    if varstate("Info1") <> #initialized then 
+        Info1 = 0
+    endif 
+    if varstate("Info2") <> #initialized then 
+        Info2 = 0
+    endif 
+    if varstate("Info3") <> #initialized then 
+        Info3 = 0
+    endif 
+    if varstate("Info4") <> #initialized then 
+        Info4 = 0
+    endif 
+
+    continue
+    Go003InfoEho01 = Info1
+    continue
+    Go004InfoEho02 = Info2
+    continue
+    Go005InfoEho03 = Info3
+    continue
+    Go006InfoEho04 = Info4
+end
+;ENDFOLD
+
+;FOLD SERVO01 CONTROL
+global def servo01_ctrl_(CtrlMode : in, Dist : in)
+    decl servo_ctrl_mode_ CtrlMode
+    decl int Dist
+    decl int TimerIndex
+    
+    if varstate("Dist") <> #initialized then 
+        Dist = 0
+    endif 
+
+    switch (CtrlMode)
+    case #MOVING
+
+        continue
+        Go011AxisPos01 = Dist
+
+        continue
+        pulse(Do057ExAxsCtrl01, true, 0.5)
+    case #WAITING
+
+        ; Code added on 2025.03.02
+        ; Prevent pre-advance stop under normal conditions
+        continue
+        if ((Di057ExAxsEcho01) and (abs(Go011AxisPos01 - Gi007AxisPos01) <= 2)) then
+            return
+        endif
+        ;
+        
+        continue
+        while (not Di057ExAxsEcho01) or (abs(Go011AxisPos01 - Gi007AxisPos01) > 2)
+           
+            continue
+            TimerIndex = $rob_timer
+            continue
+            wait for (Di057ExAxsEcho01 or (($rob_timer - TimerIndex) > 3000))
+
+            if not Di057ExAxsEcho01 then  
+
+                continue
+                pulse(Do057ExAxsCtrl01, true, 0.5)
+            endif
+        endwhile
+    endswitch
+end
+;ENDFOLD
+
+;FOLD MAG TOOL CONTROL
+global def mag_tool_ctrl_(CtrlMode : in, Timeout : in, SleepTime : in, Success : out)
+    decl tool_ctrl_mode_ CtrlMode
+    decl int SleepTime
+    decl int Timeout
+    decl bool Success
+    decl int TimerIndex
+
+    wait sec 0.0
+    continue
+    TimerIndex = $rob_timer
+
+    switch (CtrlMode)
+    case #ON, #OFF
+
+        Do045ToolCtrl01 = (CtrlMode == #ON)
+        Do046ToolCtrl02 = (CtrlMode == #OFF)   
+        
+        Success = true
+    
+    case #WON, #WOFF
+
+        Do045ToolCtrl01 = (CtrlMode == #WON)
+        Do046ToolCtrl02 = (CtrlMode == #WOFF)
+        
+        if varstate("Timeout") <> #initialized then 
+            Timeout = 0
+        endif 
+
+        if Timeout > 0 then  
+            wait for ((Di045ToolEcho01 == (CtrlMode == #WON)) and (Di046ToolEcho02 == (CtrlMode == #WOFF))) or (($rob_timer - TimerIndex) > Timeout)
+        else
+            wait for ((Di045ToolEcho01 == (CtrlMode == #WON)) and (Di046ToolEcho02 == (CtrlMode == #WOFF)))
+        endif
+
+        Success = ((Di045ToolEcho01 == (CtrlMode == #WON)) and (Di046ToolEcho02 == (CtrlMode == #WOFF)))
+        Do045ToolCtrl01 = false
+        Do046ToolCtrl02 = false
+    endswitch
+
+    if varstate("SleepTime") == #initialized then 
+            
+        wait sec (SleepTime / 1000.0)
+    endif
+end
+;ENDFOLD
+
+;FOLD MAG TOOL FORCE CONTROL
+global def mag_tool_forc_ctrl_(CtrlMode : in, SleepTime : in)
+    decl tool_ctrl_mode_ CtrlMode
+    decl int SleepTime
+
+    wait sec 0.0
+
+    switch (CtrlMode)
+    case #ON, #WON
+        
+        PULSE(Do047ToolCtrl03, true, 1)
+        Do048ToolCtrl04 = false 
+        
+
+    case #OFF, #WOFF
+
+        PULSE(Do048ToolCtrl04, true, 1)
+        Do047ToolCtrl03 = false 
+        
+    endswitch
+
+    if varstate("SleepTime") == #initialized then 
+            
+        wait sec (SleepTime / 1000.0)
+    endif
+end
+;ENDFOLD
+
+;FOLD ZONE CONTROL
+global def zone_ctrl_(CtrlMode : in, ZoneNo : in)
+    decl zone_mode_t CtrlMode
+    decl int ZoneNo
+    
+    wait sec 0.0
+    switch (ZoneNo)
+    case 1
+        if CtrlMode == #I_EXIT then  
+            
+            continue
+            Do021ReqZone01 = true
+            continue
+            Do241InZone01 = false
+        else
+            
+            Do021ReqZone01 = false
+            continue
+            wait for Di021ZoneReady01
+            continue
+            Do241InZone01 = true
+        endif
+    case 2
+
+        if CtrlMode == #I_EXIT then  
+            
+            continue
+            Do022ReqZone02 = true
+            continue
+            Do242InZone02 = false
+        else
+            
+            Do022ReqZone02 = false
+            continue
+            wait for Di022ZoneReady02
+            continue
+            Do242InZone02 = true
+        endif
+    case 3
+
+        if CtrlMode == #I_EXIT then  
+            
+            continue
+            Do023ReqZone03 = true
+            continue
+            Do243InZone03 = false
+        else
+            
+            Do023ReqZone03 = false
+            continue
+            wait for Di023ZoneReady03
+            continue
+            Do243InZone03 = true
+        endif
+    case 4
+
+        if CtrlMode == #I_EXIT then  
+            
+            continue
+            Do024ReqZone04 = true
+            continue
+            Do244InZone04 = false
+        else
+            
+            Do024ReqZone04 = false
+            continue
+            wait for Di024ZoneReady04
+            continue
+            Do244InZone04 = true
+        endif
+    case 5
+
+        if CtrlMode == #I_EXIT then  
+            
+            continue
+            Do025ReqZone05 = true
+            continue
+            Do245InZone05 = false
+        else
+            
+            Do025ReqZone05 = false
+            continue
+            wait for Di025ZoneReady05
+            continue
+            Do245InZone05 = true
+        endif
+    case 6
+
+        if CtrlMode == #I_EXIT then  
+            
+            continue
+            Do026ReqZone06 = true
+            continue
+            Do246InZone06 = false
+        else
+            
+            Do026ReqZone06 = false
+            continue
+            wait for Di026ZoneReady06
+            continue
+            Do246InZone06 = true
+        endif
+    case 7
+
+        if CtrlMode == #I_EXIT then  
+            
+            continue
+            Do027ReqZone07 = true
+            continue
+            Do247InZone07 = false
+        else
+            
+            wait sec 0.0
+            Do027ReqZone07 = false
+            continue
+            wait for Di027ZoneReady07
+            continue
+            Do247InZone07 = true
+        endif
+    case 8
+
+        if CtrlMode == #I_EXIT then  
+            
+            continue
+            Do028ReqZone08 = true
+            continue
+            Do248InZone08 = false
+        else
+            
+            Do028ReqZone08 = false
+            continue
+            wait for Di028ZoneReady08
+            continue
+            Do248InZone08 = true
+        endif
+    case 9
+
+        if CtrlMode == #I_EXIT then  
+            
+            continue
+            Do029ReqZone09 = true
+            continue
+            Do249InZone09 = false
+        else
+            
+            Do029ReqZone09 = false
+            continue
+            wait for Di029ZoneReady09
+            continue
+            Do249InZone09 = true
+        endif
+    case 10
+
+        if CtrlMode == #I_EXIT then  
+            
+            continue
+            Do030ReqZone10 = true
+            continue
+            Do250InZone10 = false
+        else
+            
+            Do030ReqZone10 = false
+            continue
+            wait for Di030ZoneReady10
+            continue
+            Do250InZone10 = true
+        endif
+    case 11
+
+        if CtrlMode == #I_EXIT then  
+            
+            continue
+            Do031ReqZone11 = true
+            continue
+            Do251InZone11 = false
+        else
+            
+            Do031ReqZone11 = false
+            continue
+            wait for Di031ZoneReady11
+            continue
+            Do251InZone11 = true
+        endif
+    case 12
+
+        if CtrlMode == #I_EXIT then  
+            
+            continue
+            Do032ReqZone12 = true
+            continue
+            Do252InZone12 = false
+        else
+            
+            Do032ReqZone12 = false
+            continue
+            wait for Di032ZoneReady12
+            continue
+            Do252InZone12 = true
+        endif
+    default
+
+        err_write_("zone_ctrl", "Zone No Error !!!")
+        halt      
+    endswitch
+end
+;ENDFOLD
+
+;FOLD HOME01 I/O
+global def home01_io_()
+
+    wait for $in_home
+
+    Go001ProgNo = 0
+
+    Go002PathSegment = 0
+    Do041EndOfSeg = false
+
+    Do021ReqZone01 = true
+    Do022ReqZone02 = true
+    Do023ReqZone03 = true
+    Do024ReqZone04 = true
+    Do025ReqZone05 = true
+    Do026ReqZone06 = true
+    Do027ReqZone07 = true
+    Do028ReqZone08 = true
+    Do029ReqZone09 = true
+    Do030ReqZone10 = true
+    Do031ReqZone11 = true
+    Do032ReqZone12 = true
+
+    Do241InZone01 = false
+    Do242InZone02 = false
+    Do243InZone03 = false
+    Do244InZone04 = false
+    Do245InZone05 = false
+    Do246InZone06 = false
+    Do247InZone07 = false
+    Do248InZone08 = false
+    Do249InZone09 = false
+    Do250InZone10 = false
+    Do251InZone11 = false
+    Do252InZone12 = false
+    
+end
+;ENDFOLD
+
+;FOLD PATH SEGMENT
+global def path_segment_(Segment : in)
+    decl char Segment
+
+    wait sec 0.0
+    continue
+    Go002PathSegment = Segment
+    continue 
+    Do041EndOfSeg = false
+end
+;ENDFOLD
+
+;FOLD REQUEST TO CONTINUE
+global def req_to_continue_()
+
+    wait sec 0.0
+    continue 
+    Do041EndOfSeg = false
+    continue
+    wait for Di041EndOfSeg == false
+    continue 
+    Do041EndOfSeg = true
+    continue
+    wait for Di041EndOfSeg
+    ContDicitionCode = Gi002DicisionCode
+end
+;ENDFOLD
+
+;FOLD CHECK HOME01
+global def check_home01_()
+    decl e6axis JointPos
+    decl bool AtHome
+
+    AtHome = true
+    JointPos = $axis_act_meas
+
+    if (abs(JointPos.A1 - XHOME.A1) > 1) then
+
+        AtHome = false
+    endif
+    if (abs(JointPos.A2 - XHOME.A2) > 1) then
+
+        AtHome = false
+    endif
+    if (abs(JointPos.A3 - XHOME.A3) > 1) then
+
+        AtHome = false
+    endif
+    if (abs(JointPos.A4 - XHOME.A4) > 1) then
+
+        AtHome = false
+    endif
+    if (abs(JointPos.A5 - XHOME.A5) > 1) then
+
+        AtHome = false
+    endif
+    if (abs(JointPos.A6 - XHOME.A6) > 1) then
+
+        AtHome = false
+    endif
+    if (abs(JointPos.E1 - XHOME.E1) > 1) then
+
+        AtHome = false
+    endif
+    if (abs(JointPos.E2 - XHOME.E2) > 1) then
+
+        AtHome = false
+    endif
+    if (abs(JointPos.E3 - XHOME.E3) > 1) then
+
+        AtHome = false
+    endif
+    if (abs(JointPos.E4 - XHOME.E4) > 1) then
+
+        AtHome = false
+    endif
+    if (abs(JointPos.E5 - XHOME.E5) > 1) then
+
+        AtHome = false
+    endif
+    if (abs(JointPos.E6 - XHOME.E6) > 1) then
+
+        AtHome = false
+    endif
+
+    if (AtHome == false) then
+        err_write_("check_home01_", "Robot Not At HOME01")
+        halt      
+    endif
+
+    wait for $in_home
+end
+;ENDFOLD
+
+;FOLD MOVE TO HOME01
+global def mov_to_home01_()
+
+    $h_pos = XHOME
+    smove_abs_j_(XHOME, 100.0, 0, 0, 0, 100, 0)
+    home01_io_()
+end
+;ENDFOLD
+

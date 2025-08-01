@@ -1,0 +1,250 @@
+(*
+T: RESOURCE Resource
+FW: NO
+CI#: 0
+QSL: 40
+QVE: 40
+QVPC: 40
+QPar: 0
+QFBI: 0
+*)
+@V 1 6 0
+sIOshmManage	1	VAR_GLOBAL	@TYP:1149
+%MB 3.12000000		     
+
+;
+
+@V 1 7 0
+PDO_SHM	2	VAR_GLOBAL	@TYP:1086
+%MB 3.10000000		     
+
+;
+
+@V 1 8 0
+EipDataShm	3	VAR_GLOBAL	@TYP:1099
+%MB 3.13050000		     
+
+;
+
+@V 1 9 0
+gMoveFunction	4	VAR_GLOBAL	@TYP:1
+		     
+@TYP:1# 0
+;
+
+@V 1 10 0
+gSafetyDoorSingal	5	VAR_GLOBAL	@TYP:1
+		     
+@TYP:1# 0
+;
+
+@V 1 11 0
+gJogMotionEnable	6	VAR_GLOBAL	@TYP:1
+		     
+@TYP:1# 0
+;
+
+@V 1 12 0
+gPLCPauseSingal	7	VAR_GLOBAL	@TYP:1
+		     
+@TYP:1# 0
+;
+
+@V 1 13 0
+gPLCStopSingal	8	VAR_GLOBAL	@TYP:1
+		     
+@TYP:1# 0
+;
+
+@V 1 21 0
+PLC_SYS_TICK_CNT	9	VAR_GLOBAL	@TYP:8
+%MD 1.0		     
+
+;
+
+@V 1 22 0
+PLC_TASK_DEFINED	10	VAR_GLOBAL	@TYP:3
+%MW 1.4		     
+
+;
+
+@V 1 23 0
+PLCMODE_ON	11	VAR_GLOBAL	@TYP:1
+%MX 1.2016.0		     
+
+;
+
+@V 1 24 0
+PLCMODE_LOADING	12	VAR_GLOBAL	@TYP:1
+%MX 1.2017.0		     
+
+;
+
+@V 1 25 0
+PLCMODE_STOP	13	VAR_GLOBAL	@TYP:1
+%MX 1.6.0		     
+
+;
+
+@V 1 26 0
+PLCMODE_RUN	14	VAR_GLOBAL	@TYP:1
+%MX 1.7.0		     
+
+;
+
+@V 1 27 0
+PLCMODE_HALT	15	VAR_GLOBAL	@TYP:1
+%MX 1.8.0		     
+
+;
+
+@V 1 28 0
+PLC_TICKS_PER_SEC	16	VAR_GLOBAL	@TYP:7
+%MW 1.2000		     
+
+;
+
+@V 1 29 0
+PLC_MAX_ERRORS	17	VAR_GLOBAL	@TYP:8
+%MD 1.2004		     
+
+;
+
+@V 1 30 0
+PLC_ERRORS	18	VAR_GLOBAL	@TYP:8
+%MD 1.2008		     
+
+;
+
+@V 1 31 0
+PLC_TASK_AVAILABLE	19	VAR_GLOBAL	@TYP:3
+%MW 1.2012		     
+
+;
+
+@V 1 32 0
+PLC_SYSTASK_AVAILABLE	20	VAR_GLOBAL	@TYP:3
+%MW 1.2016		     
+
+;
+
+@V 1 33 0
+PLCDEBUG_FORCE	21	VAR_GLOBAL	@TYP:1
+%MX 1.2018.0		     
+
+;
+
+@V 1 34 0
+PLCDEBUG_BPSET	22	VAR_GLOBAL	@TYP:1
+%MX 1.2019.0		     
+
+;
+
+@V 1 35 0
+PLCDEBUG_POWERFLOW	23	VAR_GLOBAL	@TYP:1
+%MX 1.2020.0		     
+
+;
+
+@V 1 43 0
+PLC_T	24	VAR_GLOBAL	@TYP:3
+		     
+@TYP:3# 00#0001
+;
+
+@V 1 44 0
+KERNEL_T	25	VAR_GLOBAL	@TYP:3
+		     
+@TYP:3# 00#0004
+;
+
+@V 1 45 0
+USE_ESTUN_IO	26	VAR_GLOBAL	@TYP:1
+		     
+@TYP:1# 1
+;
+
+@V 1 46 0
+MAX_MC_AXIS_NUM	27	VAR_GLOBAL	@TYP:6
+		     
+@TYP:6# 00#0c
+;
+
+@V 1 47 0
+i	28	VAR_GLOBAL	@TYP:3
+		     
+
+;
+
+@V 1 55 0
+PHY_IO_BUFFER	29	VAR_GLOBAL	@TYP:1128
+		     
+
+;
+
+@V 1 56 0
+SIM_IO_BUFFER	30	VAR_GLOBAL	@TYP:1133
+		     
+
+;
+
+@V 1 57 0
+SIM_IO_BYTE_BUFF	31	VAR_GLOBAL	@TYP:1152
+		     
+
+;
+
+@V 1 65 0
+PLC_BOOL_COUNT	32	VAR_GLOBAL	@TYP:3
+		     
+
+;
+
+@V 1 66 0
+PLC_DINT_COUNT	33	VAR_GLOBAL	@TYP:3
+		     
+
+;
+
+@V 1 67 0
+PLC_INT_COUNT	34	VAR_GLOBAL	@TYP:3
+		     
+
+;
+
+@V 1 68 0
+PLC_REAL_COUNT	35	VAR_GLOBAL	@TYP:3
+		     
+
+;
+
+@V 1 69 0
+PLC_VAR_BOOL	36	VAR_GLOBAL	@TYP:1113
+		     
+
+;
+
+@V 1 70 0
+PLC_VAR_DINT	37	VAR_GLOBAL	@TYP:1116
+		     
+
+;
+
+@V 1 71 0
+PLC_VAR_INT	38	VAR_GLOBAL	@TYP:1115
+		     
+
+;
+
+@V 1 72 0
+PLC_VAR_REAL	39	VAR_GLOBAL	@TYP:1114
+		     
+
+;
+
+@V 1 73 0
+ModbusData	40	VAR_GLOBAL	@TYP:1157
+		     
+
+;
+

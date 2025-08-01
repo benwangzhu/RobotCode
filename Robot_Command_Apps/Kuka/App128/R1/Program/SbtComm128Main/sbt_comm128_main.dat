@@ -1,0 +1,33 @@
+&ACCESS RVO
+defdat sbt_comm128_main
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; file Name: sbt_comm128_main.dat
+;
+; Description:
+;   Language             ==   Karel for KUKA ROBOT
+;   Date                 ==   2022 - 02 - 26
+;   Modification Data    ==   2022 - 02 - 26
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+
+ext bas (bas_command : in, real : in)
+ext sbt_comm128_state()
+ext sbt_comm128_motion()
+
+decl int Status
+decl int J
+decl int NewTrajeSize
+decl trajectory_pt_t NewTrajes[1000]
+
+decl int CopyMoveId = 0
+
+
+decl int DefineTool = 0
+decl int DefineBase = 0
+enddat

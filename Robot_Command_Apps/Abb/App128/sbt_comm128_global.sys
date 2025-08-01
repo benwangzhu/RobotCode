@@ -1,0 +1,38 @@
+module sbt_comm128_global
+!***********************************************************
+!
+! Copyright 2018 - 2024 speedbot All Rights reserved.
+!
+! file Name: sbt_comm128_global
+! 
+!  Description:
+!    Language             ==   Karel for ABB ROBOT
+!    Date                 ==   2024 - 03 - 05
+!    Modification Data    ==   2024 - 03 - 05
+! 
+!  Author: speedbot
+! 
+!  Version: 3.0
+! ***********************************************************
+!
+
+pers string CtrlIpAddr          := "192.168.1.103";
+pers bool OnlyCollect           := true; 
+pers byte NumOfRobAxis          := 6;
+pers byte NumOfRotAxis          := 0;
+pers byte IsVirRobId            := 1;
+pers string OutMapName{8}       := ["", "", "", "", "", "", "", ""];
+pers string InMapName{8}        := ["", "", "", "", "", "", "", ""];
+pers tooldata DriveTool         := [true, [ [0, 0, 0], [1, 0, 0 ,0] ], [0.001,
+                                          [0, 0, 0.001], [1, 0, 0, 0], 0, 0, 0]];
+
+pers num GlbMoveId              := 0;
+pers bool TrajectoryLock        := false;
+pers bool NewTrajectory         := false;
+pers trajectory_pt_t GlbTrajectorys{MAX_TRAJ_LENGTH};
+pers num GlbTrajectorySize      := 0;
+pers bool MtnRestart            := false;
+pers bool StatRestart           := false;
+pers bool StopMoveing           := false;
+
+endmodule

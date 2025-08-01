@@ -1,0 +1,35 @@
+&access RP
+&comment Mixsort
+defdat MixSort 
+;***********************************************************
+;
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+;
+; file Name: MixSort
+;
+; Description:
+;   Language             ==   KRL for KUKA ROBOT
+;   Date                 ==   2024 - 09 - 21
+;   Modification Data    ==   2022 - 09 - 21
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+
+decl int MixStatus = 0
+decl agt_data_t CurAgtData
+decl e6pos RefPictPos = {x 0, y 0, z 0, a 0, b 0, c 0}
+decl e6pos CartPos1 = {x 0, y 0, z 0, a 0, b 0, c 0}
+decl e6pos CartPos2 = {x 0, y 0, z 0, a 0, b 0, c 0}
+ 
+
+decl state_t State
+DECL modus_t mode
+decl int Offset = 0
+decl int j, k
+decl char Msg[128]
+
+const bool DEBUG = TRUE
+
+enddat

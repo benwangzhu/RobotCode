@@ -1,0 +1,55 @@
+&ACCESS RVP
+&REL 8
+&COMMENT Main02
+&PARAM DISKPATH = KRC:\R1\Program\PlcDemo
+DEF  DEMO_MAIN2 ( )
+;********************************
+
+;CREATOR : SPEEDBOT
+;DATE    : 2024-09-23
+;PROGRAM : DEMO_PNS0002
+
+;********************************
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+;Main program for picking and palletizing from multiple positions
+;Echo Program No.
+;FOLD PLC.EchoProgNo IN Program No.: 2 ;%{PE}
+Go001ProgNo = 2
+;ENDFOLD
+;Wait for the robot to be at HOME
+
+;Robot goes to the waiting position
+;FOLD PLC.Pounce ;%{PE}
+pounce_()
+;ENDFOLD
+
+;Pick 
+DEMO_PICKUP01()
+
+;Placement
+DEMO_DROPOFF01()
+
+;All completed
+;FOLD PLC.PathSegment IN Segment Nr: 255 ;%{PE}
+path_segment_(255)
+;ENDFOLD
+;FOLD PLC.RequestToContinue ;%{PE}
+req_to_continue_()
+;ENDFOLD
+
+;Go to Home
+;FOLD PLC.MoveToHome ;%{PE}
+move_to_home_()
+;ENDFOLD
+END

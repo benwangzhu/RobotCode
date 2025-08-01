@@ -1,0 +1,167 @@
+{* -*-coding:chinese-gbk-*-}
+{Basic}
+
+
+[PROGRAM]
+NAME = "SBT_GGFRAME"
+ARGUMENT = '3'
+[ARGUMENT]
+I01 = " Pr[]"  	            : (1~32767) : '0'
+I02 = " Ref Uf[]"  	        : (0~255) : '0'
+I03 = " Offs Uf[]"  	    : (0~255) : '0'
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBT_PR2VR"
+ARGUMENT = '2'
+[ARGUMENT]
+I01 = " Pr[]"  	        : (1~32767) : '0'
+I02 = " Vr[]"  	        : (0~255) : '0'
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBT_CHKPOS"
+ARGUMENT = '6'
+[ARGUMENT]
+I01 = " Pr[]"  	            : (1~32767) : '0'
+I02 = " Ofs Uf[]"  	        : (0~255) : '0'
+I03 = " Chk Uf[]"  	        : (0~255) : '0'
+I04 = " Max Pr[]"  	        : (1~32767) : '0'
+I05 = " Min Pr[]"  	        : (1~32767) : '0'
+I06 = " Flg[]"  	        : (1~32767) : '0'
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBT_TRPR2PR"
+ARGUMENT = '4'
+[ARGUMENT]
+I01 = " Ofs Pr[]"  	            : (1~32767) : '0'
+I02 = " Ofs Uf[]"  	        : (0~255) : '0'
+I03 = " New Uf[]"  	        : (0~255) : '0'
+I04 = " New Pr[]"  	            : (1~32767) : '0'
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBT_COMM000"
+ARGUMENT = '2'
+[ARGUMENT]
+V01 = "Calib Start"        	: '1',
+	  "Calib Pict" 	    	: '2', 
+	  "Calib End" 	    	: '3'
+I02 = " Calib Traje No."  	: (1~255) : '0'
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBT_COMM002"
+[ARGUMENT]
+V01 = "CMD_VPARM"           : '-1',
+	  "CMD_TRIG" 	        : '1',
+      "CMD_SCAN START"         : '2', 
+      "CMD_SCAN STOP"         : '3',
+      "CMD_RESULT"          : '101'
+[V01, '-1']
+    I02 = " PID"  : (0~500) : '0'
+    I03 = " VIN R[]"  : (0~500) : '0' 
+[V01, '1']
+    I02 = " PICTURE ID"  : (0~255) : '0'
+[V01, '2']
+    I02 = " PICTURE ID"  : (0~255) : '0'
+[V01, '101']
+    I02 = " RESULT R[]"  : (1~500) : '211'
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBT_COMM003"
+[ARGUMENT]
+V01 = "CMD_VPARM"       : '1',
+	  "CMD_SCAN" 	    : '2',
+      "CMD_POS"         : '3', 
+      "CMD_OVER"        : '4'
+[V01, '1']
+    I02 = " PID"  : (0~500) : '0'
+    I03 = " VIN R[]"  : (0~500) : '0' 
+[V01, '2']
+    V02 = " SINGLE"        : '1', 
+          " MULTI"        : '2'
+        [V02, '1']
+            N03 = " NUM "
+        [V02, '2']
+            V03 = " START"    : '1',
+                  " STOP"    : '2'
+            [V02, '2', V03, '1']
+                N04 = " NUM " 
+[V01, '3']
+    N02 = " PR" 
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBT_COMM004"
+[ARGUMENT]
+V01 = "CMD_VPARM"        	: '1',
+	  "CMD_VGIDE" 	    	: '2', 
+	  "CMD_VASMB" 	    	: '3',
+      "CMD_SEDPOS" 	    	: '4',
+      "CMD_CAMERA" 	    	: '5',
+      "CMD_DQMONI"          : '6'
+[V01, '1']
+    I02 = " PID"  : (0~500) : '0'
+    I03 = " VIN R[]"  : (0~500) : '0'  
+[V01, '2']
+    I02 = " V PR[]"  : (0~500) : '0'
+    I03 = " CODE"  : (0~255) : '0'  
+[V01, '3']
+    N02 = " VM SPEED"  : (1.0~1500.0) : '200.0'
+    I03 = " VM DELAY(MS)"  : (0~3000) : '500' 
+[V01, '4']
+    I02 = " UF[]"  : (0~10) : '0'
+    I03 = " ET[]"  : (0~10) : '0'
+[V01, '5']
+    I02 = " CAR[]"  : (0~255) : '0'
+    I03 = " UF[]"  : (0~10) : '0'
+    I04 = " ET[]"  : (0~10) : '0'  
+[V01, '6']
+    N02 = " VM SPEED"  : (1.0~1500.0) : '200.0'
+    I03 = " VM DELAY(MS)"  : (0~3000) : '500' 
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBT_COMM005"
+[ARGUMENT]
+V01 = "CMD_VPARM"               : '-1',
+	  "CMD_PICTURE" 	        : '1',
+      "CMD_RESULT"              : '101'
+[V01, '-1']
+    I02 = " PID"  : (0~255) : '0'
+    I03 = " VIN R[]"  : (0~500) : '0' 
+[V01, '1']
+    I02 = " PICTURE ID"  : (0~255) : '0'
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBT_COMM010"
+[ARGUMENT]
+V01 = "CMD_STACK"        	: '1',
+	  "CMD_UNSTACK" 	    : '2' 
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "COMM010_SKILL"
+[ARGUMENT]
+V01 = "CMD_DATA1"        	: '1',
+	  "CMD_DATA2" 	        : '2',
+	  "CMD_PKSU" 	        : '4',
+	  "CMD_MISS" 	        : '5',
+	  "CMD_PRESS" 	        : '6',
+	  "CMD_PKFL" 	        : '7',
+	  "CMD_AREA" 	        : '8' 
+[V01, '4'] 
+    N02 = " TASK NUM" 
+[V01, '5'] 
+    N02 = " TASK NUM" 
+[V01, '6'] 
+    N02 = " TASK NUM" 
+[V01, '7'] 
+    N02 = " TASK NUM" 
+[V01, '8'] 
+    N02 = " AREA NUM" 
+[ENDPROGRAM]

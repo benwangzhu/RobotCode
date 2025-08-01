@@ -1,0 +1,157 @@
+{* -*-coding:chinese-gbk-*-}
+{Basic}
+
+[PROGRAM]
+NAME = "SBT_LSSCANST"
+ARGUMENT = '1'
+[ARGUMENT]
+I01 = "Slod Id"
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBT_2DSCANST"
+ARGUMENT = '1'
+[ARGUMENT]
+I01 = "Slod Id"
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBT_GETPATH"
+ARGUMENT = '5'
+[ARGUMENT]
+V01 = "NORMAL" : '0' , "ADAP" : '1' , "ADAP2" : '2'
+I02 = " Slod Id"
+V03 = " L" : '2' , " A" : '6'
+S04 = " TPE Name" : "PATH_PROC"
+N05 = " Speed(cm/min)"
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBT_ADAPST"
+ARGUMENT = '9'
+[ARGUMENT]
+I01 = "WV[]" 
+I02 = " WELD[]"
+N03 = " STD Gap" 
+N04 = " STD Amp"
+N05 = " STD Vol"
+N06 = " STD Cur"
+N07 = " AGIN Amp"
+N08 = " AGIN Vol"
+N09 = " AGIN Cur"
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBT_ADAP2ST"
+ARGUMENT = '2'
+[ARGUMENT]
+I01 = "WV[]" 
+I02 = " WELD[]"
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBT_ADDTEACH"
+ARGUMENT = '2'
+[ARGUMENT]
+V01 = "First" : '1' , "Add" : '0' 
+I02 = " P[]"
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "MIXSORT_ACK"
+ARGUMENT = '1'
+[ARGUMENT] 
+V01 = "Edg Picture" : '1' , "Get Picture Posn" : '2' , "Location Picture" : '3' , "Get Pk Data" : '4',"detection Picture" : '5',"Finish" : '6'
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SECOND_FDBK"
+ARGUMENT = '2'
+[ARGUMENT]
+N01 = "ConvNo" 
+V02 = "Success" : '0' , "Unsuccess" : '1'
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SECOND_WPOS"
+ARGUMENT = '6'
+[ARGUMENT]
+N01 = "ConvNo" 
+N02 = "Distance" 
+N03 = "RefPkPreg" 
+N04 = "NoMovStatReg" 
+N05 = "WaitPreg" 
+N06 = "DistBound2" 
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SECOND_CPY"
+ARGUMENT = '2'
+[ARGUMENT]
+N01 = "ConvNo"
+V02 = "PickData" : '0' , "PlaceData" : '1'
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SECOND_MOV_WPOS"
+ARGUMENT = '8'
+[ARGUMENT]
+N01 = "NoMovStatReg" 
+N02 = "ChkWPosReg" 
+N03 = "WaitPreg" 
+N04 = "ToolOfsPreg" 
+N05 = "WPosMaxX" 
+N06 = "WPosMinX"
+N07 = "WPosMaxY" 
+N08 = "WPosMinY"
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SECOND_GETQ"
+ARGUMENT = '4'
+[ARGUMENT]
+N01 = "ConvNo" 
+N02 = "Vr" 
+N03 = "Timeout" 
+N04 = "Stat Reg" 
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBTPOLITRIG"
+ARGUMENT = '2'
+[ARGUMENT]
+N01 = "Camer Id"  	 
+N02 = " Point Id"   
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBTPOLIPROC"
+ARGUMENT = '3'
+[ARGUMENT]
+N01 = "Job Id"  	  
+N02 = " Plan Num"  	
+N03 = " Proc R[]" 
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBTPOLIPARA"
+ARGUMENT = '4'
+[ARGUMENT]
+N01 = "Job Id"  	  
+N02 = " Para Num"  	
+N03 = " Head R[]"      
+N04 = " Speed R[]"      
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBTPOLIPATH"
+ARGUMENT = '5'
+[ARGUMENT]
+N01 = "Job Id"	    
+V02 = " Appr Path" : '1' , " Proc Path" : '2' , " End Path" : '3'
+N03 = " Para Num"  
+N04 = " Inter Dis"    
+S05 = " Tpe Name"       : "PATH_PROC"
+[ENDPROGRAM]
+
+

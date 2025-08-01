@@ -1,0 +1,97 @@
+program second_getq
+--***********************************************************
+--
+-- file Name: second_getq.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 12 - 24
+--   Modification Data    ==   2023 - 07 - 03
+--
+-- Author: speedbot
+--
+-- Version: 5.0
+--***********************************************************
+--   
+%comment = 'Snd Get Que V5.0'
+%nolockgroup
+%nobusylamp
+--%stacksize = 300
+%nopause = error + tpenable + command
+%include second_t
+%include second_global
+
+var
+
+    SensorPack                                  : part_dat_t
+
+%include include\lib_string_h
+%include include\lib_tp_if_h
+
+routine get_queue_(Conv : integer;
+                   ThisPart : part_dat_t) : integer from second_getq
+
+begin
+
+    if get_queue_(get_iparm_(1), SensorPack) = SND_SUCCESS then
+
+        if SensorPack.ConvId <> get_iparm_(1) then 
+            set_ireg_(get_iparm_(4), -2)
+            return
+        endif 
+
+        set_sys_rel_('$vr[' + int_to_str_(get_iparm_(2)) + '].$offset.$x',                              SensorPack.PkcvOfs[1])   
+        set_sys_rel_('$vr[' + int_to_str_(get_iparm_(2)) + '].$offset.$y',                              SensorPack.PkcvOfs[2])   
+        set_sys_rel_('$vr[' + int_to_str_(get_iparm_(2)) + '].$offset.$z',                              SensorPack.PkcvOfs[3])   
+        set_sys_rel_('$vr[' + int_to_str_(get_iparm_(2)) + '].$offset.$w',                              SensorPack.PkcvOfs[4])   
+        set_sys_rel_('$vr[' + int_to_str_(get_iparm_(2)) + '].$offset.$p',                              SensorPack.PkcvOfs[5])   
+        set_sys_rel_('$vr[' + int_to_str_(get_iparm_(2)) + '].$offset.$r',                              SensorPack.PkcvOfs[6]) 
+
+        set_sys_int_('$vr[' + int_to_str_(get_iparm_(2)) + '].$workid',                                 SensorPack.TaskId)
+        set_sys_int_('$vr[' + int_to_str_(get_iparm_(2)) + '].$view[4].$modelid',                       SensorPack.BoxId)  
+
+        set_sys_rel_('$vr[' + int_to_str_(get_iparm_(2)) + '].$view[4].$x',                             SensorPack.PlacePosn[1])   
+        set_sys_rel_('$vr[' + int_to_str_(get_iparm_(2)) + '].$view[4].$y',                             SensorPack.PlacePosn[2])   
+        set_sys_rel_('$vr[' + int_to_str_(get_iparm_(2)) + '].$view[4].$z',                             SensorPack.PlacePosn[3])   
+        set_sys_rel_('$vr[' + int_to_str_(get_iparm_(2)) + '].$view[4].$w',                             SensorPack.PlacePosn[4])   
+        set_sys_rel_('$vr[' + int_to_str_(get_iparm_(2)) + '].$view[4].$p',                             SensorPack.PlacePosn[5])   
+        set_sys_rel_('$vr[' + int_to_str_(get_iparm_(2)) + '].$view[4].$r',                             SensorPack.PlacePosn[6])   
+         
+        set_sys_int_('$vr[' + int_to_str_(get_iparm_(2)) + '].$enc_count',                              SensorPack.EncCount)
+        set_sys_int_('$lnsch[' + int_to_str_(PkPlCfg.pkcvCfg[get_iparm_(2)].LnSchNo) + '].$trig_value', SensorPack.EncCount)  
+
+        set_sys_rel_('$vr[' + int_to_str_(get_iparm_(2)) + '].$meas[1]',                                SensorPack.ServoDist)
+
+        set_ireg_(get_iparm_(4), 0)
+    else
+
+        delay(get_iparm_(3))
+        set_ireg_(get_iparm_(4), 2)
+    endif
+    
+end second_getq
+
+routine get_queue_
+var
+    SequeueNo       : integer
+    QueueVal        : integer
+    GetStat         : integer
+    I               : integer
+begin
+
+    get_queue(SecondQueue[Conv], QueueIndex[Conv], QueueVal, SequeueNo, GetStat)
+    if GetStat <> SND_SUCCESS then return(GetStat); endif
+
+    for I = 1 to MAX_QUE_NUM do
+        if PartIndex[Conv,I].NrQueue = QueueVal then
+            PartIndex[Conv,I].NrQueue   = 0 
+            ThisPart                    = PartIndex[Conv,I].PartData 
+            return(SND_SUCCESS)
+        endif
+    endfor
+
+    return(-1) 
+end get_queue_
+

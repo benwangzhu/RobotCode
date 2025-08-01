@@ -1,0 +1,45 @@
+&ACCESS RVO1
+&REL 22
+&COMMENT Place Select
+&PARAM DISKPATH = KRC:\R1\Program\MixSortMain
+defdat mixsort_place_select 
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: mixsort_place_select.dat
+; 
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 28
+;   Modification Data    ==   2022 - 06 - 28
+; 
+; Author: speedbot
+; 
+; Version: 1.0
+;***********************************************************
+
+
+EXT  mixsort_place01()
+EXT  mixsort_place02()
+EXT  mixsort_place03()
+EXT  mixsort_place04()
+EXT  mixsort_place05()
+EXT  mixsort_place06()
+EXT  mixsort_place07()
+EXT  mixsort_place08()
+EXT  mixsort_drop01()
+EXT  mixsort_drop02()
+EXT  mixsort_drop03()
+EXT  mixsort_drop04()
+
+decl state_t State
+decl int Offset = 0
+decl char Msg[256]
+    
+DECL part_data_t CopyPartData
+
+enddat
+
+
+

@@ -1,0 +1,133 @@
+defdat SecondSort_global public
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: SecondSort_global.dat
+; 
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 28
+;   Modification Data    ==   2022 - 06 - 28
+; 
+; Author: speedbot
+; 
+; Version: 1.0
+;***********************************************************
+
+; Four conveyors, each conveyor with a maximum of 50 queues
+decl global part_dat_t QueueData[4, 50]
+QueueData[1, 1] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[1, 2] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[1, 3] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[1, 4] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[1, 5] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[1, 6] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[1, 7] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[1, 8] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[1, 9] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[1, 10] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[2, 1] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[2, 2] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[2, 3] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[2, 4] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[2, 5] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[2, 6] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[2, 7] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[2, 8] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[2, 9] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[2, 10] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[3, 1] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[3, 2] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[3, 3] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[3, 4] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[3, 5] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[3, 6] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[3, 7] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[3, 8] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[3, 9] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[3, 10] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[4, 1] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[4, 2] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[4, 3] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[4, 4] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[4, 5] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[4, 6] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[4, 7] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[4, 8] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[4, 9] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+QueueData[4, 10] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+
+
+
+decl global int QueueLength[4]
+QueueLength[1] = 0
+QueueLength[2] = 0
+QueueLength[3] = 0
+QueueLength[4] = 0
+
+decl global int AddQueueCount[4]
+AddQueueCount[1] = 0
+AddQueueCount[2] = 0
+AddQueueCount[3] = 0
+AddQueueCount[4] = 0
+
+decl global real CurFlowDist[4]
+CurFlowDist[1] = 0.0
+CurFlowDist[2] = 0.0
+CurFlowDist[3] = 0.0
+CurFlowDist[4] = 0.0
+
+
+decl global part_dat_t CurQueue[4]
+CurQueue[1] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+CurQueue[2] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+CurQueue[3] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+CurQueue[4] = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+
+decl global pkcv_cfg_t PkCvCfg[4]
+PkCvCfg[1] = {ConvName[] " ", SrPortIndex 0, SrTrigCount 0, WaitPosStream 0, UpStream 0, DownStream 0, ManualZerOfs {X 0, Y 0, Z 0}}
+PkCvCfg[2] = {ConvName[] " ", SrPortIndex 0, SrTrigCount 0, WaitPosStream 0, UpStream 0, DownStream 0, ManualZerOfs {X 0, Y 0, Z 0}}
+PkCvCfg[3] = {ConvName[] " ", SrPortIndex 0, SrTrigCount 0, WaitPosStream 0, UpStream 0, DownStream 0, ManualZerOfs {X 0, Y 0, Z 0}}
+PkCvCfg[4] = {ConvName[] " ", SrPortIndex 0, SrTrigCount 0, WaitPosStream 0, UpStream 0, DownStream 0, ManualZerOfs {X 0, Y 0, Z 0}}
+
+decl global plfs_cfg_t PlFsCfg[12]
+PlFsCfg[1] = {PlaceUpDst 0, PlaceE7Pos 0, LimUp {X 0, Y 0, Z 0}, LimDown {X 0, Y 0, Z 0}}
+PlFsCfg[2] = {PlaceUpDst 0, PlaceE7Pos 0, LimUp {X 0, Y 0, Z 0}, LimDown {X 0, Y 0, Z 0}}
+PlFsCfg[3] = {PlaceUpDst 0, PlaceE7Pos 0, LimUp {X 0, Y 0, Z 0}, LimDown {X 0, Y 0, Z 0}}
+PlFsCfg[4] = {PlaceUpDst 0, PlaceE7Pos 0, LimUp {X 0, Y 0, Z 0}, LimDown {X 0, Y 0, Z 0}}
+PlFsCfg[5] = {PlaceUpDst 0, PlaceE7Pos 0, LimUp {X 0, Y 0, Z 0}, LimDown {X 0, Y 0, Z 0}}
+PlFsCfg[6] = {PlaceUpDst 0, PlaceE7Pos 0, LimUp {X 0, Y 0, Z 0}, LimDown {X 0, Y 0, Z 0}}
+PlFsCfg[7] = {PlaceUpDst 0, PlaceE7Pos 0, LimUp {X 0, Y 0, Z 0}, LimDown {X 0, Y 0, Z 0}}
+PlFsCfg[8] = {PlaceUpDst 0, PlaceE7Pos 0, LimUp {X 0, Y 0, Z 0}, LimDown {X 0, Y 0, Z 0}}
+PlFsCfg[9] = {PlaceUpDst 0, PlaceE7Pos 0, LimUp {X 0, Y 0, Z 0}, LimDown {X 0, Y 0, Z 0}}
+PlFsCfg[10] = {PlaceUpDst 0, PlaceE7Pos 0, LimUp {X 0, Y 0, Z 0}, LimDown {X 0, Y 0, Z 0}}
+PlFsCfg[11] = {PlaceUpDst 0, PlaceE7Pos 0, LimUp {X 0, Y 0, Z 0}, LimDown {X 0, Y 0, Z 0}}
+PlFsCfg[12] = {PlaceUpDst 0, PlaceE7Pos 0, LimUp {X 0, Y 0, Z 0}, LimDown {X 0, Y 0, Z 0}}
+
+
+decl global pkpl_cfg_t PkPlCfg = {RobId 1, NumAxis 6, NumOfConv 1, NumOfBox 4, SrSens 0}
+
+decl global part_dat_t GlbPartData = {ConvId 0, TaskId 0, BoxId 0, PkcvOfs {X 0.000, Y 0.0, Z 0.0, A 0.0}, PlacePosn {X 0.000, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0}, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+
+decl global int GlbPickSelectId = 0
+
+
+decl global bool FirstTrigger[4]
+FirstTrigger[1] = false
+FirstTrigger[2] = false
+FirstTrigger[3] = false
+FirstTrigger[4] = false
+
+decl global bool FirstPicking[4]
+FirstPicking[1] = false
+FirstPicking[2] = false
+FirstPicking[3] = false
+FirstPicking[4] = false
+
+
+decl global int SESecondSortKey = 0
+enddat
+
+
+

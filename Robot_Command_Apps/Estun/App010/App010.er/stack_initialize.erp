@@ -1,0 +1,85 @@
+// InstParseVersion: V1.02
+Start:
+/*通讯输入输出起始地址*/
+t_p.BusOutput.BusIoSt = 1
+t_p.BusInput.BusIoSt = 1
+/*1号区域极限配置*/
+t_g.LimitUp [ 1 ] .x = 0
+t_g.LimitUp [ 1 ] .y = 0
+t_g.LimitUp [ 1 ] .z = 0
+t_g.LimitDown [ 1 ] .x = 0
+t_g.LimitDown [ 1 ] .y = 0
+t_g.LimitDown [ 1 ] .z = 0
+/*1号区域极限配置*/
+t_g.LimitUp [ 2 ] .x = 0
+t_g.LimitUp [ 2 ] .y = 0
+t_g.LimitUp [ 2 ] .z = 0
+t_g.LimitDown [ 2 ] .x = 0
+t_g.LimitDown [ 2 ] .y = 0
+t_g.LimitDown [ 2 ] .z = 0
+/*1号区域极限配置*/
+t_g.LimitUp [ 3 ] .x = 0
+t_g.LimitUp [ 3 ] .y = 0
+t_g.LimitUp [ 3 ] .z = 0
+t_g.LimitDown [ 3 ] .x = 0
+t_g.LimitDown [ 3 ] .y = 0
+t_g.LimitDown [ 3 ] .z = 0
+/*1号区域极限配置*/
+t_g.LimitUp [ 4 ] .x = 0
+t_g.LimitUp [ 4 ] .y = 0
+t_g.LimitUp [ 4 ] .z = 0
+t_g.LimitDown [ 4 ] .x = 0
+t_g.LimitDown [ 4 ] .y = 0
+t_g.LimitDown [ 4 ] .z = 0
+/*1号区域极限配置*/
+t_g.LimitUp [ 5 ] .x = 0
+t_g.LimitUp [ 5 ] .y = 0
+t_g.LimitUp [ 5 ] .z = 0
+t_g.LimitDown [ 5 ] .x = 0
+t_g.LimitDown [ 5 ] .y = 0
+t_g.LimitDown [ 5 ] .z = 0
+/*1号区域极限配置*/
+t_g.LimitUp [ 6 ] .x = 0
+t_g.LimitUp [ 6 ] .y = 0
+t_g.LimitUp [ 6 ] .z = 0
+t_g.LimitDown [ 6 ] .x = 0
+t_g.LimitDown [ 6 ] .y = 0
+t_g.LimitDown [ 6 ] .z = 0
+/*1号区域极限配置*/
+t_g.LimitUp [ 7 ] .x = 0
+t_g.LimitUp [ 7 ] .y = 0
+t_g.LimitUp [ 7 ] .z = 0
+t_g.LimitDown [ 7 ] .x = 0
+t_g.LimitDown [ 7 ] .y = 0
+t_g.LimitDown [ 7 ] .z = 0
+/*1号区域极限配置*/
+t_g.LimitUp [ 8 ] .x = 0
+t_g.LimitUp [ 8 ] .y = 0
+t_g.LimitUp [ 8 ] .z = 0
+t_g.LimitDown [ 8 ] .x = 0
+t_g.LimitDown [ 8 ] .y = 0
+t_g.LimitDown [ 8 ] .z = 0
+/*通讯超时配置*/
+t_p.BusTimeout.value = -1
+/*初始化数据*/
+t_p.ToResultFlg.value = false
+t_p.GlobalCommandId.value = 0
+t_p.GlobalResultId.value = 0
+t_p.NewDataTableMode.value = 0
+t_p.NewDataTableTaskNum.value = 0
+t_p.NewDataTableArea.value = 0
+t_p.NewDataTablePip.value = 0
+t_p.NewDataTableBoxLenght.value = 0.0
+t_p.NewDataTableBoxWidth.value = 0
+t_p.NewDataTableBoxHigh.value = 0
+BusInitialize{BusIn=t_p.BusInput,BusOut=t_p.BusOutput,RonId=0,ProtocolId=64}
+t_p.CmdType08.Byte01 = t_p.RobDataTableWorkMode.value
+BusCmd027{BusOperation="BUSCMD_WRITE",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusData=t_p.CmdType08}
+BusCmd001{BusOperation="BUSCMD_READ",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusTimeout=30000,BusResult=t_l.Status}
+IF t_l.Status.value ~= 0 THEN
+    SetRtWarning{msg="command_init_ NOTOK",eid=80001}
+    t_p.GlobalResultId.value = 130
+ELSE
+    t_p.GlobalResultId.value = 129
+ENDIF
+End;

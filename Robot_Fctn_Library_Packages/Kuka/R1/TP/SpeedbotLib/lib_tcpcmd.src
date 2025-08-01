@@ -1,0 +1,2104 @@
+&access RP
+&comment Lib Tcp I/O 250618
+def lib_tcpcmd()
+;***********************************************************
+;
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+;
+; File Name: lib_tcpcmd.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2023 - 07 - 04
+;   Modification Data    ==   2025 - 06 - 18
+;
+; Author: speedbot
+;
+; Version: 1.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+
+end
+
+;FOLD TCP INIT
+global def tcp_init_(BusIn : out, BusOut : out, SockCfg : in)
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl sock_cfg_t SockCfg
+    decl int Ack, Offset, Status, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    Ack = 0
+    CmdSendHead = {Length 470, PacketCount 1, Cmd 252,  Seq 0, VirtualRob 0}
+    CmdSendHead.Head   = PACK_HEADER
+    CmdSendHead.Type_  = TYPE_KUKA
+    CmdSendTail.Tail   = PACK_TAIL
+
+    BusIn.DeviceId = 0
+    BusIn.JobId    = 0
+    BusIn.ErrorId  = 0
+    BusIn.MsgType  = 0
+
+    CmdSockCfg = SockCfg
+    CmdSockCfg.RecvTimeout = 3000
+
+    repeat  
+        sock_dconn_(CmdSockCfg)                             
+        Status = csock_conn_(CmdSockCfg) 
+        if (Status <> OK) or (not CmdSockCfg.Connected) then
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Tcp Comm Err![XmlFileName:%s]", SockCfg.SockXmlName[])
+            log_warn_(Msg[])
+            halt
+            wait sec 0.1 
+        endif
+    until((Status == OK) and (CmdSockCfg.Connected == true))
+
+    pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+    cast_to(CmdSendPackages[], Offset, Ack)
+    pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+    Status = sock_write_(CmdSockCfg, CmdSendPackages[], Offset)
+    if Status <> OK then 
+        return
+    endif 
+    Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+    if Status <> OK then 
+        return
+    endif 
+    Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+    cast_from(CmdReadPackages[], Offset, Ack)
+    Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+end
+;ENDFOLD
+
+;FOLD TCP COMMAND 001 
+global deffct int tcp_cmd001_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 1
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 1, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 1, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 1)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 1, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 1, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 002
+global deffct int tcp_cmd002_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl cmd_typ01_t BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 2
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd002_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 2, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 2, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 2)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 2, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd002_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 2, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 003
+global deffct int tcp_cmd003_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl pos BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 3
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd003_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 3, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 3, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 3)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 3, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd003_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 3, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 009
+global deffct int tcp_cmd009_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl pos BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 9
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd009_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 9, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 9, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 9)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 9, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd009_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 9, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 010
+global deffct int tcp_cmd010_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl pos BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 10
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd010_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 10, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 10, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 10)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 10, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd010_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 10, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 011
+global deffct int tcp_cmd011_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl pos BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 11
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd011_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg,CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 11, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 11, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 11)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 11, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd011_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 11, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 012
+global deffct int tcp_cmd012_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl cmd_typ01_t BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 12
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd012_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 12, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 12, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 12)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 12, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd012_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 12, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 013
+global deffct int tcp_cmd013_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl cmd_typ01_t BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 13
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd013_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 13, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 13, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 13)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 13, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd013_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 13, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 014
+global deffct int tcp_cmd014_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl cmd_typ01_t BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 14
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd014_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 14, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 14, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 14)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 14, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd014_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 14, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 017
+global deffct int tcp_cmd017_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl cmd_typ07_t BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 17
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd017_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 17, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 17, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 17)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 17, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd017_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 17, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 018
+global deffct int tcp_cmd018_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl cmd_typ07_t BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 18
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd018_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 18, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 18, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 18)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 18, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd018_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 18, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 020
+global deffct int tcp_cmd020_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl pos BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 20
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd020_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 20, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 20, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 20)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 20, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd020_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 20, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 021
+global deffct int tcp_cmd021_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl cmd_typ01_t BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 21
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd021_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 21, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 21, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 21)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 21, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd021_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 21, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 022
+global deffct int tcp_cmd022_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl cmd_typ01_t BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 22
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd022_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 22, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 22, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 22)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 22, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd022_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 22, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 026
+global deffct int tcp_cmd026_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl cmd_typ01_t BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 26
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd026_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 26, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 26, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 26)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 26, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd026_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 26, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 027
+global deffct int tcp_cmd027_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl cmd_typ08_t BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 27
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd027_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 27, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 27, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 27)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 27, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd027_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 27, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 129
+global deffct int tcp_cmd129_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl pos BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 129
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd129_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 129, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 129, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 129)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 129, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd129_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 129, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 130
+global deffct int tcp_cmd130_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl axis BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 130
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd130_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 130, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 130, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 130)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 130, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd130_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 130, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 131
+global deffct int tcp_cmd131_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl cmd_typ02_t BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 131
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd131_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 131, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 131, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 131)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 131, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd131_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 131, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 132
+global deffct int tcp_cmd132_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl cmd_typ07_t BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 132
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd132_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 132, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 132, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 132)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 132, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd132_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 132, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 133
+global deffct int tcp_cmd133_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl cmd_typ07_t BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 133
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd133_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 133, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 133, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 133)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 133, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd133_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 133, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 134
+global deffct int tcp_cmd134_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl cmd_typ09_t BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 134
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd134_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 134, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 134, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 134)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 134, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd134_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 134, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 137
+global deffct int tcp_cmd137_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl cmd_typ03_t BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 137
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd137_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 137, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 137, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 137)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 137, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd137_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 137, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 145
+global deffct int tcp_cmd145_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl cmd_typ01_t BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 145
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd145_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 145, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 145, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 145)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 145, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd145_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 145, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 148
+global deffct int tcp_cmd148_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl cmd_typ08_t BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 148
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd148_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 148, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 148, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 148)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 148, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd148_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 148, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD TCP COMMAND 151
+global deffct int tcp_cmd151_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl PACKCMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl cmd_typ06_t BusData
+    decl int Offset, Status, TempInt, Offset_
+    decl char Msg[128]
+    decl state_t Stat 
+
+    if (varstate("Timeout") == #initialized) then
+        CmdSockCfg.RecvTimeout = Timeout
+    endif
+
+    switch (BusOperation)
+        
+    case #PACKCMD_WRITE
+        
+        continue 
+        if (not $flag[CmdSockCfg.ActFlagNo]) or ($flag[CmdSockCfg.RecvFlagNo]) then  
+            tcp_init_(BusIn, BusOut, CmdSockCfg)
+        endif
+        TempInt = CmdSendHead.Seq
+        TempInt = TempInt + 1
+        if TempInt > 255 then 
+        TempInt = 1
+        endif
+        CmdSendHead = {Length 470, PacketCount 1, Cmd 64, Type_ 1, VirtualRob 0}
+        CmdSendHead.Head = PACK_HEADER
+        CmdSendHead.Seq = TempInt  
+        BusOut.RobMsgType = 151
+        pack_head_(CmdSendPackages[], CmdSendHead, Offset)
+        pack_body_(CmdSendPackages[], BusOut, Offset)
+        pack_cmd151_(CmdSendPackages[], #PACKCMD_WRITE, BusData, Offset)
+        pack_tail_(CmdSendPackages[], CmdSendTail, Offset)
+        return(sock_write_(CmdSockCfg, CmdSendPackages[], Offset))
+    case #PACKCMD_READ
+        Status = sock_read_(CmdSockCfg, CmdReadPackages[])
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Err![Cmd:%d, Err:%d]", 151, Status)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        Status = unpack_head_(CmdReadPackages[], CmdReadHead, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Head Err!![Cmd:%d, Head:%d]", 151, CmdReadHead.Head)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        unpack_body_(CmdReadPackages[], BusIn, Offset)
+        if (not (BusIn.MsgType == 151)) then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "MST CMD[%d] New CMD[%d] !!!", 151, BusIn.MsgType)
+            log_error_(Msg[])
+            return(NG)
+        endif
+        pack_cmd151_(CmdReadPackages[], #PACKCMD_READ, BusData, Offset)
+        Status = unpack_tail_(CmdReadPackages[], CmdReadTail, Offset)
+        if Status <> OK then 
+            Offset_ = 0
+            str_clear_(Msg[])
+            swrite(Msg[], Stat, Offset_, "Read Tcp CMD Tail Err!![Cmd:%d, Tail:%d]", 151, CmdReadTail.Tail)
+            log_warn_(Msg[])
+            return(Status)
+        endif 
+        return(BusIn.ErrorId)
+    endswitch
+endfct
+;ENDFOLD
+
+
+

@@ -1,0 +1,63 @@
+&ACCESS RVP
+&REL 19
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\SbtComm005Case
+DEF Sbt_Paintwork( )
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+;FOLD Basic.SetBusCommTimeout IN Timeout: 10000 ms ;%{PE}
+BusTimeout = 10000
+;ENDFOLD
+;FOLD SbtComm005.InitParm IN Part Id: 1 ;%{PE}
+sbt_comm005_(1, 1)
+;ENDFOLD
+;FOLD SPTP Photo01 Vel=100 % PDAT1 Tool[1] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=Photo01; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT1; Kuka.VelocityPtp=100; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP XPhoto01 WITH $VEL_AXIS[1] = SVEL_JOINT(100.0), $TOOL = STOOL2(FPhoto01), $BASE = SBASE(FPhoto01.BASE_NO), $IPO_MODE = SIPO_MODE(FPhoto01.IPO_FRAME), $LOAD = SLOAD(FPhoto01.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PPDAT1), $APO = SAPO_PTP(PPDAT1), $GEAR_JERK[1] = SGEAR_JERK(PPDAT1), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0)
+;ENDFOLD
+;FOLD SbtComm005.Picture IN Sleep Time: 0.5 sec, IN Picture Id: 1 ;%{PE}
+wait sec 0.5
+sbt_comm005_(2, ,1)
+;ENDFOLD
+;FOLD SPTP Photo02 Vel=100 % PDAT2 Tool[1] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=Photo02; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT2; Kuka.VelocityPtp=100; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP XPhoto02 WITH $VEL_AXIS[1] = SVEL_JOINT(100.0), $TOOL = STOOL2(FPhoto02), $BASE = SBASE(FPhoto02.BASE_NO), $IPO_MODE = SIPO_MODE(FPhoto02.IPO_FRAME), $LOAD = SLOAD(FPhoto02.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PPDAT2), $APO = SAPO_PTP(PPDAT2), $GEAR_JERK[1] = SGEAR_JERK(PPDAT2), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0)
+;ENDFOLD
+;FOLD SbtComm005.Picture IN Sleep Time: 0.5 sec, IN Picture Id: 2 ;%{PE}
+wait sec 0.5
+sbt_comm005_(2, ,2)
+;ENDFOLD
+;FOLD SPTP Photo03 Vel=100 % PDAT3 Tool[1] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=Photo03; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT3; Kuka.VelocityPtp=100; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP XPhoto03 WITH $VEL_AXIS[1] = SVEL_JOINT(100.0), $TOOL = STOOL2(FPhoto03), $BASE = SBASE(FPhoto03.BASE_NO), $IPO_MODE = SIPO_MODE(FPhoto03.IPO_FRAME), $LOAD = SLOAD(FPhoto03.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PPDAT3), $APO = SAPO_PTP(PPDAT3), $GEAR_JERK[1] = SGEAR_JERK(PPDAT3), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0)
+;ENDFOLD
+;FOLD SbtComm005.Picture IN Sleep Time: 0.5 sec, IN Picture Id: 3 ;%{PE}
+wait sec 0.5
+sbt_comm005_(2, ,3)
+;ENDFOLD
+;FOLD SPTP HOME Vel=100 % DEFAULT ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=HOME; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=DEFAULT; Kuka.VelocityPtp=100; Kuka.VelocityFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP XHOME WITH $VEL_AXIS[1] = SVEL_JOINT(100.0), $TOOL = STOOL2(FHOME), $BASE = SBASE(FHOME.BASE_NO), $IPO_MODE = SIPO_MODE(FHOME.IPO_FRAME), $LOAD = SLOAD(FHOME.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PDEFAULT), $APO = SAPO_PTP(PDEFAULT), $GEAR_JERK[1] = SGEAR_JERK(PDEFAULT), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0)
+;ENDFOLD
+;FOLD SbtComm005.Result ;%{PE}
+sbt_comm005_(3, )
+;ENDFOLD
+END

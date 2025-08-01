@@ -1,0 +1,555 @@
+program lib_dpm
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_dpm
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2022 - 03 - 09
+--   Modification Data    ==   2022 - 03 - 10
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+-- 2021 - 03 - 10 ++ dpm_clr_dt_() 
+   
+-- 2021 - 03 - 10 ++ dpm_cpr_dt() ==> boolean
+   
+-- 2021 - 03 - 10 ++ set_dpm_typ_() 
+   
+-- 2021 - 03 - 10 ++ set_bef_aft_() 
+   
+-- 2021 - 03 - 10 ++ set_dpm_acu_() 
+
+-- 2021 - 03 - 10 ++ set_dpm_frm_() 
+   
+-- 2021 - 03 - 10 ++ set_dpm_trk_() 
+   
+-- 2021 - 03 - 10 ++ set_dpm_chn_() 
+
+-- 2021 - 03 - 10 ++ set_dpm_lim_() 
+
+-- 2021 - 03 - 10 ++ set_dpm_ofs_() 
+
+-- 2021 - 03 - 10 ++ set_dpm_spd_() 
+
+-- 2021 - 03 - 10 ++ set_dpm_rem_() 
+
+-- 2021 - 03 - 10 ++ set_dpm_app_() 
+
+-- 2021 - 03 - 10 ++ get_dpm_ini_() 
+
+-- 2021 - 03 - 10 ++ get_dpm_rem_() 
+
+-- 2021 - 03 - 10 ++ get_dpm_app_() 
+
+-- 2021 - 03 - 10 ++ dpm_tm_snp_() 
+
+-- 2021 - 03 - 10 ++ dpm_app_cmp_() 
+
+%nolockgroup
+%nobusylamp
+%nopause = tpenable + command + error
+%comment = 'Dpm 231129'
+
+%include include/lib_transform_t
+%include include/lib_dpm_t
+%include include/lib_dpm_h
+%include include/lib_string_h
+%include include/lib_tp_if_h
+
+begin
+
+
+end lib_dpm
+
+
+routine dpm_clr_dt_
+var 
+    I               : integer
+
+begin
+    for I = 1 to array_len(DpmData) do ; DpmData[I] = 0.0 ; endfor
+end dpm_clr_dt_
+
+routine dpm_cpr_dt_
+var 
+    I               : integer
+begin
+    for I = 1 to array_len(DpmData) do  
+        if uninit(DpmData[I]) then ; DpmData[I] = 0.0 ; endif
+    endfor
+    return((abs(DpmData[1]) <= abs(AccuVal)) and &
+            (abs(DpmData[2]) <= abs(AccuVal)) and &
+            (abs(DpmData[3]) <= abs(AccuVal)) and &
+            (abs(DpmData[4]) <= abs(AccuVal)) and &
+            (abs(DpmData[5]) <= abs(AccuVal)) and &
+            (abs(DpmData[6]) <= abs(AccuVal)) and &
+            (abs(DpmData[7]) <= abs(AccuVal)) and &
+            (abs(DpmData[8]) <= abs(AccuVal)) and &
+            (abs(DpmData[9]) <= abs(AccuVal)))
+end dpm_cpr_dt_
+
+routine set_dpm_typ_
+begin
+
+    select DpmType of
+
+    case(DPM_MODAL):
+
+        set_sys_bol_('$dpm_cfg.$dpm_inline', false)
+
+        set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$dpm_type', 1)
+
+    case(DPM_INLINE):
+
+        set_sys_bol_('$dpm_cfg.$dpm_inline', true)
+
+        set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$dpm_type', 2)
+
+    else:
+
+        post_err(CC_UALARM, 'Dmp Type Error' , 0, CC_ABORT)
+
+    endselect
+    
+end set_dpm_typ_
+
+routine set_bef_aft_
+begin
+
+    select DpmFlt of
+
+    case(DPM_OFS_BEF):
+
+        set_sys_bol_('$dpm_cfg.$bef_jbf', true)
+
+    case(DPM_OFS_AFT):
+
+        set_sys_bol_('$dpm_cfg.$bef_jbf', false)
+
+    else:
+
+        post_err(CC_UALARM, 'Dmp Bef/Aft Error' , 0, CC_ABORT)
+
+    endselect
+    
+end set_bef_aft_
+
+routine set_dpm_acu_
+begin
+
+    set_sys_bol_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs_accu', DpmAcu)
+
+
+end set_dpm_acu_
+
+routine set_dpm_frm_
+
+begin
+    select DpmFrm of
+
+    case(DPM_FRM_PH):
+
+        set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs_fram', DPM_FRM_PH)
+
+    case(DPM_FRM_TPH):
+
+        set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs_fram', DPM_FRM_TPH)
+
+    case(DPM_FRM_UFM):
+
+        set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs_fram', DPM_FRM_UFM)
+
+    case(DPM_FRM_UTL):
+
+        set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs_fram', DPM_FRM_UTL)
+
+    else:
+
+        post_err(CC_UALARM, 'Dmp Farme Error' , 0, CC_ABORT)
+
+    endselect
+
+end set_dpm_frm_
+
+routine set_dpm_trk_
+
+begin
+
+    select DpmTrk of
+
+    case(DPM_DYNAM):
+
+        set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$trk_mode', DPM_DYNAM)
+
+        set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$sync_di', 0)
+
+    case(DPM_STAIC):
+
+        set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$trk_mode', DPM_STAIC)
+
+        set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$sync_di', DiIndex)
+    else:
+
+        post_err(CC_UALARM, 'Dmp Track Mode Error' , 0, CC_ABORT)
+
+    endselect
+
+
+end set_dpm_trk_
+
+routine set_dpm_chn_
+
+var
+
+    I                       : integer
+
+begin
+
+    select DpmChn of
+
+    case(DPM_CHN_AI):
+
+        for I = 1 to 9 do
+            set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs[' + int_2str_(I) +'].$chn_typ', DPM_CHN_AI)
+        endfor
+
+    case(DPM_CHN_GI):
+
+        for I = 1 to 9 do
+            set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs[' + int_2str_(I) +'].$chn_typ', DPM_CHN_GI)
+        endfor
+    
+    case(DPM_CHN_DI):
+
+        for I = 1 to 9 do
+            set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs[' + int_2str_(I) +'].$chn_typ', DPM_CHN_DI)
+        endfor
+    
+    case(DPM_CHN_SV):
+
+        for I = 1 to 9 do
+            set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs[' + int_2str_(I) +'].$chn_typ', DPM_CHN_SV)
+        endfor
+    
+    case(DPM_CHN_SR):
+
+        for I = 1 to 9 do
+            set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs[' + int_2str_(I) +'].$chn_typ', DPM_CHN_SR)
+        endfor
+    
+    
+    else:
+
+        post_err(CC_UALARM, 'Dmp Channel Input Type Error' , 0, CC_ABORT)
+
+    endselect
+
+
+end set_dpm_chn_
+
+routine set_dpm_lim_
+var
+    I                       : integer
+begin
+
+    for I = 1 to 9 do
+        if not uninit(DpmLim[I]) then 
+            if DpmLim[I] >= 0 then ; set_sys_rel_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs[' + int_2str_(I) +'].$max_lim', DpmLim[I]) ; endif
+        endif
+    endfor
+end set_dpm_lim_
+
+routine set_dpm_ofs_
+var
+    I                       : integer
+begin
+
+    for I = 1 to 9 do
+        if not uninit(DpmOfs[I]) then 
+            set_sys_rel_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs[' + int_2str_(I) +'].$ini_ofs', DpmOfs[I]) 
+        endif
+    endfor
+end set_dpm_ofs_
+
+routine set_dpm_spd_
+var
+    I                       : integer
+begin
+
+    for I = 1 to 9 do
+        if not uninit(DpmSpd[I]) then 
+            set_sys_rel_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs[' + int_2str_(I) +'].$max_inc', DpmSpd[I] / 125) 
+        endif
+    endfor
+end set_dpm_spd_
+
+routine set_dpm_min_
+var
+    I                       : integer
+begin
+
+    for I = 1 to 9 do
+        if not uninit(DpmSpd[I]) then 
+            set_sys_rel_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs[' + int_2str_(I) +'].$min_inc', DpmSpd[I] / 125) 
+        endif
+    endfor
+end set_dpm_min_
+
+routine set_dpm_a1_
+var
+    I                       : integer
+begin
+
+    for I = 1 to 9 do
+        if not uninit(DpmFtr[I]) then 
+            set_sys_rel_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs[' + int_2str_(I) +'].$a1', DpmFtr[I]) 
+        endif
+    endfor
+end set_dpm_a1_
+
+routine set_dpm_a2_
+var
+    I                       : integer
+begin
+
+    for I = 1 to 9 do
+        if not uninit(DpmFtr[I]) then 
+            set_sys_rel_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs[' + int_2str_(I) +'].$a2', DpmFtr[I]) 
+        endif
+    endfor
+end set_dpm_a2_
+
+routine set_dpm_rem_
+var
+    I                       : integer
+begin
+
+    for I = 1 to 9 do
+        if not uninit(DpmRem[I]) then 
+            set_sys_rel_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs[' + int_2str_(I) +'].$rem_ofs', DpmRem[I]) 
+        endif
+    endfor
+end set_dpm_rem_
+
+routine set_dpm_app_
+var
+    I                       : integer
+begin
+
+    for I = 1 to 9 do
+        if not uninit(DpmApp[I]) then 
+            set_sys_rel_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs[' + int_2str_(I) +'].$app_ofs', DpmApp[I]) 
+        endif
+    endfor
+end set_dpm_app_
+
+routine get_dpm_ini_
+var
+    I                       : integer
+begin
+
+    for I = 1 to 9 do
+        DpmOfs[I] = get_sys_rel_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs[' + int_2str_(I) +'].$ini_ofs')
+    endfor
+end get_dpm_ini_
+
+routine get_dpm_rem_
+var
+    I                       : integer
+begin
+
+    for I = 1 to 9 do
+        DpmRem[I] = get_sys_rel_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs[' + int_2str_(I) +'].$rem_ofs')
+    endfor
+end get_dpm_rem_
+
+routine get_dpm_app_
+var
+    I                       : integer
+begin
+
+    for I = 1 to 9 do
+        DpmApp[I] = get_sys_rel_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs[' + int_2str_(I) +'].$app_ofs')
+    endfor
+end get_dpm_app_
+
+routine dpm_tm_snp_
+var
+
+    I                    : integer
+begin
+
+    for I = 1 to 3 do  
+
+        DpmSpd[I] = abs(DpmOfs[I]) / (sqrt(DpmOfs[1] * DpmOfs[1] + DpmOfs[2] * DpmOfs[2] + DpmOfs[3] * DpmOfs[3]) / abs(DmpSpeed))
+
+    endfor
+        
+end dpm_tm_snp_
+
+routine dpm_app_cmp_
+var
+
+    IniData             : dpm_ini_t
+    RemData             : dpm_rem_t
+begin
+    
+    repeat
+        delay(8)
+        get_dpm_ini_(DpmSch, DpmGrp, IniData)
+        get_dpm_rem_(DpmSch, DpmGrp, RemData)
+    until dpm_cpr_dt_(IniData, abs(AccuVal)) and dpm_cpr_dt_(RemData, abs(AccuVal)) --or (not $mor_grp[1].$rob_move))
+
+end dpm_app_cmp_
+
+routine dpm_sine_
+var
+
+    CorrDpm             : dpm_ini_t
+    CorrVal             : real
+    CorrDeg             : real
+    I                   : integer
+begin
+
+    for I = 1 to array_len(CorrDpm) do
+
+        CorrDpm[I] = 0.0
+    endfor
+    --write(((360.0 / abs(WaveLens)) * abs(VectorDist) + Polar) :: 10::3, cr)
+    CorrDeg = (360.0 / abs(WaveLens)) * abs(VectorDist) + Polar
+
+    while (CorrDeg < -18000) or (CorrDeg > 18000) do  
+
+        if CorrDeg < - 18000 then 
+
+            CorrDeg = CorrDeg + 18000
+        else
+
+            CorrDeg = CorrDeg - 18000
+        endif
+
+    endwhile
+
+    CorrVal = abs(Swing) * sin(CorrDeg)
+
+    select CorrDire of
+        case(DPM_CORR_X, DPM_CORR_Y, DPM_CORR_Z):
+    
+            CorrDpm[CorrDire] = CorrVal
+        else:
+            post_err(CC_UALARM, 'Correction Dierction Error' , 0, CC_ABORT)
+    endselect
+    
+    return(CorrDpm)
+end dpm_sine_
+
+routine dpm_lin_
+var
+
+    CorrDpm             : dpm_ini_t
+    Dire                : integer
+    CorrVal             : real
+    IncVecDist          : real
+    I                   : integer
+begin
+
+    for I = 1 to array_len(CorrDpm) do
+
+        CorrDpm[I] = 0.0
+    endfor
+
+    if SwingDire then ; Dire = 1; else ; Dire = -1; endif
+
+    if trunc(VectorDist / (WaveLens / 2.0)) mod 2 = 0 then 
+
+        Dire = Dire
+    else
+
+        Dire = Dire * (-1)
+    endif
+
+
+    IncVecDist = VectorDist - trunc(VectorDist / abs((WaveLens / 2.0))) * abs((WaveLens / 2.0))
+
+    if IncVecDist > (abs((WaveLens / 2.0)) / 2.0) then 
+
+        IncVecDist = abs((WaveLens / 2.0) - IncVecDist)
+    endif
+
+    CorrVal = abs(IncVecDist) * abs(Swing) / abs((WaveLens / 2.0) / 2.0) * Dire
+
+    select CorrDire of
+        case(DPM_CORR_X, DPM_CORR_Y, DPM_CORR_Z):
+    
+            CorrDpm[CorrDire] = CorrVal
+        else:
+            post_err(CC_UALARM, 'Correction Dierction Error' , 0, CC_ABORT)
+    endselect
+
+    return(CorrDpm)
+end dpm_lin_
+
+routine dpm_inl_crl_
+begin
+
+    select CtrlType of
+
+    case(DPM_INL_USR):
+
+        set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs_input', 1)
+
+    case(DPM_INL_SPR):
+
+        set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs_input', 2)
+    
+    case(DPM_INL_MPR):
+
+        set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$ofs_input', 3)
+
+    else:
+
+        post_err(CC_UALARM, 'Inline Ctrl Type Error' , 0, CC_ABORT)
+
+    endselect
+    
+end dpm_inl_crl_
+
+routine dpm_inl_pr_
+begin
+
+    set_sys_int_('$dpm_sch[' + int_2str_(DpmSch) + '].$grp[' + int_2str_(DpmGrp) + '].$preg_idx', PrIndex) 
+end dpm_inl_pr_

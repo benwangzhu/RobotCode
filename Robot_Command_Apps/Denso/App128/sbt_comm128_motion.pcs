@@ -1,0 +1,370 @@
+'!TITLE "sbt_comm128_motion"
+
+#Include "sbt_comm128_motion.h"
+#Include "global_variable.h"
+
+Public GlobalBufferJoint(MAX_TRAJ_LENGTH) As Joint
+Public GlobalBufferIntPrm(MAX_TRAJ_LENGTH, 5) As Integer
+Public GlobalBufferFloatPrm(MAX_TRAJ_LENGTH, 4) As Single
+Public GlobalTrajectorySize As Integer
+
+Dim MotionRecvPackage As Variant
+Dim PackErrorId As Integer 	
+
+Dim SemId1 As Integer
+Dim SemId2 As Integer
+
+Sub Main
+'!***********************************************************
+'!
+'! Copyright 2018 - 2025 speedbot All Rights reserved.
+'!
+'! File Name: sbt_comm128_motion.pcs
+'!
+'! Description:
+'!   Language             ==   PacScipt for DENSO ROBOT
+'!   Date                 ==   2025 - 02 - 24
+'!   Modification Data    ==   2025 - 03 - 01
+'!
+'! Author: speedbot
+'!
+'! Version: 1.0
+'!*********************************************************************************************************;
+	Dim CommConfig As Variant
+	Dim Buffer As Variant
+	Dim CurJoints As Joint
+	Dim Res As Integer = _ERROR_
+	Dim Offset As Integer = 0
+
+	SemId1 = CreateMutex("SemName1")
+	SemId2 = CreateMutex("SemName2")
+
+	TakeMutex SemId1
+
+	CommConfig = Array(False, COMM128_MOTION_COMM_ID, 0, COMM_WAIT_FOREVER)
+
+	TCP_CREATE:
+
+	Res = CommOpen(CommConfig)
+	If Res <> _OK_ Then 
+		Goto TCP_CREATE
+	End If
+
+	Res = NewMotionCtrl(CommConfig)
+	If Res <> _OK_ Then 
+		Goto TCP_CREATE
+	End If
+
+MSG_PACKAGES:
+	'! Res = CommGetBuffBits(CommConfig)
+	'! If Res < 0 Then 
+	'! 	Goto TCP_CREATE
+	'! End If
+
+	'! If Res = 0 Then 
+	'! 	Delay 24
+	'! 	Goto MSG_PACKAGES
+	'! End If
+	
+	Res = CommRead(CommConfig, Buffer, 16)
+	If Res <= 0 Then 
+		Goto TCP_CREATE
+	End If
+
+	DecodeDatFrame_HEADER Buffer, Offset, MotionRecvPackage 
+
+	PackErrorId = _OK_
+
+	Select Case MotionRecvPackage(3)
+	Case COMMAND_CTRL
+		Res = NewTrajectory(CommConfig)
+		If Res <> _OK_ Then 
+			GlobalTrajectorySize = 0
+			Goto TCP_CREATE
+		End If
+	Case COMMAND_IO
+		Res = NewIo(CommConfig)
+		If Res <> _OK_ Then 
+			Goto TCP_CREATE
+		End If
+	Case COMMAND_STOP
+		Res = NewStop(CommConfig)
+		If Res <> _OK_ Then 
+			Goto TCP_CREATE
+		End If
+	Case Else
+		Goto TCP_CREATE
+	End Select
+	EncodeDatFrame_HEADER  Buffer, Offset, Array(PACKAGE_HEADER, 24, 1, 255, TYPE_DENSO, MotionRecvPackage(5), 0)
+	EncodeDatFrame_INT32  Buffer, Offset, PackErrorId
+	EncodeDatFrame_TAIL  Buffer, Offset, Array(PACKAGE_TAIL)
+	Res = CommWrite(CommConfig, Buffer, Offset)
+	GoTo MSG_PACKAGES
+End Sub
+
+#Pragma Encrypt(On) 
+
+
+Function NewMotionCtrl(ByRef CommConfig As Variant) As Integer
+	Dim Package1 As Variant	
+	Dim Package2 As Variant	
+	Dim Buffer As Variant
+	Dim Res As Integer = _ERROR_
+	Dim Offset As Integer = 0
+	Dim TmpInt As Integer
+
+	EncodeDatFrame_HEADER  Buffer, Offset, Array(PACKAGE_HEADER, 24, 1, 254, TYPE_DENSO, 1, 0)
+	EncodeDatFrame_INT32  Buffer, Offset, 0
+	EncodeDatFrame_TAIL  Buffer, Offset, Array(PACKAGE_TAIL)
+
+	NewMotionCtrl = CommWrite(CommConfig, Buffer, Offset)
+	If NewMotionCtrl <> _OK_ Then 
+		Exit Function
+	End If
+
+	NewMotionCtrl = CommRead(CommConfig, Buffer, 24)
+	If NewMotionCtrl <= 0 Then 
+		NewMotionCtrl = _ERROR_
+		Exit Function
+	End If
+
+	DecodeDatFrame_HEADER Buffer, Offset, Package1  
+
+	If Package1(3) <> 254 Then
+
+		NewMotionCtrl = _ERROR_
+		Exit Function
+	End If
+
+	DecodeDatFrame_INT32 Buffer, Offset, TmpInt  
+
+	DecodeDatFrame_TAIL Buffer, Offset, Package2  
+
+	NewMotionCtrl = _OK_
+
+	Exit Function
+
+End Function
+
+Function NewPoint(ByRef CommConfig As Variant, ByRef Points As Variant) As Integer
+	Dim Buffer As Variant
+	Dim Res As Integer = _ERROR_
+	Dim TmpInt(10) As Integer
+	Dim TmpFloat(15) As Single
+	Dim Offset As Integer = 0
+
+	NewPoint = CommRead(CommConfig, Buffer, 76)
+	If NewPoint <= 0 Then 
+		NewPoint = _ERROR_
+		Exit Function
+	End If
+
+	DecodeDatFrame_INT32 Buffer, Offset, TmpInt(0)
+	DecodeDatFrame_UINT8 Buffer, Offset, TmpInt(1)
+	DecodeDatFrame_UINT8 Buffer, Offset, TmpInt(2)
+	DecodeDatFrame_UINT8 Buffer, Offset, TmpInt(3)
+	DecodeDatFrame_UINT8 Buffer, Offset, TmpInt(4)
+	DecodeDatFrame_FLOAT Buffer, Offset, TmpFloat(0)
+	DecodeDatFrame_INT32 Buffer, Offset, TmpInt(5)
+	DecodeDatFrame_INT32 Buffer, Offset, TmpInt(6)
+	DecodeDatFrame_FLOAT Buffer, Offset, TmpFloat(1)
+	DecodeDatFrame_FLOAT Buffer, Offset, TmpFloat(2)
+	DecodeDatFrame_FLOAT Buffer, Offset, TmpFloat(3)
+	DecodeDatFrame_FLOAT Buffer, Offset, TmpFloat(4)
+	DecodeDatFrame_FLOAT Buffer, Offset, TmpFloat(5)
+	DecodeDatFrame_FLOAT Buffer, Offset, TmpFloat(6)
+	DecodeDatFrame_FLOAT Buffer, Offset, TmpFloat(7)
+	DecodeDatFrame_FLOAT Buffer, Offset, TmpFloat(8)
+	DecodeDatFrame_FLOAT Buffer, Offset, TmpFloat(9)
+	DecodeDatFrame_FLOAT Buffer, Offset, TmpFloat(10)
+	DecodeDatFrame_FLOAT Buffer, Offset, TmpFloat(11)
+	DecodeDatFrame_FLOAT Buffer, Offset, TmpFloat(12)
+	DecodeDatFrame_FLOAT Buffer, Offset, TmpFloat(13)
+	DecodeDatFrame_FLOAT Buffer, Offset, TmpFloat(14)
+
+	Points = Array(TmpInt(0), TmpInt(1), TmpInt(2), TmpInt(3), TmpInt(4), TmpFloat(0), TmpInt(5), TmpInt(6), TmpFloat(1), Array(TmpFloat(2), TmpFloat(3), TmpFloat(4), TmpFloat(5), TmpFloat(6), TmpFloat(7), TmpFloat(8), TmpFloat(9), TmpFloat(10), TmpFloat(11), TmpFloat(12), TmpFloat(13), TmpFloat(14)))
+
+	NewPoint = _OK_
+
+	Exit Function
+
+End Function
+
+Function NewTrajectory(ByRef CommConfig As Variant) As Integer
+	Dim Buffer As Variant
+	Dim Point As Variant
+	Dim Count As Integer
+	Dim Offset As Integer
+	Dim Tail As Variant	
+
+	I[VARIABLE_I_STOP_ID] = 0
+
+	For Count = 1 To MotionRecvPackage(2)
+
+		NewTrajectory = NewPoint(CommConfig, Point)
+		If NewTrajectory <> _OK_ Then 
+			Exit Function
+		End If
+		AddTrajectory Point
+	Next
+
+	NewTrajectory = CommRead(CommConfig, Buffer, 4)
+	If NewTrajectory <= 0 Then 
+		NewTrajectory = _ERROR_
+		Exit Function
+	End If
+
+	Offset = 0
+	DecodeDatFrame_TAIL Buffer, Offset, Tail  
+
+	If (PackErrorId = _OK_) And (MotionRecvPackage(4) = 1) Then
+
+		GiveMutex SemId1
+		TakeMutex SemId2
+		TakeMutex SemId1
+		GiveMutex SemId2
+		GlobalTrajectorySize = 0
+	End If
+
+	NewTrajectory = _OK_
+
+	Exit Function
+
+
+End Function
+
+
+Function NewIo(ByRef CommConfig As Variant) As Integer
+	Dim Buffer As Variant
+	Dim Res As Integer = _ERROR_
+	Dim TmpInt(10) As Integer
+	Dim Offset As Integer = 0
+	Dim Tail As Variant	
+
+	NewIo = CommRead(CommConfig, Buffer, 12)
+	If NewIo <= 0 Then 
+		NewIo = _ERROR_
+		Exit Function
+	End If
+
+	DecodeDatFrame_UINT8 Buffer, Offset, TmpInt(0)
+	DecodeDatFrame_UINT8 Buffer, Offset, TmpInt(1)
+	DecodeDatFrame_UINT8 Buffer, Offset, TmpInt(2)
+	DecodeDatFrame_UINT8 Buffer, Offset, TmpInt(3)
+	DecodeDatFrame_UINT8 Buffer, Offset, TmpInt(4)
+	DecodeDatFrame_UINT8 Buffer, Offset, TmpInt(5)
+	DecodeDatFrame_UINT8 Buffer, Offset, TmpInt(6)
+	DecodeDatFrame_UINT8 Buffer, Offset, TmpInt(7)
+
+	DecodeDatFrame_TAIL Buffer, Offset, Tail 
+
+	SetOutputIo Array(TmpInt(0), TmpInt(1), TmpInt(2), TmpInt(3), TmpInt(4), TmpInt(5) ,TmpInt(6), TmpInt(7))
+	
+	NewIo = _OK_
+
+	Exit Function
+
+End Function
+
+Function NewStop(ByRef CommConfig As Variant) As Integer
+	Dim Buffer As Variant
+	Dim Res As Integer = _ERROR_
+	Dim TmpInt(10) As Integer
+	Dim Offset As Integer = 0
+	Dim Tail As Variant	
+
+	NewStop = CommRead(CommConfig, Buffer, 4)
+	If NewStop <= 0 Then 
+		NewStop = _ERROR_
+		Exit Function
+	End If
+
+	DecodeDatFrame_TAIL Buffer, Offset, Tail  
+
+
+	I[VARIABLE_I_STOP_ID] = 1
+
+	MotionSkip 0, 0
+
+	NewStop = _OK_
+
+	Exit Function
+
+End Function
+
+Sub AddTrajectory(ByVal Trajectory As Variant) 
+	Dim Joints As Variant
+
+	Joints = Trajectory(9)
+
+   	GlobalTrajectorySize = GlobalTrajectorySize + 1
+	GlobalBufferJoint(GlobalTrajectorySize - 1) = J(Joints(0), Joints(1), Joints(2), Joints(3), Joints(4), Joints(5), Joints(6), Joints(7))
+
+	GlobalBufferIntPrm(GlobalTrajectorySize - 1, 0) = Trajectory(0)
+	GlobalBufferIntPrm(GlobalTrajectorySize - 1, 1) = Trajectory(1)
+	GlobalBufferIntPrm(GlobalTrajectorySize - 1, 2) = Trajectory(2)
+	GlobalBufferIntPrm(GlobalTrajectorySize - 1, 3) = Trajectory(3)
+	If Trajectory(4) > 0 Then
+		GlobalBufferIntPrm(GlobalTrajectorySize - 1, 4) = -1
+	Else
+		GlobalBufferIntPrm(GlobalTrajectorySize - 1, 4) = 0
+	End If
+
+	If Mps(Trajectory(5)) > 100 Then
+		GlobalBufferFloatPrm(GlobalTrajectorySize - 1, 0) = 100
+	Else
+		GlobalBufferFloatPrm(GlobalTrajectorySize - 1, 0) = Mps(Trajectory(5))
+	End If
+	GlobalBufferFloatPrm(GlobalTrajectorySize - 1, 1) = Trajectory(6)
+	GlobalBufferFloatPrm(GlobalTrajectorySize - 1, 2) = Trajectory(7)
+	GlobalBufferFloatPrm(GlobalTrajectorySize - 1, 3) = Trajectory(8)
+
+End Sub 
+
+Sub SetOutputIo(ByVal OutputIo As Variant)
+
+	On Error GoTo ERRORS
+
+#If OUTPUT_INDEX01 >= 0 
+	defio output1 = byte, OUTPUT_INDEX01
+	output1 = OutputIo(0)
+#EndIf
+#If OUTPUT_INDEX02 >= 0 
+	defio output2 = byte, OUTPUT_INDEX02
+	output2 = OutputIo(1)
+#EndIf
+#If OUTPUT_INDEX03 >= 0 
+	defio output3 = byte, OUTPUT_INDEX03
+	output3 = OutputIo(2)
+#EndIf
+#If OUTPUT_INDEX04 >= 0 
+	defio output4 = byte, OUTPUT_INDEX04
+	output4 = OutputIo(3)
+#EndIf
+#If OUTPUT_INDEX05 >= 0 
+	defio output5 = byte, OUTPUT_INDEX05
+	output5 = OutputIo(4)
+#EndIf
+#If OUTPUT_INDEX06 >= 0 
+	defio output6 = byte, OUTPUT_INDEX06
+	output6 = OutputIo(5)
+#EndIf
+#If OUTPUT_INDEX07 >= 0 
+	defio output7 = byte, OUTPUT_INDEX07
+	output7 = OutputIo(6)
+#EndIf
+#If OUTPUT_INDEX08 >= 0 
+	defio output8 = byte, OUTPUT_INDEX08
+	output8 = OutputIo(7)
+#EndIf
+
+	Exit Sub
+ERRORS:
+
+	Resume Next
+End Sub
+
+#Pragma Encrypt(Off) 
+
+
+

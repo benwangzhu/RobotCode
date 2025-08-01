@@ -1,0 +1,65 @@
+&ACCESS RVO1
+&REL 22
+&COMMENT Place Select
+&PARAM DISKPATH = KRC:\R1\Program\MixSortMain
+def mixsort_place_select()
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: mixsort_place_select.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 27
+;   Modification Data    ==   2024 - 10 - 25
+;
+; Author: speedbot
+;
+; Version: 1.1
+;***********************************************************
+    CopyPartData = AgentData.PartData
+
+    if not MixPkCfg.BoxOrConv then
+        switch CopyPartData.PlaceId
+        case 1 
+            mixsort_drop01()
+        case 2
+            mixsort_drop02()
+        case 3
+            mixsort_drop03()
+        case 3
+            mixsort_drop04()
+        default
+            Offset = 0
+            swrite(Msg[], State, Offset, "PlaceId Error[PlaceId:%D, MaxPlaceId:%D]", CopyPartData.PlaceId, MixPkCfg.NumPlPoint)
+            err_write_("Mixsort", Msg[], true)
+        endswitch 
+    else 
+        switch CopyPartData.PlaceId
+        case 1 
+            mixsort_place01()
+        case 2
+            mixsort_place02()
+        case 3
+            mixsort_place03()
+        case 4
+            mixsort_place04()
+        case 5
+            mixsort_place05()
+        case 6
+            mixsort_place06()
+        case 7
+            mixsort_place07()
+        case 8
+            mixsort_place08()
+        default
+            Offset = 0
+            swrite(Msg[], State, Offset, "PlaceId Error[PlaceId:%D, MaxPlaceId:%D]", CopyPartData.PlaceId, MixPkCfg.NumPlPoint)
+            err_write_("Mixsort", Msg[], true)
+        endswitch 
+    endif
+
+end
+
+

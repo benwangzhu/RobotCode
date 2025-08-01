@@ -1,0 +1,8 @@
+// InstParseVersion: V1.02
+Start:
+/***********************************/
+/*宏程序 MOVE_TO_HOME*/
+/***********************************/
+MovJ{P=t_l.P0,V=t_s.V2000,B="FINE"}
+CALL G:home_io
+End;

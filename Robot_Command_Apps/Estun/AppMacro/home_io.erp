@@ -1,0 +1,32 @@
+// InstParseVersion: V1.02
+Start:
+/***********************************/
+/*宏程序 HOME_IO*/
+/***********************************/
+WaitFinish{Percent=100}
+/*等待机器人在HOME位置*/
+WaitForSimIo{IoType="SIMDO",StAddrInt=7,Val=1}
+/*退出所有干涉区域*/
+SetSimDO8421{beginPort=21,endPort=32,setV=255}
+SetSimDO8421{beginPort=241,endPort=252,setV=0}
+/*复位路径请求*/
+SetSimDO8421{beginPort=41,endPort=41,setV=0}
+/*复位控制及信息信号*/
+SetSimDO8421{beginPort=57,endPort=57,setV=0}
+SetSimDO8421{beginPort=58,endPort=58,setV=0}
+SetSimDO8421{beginPort=59,endPort=59,setV=0}
+SetSimDO8421{beginPort=68,endPort=68,setV=0}
+SetSimDO8421{beginPort=69,endPort=69,setV=0}
+SetSimDO8421{beginPort=70,endPort=70,setV=0}
+SetSimDO8421{beginPort=71,endPort=71,setV=0}
+SetSimDO8421{beginPort=72,endPort=72,setV=0}
+SetSimDO8421{beginPort=33,endPort=40,setV=0}
+SetSimDO8421{beginPort=97,endPort=104,setV=0}
+SetSimDO8421{beginPort=105,endPort=112,setV=0}
+SetSimDO8421{beginPort=113,endPort=120,setV=0}
+SetSimDO8421{beginPort=121,endPort=128,setV=0}
+SetSimDO8421{beginPort=129,endPort=136,setV=0}
+SetSimDO8421{beginPort=137,endPort=144,setV=0}
+SetSimDO8421{beginPort=145,endPort=152,setV=0}
+SetSimDO8421{beginPort=153,endPort=160,setV=0}
+End;

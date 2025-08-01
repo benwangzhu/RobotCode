@@ -1,0 +1,38 @@
+&ACCESS RV
+&REL 1
+&PARAM DISKPATH = KRC:\R1\Program\SecondSortMain
+&comment SecondSort Main
+def second_main()
+;***********************************************************
+;
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+;
+; File Name: second_main.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 27
+;   Modification Data    ==   2024 - 10 - 25
+;
+; Author: speedbot
+;
+; Version: 1.1
+;***********************************************************
+
+;FOLD Basic.OVERRIDE [IN] Override: 30  ;%{PE}
+override_(30)
+;ENDFOLD
+
+second_config()
+
+;FOLD SecondSort.RunSensor ;%{PE}
+second_sr_inte()
+;ENDFOLD
+
+loop
+    second_pkcv_select()
+    second_plfs_select()
+endloop
+end
+
+

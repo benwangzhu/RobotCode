@@ -1,0 +1,2134 @@
+program lib_tpe
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_tpe
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2023 - 03 - 11
+--   Modification Data    ==   2023 - 03 - 11
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--  
+-- 2023 - 03 - 11 ++ copy_tpels_() ==> integer
+
+-- 2023 - 03 - 11 ++ extr_tpe_() ==> string
+
+-- 2023 - 03 - 11 ++ anal_tpels_() ==> array of string
+--
+%nolockgroup
+%nobusylamp
+%nopause = tpenable + command + error
+%comment = 'Tpe 231129'
+
+%include include/lib_transform_t
+%include include/lib_tpe_t
+%include include/lib_math_t
+%include include/lib_logs_t
+%include klevtpe
+
+%include include/lib_tpe_h
+%include include/lib_string_h
+%include include/lib_logs_h
+%include include/lib_tp_if_h
+%include include/lib_math_h
+begin
+
+
+end lib_tpe
+
+
+routine copy_tpels_
+var
+    TpeStar             : string[6]
+    TpeEnd              : string[6]
+    StrFine             : string[10]
+    StrVar              : string[254]
+    StrOld              : string[254]
+    BoolVar             : boolean 
+    Count               : integer 
+    LineNum             : integer 
+    IntOut              : integer
+    I                   : integer  
+    Status              : integer
+begin
+    
+    TpeStar = '/MN'
+    TpeEnd  = '/POS'
+    BoolVar = true
+    close_file_(FileVar1)
+    close_file_(FileVar2)
+
+    copy_file('md:\' + FromFile + '.ls', 'fra:\' + ToFile + '.ls', true, false, Status)
+    if Status <> CC_SUCCESS then post_err(Status, '', 0, CC_ABORT); endif
+
+    Status = open_file_(FileVar1, 'fra:\' + ToFile + '.ls', 1)
+    if Status <> CC_SUCCESS then post_err(Status, '',0 ,2); endif
+    
+    Status = open_file_(FileVar2, 'fra:\oper_tpe.ls', 2)
+    if Status <> CC_SUCCESS then post_err(Status, '',0 ,2); endif
+
+    get_attr_prg(FromFile, at_num_line, LineNum, StrFine, Status)
+    if Status <> CC_SUCCESS then post_err(Status, '',0 ,2); endif
+
+    Count = 0
+    
+    while BoolVar do
+
+        read FileVar1(StrVar)
+        Status = io_status(FileVar1)
+        if Status <> CC_SUCCESS then clr_io_stat(FileVar1); endif
+
+        if index(StrVar , TpeStar) > 0 then
+           
+            I = 0
+            repeat 
+                write FileVar2(StrVar, cr)
+                Status = io_status(FileVar2)
+                if Status <> CC_SUCCESS then clr_io_stat(FileVar2); endif
+                
+                StrOld  = StrVar
+                StrVar  = ''
+                Count   = Count + 1
+
+                read FileVar1(StrVar)
+                Status = io_status(FileVar1)
+                if Status <> CC_SUCCESS then clr_io_stat(FileVar1); endif
+                
+                I = I + 1
+            until (index(StrOld , TpeEnd) > 0) or (Count > (LineNum + 2))
+            
+            BoolVar = false
+
+        else
+
+            StrVar = ''
+        endif
+
+    endwhile 
+
+    if (Count > (LineNum + 2)) then
+        
+        cancel file FileVar1
+        cancel file FileVar2
+        post_err(CC_UALARM , 'Error getting TPE program' ,0 ,2)
+    endif;
+
+    close_file_(FileVar1)
+    close_file_(FileVar2)
+    return(I - 2)
+end copy_tpels_
+
+routine extr_tpe_
+var
+    StrVar                : string[254]
+    StrStar               : string[10]
+    IntFine               : integer
+    Status                : integer 
+begin
+    
+    close_file_(FileVar)
+    
+    Status = open_file_(FileVar, 'fra:\oper_tpe.ls', 1)
+    if Status <> CC_SUCCESS then post_err(Status, '',0 , 2); endif;
+
+    IntFine = FineStar
+    StrStar = int_2str_(IntFine)  + ':';
+
+    repeat
+        read FileVar(StrVar)
+        Status = io_status(FileVar)
+        if Status <> CC_SUCCESS then clr_io_stat(FileVar); endif
+
+        if FlgBool then 
+
+            if index(StrVar, StrStar) = (6 - str_len(StrStar)) then 
+           
+                if (index(StrVar, FineStr) <> 0) and (index(StrVar, '!') = 0) and (index(StrVar, '--ch') = 0) then 
+               
+                    close_file_(FileVar)
+                    return (int_2str_(IntFine))
+                endif
+
+                IntFine = IntFine + 1
+                StrStar = int_2str_(IntFine)  + ':'
+            endif 
+
+        else 
+
+            if (index(StrVar, StrStar) = (6 - str_len(StrStar))) then 
+            
+                if (index(StrVar, 'J') = 6) or (index(StrVar, 'L') = 6) then 
+            
+                    close_file_(FileVar)
+                    return (StrVar)
+                endif
+
+                IntFine = IntFine + 1
+                StrStar = int_2str_(IntFine)  + ':'
+            endif 
+        endif  
+
+        if (index(StrVar , '/MN') <> 0) then StrVar = '-999'; endif
+
+    until (index(StrVar , '/POS') <> 0) or (str_2int_(str_remove_(sub_str(StrVar , 1 , 4) , ' ')) = FineEnd)
+    close_file_(FileVar)
+    return ('null')
+end extr_tpe_
+
+routine anal_tpels_
+var
+    StrMsg                : string[254]
+    StrVar                : string[15]
+    ArraStr               : array[5] of string[15]
+begin
+    
+    StrMsg      = TpeMsg
+    StrVar      = sub_str(StrMsg, 1, index(StrMsg, ':'))
+    StrMsg      = sub_str(StrMsg, index(StrMsg, ':') + 1, str_len(StrMsg))
+    
+    StrVar      = str_remove_(StrVar, ' ')
+    ArraStr[1]  = sub_str(StrVar, 1, index(StrVar, ':') - 1)
+    ArraStr[2]  = sub_str(StrMsg, 1, 1)
+    if (ArraStr[2] <> 'L') and (ArraStr[2] <> 'J') then
+
+        post_err(3800, 'Unable to resolve matching joint', 0, CC_ABORT)
+    endif
+    
+    StrMsg = sub_str(StrMsg, index(StrMsg, ' ') + 1, str_len(StrMsg))
+    StrVar = sub_str(StrMsg, 1, index(StrMsg, ' ') - 1)
+
+    if sub_str(StrVar, 1, 2) = 'PR' then
+        
+        ArraStr[3] = '-' + sub_str(StrVar, index(StrVar, '[') + 1, 1)
+    else 
+        ArraStr[3] = sub_str(StrVar, index(StrVar, '[') + 1, 1)
+    endif
+
+    StrMsg = sub_str(StrMsg, index(StrMsg, ' ') + 1, str_len(StrMsg))
+    StrVar = sub_str(StrMsg, 1, index(StrMsg, ' ') - 1)
+
+    if ArraStr[2] = 'J' then
+
+        if index(StrVar, '%') = 0 then
+            post_err(3800, ArraStr[1] + 'Not (%) implemented according to the unit',0 ,2)
+        endif
+
+        if index(StrVar, 'R') <> 0 then
+            ArraStr[4] = int_2str_(get_ireg_(str_2int_(sub_str(StrVar, index(StrVar, '[') + 1, 1))))
+        else
+            ArraStr[4] = sub_str(StrVar, 1, index(StrVar, '%') - 1)
+        endif
+
+        StrMsg = sub_str(StrMsg, index(StrMsg, ' ') + 1, str_len(StrMsg))
+        StrVar = sub_str(StrMsg, 1, index(StrMsg, ' ') - 1)
+
+    else
+        if index(StrVar, 'mm/sec') = 0 then
+            post_err(0, ArraStr[1] + 'Not (mm/sec) implemented according to the unit',0 ,2)
+        endif
+
+        if index(StrVar, 'R') <> 0 then
+
+            ArraStr[4] = int_2str_(get_ireg_(str_2int_(sub_str(StrVar, index(StrVar, '[') + 1, 1))))
+        else
+            ArraStr[4] = sub_str(StrVar, 1, index(StrVar, 'mm/sec') - 1)
+        endif
+
+        StrMsg = sub_str(StrMsg, index(StrMsg, ' ') + 1, str_len(StrMsg))
+        StrVar = sub_str(StrMsg, 1, index(StrMsg, ' ') - 1) 
+
+    endif;
+
+    if index(StrVar, 'FINE') <> 0 then
+
+        ArraStr[5] = StrVar
+        return( ArraStr)
+    else
+
+        if str_len(StrVar) >= 4 then
+
+            ArraStr[5] = sub_str(StrVar, 4, str_len(StrVar))
+            return(ArraStr)
+        else
+
+            StrMsg      = sub_str(StrMsg, index(StrMsg, ' ') + 1, str_len(StrMsg))
+            StrVar      = sub_str(StrMsg, 1, index(StrMsg, ' ') - 1)
+            ArraStr[5]  = int_2str_(get_ireg_(str_2int_(sub_str(StrVar, index(StrVar, '[') + 1, 1))))
+            return( ArraStr)
+        endif
+    endif
+
+end anal_tpels_
+
+routine tpe_exist_
+var
+    UprTpeName          : string[24]
+    FileName            : array[20] of string[48]
+    NumFile             : integer
+    NumSkip             : integer
+    ExcStatus           : integer
+    Exist               : boolean
+    I                   : integer
+begin
+    UprTpeName = low_2upper_(TpeName)
+    NumSkip = 0
+    Exist = false
+    repeat   
+        file_list('md:*.tp', NumSkip, 1, FileName, NumFile, ExcStatus)
+        for I = 1 to NumFile do
+            if UprTpeName = FileName[I] then
+                Exist = true
+            endif
+        endfor
+    until ((NumFile < array_len(FileName)) or (Exist) or (ExcStatus <> CC_SUCCESS))
+    
+    return(Exist)
+end tpe_exist_
+
+routine tpe_open_
+var
+    UprTpeName              : string[24]
+    OpenStatus              : integer
+    OpenId                  : integer
+    -- TaskNo                  : integer
+    -- Attribute               : integer
+    -- ValInt                  : integer
+    -- ValStr                  : string[127]
+    -- Res                     : integer
+begin
+    UprTpeName = low_2upper_(TpeName)
+    
+    -- TaskNo = 0
+
+    -- repeat
+    --     get_tsk_info(UprTpeName, TaskNo, TSK_STATUS, ValInt, ValStr, Res)
+    -- until(ValInt = PG_ABORTED) or ()
+    -- wait for ($mor_grp[1].$servo_ready = true)
+    open_tpe(UprTpeName, OpenMode, RejectMode, OpenId, OpenStatus)
+    if OpenStatus <> CC_SUCCESS then 
+        return(-abs(OpenStatus))
+    endif
+
+    return(OpenId)
+end tpe_open_
+
+routine tpe_close_
+var
+    ClsStatus               : integer
+    Renty                   : integer
+begin
+    Renty = 0
+    repeat
+        Renty = Renty + 1
+        close_tpe(OpenId, ClsStatus) 
+        if ClsStatus <> CC_SUCCESS then
+                delay(8)
+        endif
+    until((ClsStatus = CC_SUCCESS) or (Renty >= 3))
+    OpenId = -1
+end tpe_close_
+
+routine tpe_create_
+var
+    UprTpeName              : string[24]
+    CtrStatus               : integer
+begin
+    UprTpeName = low_2upper_(TpeName)
+
+    create_tpe(UprTpeName, ProgType, CtrStatus)
+
+    return(-abs(CtrStatus))
+end tpe_create_
+
+routine tpe_copy_
+var
+    UprTpeName              : string[24]
+    CpyStatus               : integer
+begin
+    UprTpeName = low_2upper_(FromProg)
+    copy_tpe(UprTpeName, ToProg, OverWrite, CpyStatus)
+    return(-abs(CpyStatus))
+end tpe_copy_
+
+routine tpe_delete_
+var
+    UprTpeName              : string[24]
+    DelStatus               : integer
+begin
+    UprTpeName = low_2upper_(TpeName)
+    if not tpe_exist_(UprTpeName) then 
+
+        return(OK)
+    endif
+
+    delete_file('md:' + UprTpeName + '.TP', false, DelStatus)
+
+    return(-abs(DelStatus))
+end tpe_delete_
+
+routine tpe_select_
+var
+    UprTpeName              : string[24]
+    SelStatus               : integer
+begin
+    UprTpeName = low_2upper_(TpeName)
+
+    -- wait for ($mor_grp[1].$servo_ready = true)
+    select_tpe(UprTpeName, SelStatus)
+
+    return(-abs(SelStatus))
+end tpe_select_
+
+routine tpe_s_cpos_
+var
+    SetStatus               : integer
+begin
+    set_epos_tpe(OpenId, PointNo, Val, SetStatus, GrpId)
+    if SetStatus <> CC_SUCCESS then
+        post_err(CC_UALARM, 'Check P[' + int_2str_(PointNo) + '] In Group[' + int_2str_(GrpId) + ']' , 0, CC_ABORT)
+    endif
+end tpe_s_cpos_
+
+routine tpe_s_jpos_
+var
+    SetStatus               : integer
+begin
+    set_jpos_tpe(OpenId, PointNo, Val, SetStatus, GrpId)
+    if SetStatus <> CC_SUCCESS then
+        post_err(CC_UALARM, 'Check P[' + int_2str_(PointNo) + '] In Group[' + int_2str_(GrpId) + ']' , 0, CC_ABORT)
+    endif
+end tpe_s_jpos_
+
+routine tpe_pos_cmt_
+var
+    SetStatus               : integer
+begin
+    set_tpe_cmt(OpenId, PointNo, Comment, SetStatus)
+end tpe_pos_cmt_
+
+routine tpe_del_ln_
+var
+    DelStatus               : integer
+begin
+    if LineNo > 0 then
+        -- wait for ($mor_grp[1].$servo_ready = true)
+        del_inst_tpe(OpenId, LineNo, DelStatus)
+    else
+        repeat
+            -- wait for ($mor_grp[1].$servo_ready = true)
+            del_inst_tpe(OpenId, 1, DelStatus)
+        until(DelStatus <> CC_SUCCESS)
+    endif
+
+    if not ((DelStatus = 0) or (DelStatus = 7027)) then  
+        post_err(DelStatus, 'Err Del Line[' + int_2str_(LineNo) + '] In Id[' + int_2str_(OpenId) + ']' , 0, CC_ABORT)
+    endif
+
+end tpe_del_ln_
+
+routine tpe_text_
+var
+    SetStatus               : integer
+    UprText                 : string[64]    
+    UpeTpeName              : string[24]            
+begin
+    UpeTpeName = low_2upper_(TpeName)
+    UprText = low_2upper_(Text) + ';'
+    set_text_tpe(UpeTpeName, LineNo, 2, UprText, SetStatus)
+    if SetStatus <> CC_SUCCESS then
+        post_err(CC_UALARM, 'Err [' + UpeTpeName + '] [' + int_2str_(LineNo) + '] [' + UprText + ']' , 0, CC_ABORT)
+    endif
+    LineNo = LineNo + 1
+end tpe_text_
+
+-- routine tpe_movj_
+-- var
+--     SetStatus               : integer
+--     Speed__                 : real
+--     AddIns__                : string[24]
+--     UprText                 : string[64]    
+--     UpeTpeName              : string[24]            
+-- begin
+--     if uninit(AddIns) then
+--         AddIns__ = ''
+--     else
+--         AddIns__ = low_2upper_(AddIns)
+--     endif
+    
+--     Speed__ = Speed
+--     UpeTpeName = low_2upper_(TpeName)
+    
+--     if Cnt < -1 then 
+--         Cnt = -1
+--     endif
+--     if Cnt > 100 then 
+--         Cnt = 100
+--     endif
+
+--     select PointMode of
+--     case(TPE_P_P):  UprText = 'J P['
+--     case(TPE_P_PR): UprText = 'J PR['
+--     else:
+--        post_err(CC_UALARM, 'Err [tpe_movj_] PointMode[' + int_2str_(PointMode) + ']' , 0, CC_ABORT) 
+--     endselect
+    
+--     select SpeedTyp of
+--     case(TPE_SPD_PER):
+--         if Speed__ <= 0 then 
+--             Speed__ = 1
+--         endif
+--         if Speed__ > 100 then 
+--             Speed__ = 100
+--         endif
+
+--         UprText = UprText + &
+--                   int_2str_(PointNo) + '] ' + &
+--                   int_2str_(trunc(Speed__)) + '% '
+--     case(TPE_SPD_S):
+
+--         UprText = UprText + &
+--                   int_2str_(PointNo) + '] ' + &
+--                   real_2str_(Speed__) + 'SEC '
+--     case(TPE_SPD_MS):
+
+--         UprText = UprText + &
+--                   int_2str_(PointNo) + '] ' + &
+--                   int_2str_(trunc(Speed__)) + 'MSEC '
+--     else:
+--        post_err(CC_UALARM, 'Err [tpe_movj_] SpeedTyp[' + int_2str_(SpeedTyp) + ']' , 0, CC_ABORT) 
+--     endselect
+--     if Cnt = -1 then
+--         UprText = UprText + 'FINE'
+--     else
+--         UprText = UprText + 'CNT' + int_2str_(Cnt)
+--     endif
+
+--     UprText = UprText + ' ' + AddIns__ + ';'
+
+--     --write(UprText, cr)
+--     set_text_tpe(UpeTpeName, LineNo, 2, UprText, SetStatus)
+--     if SetStatus <> CC_SUCCESS then
+--         post_err(CC_UALARM, 'Err [tpe_movj_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+--     endif
+--     LineNo = LineNo + 1
+-- end tpe_movj_
+
+-- routine tpe_movl_
+-- var
+--     SetStatus               : integer
+--     Speed__                 : real
+--     AddIns__                : string[24]
+--     UprText                 : string[64]    
+--     UpeTpeName              : string[24]            
+-- begin
+--     if uninit(AddIns) then
+--         AddIns__ = ''
+--     else
+--         AddIns__ = low_2upper_(AddIns)
+--     endif
+    
+--     Speed__ = Speed
+--     UpeTpeName = low_2upper_(TpeName)
+    
+--     if Cnt < -1 then 
+--         Cnt = -1
+--     endif
+--     if Cnt > 100 then 
+--         Cnt = 100
+--     endif
+
+--     select PointMode of
+--     case(TPE_P_P):  UprText = 'L P['
+--     case(TPE_P_PR): UprText = 'L PR['
+--     else:
+--        post_err(CC_UALARM, 'Err [tpe_movl_] PointMode[' + int_2str_(PointMode) + ']' , 0, CC_ABORT) 
+--     endselect
+
+--     select SpeedTyp of
+--     case(TPE_SPD_MM):
+
+--         UprText = UprText + &
+--                   int_2str_(PointNo) + '] ' + &
+--                   int_2str_(trunc(Speed__)) + 'MM/SEC '
+--     case(TPE_SPD_CM):
+
+--         UprText = UprText + &
+--                   int_2str_(PointNo) + '] ' + &
+--                   int_2str_(trunc(Speed__)) + 'CM/MIN '
+--     case(TPE_SPD_INCH):
+--         UprText = UprText + &
+--                   int_2str_(PointNo) + '] ' + &
+--                   real_2str_(Speed__) + 'INCH/MIN '
+
+--     case(TPE_SPD_DEG):
+--         UprText = UprText + &
+--                   int_2str_(PointNo) + '] ' + &
+--                   int_2str_(trunc(Speed__)) + 'DEG/SEC '
+
+--     case(TPE_SPD_S):
+
+--         UprText = UprText + &
+--                   int_2str_(PointNo) + '] ' + &
+--                   real_2str_(Speed__) + 'SEC '
+--     case(TPE_SPD_MS):
+
+--         UprText = UprText + &
+--                   int_2str_(PointNo) + '] ' + &
+--                   int_2str_(trunc(Speed__)) + 'MSEC '
+--     else:
+--        post_err(CC_UALARM, 'Err [tpe_movl_] SpeedTyp[' + int_2str_(SpeedTyp) + ']' , 0, CC_ABORT) 
+--     endselect
+--     if Cnt = -1 then
+--         UprText = UprText + 'FINE'
+--     else
+--         UprText = UprText + 'CNT' + int_2str_(Cnt)
+--     endif
+
+--     UprText = UprText + ' ' + AddIns__ + ';'
+
+--     --write(UprText, cr)
+--     set_text_tpe(UpeTpeName, LineNo, 2, UprText, SetStatus)
+--     if SetStatus <> CC_SUCCESS then
+--         post_err(CC_UALARM, 'Err [tpe_movl_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+--     endif
+--     LineNo = LineNo + 1
+-- end tpe_movl_
+
+-- routine tpe_mova_
+-- var
+--     SetStatus               : integer
+--     Speed__                 : real
+--     AddIns__                : string[24]
+--     UprText                 : string[64]    
+--     UpeTpeName              : string[24]            
+-- begin
+--     if uninit(AddIns) then
+--         AddIns__ = ''
+--     else
+--         AddIns__ = low_2upper_(AddIns)
+--     endif
+    
+--     Speed__ = Speed
+--     UpeTpeName = low_2upper_(TpeName)
+    
+--     if Cnt < -1 then 
+--         Cnt = -1
+--     endif
+--     if Cnt > 100 then 
+--         Cnt = 100
+--     endif
+
+--     select PointMode of
+--     case(TPE_P_P):  UprText = 'A P['
+--     case(TPE_P_PR): UprText = 'A PR['
+--     else:
+--        post_err(CC_UALARM, 'Err [tpe_mova_] PointMode[' + int_2str_(PointMode) + ']' , 0, CC_ABORT) 
+--     endselect
+
+--     select SpeedTyp of
+--     case(TPE_SPD_MM):
+
+--         UprText = UprText + &
+--                   int_2str_(PointNo) + '] ' + &
+--                   int_2str_(trunc(Speed__)) + 'MM/SEC '
+--     case(TPE_SPD_CM):
+
+--         UprText = UprText + &
+--                   int_2str_(PointNo) + '] ' + &
+--                   int_2str_(trunc(Speed__)) + 'CM/MIN '
+--     case(TPE_SPD_INCH):
+--         UprText = UprText + &
+--                   int_2str_(PointNo) + '] ' + &
+--                   real_2str_(Speed__) + 'INCH/MIN '
+
+--     case(TPE_SPD_DEG):
+--         UprText = UprText + &
+--                   int_2str_(PointNo) + '] ' + &
+--                   int_2str_(trunc(Speed__)) + 'DEG/SEC '
+
+--     case(TPE_SPD_S):
+
+--         UprText = UprText + &
+--                   int_2str_(PointNo) + '] ' + &
+--                   real_2str_(Speed__) + 'SEC '
+--     case(TPE_SPD_MS):
+
+--         UprText = UprText + &
+--                   int_2str_(PointNo) + '] ' + &
+--                   int_2str_(trunc(Speed__)) + 'MSEC '
+--     else:
+--        post_err(CC_UALARM, 'Err [tpe_mova_] SpeedTyp[' + int_2str_(SpeedTyp) + ']' , 0, CC_ABORT) 
+--     endselect
+--     if Cnt = -1 then
+--         UprText = UprText + 'FINE'
+--     else
+--         UprText = UprText + 'CNT' + int_2str_(Cnt)
+--     endif
+
+--     UprText = UprText + ' ' + AddIns__ + ';'
+
+--     --write(UprText, cr)
+--     set_text_tpe(UpeTpeName, LineNo, 2, UprText, SetStatus)
+--     if SetStatus <> CC_SUCCESS then
+--         post_err(CC_UALARM, 'Err [tpe_mova_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+--     endif
+--     LineNo = LineNo + 1
+-- end tpe_mova_
+
+-- routine tpe_uframe_
+-- var
+--     SetStatus               : integer
+--     UprText                 : string[64]    
+--     UpeTpeName              : string[24]            
+-- begin
+--     UpeTpeName = low_2upper_(TpeName)
+
+--     if (UframeNo < 0) or (UframeNo > 9) then
+--         post_err(CC_UALARM, 'Err [tpe_uframe_] UF[' + int_2str_(UframeNo) + ']', 0, CC_ABORT)
+--     endif
+
+--     UprText = 'UFRAME_NUM=' + int_2str_(UframeNo) + ';'
+--     set_text_tpe(UpeTpeName, LineNo, 2, UprText, SetStatus)
+--     if SetStatus <> CC_SUCCESS then
+--         post_err(CC_UALARM, 'Err [tpe_uframe_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+--     endif
+--     LineNo = LineNo + 1
+-- end tpe_uframe_
+
+-- routine tpe_utool_
+-- var
+--     SetStatus               : integer
+--     UprText                 : string[64]    
+--     UpeTpeName              : string[24]            
+-- begin
+--     UpeTpeName = low_2upper_(TpeName)
+
+--     if (UToolNo < 0) or (UToolNo > 10) then
+--         post_err(CC_UALARM, 'Err [tpe_utool_] UT[' + int_2str_(UToolNo) + ']', 0, CC_ABORT)
+--     endif
+
+--     UprText = 'UTOOL_NUM=' + int_2str_(UToolNo) + ';'
+--     set_text_tpe(UpeTpeName, LineNo, 2, UprText, SetStatus)
+--     if SetStatus <> CC_SUCCESS then
+--         post_err(CC_UALARM, 'Err [tpe_utool_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+--     endif
+--     LineNo = LineNo + 1
+-- end tpe_utool_
+
+-- routine tpe_payload_
+-- var
+--     SetStatus               : integer
+--     UprText                 : string[64]    
+--     UpeTpeName              : string[24]            
+-- begin
+--     UpeTpeName = low_2upper_(TpeName)
+
+--     if (PayloadNo <= 0) or (PayloadNo > 10) then
+--         post_err(CC_UALARM, 'Err [tpe_payload_] PAYLOAD[' + int_2str_(PayloadNo) + ']', 0, CC_ABORT)
+--     endif
+
+--     UprText = 'PAYLOAD[' + int_2str_(PayloadNo) + '];'
+--     set_text_tpe(UpeTpeName, LineNo, 2, UprText, SetStatus)
+--     if SetStatus <> CC_SUCCESS then
+--         post_err(CC_UALARM, 'Err [tpe_payload_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+--     endif
+--     LineNo = LineNo + 1
+-- end tpe_payload_
+
+-- routine tpe_weldst_
+-- var
+--     SetStatus               : integer
+--     UprText                 : string[64]    
+--     UpeTpeName              : string[24]            
+-- begin
+--     UpeTpeName = low_2upper_(TpeName)
+
+--     if (ProcNo <= 0) or (ProcNo > 99) then
+--         post_err(CC_UALARM, 'Err [tpe_weldst_] PROCNO[' + int_2str_(ProcNo) + ']', 0, CC_ABORT)
+--     endif
+
+--     if (SchNo <= 0) or (SchNo > 32) then
+--         post_err(CC_UALARM, 'Err [tpe_weldst_] SCHNO[' + int_2str_(ProcNo) + ']', 0, CC_ABORT)
+--     endif
+
+--     UprText = 'Weld Start[' + int_2str_(ProcNo) + ', ' + int_2str_(SchNo) + '];'
+--     set_text_tpe(UpeTpeName, LineNo, 2, UprText, SetStatus)
+--     if SetStatus <> CC_SUCCESS then
+--         post_err(CC_UALARM, 'Err [tpe_weldst_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+--     endif
+--     LineNo = LineNo + 1
+-- end tpe_weldst_
+
+-- routine tpe_welded_
+-- var
+--     SetStatus               : integer
+--     UprText                 : string[64]    
+--     UpeTpeName              : string[24]            
+-- begin
+--     UpeTpeName = low_2upper_(TpeName)
+
+--     if (ProcNo <= 0) or (ProcNo > 99) then
+--         post_err(CC_UALARM, 'Err [tpe_welded_] PROCNO[' + int_2str_(ProcNo) + ']', 0, CC_ABORT)
+--     endif
+
+--     if (SchNo <= 0) or (SchNo > 32) then
+--         post_err(CC_UALARM, 'Err [tpe_welded_] SCHNO[' + int_2str_(ProcNo) + ']', 0, CC_ABORT)
+--     endif
+
+--     UprText = 'Weld End[' + int_2str_(ProcNo) + ', ' + int_2str_(SchNo) + '];'
+--     set_text_tpe(UpeTpeName, LineNo, 2, UprText, SetStatus)
+--     if SetStatus <> CC_SUCCESS then
+--         post_err(CC_UALARM, 'Err [tpe_welded_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+--     endif
+--     LineNo = LineNo + 1
+-- end tpe_welded_
+
+
+-- routine tpe_weavest_
+-- var
+--     SetStatus               : integer
+--     UprText                 : string[64]    
+--     UpeTpeName              : string[24]            
+-- begin
+--     UpeTpeName = low_2upper_(TpeName)
+
+--     select WeaveTyp of
+--     case(TPE_WV_SINE):
+--         UprText = 'Weave Sine['
+--     case(TPE_WV_FIG8):
+--         UprText = 'Weave Figure 8['
+--     case(TPE_WV_CIRC):
+--         UprText = 'Weave Circle['
+--     case(TPE_WV_SINE2):
+--         UprText = 'Weave Sine 2['
+--     case(TPE_WV_L):
+--         UprText = 'Weave L['
+--     else:
+
+--     endselect
+    
+
+--     UprText = UprText + int_2str_(SchNo) + '];'
+--     set_text_tpe(UpeTpeName, LineNo, 2, UprText, SetStatus)
+--     if SetStatus <> CC_SUCCESS then
+--         post_err(CC_UALARM, 'Err [tpe_weavest_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+--     endif
+--     LineNo = LineNo + 1
+-- end tpe_weavest_
+
+-- routine tpe_weaveed_
+-- var
+--     SetStatus               : integer
+--     UprText                 : string[64]    
+--     UpeTpeName              : string[24]            
+-- begin
+--     UpeTpeName = low_2upper_(TpeName)
+
+--     UprText = 'Weave End[' + int_2str_(SchNo) + '];'
+--     set_text_tpe(UpeTpeName, LineNo, 2, UprText, SetStatus)
+--     if SetStatus <> CC_SUCCESS then
+--         post_err(CC_UALARM, 'Err [tpe_weaveed_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+--     endif
+--     LineNo = LineNo + 1
+-- end tpe_weaveed_
+
+routine tpe_it_mov_
+var
+    LinData         : array[100] of byte
+    LenData         : integer
+    i               : integer
+    Res             : xyzwpr
+    SetStatus       : integer
+begin
+
+    if (InstSch.PointTyp < 0) or (InstSch.PointTyp > 3) then 
+
+        post_err(CC_UALARM, 'Err [tpe_it_mov_] PointTyp[' + int_2str_(InstSch.PointTyp) + ']', 0, CC_ABORT)
+    endif
+
+    if (InstSch.PointNo < 0) or (InstSch.PointNo > TPE_MAX_PNO) then 
+
+        post_err(CC_UALARM, 'Err [tpe_it_mov_] PointNo[' + int_2str_(InstSch.PointNo) + ']', 0, CC_ABORT)
+    endif
+
+    if InstSch.Speed <= 1 then  
+
+        InstSch.Speed = 1
+    endif
+
+    LinData[1] = LM_MOVE
+    LinData[2] = InstSch.MovType
+
+    select InstSch.MovType of
+    case(LM_MTN_UNT):
+
+        return
+    case(LM_MTN_JNT):
+        select InstSch.SpeedTyp of
+        case(LM_MTN_PER):
+            if (InstSch.Speed < TPE_MIN_PERS) or (InstSch.Speed > TPE_MAX_PERS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+        case(LM_MTN_SEC):
+            if (InstSch.Speed < TPE_MIN_SECS) or (InstSch.Speed > TPE_MAX_SECS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+    
+        else:
+            post_err(CC_UALARM, 'Err [tpe_it_mov_] SpeedTyp[' + int_2str_(InstSch.SpeedTyp) + ']', 0, CC_ABORT)   
+        endselect
+    case(LM_MTN_LIN):
+        select InstSch.SpeedTyp of
+        case(LM_MTN_PER):
+            if (InstSch.Speed < TPE_MIN_PERS) or (InstSch.Speed > TPE_MAX_PERS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+        case(LM_MTN_MMSEC):
+            if (InstSch.Speed < TPE_MIN_MMMS) or (InstSch.Speed > TPE_MAX_MMMS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+        case(LM_MTN_CMMIN):
+            if (InstSch.Speed < TPE_MIN_CMNS) or (InstSch.Speed > TPE_MAX_CMNS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+        case(LM_MTN_INCMN):
+            if (InstSch.Speed < TPE_MIN_INCS) or (InstSch.Speed > TPE_MAX_INCS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+        case(LM_MTN_DGSEC):
+            if (InstSch.Speed < TPE_MIN_DGSS) or (InstSch.Speed > TPE_MAX_DGSS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+        case(LM_MTN_SEC):
+            if (InstSch.Speed < TPE_MIN_SECS) or (InstSch.Speed > TPE_MAX_SECS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+        case(TPE_WELD_SPD):
+            -- if (InstSch.Speed < TPE_MIN_SECS) or (InstSch.Speed > TPE_MAX_SECS) then 
+
+            --     post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            -- endif
+
+
+        else:
+            post_err(CC_UALARM, 'Err [tpe_it_mov_] SpeedTyp[' + int_2str_(InstSch.SpeedTyp) + ']', 0, CC_ABORT)   
+        endselect
+    case(LM_MTN_CIR):
+        select InstSch.SpeedTyp of
+        case(LM_MTN_PER):
+            if (InstSch.Speed < TPE_MIN_PERS) or (InstSch.Speed > TPE_MAX_PERS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+        case(LM_MTN_MMSEC):
+            if (InstSch.Speed < TPE_MIN_MMMS) or (InstSch.Speed > TPE_MAX_MMMS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+        case(LM_MTN_CMMIN):
+            if (InstSch.Speed < TPE_MIN_CMNS) or (InstSch.Speed > TPE_MAX_CMNS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+        case(LM_MTN_INCMN):
+            if (InstSch.Speed < TPE_MIN_INCS) or (InstSch.Speed > TPE_MAX_INCS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+        case(LM_MTN_DGSEC):
+            if (InstSch.Speed < TPE_MIN_DGSS) or (InstSch.Speed > TPE_MAX_DGSS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+        case(LM_MTN_SEC):
+            if (InstSch.Speed < TPE_MIN_SECS) or (InstSch.Speed > TPE_MAX_SECS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+    
+        else:
+            post_err(CC_UALARM, 'Err [tpe_it_mov_] SpeedTyp[' + int_2str_(InstSch.SpeedTyp) + ']', 0, CC_ABORT)   
+        endselect
+    case(LM_MTN_ARC):
+        select InstSch.SpeedTyp of
+        case(LM_MTN_PER):
+            if (InstSch.Speed < TPE_MIN_PERS) or (InstSch.Speed > TPE_MAX_PERS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+        case(LM_MTN_MMSEC):
+            if (InstSch.Speed < TPE_MIN_MMMS) or (InstSch.Speed > TPE_MAX_MMMS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+        case(LM_MTN_CMMIN):
+            if (InstSch.Speed < TPE_MIN_CMNS) or (InstSch.Speed > TPE_MAX_CMNS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+        case(LM_MTN_INCMN):
+            if (InstSch.Speed < TPE_MIN_INCS) or (InstSch.Speed > TPE_MAX_INCS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+        case(LM_MTN_DGSEC):
+            if (InstSch.Speed < TPE_MIN_DGSS) or (InstSch.Speed > TPE_MAX_DGSS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+        case(LM_MTN_SEC):
+            if (InstSch.Speed < TPE_MIN_SECS) or (InstSch.Speed > TPE_MAX_SECS) then 
+
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            endif
+    
+        case(TPE_WELD_SPD):
+            -- if (InstSch.Speed < TPE_MIN_SECS) or (InstSch.Speed > TPE_MAX_SECS) then 
+
+            --     post_err(CC_UALARM, 'Err [tpe_it_mov_] Speed[' + real_2str_(InstSch.Speed) + ']', 0, CC_ABORT)   
+            -- endif
+    
+        else:
+            post_err(CC_UALARM, 'Err [tpe_it_mov_] SpeedTyp[' + int_2str_(InstSch.SpeedTyp) + ']', 0, CC_ABORT)   
+        endselect
+    
+    else:
+        post_err(CC_UALARM, 'Err [tpe_it_mov_] MovType[' + int_2str_(InstSch.MovType) + ']', 0, CC_ABORT)
+    endselect
+    
+    if (InstSch.Cnt < TPE_MIN_CNT) or (InstSch.Cnt > TPE_MAX_CNT) then 
+
+        post_err(CC_UALARM, 'Err [tpe_it_mov_] Cnt[' + int_2str_(InstSch.Cnt) + ']', 0, CC_ABORT)
+    endif
+    
+    if InstSch.MovType <> LM_MTN_CIR then
+
+        LinData[3] = InstSch.PointTyp
+        LinData[4] = (((InstSch.PointNo) and 65280) div 256)    and (255)
+        LinData[5] = (((InstSch.PointNo) and 255)   div 1)      and (255)
+        
+        select InstSch.SpeedTyp of
+        case(LM_MTN_PER):  
+            LinData[6] = (((trunc(InstSch.Speed))       and 65280) div 256)     and (255)
+            LinData[7] = (((trunc(InstSch.Speed))       and 255)   div 1)       and (255)
+        case(LM_MTN_MMSEC):     
+            LinData[6] = (((trunc(InstSch.Speed))       and 65280) div 256)     and (255)
+            LinData[7] = (((trunc(InstSch.Speed))       and 255)   div 1)       and (255)
+        case(LM_MTN_CMMIN):     
+            LinData[6] = (((trunc(InstSch.Speed))       and 65280) div 256)     and (255)
+            LinData[7] = (((trunc(InstSch.Speed))       and 255)   div 1)       and (255)
+        case(LM_MTN_INCMN):     
+            LinData[6] = (((trunc(InstSch.Speed * 10))  and 65280) div 256)     and (255)
+            LinData[7] = (((trunc(InstSch.Speed * 10))  and 255)   div 1)       and (255)
+        case(LM_MTN_DGSEC):     
+            LinData[6] = (((trunc(InstSch.Speed))       and 65280) div 256)     and (255)
+            LinData[7] = (((trunc(InstSch.Speed))       and 255)   div 1)       and (255)
+        case(LM_MTN_SEC):       
+            LinData[6] = (((trunc(InstSch.Speed * 10))  and 65280) div 256)     and (255)
+            LinData[7] = (((trunc(InstSch.Speed * 10))  and 255)   div 1)       and (255)
+        case(TPE_WELD_SPD):       
+            LinData[6] = 0
+            LinData[7] = 0
+        endselect
+    
+        LinData[8] = InstSch.SpeedTyp
+
+        if InstSch.Cnt = TPE_TRM_FINE then 
+
+            LinData[9] = 0
+            LinData[10] = 0
+        else
+
+            LinData[9] = 128
+            LinData[10] = InstSch.Cnt
+        endif
+
+        if uninit(InstSch.ExtraInst1) then InstSch.ExtraInst1 = 0; endif
+
+        select InstSch.ExtraInst1 of
+        case(TPE_TOOL_OFS): -- tool offset
+
+            LinData[11] = InstSch.ExtraInst1
+            LinData[12] = LM_PREG
+            LinData[13] = LM_INDEX
+            LinData[14] = ((InstSch.ExtraInst2 and 65280) div 256)  and (255)
+            LinData[15] = ((InstSch.ExtraInst2 and 255) div 1)      and (255)
+
+            LenData = 15
+        case(TPE_USER_OFS): -- offset
+
+            LinData[11] = InstSch.ExtraInst1
+            LinData[12] = LM_PREG
+            LinData[13] = LM_INDEX
+            LinData[14] = ((InstSch.ExtraInst2 and 65280) div 256)  and (255)
+            LinData[15] = ((InstSch.ExtraInst2 and 255) div 1)      and (255)
+
+            LenData = 15     
+
+        case(TPE_IO): -- io
+
+            LinData[11] = InstSch.ExtraInst1
+            LinData[12] = 4
+            LinData[13] = InstSch.ExtraInst2
+
+            select InstSch.ExtraInst2 of
+            case(15):           -- DO[]
+
+                LinData[18] = LM_SPCON
+                LinData[19] = InstSch.ExtraInst4
+                LenData = 19
+            case(16):           -- RO[]
+
+                LinData[18] = LM_SPCON
+                LinData[19] = InstSch.ExtraInst4
+                LenData = 19
+            case(17):           -- AO[]
+
+                LinData[18] = LM_CONST
+
+                if InstSch.ExtraInst4 < 128 then
+                    LinData[19] = 1
+                    LinData[20] = InstSch.ExtraInst4
+                    LenData = 20
+                else
+                    LinData[19] = 2
+                    LinData[20] = ((InstSch.ExtraInst4 and (-16777216)) div 16777216)   and (255)
+                    LinData[21] = ((InstSch.ExtraInst4 and 16711680) div 65536)         and (255)
+                    LinData[22] = ((InstSch.ExtraInst4 and 65280) div 256)              and (255)
+                    LinData[23] = ((InstSch.ExtraInst4 and 255) div 1)                  and (255)
+                    LenData = 23
+                endif
+            case(23):           -- GO[]
+            
+                LinData[18] = LM_CONST
+                LinData[19] = LM_INDEX
+                LinData[20] = 0
+                LinData[21] = 0
+                LinData[22] = ((InstSch.ExtraInst4 and 65280) div 256)  and (255)
+                LinData[23] = ((InstSch.ExtraInst4 and 255) div 1)      and (255)
+                LenData = 23
+                
+            else:
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] ETI IO[' + int_2str_(InstSch.ExtraInst2) + ']', 0, CC_ABORT)
+            endselect
+            
+            LinData[14] = LM_INDEX
+            LinData[15] = ((InstSch.ExtraInst3 and 65280) div 256)  and (255)
+            LinData[16] = ((InstSch.ExtraInst3 and 255) div 1)      and (255)
+            LinData[17] = LM_ASGN
+
+        case(TPE_COORD): -- Coord Motion
+
+            LinData[11] = InstSch.ExtraInst1
+            LinData[12] = 0
+            LinData[13] = 0
+            LinData[14] = 0
+            LinData[15] = 0
+
+            LenData = 11   
+
+        case(TPE_COORD): -- Touch Search
+
+            LinData[11] = InstSch.ExtraInst1
+            LinData[12] = 6
+            LinData[13] = InstSch.ExtraInst2
+            for i = 14 to 77 do  
+                LinData[i] = 0
+            endfor
+
+            LenData = 77
+
+        case(TPE_PTH): -- Path
+
+            LinData[11] = InstSch.ExtraInst1
+            LenData = 11
+
+        case(TPE_PTH_CRD): -- Path & Coord
+
+            LinData[11] = TPE_PTH
+            LinData[12] = TPE_COORD
+            LenData = 12
+
+        case(TPE_PTH_OFS): -- Path & Uf Offs
+
+            LinData[11] = TPE_PTH
+            LinData[12] = TPE_USER_OFS
+            LinData[13] = LM_PREG
+            LinData[14] = LM_INDEX
+            LinData[15] = ((InstSch.ExtraInst2 and 65280) div 256)  and (255)
+            LinData[16] = ((InstSch.ExtraInst2 and 255) div 1)      and (255)
+
+            LenData = 16 
+
+        case(TPE_DPM): -- DPM
+
+            LinData[11] = TPE_DPM
+            LinData[12] = 0
+            LinData[13] = 0
+            LinData[14] = 0
+            LinData[15] = 0
+            LinData[16] = 2
+            LinData[17] = 0
+            LinData[18] = InstSch.ExtraInst2
+
+            LenData = 18 
+              
+        case(TPE_CRD_DPM): -- COORD & DPM
+
+            LinData[11] = TPE_COORD
+            LinData[12] = TPE_DPM
+            LinData[13] = 0
+            LinData[14] = 0
+            LinData[15] = 0
+            LinData[16] = 0
+            LinData[17] = 2
+            LinData[18] = 0
+            LinData[19] = InstSch.ExtraInst2
+
+            LenData = 19
+               
+        else:
+            
+            LenData = 10
+        endselect
+    
+    else
+
+        LinData[3] = InstSch.PointTyp
+        LinData[4] = (((InstSch.PointNo + 1) and 65280) div 256)    and (255)
+        LinData[5] = (((InstSch.PointNo + 1) and 255)   div 1)      and (255)
+        LinData[6] = InstSch.PointTyp
+        LinData[7] = (((InstSch.PointNo) and 65280) div 256)    and (255)
+        LinData[8] = (((InstSch.PointNo) and 255)   div 1)      and (255)
+
+        select InstSch.SpeedTyp of
+        case(LM_MTN_PER):  
+            LinData[9] = (((trunc(InstSch.Speed))       and 65280) div 256)     and (255)
+            LinData[10] = (((trunc(InstSch.Speed))       and 255)   div 1)       and (255)
+        case(LM_MTN_MMSEC):     
+            LinData[9] = (((trunc(InstSch.Speed))       and 65280) div 256)     and (255)
+            LinData[10] = (((trunc(InstSch.Speed))       and 255)   div 1)       and (255)
+        case(LM_MTN_CMMIN):     
+            LinData[9] = (((trunc(InstSch.Speed))       and 65280) div 256)     and (255)
+            LinData[10] = (((trunc(InstSch.Speed))       and 255)   div 1)       and (255)
+        case(LM_MTN_INCMN):     
+            LinData[9] = (((trunc(InstSch.Speed * 10))  and 65280) div 256)     and (255)
+            LinData[10] = (((trunc(InstSch.Speed * 10))  and 255)   div 1)       and (255)
+        case(LM_MTN_DGSEC):     
+            LinData[9] = (((trunc(InstSch.Speed))       and 65280) div 256)     and (255)
+            LinData[10] = (((trunc(InstSch.Speed))       and 255)   div 1)       and (255)
+        case(LM_MTN_SEC):       
+            LinData[9] = (((trunc(InstSch.Speed * 10))  and 65280) div 256)     and (255)
+            LinData[10] = (((trunc(InstSch.Speed * 10))  and 255)   div 1)       and (255)
+        endselect
+    
+        LinData[11] = InstSch.SpeedTyp
+
+        if InstSch.Cnt = TPE_TRM_FINE then 
+
+            LinData[12] = 0
+            LinData[13] = 0
+        else
+
+            LinData[12] = 128
+            LinData[13] = InstSch.Cnt
+        endif
+
+        if uninit(InstSch.ExtraInst1) then InstSch.ExtraInst1 = 0; endif
+
+        select InstSch.ExtraInst1 of
+        case(TPE_TOOL_OFS): -- tool offset
+
+            LinData[14] = InstSch.ExtraInst1
+            LinData[15] = LM_PREG
+            LinData[16] = LM_INDEX
+            LinData[17] = ((InstSch.ExtraInst2 and 65280) div 256)  and (255)
+            LinData[18] = ((InstSch.ExtraInst2 and 255) div 1)      and (255)
+
+            LenData = 18
+        case(TPE_USER_OFS): -- offset
+
+            LinData[14] = InstSch.ExtraInst1
+            LinData[15] = LM_PREG
+            LinData[16] = LM_INDEX
+            LinData[17] = ((InstSch.ExtraInst2 and 65280) div 256)  and (255)
+            LinData[18] = ((InstSch.ExtraInst2 and 255) div 1)      and (255)
+
+            LenData = 18    
+
+        case(TPE_IO): -- io
+
+            LinData[14] = InstSch.ExtraInst1
+            LinData[15] = 4
+            LinData[16] = InstSch.ExtraInst2
+
+            select InstSch.ExtraInst2 of
+            case(15):           -- DO[]
+
+                LinData[21] = LM_SPCON
+                LinData[22] = InstSch.ExtraInst4
+                LenData = 22
+            case(16):           -- RO[]
+
+                LinData[21] = LM_SPCON
+                LinData[22] = InstSch.ExtraInst4
+                LenData = 22
+            case(17):           -- AO[]
+
+                LinData[21] = LM_CONST
+
+                if InstSch.ExtraInst4 < 128 then
+                    LinData[22] = 1
+                    LinData[23] = InstSch.ExtraInst4
+                    LenData = 23
+                else
+                    LinData[22] = 2
+                    LinData[23] = ((InstSch.ExtraInst4 and (-16777216)) div 16777216)   and (255)
+                    LinData[24] = ((InstSch.ExtraInst4 and 16711680) div 65536)         and (255)
+                    LinData[25] = ((InstSch.ExtraInst4 and 65280) div 256)              and (255)
+                    LinData[26] = ((InstSch.ExtraInst4 and 255) div 1)                  and (255)
+                    LenData = 26
+                endif
+            case(23):           -- GO[]
+            
+                LinData[21] = LM_CONST
+                LinData[22] = LM_INDEX
+                LinData[23] = 0
+                LinData[24] = 0
+                LinData[25] = ((InstSch.ExtraInst4 and 65280) div 256)  and (255)
+                LinData[26] = ((InstSch.ExtraInst4 and 255) div 1)      and (255)
+                LenData = 26
+                
+            else:
+                post_err(CC_UALARM, 'Err [tpe_it_mov_] ETI IO[' + int_2str_(InstSch.ExtraInst2) + ']', 0, CC_ABORT)
+            endselect
+            
+            LinData[20] = LM_INDEX
+            LinData[21] = ((InstSch.ExtraInst3 and 65280) div 256)  and (255)
+            LinData[22] = ((InstSch.ExtraInst3 and 255) div 1)      and (255)
+            LinData[23] = LM_ASGN
+
+        case(TPE_COORD): -- Coord Motion
+
+            LinData[14] = InstSch.ExtraInst1
+            LinData[15] = 0
+            LinData[16] = 0
+            LinData[17] = 0
+            LinData[18] = 0
+
+            LenData = 14   
+
+        case(TPE_COORD): -- Touch Search
+
+            LinData[14] = InstSch.ExtraInst1
+            LinData[15] = 6
+            LinData[16] = InstSch.ExtraInst2
+            for i = 17 to 80 do  
+                LinData[i] = 0
+            endfor
+
+            LenData = 80
+
+        case(TPE_PTH): -- Path
+
+            LinData[14] = InstSch.ExtraInst1
+            LenData = 14
+
+        case(TPE_PTH_CRD): -- Path & Coord
+
+            LinData[14] = TPE_PTH
+            LinData[15] = TPE_COORD
+            LenData = 15
+        case(TPE_PTH_OFS): -- Path & Uf Offs
+
+            LinData[14] = TPE_PTH
+            LinData[15] = TPE_USER_OFS
+            LinData[16] = LM_PREG
+            LinData[17] = LM_INDEX
+            LinData[18] = ((InstSch.ExtraInst2 and 65280) div 256)  and (255)
+            LinData[19] = ((InstSch.ExtraInst2 and 255) div 1)      and (255)
+
+            LenData = 19   
+
+        case(TPE_DPM): -- DPM
+
+            LinData[14] = TPE_DPM
+            LinData[15] = 0
+            LinData[16] = 0
+            LinData[17] = 0
+            LinData[18] = 0
+            LinData[19] = 2
+            LinData[20] = 0
+            LinData[21] = InstSch.ExtraInst2
+
+            LenData = 21
+
+        case(TPE_CRD_DPM): -- COORD & DPM
+
+            LinData[14] = TPE_COORD
+            LinData[15] = TPE_DPM
+            LinData[16] = 0
+            LinData[17] = 0
+            LinData[18] = 0
+            LinData[19] = 0
+            LinData[20] = 2
+            LinData[21] = 0
+            LinData[22] = InstSch.ExtraInst2
+
+            LenData = 22
+
+
+        else:
+                          
+            LenData = 13
+        endselect
+
+
+    endif
+
+    -- wait for ($mor_grp[1].$servo_ready = true)
+    rep_inst_tpe(OpenId, LineNo, 2, LinData, LenData, SetStatus)
+    if SetStatus <> CC_SUCCESS then
+        post_err(CC_UALARM, 'Err [tpe_it_mov_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+    endif
+    LineNo = LineNo + 1
+end tpe_it_mov_
+
+routine tpe_it_frm_
+var
+    LinData         : array[48] of byte
+    LenData         : integer
+    SetStatus       : integer
+begin
+    select InstSch.FrmType of
+    case(LM_UFRNUM):
+        if (InstSch.FrmNo < TPE_MIN_UF) or (InstSch.FrmNo > TPE_MAX_UF) then 
+
+            post_err(CC_UALARM, 'Err [tpe_it_frm_] UfFrmNo[' + int_2str_(InstSch.FrmNo) + ']', 0, CC_ABORT)
+        endif
+    case(LM_UTLNUM):
+        if (InstSch.FrmNo < TPE_MIN_UT) or (InstSch.FrmNo > TPE_MAX_UT) then 
+
+            post_err(CC_UALARM, 'Err [tpe_it_frm_] UtFrmNo[' + int_2str_(InstSch.FrmNo) + ']', 0, CC_ABORT)
+        endif
+    else:
+        
+        post_err(CC_UALARM, 'Err [tpe_it_frm_] FrmType[' + int_2str_(InstSch.FrmType) + ']', 0, CC_ABORT)
+    endselect
+    
+    LinData[1] = InstSch.FrmType
+    LinData[2] = LM_ASGN
+    LinData[3] = 1
+    LinData[4] = 1
+    LinData[5] = InstSch.FrmNo
+
+    LenData = 5
+    -- wait for ($mor_grp[1].$servo_ready = true)
+    rep_inst_tpe(OpenId, LineNo, 2, LinData, LenData, SetStatus)
+    if SetStatus <> CC_SUCCESS then
+        post_err(CC_UALARM, 'Err [tpe_it_frm_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+    endif
+    LineNo = LineNo + 1
+end tpe_it_frm_
+
+routine tpe_it_wv_
+var
+    LinData         : array[48] of byte
+    LenData         : integer
+    SetStatus       : integer
+begin
+
+    LinData[1] = LM_WS
+    LinData[2] = LM_INDEX
+
+    select InstSch.WvType of
+    case(TPE_WV_SINE):
+        if (InstSch.WeaveNo < TPE_MIN_WV) or (InstSch.WeaveNo > TPE_MAX_WV) then 
+
+            post_err(CC_UALARM, 'Err [tpe_it_wv_] WeaveNo[' + int_2str_(InstSch.WeaveNo) + ']', 0, CC_ABORT)
+        endif
+    
+        LinData[3]  = 0
+        LinData[4]  = TPE_WV_SINE
+        LinData[5]  = LM_INDEX
+        LinData[6]  = 0
+        LinData[7]  = InstSch.WeaveNo
+        LinData[8]  = LM_INDEX
+        LinData[9]  = 0
+        LinData[10] = 0
+        LinData[11] = LM_INDEX
+        LinData[12] = 0
+        LinData[13] = 0
+        LinData[14] = LM_INDEX
+        LinData[15] = 0
+        LinData[16] = 0
+        LinData[17] = LM_INDEX
+        LinData[18] = 0
+        LinData[19] = 0
+
+        LenData = 19
+    case(TPE_WV_FIG8):
+        if (InstSch.WeaveNo < TPE_MIN_WV) or (InstSch.WeaveNo > TPE_MAX_WV) then 
+
+            post_err(CC_UALARM, 'Err [tpe_it_wv_] WeaveNo[' + int_2str_(InstSch.WeaveNo) + ']', 0, CC_ABORT)
+        endif
+    
+        LinData[3]  = 0
+        LinData[4]  = TPE_WV_FIG8
+        LinData[5]  = LM_INDEX
+        LinData[6]  = 0
+        LinData[7]  = InstSch.WeaveNo
+        LinData[8]  = LM_INDEX
+        LinData[9]  = 0
+        LinData[10] = 0
+        LinData[11] = LM_INDEX
+        LinData[12] = 0
+        LinData[13] = 0
+        LinData[14] = LM_INDEX
+        LinData[15] = 0
+        LinData[16] = 0
+        LinData[17] = LM_INDEX
+        LinData[18] = 0
+        LinData[19] = 0
+
+        LenData = 19
+    case(TPE_WV_CIRC):
+        if (InstSch.WeaveNo < TPE_MIN_WV) or (InstSch.WeaveNo > TPE_MAX_WV) then 
+
+            post_err(CC_UALARM, 'Err [tpe_it_wv_] WeaveNo[' + int_2str_(InstSch.WeaveNo) + ']', 0, CC_ABORT)
+        endif
+    
+        LinData[3]  = 0
+        LinData[4]  = TPE_WV_CIRC
+        LinData[5]  = LM_INDEX
+        LinData[6]  = 0
+        LinData[7]  = InstSch.WeaveNo
+        LinData[8]  = LM_INDEX
+        LinData[9]  = 0
+        LinData[10] = 0
+        LinData[11] = LM_INDEX
+        LinData[12] = 0
+        LinData[13] = 0
+        LinData[14] = LM_INDEX
+        LinData[15] = 0
+        LinData[16] = 0
+        LinData[17] = LM_INDEX
+        LinData[18] = 0
+        LinData[19] = 0
+
+        LenData = 19
+    case(TPE_WV_END1):
+    
+        LinData[3]  = 0
+        LinData[4]  = TPE_WV_END1
+        LinData[5]  = LM_INDEX
+        LinData[6]  = 0
+        LinData[7]  = 0
+        LinData[8]  = LM_INDEX
+        LinData[9]  = 0
+        LinData[10] = 0
+        LinData[11] = LM_INDEX
+        LinData[12] = 0
+        LinData[13] = 0
+        LinData[14] = LM_INDEX
+        LinData[15] = 0
+        LinData[16] = 0
+        LinData[17] = LM_INDEX
+        LinData[18] = 0
+        LinData[19] = 0
+
+        LenData = 19
+    case(TPE_WV_SINE2):
+        if (InstSch.WeaveNo < TPE_MIN_WV) or (InstSch.WeaveNo > TPE_MAX_WV) then 
+
+            post_err(CC_UALARM, 'Err [tpe_it_wv_] WeaveNo[' + int_2str_(InstSch.WeaveNo) + ']', 0, CC_ABORT)
+        endif
+    
+        LinData[3]  = 0
+        LinData[4]  = TPE_WV_SINE2
+        LinData[5]  = LM_INDEX
+        LinData[6]  = 0
+        LinData[7]  = InstSch.WeaveNo
+        LinData[8]  = LM_INDEX
+        LinData[9]  = 0
+        LinData[10] = 0
+        LinData[11] = LM_INDEX
+        LinData[12] = 0
+        LinData[13] = 0
+        LinData[14] = LM_INDEX
+        LinData[15] = 0
+        LinData[16] = 0
+        LinData[17] = LM_INDEX
+        LinData[18] = 0
+        LinData[19] = 0
+
+        LenData = 19
+    case(TPE_WV_L):
+        if (InstSch.WeaveNo < TPE_MIN_WV) or (InstSch.WeaveNo > TPE_MAX_WV) then 
+
+            post_err(CC_UALARM, 'Err [tpe_it_wv_] WeaveNo[' + int_2str_(InstSch.WeaveNo) + ']', 0, CC_ABORT)
+        endif
+    
+        LinData[3]  = 0
+        LinData[4]  = TPE_WV_L
+        LinData[5]  = LM_INDEX
+        LinData[6]  = 0
+        LinData[7]  = InstSch.WeaveNo
+        LinData[8]  = LM_INDEX
+        LinData[9]  = 0
+        LinData[10] = 0
+        LinData[11] = LM_INDEX
+        LinData[12] = 0
+        LinData[13] = 0
+        LinData[14] = LM_INDEX
+        LinData[15] = 0
+        LinData[16] = 0
+        LinData[17] = LM_INDEX
+        LinData[18] = 0
+        LinData[19] = 0
+        LinData[20] = LM_INDEX
+        LinData[21] = 0
+        LinData[22] = 0
+
+        LenData = 22
+    case(TPE_WV_END2):
+        if (InstSch.WeaveNo < TPE_MIN_WV) or (InstSch.WeaveNo > TPE_MAX_WV) then 
+
+            post_err(CC_UALARM, 'Err [tpe_it_wv_] WeaveNo[' + int_2str_(InstSch.WeaveNo) + ']', 0, CC_ABORT)
+        endif
+    
+        LinData[3]  = 0
+        LinData[4]  = TPE_WV_END2
+        LinData[5]  = LM_INDEX
+        LinData[6]  = 0
+        LinData[7]  = InstSch.WeaveNo
+        LinData[8]  = LM_INDEX
+        LinData[9]  = 0
+        LinData[10] = 0
+        LinData[11] = LM_INDEX
+        LinData[12] = 0
+        LinData[13] = 0
+        LinData[14] = LM_INDEX
+        LinData[15] = 0
+        LinData[16] = 0
+        LinData[17] = LM_INDEX
+        LinData[18] = 0
+        LinData[19] = 0
+
+        LenData = 19
+    else:
+        post_err(CC_UALARM, 'Err [tpe_it_wv_] WvType[' + int_2str_(InstSch.WvType) + ']', 0, CC_ABORT)
+    endselect
+    -- wait for ($mor_grp[1].$servo_ready = true)
+    rep_inst_tpe(OpenId, LineNo, 2, LinData, LenData, SetStatus)
+    if SetStatus <> CC_SUCCESS then
+        post_err(CC_UALARM, 'Err [tpe_it_wv_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+    endif
+    LineNo = LineNo + 1
+end tpe_it_wv_
+
+routine tpe_it_wd_
+var
+    LinData         : array[48] of byte
+    LenData         : integer
+    SetStatus       : integer
+    IntVal          : integer
+begin
+
+    LinData[1] = LM_APPL
+    LinData[2] = 0
+
+    select InstSch.WdType of
+    case(TPE_ARC_ST):
+        if (InstSch.WeldNo < TPE_MIN_WELD) or (InstSch.WeldNo > TPE_MAX_WELD) then 
+
+            post_err(CC_UALARM, 'Err [tpe_it_wd_] WeldNo[' + int_2str_(InstSch.WeldNo) + ']', 0, CC_ABORT)
+        endif
+    
+        LinData[3]  = 32
+        LinData[4]  = 1
+        LinData[5]  = 1
+        LinData[6]  = LM_ASGN
+        LinData[7]  = 0
+        LinData[8]  = InstSch.WeldNo
+        LinData[9]  = LM_ASGN
+        LinData[10] = 0
+        LinData[11] = 0
+        LinData[12] = LM_ASGN
+        LinData[13] = 0
+        LinData[14] = 0
+        LinData[15] = LM_ASGN
+        LinData[16] = 0
+        LinData[17] = 0
+        LinData[18] = LM_ASGN
+        LinData[19] = 0
+        LinData[20] = 0
+        LinData[21] = LM_ASGN
+        LinData[22] = 0
+        LinData[23] = 0
+        LinData[24] = LM_ASGN
+        LinData[25] = 0
+        LinData[26] = 0
+        LinData[27] = LM_ASGN
+        LinData[28] = 0
+        LinData[29] = 0
+        LinData[30] = LM_ASGN
+        LinData[31] = 0
+        LinData[32] = 0
+        LinData[33] = LM_ASGN
+        LinData[34] = 0
+        LinData[35] = 0
+        LinData[36] = 0
+
+        LenData = 36
+    case(TPE_ARC_END):
+        if (InstSch.WeldNo < TPE_MIN_WELD) or (InstSch.WeldNo > TPE_MAX_WELD) then 
+
+            post_err(CC_UALARM, 'Err [tpe_it_wd_] WeldNo[' + int_2str_(InstSch.WeldNo) + ']', 0, CC_ABORT)
+        endif
+    
+        LinData[3]  = 32
+        LinData[4]  = 1
+        LinData[5]  = 2
+        LinData[6]  = LM_ASGN
+        LinData[7]  = 0
+        LinData[8]  = InstSch.WeldNo
+        LinData[9]  = LM_ASGN
+        LinData[10] = 0
+        LinData[11] = 0
+        LinData[12] = LM_ASGN
+        LinData[13] = 0
+        LinData[14] = 0
+        LinData[15] = LM_ASGN
+        LinData[16] = 0
+        LinData[17] = 0
+        LinData[18] = LM_ASGN
+        LinData[19] = 0
+        LinData[20] = 0
+        LinData[21] = LM_ASGN
+        LinData[22] = 0
+        LinData[23] = 0
+        LinData[24] = LM_ASGN
+        LinData[25] = 0
+        LinData[26] = 0
+        LinData[27] = LM_ASGN
+        LinData[28] = 0
+        LinData[29] = 0
+        LinData[30] = LM_ASGN
+        LinData[31] = 0
+        LinData[32] = 0
+        LinData[33] = LM_ASGN
+        LinData[34] = 0
+        LinData[35] = 0
+        LinData[36] = 0
+
+        LenData = 36
+
+    case(TPE_ARC_ST2):
+        if (InstSch.WeldNo < TPE_MIN_WELD) or (InstSch.WeldNo > TPE_MAX_WELD) then 
+
+            post_err(CC_UALARM, 'Err [tpe_it_wd_] WeldNo[' + int_2str_(InstSch.WeldNo) + ']', 0, CC_ABORT)
+        endif
+        
+        LinData[3]  = 32
+        LinData[4]  = 1
+        LinData[5]  = 3
+        LinData[6]  = LM_ASGN
+        LinData[7]  = 0
+        LinData[8]  = (InstSch.WeldNo * 10)
+        LinData[9]  = LM_ASGN
+        LinData[10] = ((InstSch.ExtraInst1 and 65280) div 256)    and (255)
+        LinData[11] = ((InstSch.ExtraInst1 and 255)   div 1)    and (255)
+        LinData[12] = LM_ASGN
+        LinData[13] = (((InstSch.ExtraInst2 * 10) and 65280) div 256)    and (255)
+        LinData[14] = (((InstSch.ExtraInst2 * 10) and 255)   div 1)    and (255)
+        LinData[15] = LM_ASGN
+       -- IntVal = tern_int_(InstSch.ExtraInst3 < 0, 16384 - InstSch.ExtraInst3, InstSch.ExtraInst3)
+        LinData[16] = ((tern_int_(InstSch.ExtraInst3 < 0, 16384 - InstSch.ExtraInst3, InstSch.ExtraInst3) and 65280) div 256)    and (255)
+        LinData[17] = ((tern_int_(InstSch.ExtraInst3 < 0, 16384 - InstSch.ExtraInst3, InstSch.ExtraInst3) and 255)   div 1)    and (255)
+        LinData[18] = LM_ASGN
+        LinData[19] = ((tern_int_(InstSch.ExtraInst4 < 0, 16384 - InstSch.ExtraInst4, InstSch.ExtraInst4) and 65280) div 256)    and (255)
+        LinData[20] = ((tern_int_(InstSch.ExtraInst4 < 0, 16384 - InstSch.ExtraInst4, InstSch.ExtraInst4) and 255)   div 1)    and (255)
+        LinData[21] = LM_ASGN
+        LinData[22] = ((tern_int_(InstSch.ExtraInst5 < 0, 16384 - InstSch.ExtraInst5 * 10, InstSch.ExtraInst5 * 10) and 65280) div 256)    and (255)
+        LinData[23] = ((tern_int_(InstSch.ExtraInst5 < 0, 16384 - InstSch.ExtraInst5 * 10, InstSch.ExtraInst5 * 10) and 255)   div 1)    and (255)
+        LinData[24] = LM_ASGN
+        LinData[25] = ((InstSch.ExtraInst6  and 65280) div 256)    and (255)
+        LinData[26] = ((InstSch.ExtraInst6  and 255)   div 1)    and (255)
+        LinData[27] = LM_ASGN
+        LinData[28] = 0
+        LinData[29] = 0
+        LinData[30] = LM_ASGN
+        LinData[31] = 0
+        LinData[32] = 0
+        LinData[33] = LM_ASGN
+        LinData[34] = 0
+        LinData[35] = 0
+        LinData[36] = 0
+
+        LenData = 36
+    case(TPE_ARC_END2):
+        if (InstSch.WeldNo < TPE_MIN_WELD) or (InstSch.WeldNo > TPE_MAX_WELD) then 
+
+            post_err(CC_UALARM, 'Err [tpe_it_wd_] WeldNo[' + int_2str_(InstSch.WeldNo) + ']', 0, CC_ABORT)
+        endif
+    
+        LinData[3]  = 32
+        LinData[4]  = 1
+        LinData[5]  = 4
+        LinData[6]  = LM_ASGN
+        LinData[7]  = 0
+        LinData[8]  = (InstSch.WeldNo * 10)
+        LinData[9]  = LM_ASGN
+        LinData[10] = ((InstSch.ExtraInst1 and 65280) div 256)    and (255)
+        LinData[11] = ((InstSch.ExtraInst1 and 255)   div 1)    and (255)
+        LinData[12] = LM_ASGN
+        LinData[13] = (((InstSch.ExtraInst2 * 10) and 65280) div 256)    and (255)
+        LinData[14] = (((InstSch.ExtraInst2 * 10) and 255)   div 1)    and (255)
+        LinData[15] = LM_ASGN
+       -- IntVal = tern_int_(InstSch.ExtraInst3 < 0, 16384 - InstSch.ExtraInst3, InstSch.ExtraInst3)
+        LinData[16] = ((tern_int_(InstSch.ExtraInst3 < 0, 16384 - InstSch.ExtraInst3, InstSch.ExtraInst3) and 65280) div 256)    and (255)
+        LinData[17] = ((tern_int_(InstSch.ExtraInst3 < 0, 16384 - InstSch.ExtraInst3, InstSch.ExtraInst3) and 255)   div 1)    and (255)
+        LinData[18] = LM_ASGN
+        LinData[19] = ((tern_int_(InstSch.ExtraInst4 < 0, 16384 - InstSch.ExtraInst4, InstSch.ExtraInst4) and 65280) div 256)    and (255)
+        LinData[20] = ((tern_int_(InstSch.ExtraInst4 < 0, 16384 - InstSch.ExtraInst4, InstSch.ExtraInst4) and 255)   div 1)    and (255)
+        LinData[21] = LM_ASGN
+        LinData[22] = ((tern_int_(InstSch.ExtraInst5 < 0, 16384 - InstSch.ExtraInst5 * 10, InstSch.ExtraInst5 * 10) and 65280) div 256)    and (255)
+        LinData[23] = ((tern_int_(InstSch.ExtraInst5 < 0, 16384 - InstSch.ExtraInst5 * 10, InstSch.ExtraInst5 * 10) and 255)   div 1)    and (255)
+        LinData[24] = LM_ASGN
+        LinData[25] = ((InstSch.ExtraInst6  and 65280) div 256)    and (255)
+        LinData[26] = ((InstSch.ExtraInst6  and 255)   div 1)    and (255)
+        LinData[27] = LM_ASGN
+        LinData[28] = 0
+        LinData[29] = 0
+        LinData[30] = LM_ASGN
+        LinData[31] = 0
+        LinData[32] = 0
+        LinData[33] = LM_ASGN
+        LinData[34] = 0
+        LinData[35] = 0
+        LinData[36] = 0
+
+        LenData = 36
+        
+    case(TPE_WLD_ST):
+        if (InstSch.WeldNo < TPE_MIN_WELD) or (InstSch.WeldNo > TPE_MAX_WELD) then 
+
+            post_err(CC_UALARM, 'Err [tpe_it_wd_] WeldNo[' + int_2str_(InstSch.WeldNo) + ']', 0, CC_ABORT)
+        endif
+    
+        LinData[3]  = 32
+        LinData[4]  = 1
+        LinData[5]  = 7
+        LinData[6]  = LM_ASGN
+        LinData[7]  = 0
+        LinData[8]  = InstSch.WeldNo
+        LinData[9]  = LM_ASGN
+        LinData[10] = 0
+        LinData[11] = InstSch.ExtraInst1
+        LinData[12] = LM_ASGN
+        LinData[13] = 0
+        LinData[14] = 0
+        LinData[15] = LM_ASGN
+        LinData[16] = 0
+        LinData[17] = 0
+        LinData[18] = LM_ASGN
+        LinData[19] = 0
+        LinData[20] = 0
+        LinData[21] = LM_ASGN
+        LinData[22] = 0
+        LinData[23] = 0
+        LinData[24] = LM_ASGN
+        LinData[25] = 0
+        LinData[26] = 0
+        LinData[27] = LM_ASGN
+        LinData[28] = 0
+        LinData[29] = 0
+        LinData[30] = LM_ASGN
+        LinData[31] = 0
+        LinData[32] = 0
+        LinData[33] = LM_ASGN
+        LinData[34] = 0
+        LinData[35] = 0
+        LinData[36] = 0
+
+        LenData = 36
+
+    case(TPE_WLD_END):
+        if (InstSch.WeldNo < TPE_MIN_WELD) or (InstSch.WeldNo > TPE_MAX_WELD) then 
+
+            post_err(CC_UALARM, 'Err [tpe_it_wd_] WeldNo[' + int_2str_(InstSch.WeldNo) + ']', 0, CC_ABORT)
+        endif
+    
+        LinData[3]  = 32
+        LinData[4]  = 1
+        LinData[5]  = 8
+        LinData[6]  = LM_ASGN
+        LinData[7]  = 0
+        LinData[8]  = InstSch.WeldNo
+        LinData[9]  = LM_ASGN
+        LinData[10] = 0
+        LinData[11] = InstSch.ExtraInst1
+        LinData[12] = LM_ASGN
+        LinData[13] = 0
+        LinData[14] = 0
+        LinData[15] = LM_ASGN
+        LinData[16] = 0
+        LinData[17] = 0
+        LinData[18] = LM_ASGN
+        LinData[19] = 0
+        LinData[20] = 0
+        LinData[21] = LM_ASGN
+        LinData[22] = 0
+        LinData[23] = 0
+        LinData[24] = LM_ASGN
+        LinData[25] = 0
+        LinData[26] = 0
+        LinData[27] = LM_ASGN
+        LinData[28] = 0
+        LinData[29] = 0
+        LinData[30] = LM_ASGN
+        LinData[31] = 0
+        LinData[32] = 0
+        LinData[33] = LM_ASGN
+        LinData[34] = 0
+        LinData[35] = 0
+        LinData[36] = 0
+
+        LenData = 36
+
+    case(TPE_WLD_ST2):
+        if (InstSch.WeldNo < TPE_MIN_WELD) or (InstSch.WeldNo > TPE_MAX_WELD) then 
+
+            post_err(CC_UALARM, 'Err [tpe_it_wd_] WeldNo[' + int_2str_(InstSch.WeldNo) + ']', 0, CC_ABORT)
+        endif
+        
+        LinData[3]  = 32
+        LinData[4]  = 1
+        LinData[5]  = 9
+        LinData[6]  = LM_ASGN
+        LinData[7]  = 0
+        LinData[8]  = (InstSch.WeldNo * 10)
+        LinData[9]  = LM_ASGN
+        LinData[10] = ((InstSch.ExtraInst1          and 65280) div 256)     and (255)
+        LinData[11] = ((InstSch.ExtraInst1          and 255)   div 1)       and (255)
+        LinData[12] = LM_ASGN
+        LinData[13] = (((InstSch.ExtraInst2 * 10)   and 65280) div 256)     and (255)
+        LinData[14] = (((InstSch.ExtraInst2 * 10)   and 255)   div 1)       and (255)
+        LinData[15] = LM_ASGN
+       -- IntVal = tern_int_(InstSch.ExtraInst3 < 0, 16384 - InstSch.ExtraInst3, InstSch.ExtraInst3)
+        LinData[16] = (((InstSch.ExtraInst3 * 10)   and 65280) div 256)     and (255)
+        LinData[17] = (((InstSch.ExtraInst3 * 10)   and 255)   div 1)       and (255)
+        LinData[18] = LM_ASGN
+        LinData[19] = (((InstSch.ExtraInst4 * 10)   and 65280) div 256)     and (255)
+        LinData[20] = (((InstSch.ExtraInst4 * 10)   and 255)   div 1)       and (255)
+        LinData[21] = LM_ASGN
+        LinData[22] = 0
+        LinData[23] = 0
+        LinData[24] = LM_ASGN
+        LinData[25] = 0
+        LinData[26] = 0
+        LinData[27] = LM_ASGN
+        LinData[28] = 0
+        LinData[29] = 0
+        LinData[30] = LM_ASGN
+        LinData[31] = 0
+        LinData[32] = 0
+        LinData[33] = LM_ASGN
+        LinData[34] = 0
+        LinData[35] = 0
+        LinData[36] = 0
+
+        LenData = 36
+    case(TPE_WLD_END2):
+        if (InstSch.WeldNo < TPE_MIN_WELD) or (InstSch.WeldNo > TPE_MAX_WELD) then 
+
+            post_err(CC_UALARM, 'Err [tpe_it_wd_] WeldNo[' + int_2str_(InstSch.WeldNo) + ']', 0, CC_ABORT)
+        endif
+    
+        LinData[3]  = 32
+        LinData[4]  = 1
+        LinData[5]  = 10
+        LinData[6]  = LM_ASGN
+        LinData[7]  = 0
+        LinData[8]  = (InstSch.WeldNo * 10)
+        LinData[9]  = LM_ASGN
+        LinData[10] = ((InstSch.ExtraInst1 and 65280) div 256)    and (255)
+        LinData[11] = ((InstSch.ExtraInst1 and 255)   div 1)    and (255)
+        LinData[12] = LM_ASGN
+        LinData[13] = (((InstSch.ExtraInst2 * 10) and 65280) div 256)    and (255)
+        LinData[14] = (((InstSch.ExtraInst2 * 10) and 255)   div 1)    and (255)
+        LinData[15] = LM_ASGN
+       -- IntVal = tern_int_(InstSch.ExtraInst3 < 0, 16384 - InstSch.ExtraInst3, InstSch.ExtraInst3)
+        LinData[16] = ((tern_int_(InstSch.ExtraInst3 < 0, 16384 - InstSch.ExtraInst3, InstSch.ExtraInst3) and 65280) div 256)    and (255)
+        LinData[17] = ((tern_int_(InstSch.ExtraInst3 < 0, 16384 - InstSch.ExtraInst3, InstSch.ExtraInst3) and 255)   div 1)    and (255)
+        LinData[18] = LM_ASGN
+        LinData[19] = ((tern_int_(InstSch.ExtraInst4 < 0, 16384 - InstSch.ExtraInst4, InstSch.ExtraInst4) and 65280) div 256)    and (255)
+        LinData[20] = ((tern_int_(InstSch.ExtraInst4 < 0, 16384 - InstSch.ExtraInst4, InstSch.ExtraInst4) and 255)   div 1)    and (255)
+        LinData[21] = LM_ASGN
+        LinData[22] = ((tern_int_(InstSch.ExtraInst5 < 0, 16384 - InstSch.ExtraInst5 * 10, InstSch.ExtraInst5 * 10) and 65280) div 256)    and (255)
+        LinData[23] = ((tern_int_(InstSch.ExtraInst5 < 0, 16384 - InstSch.ExtraInst5 * 10, InstSch.ExtraInst5 * 10) and 255)   div 1)    and (255)
+        LinData[24] = LM_ASGN
+        LinData[25] = ((InstSch.ExtraInst6  and 65280) div 256)    and (255)
+        LinData[26] = ((InstSch.ExtraInst6  and 255)   div 1)    and (255)
+        LinData[27] = LM_ASGN
+        LinData[28] = 0
+        LinData[29] = 0
+        LinData[30] = LM_ASGN
+        LinData[31] = 0
+        LinData[32] = 0
+        LinData[33] = LM_ASGN
+        LinData[34] = 0
+        LinData[35] = 0
+        LinData[36] = 0
+
+        LenData = 36
+        
+    else:
+        post_err(CC_UALARM, 'Err [tpe_it_wd_] WdType[' + int_2str_(InstSch.WdType) + ']', 0, CC_ABORT)
+    endselect
+    -- wait for ($mor_grp[1].$servo_ready = true)
+    rep_inst_tpe(OpenId, LineNo, 2, LinData, LenData, SetStatus)
+    if SetStatus <> CC_SUCCESS then
+        post_err(CC_UALARM, 'Err [tpe_it_wd_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+    endif
+    LineNo = LineNo + 1
+end tpe_it_wd_
+
+routine tpe_it_io_
+var
+    LinData         : array[48] of byte
+    LenData         : integer
+    SetStatus       : integer
+begin
+
+    select InstSch.IoType of
+    case(LM_SDO):   LinData[1] = LM_SDO
+    case(LM_FLG):   LinData[1] = LM_FLG
+    case(LM_UO):    LinData[1] = LM_UO
+    case(LM_RDO):   LinData[1] = LM_RDO
+    case(LM_WO):    LinData[1] = LM_WO
+    else:           
+        post_err(CC_UALARM, 'Err [tpe_it_io_] IoType[' + int_2str_(InstSch.IoType) + ']', 0, CC_ABORT)
+    endselect
+    
+    LinData[2] = LM_INDEX
+    LinData[3] = ((InstSch.IoNo and 65280) div 256)    and (255)
+    LinData[4] = ((InstSch.IoNo  and 255)   div 1)    and (255)
+    LinData[5] = LM_ASGN
+    LinData[6] = 115
+    LinData[7] = LM_SPCON
+    if InstSch.IoStat then 
+        LinData[8] = 1
+    else
+        LinData[8] = 0
+    endif
+    LinData[9] = 116
+
+    LenData = 9
+
+    -- wait for ($mor_grp[1].$servo_ready = true)
+    rep_inst_tpe(OpenId, LineNo, 2, LinData, LenData, SetStatus)
+    if SetStatus <> CC_SUCCESS then
+        post_err(CC_UALARM, 'Err [tpe_it_io_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+    endif
+    LineNo = LineNo + 1
+end tpe_it_io_
+
+routine tpe_it_reg_
+var
+    LinData         : array[48] of byte
+    LenData         : integer
+    SetStatus       : integer
+begin
+
+    select InstSch.RegType of
+    case(LM_REG):   LinData[1] = LM_REG
+    else:           
+        post_err(CC_UALARM, 'Err [tpe_it_reg_] RegType[' + int_2str_(InstSch.RegType) + ']', 0, CC_ABORT)
+    endselect
+    
+    LinData[2] = LM_INDEX
+    LinData[3] = ((InstSch.RegNo and 65280) div 256)    and (255)
+    LinData[4] = ((InstSch.RegNo  and 255)   div 1)    and (255)
+    LinData[5] = LM_ASGN
+    LinData[6] = 1
+
+    if abs(InstSch.Val - round(InstSch.Val)) > 0 then
+
+        LinData[7] = 3
+        if put_real_abt(InstSch.Val, LinData, 8) <> CC_SUCCESS then 
+            post_err(CC_UALARM, 'Err [tpe_it_reg_] Cnv Real Byte', 0, CC_ABORT)
+        endif 
+
+        LenData = 11
+    else
+        if (round(InstSch.Val) > -129) and (round(InstSch.Val) < 0) then
+            LinData[7] = 1
+            LinData[8] = round(InstSch.Val) + 256
+            LenData = 8
+        else
+
+            -- if (round(InstSch.Val) >= 0) and (round(InstSch.Val) <= 255) then
+            --     LinData[7] = 1
+            --     LinData[8] = round(InstSch.Val)
+            --     LenData = 8
+            -- else
+                LinData[7] = 2
+                LinData[8] = ((round(InstSch.Val) and (-16777216))   div 16777216)   and (255)
+                LinData[9] = ((round(InstSch.Val) and 16711680)      div 65536)      and (255)
+                LinData[10] = ((round(InstSch.Val) and 65280)        div 256)        and (255)
+                LinData[11] = ((round(InstSch.Val) and 255)          div 1)          and (255)
+                LenData = 11
+            -- endif
+        endif
+    endif
+    -- wait for ($mor_grp[1].$servo_ready = true)
+    rep_inst_tpe(OpenId, LineNo, 2, LinData, LenData, SetStatus)
+    if SetStatus <> CC_SUCCESS then
+        post_err(CC_UALARM, 'Err [tpe_it_reg_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+    endif
+    LineNo = LineNo + 1
+end tpe_it_reg_

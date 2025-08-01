@@ -1,0 +1,128 @@
+&access RP
+&comment Lib Socket-h 221122
+defdat lib_packages_t public
+;***********************************************************
+;
+; Copyright 2018 - 2023 speedbot All Rights reserved.
+;
+; File Name: lib_packages_t.dat
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2021 - 08 - 17
+;   Modification Data    ==   2021 - 09 - 17
+;
+; Author: speedbot
+;
+; Version: 1.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+
+global const char TYPE_KUKA         = 3          
+
+global const int PACK_HEADER	    = 232425
+global const int PACK_TAIL	        = 485868
+
+global struc pack_head_t int Head, Length, PacketCount, char Cmd, Type_, Seq, VirtualRob
+
+global struc pack_tail_t int Tail
+
+global enum PACKCMD_RW_T PACKCMD_READ, PACKCMD_WRITE
+
+
+ext pack_head_(char[] : out, pack_head_t : in, int : out)
+
+ext pack_body_(char[] : out, busout_t : in, int : out)
+
+ext pack_tail_(char[] : out, pack_tail_t : in, int : out)
+
+extfct int unpack_head_(char[] : in, pack_head_t : out, int : out)
+
+ext unpack_body_(char[] : in, busin_t : out, int : out)
+
+extfct int unpack_tail_(char[] : in, pack_tail_t : out, int : out)
+
+ext pack_cmd002_(char[] : out, PACKCMD_RW_T : in, cmd_typ01_t : out, int : out)
+
+ext pack_cmd003_(char[] : out, PACKCMD_RW_T : in, pos : out, int : out)
+
+ext pack_cmd009_(char[] : out, PACKCMD_RW_T : in, pos : out, int : out)
+
+ext pack_cmd010_(char[] : out, PACKCMD_RW_T : in, pos : out, int : out)
+
+ext pack_cmd011_(char[] : out, PACKCMD_RW_T : in, pos : out, int : out)
+
+ext pack_cmd012_(char[] : out, PACKCMD_RW_T : in, cmd_typ01_t : out, int : out)
+
+ext pack_cmd013_(char[] : out, PACKCMD_RW_T : in, cmd_typ01_t : out, int : out)
+
+ext pack_cmd014_(char[] : out, PACKCMD_RW_T : in, cmd_typ01_t : out, int : out)
+
+ext pack_cmd017_(char[] : out, PACKCMD_RW_T : in, cmd_typ07_t : out, int : out)
+
+ext pack_cmd018_(char[] : out, PACKCMD_RW_T : in, cmd_typ07_t : out, int : out)
+
+ext pack_cmd020_(char[] : out, PACKCMD_RW_T : in, pos : out, int : out)
+
+ext pack_cmd021_(char[] : out, PACKCMD_RW_T : in, cmd_typ01_t : out, int : out)
+
+ext pack_cmd022_(char[] : out, PACKCMD_RW_T : in, cmd_typ01_t : out, int : out)
+
+ext pack_cmd026_(char[] : out, PACKCMD_RW_T : in, cmd_typ01_t : out, int : out)
+
+ext pack_cmd027_(char[] : out, PACKCMD_RW_T : in, cmd_typ08_t : out, int : out)
+
+ext pack_cmd129_(char[] : out, PACKCMD_RW_T : in, pos : out, int : out)
+
+ext pack_cmd130_(char[] : out, PACKCMD_RW_T : in, axis : out, int : out)
+
+ext pack_cmd131_(char[] : out, PACKCMD_RW_T : in, cmd_typ02_t : out, int : out)
+
+ext pack_cmd132_(char[] : out, PACKCMD_RW_T : in, cmd_typ07_t : out, int : out)
+
+ext pack_cmd133_(char[] : out, PACKCMD_RW_T : in, cmd_typ07_t : out, int : out)
+
+ext pack_cmd134_(char[] : out, PACKCMD_RW_T : in, cmd_typ09_t : out, int : out)
+
+ext pack_cmd137_(char[] : out, PACKCMD_RW_T : in, cmd_typ03_t : out, int : out)
+
+ext pack_cmd145_(char[] : out, PACKCMD_RW_T : in, cmd_typ01_t : out, int : out)
+
+ext pack_cmd148_(char[] : out, PACKCMD_RW_T : in, cmd_typ08_t : out, int : out)
+
+ext pack_cmd151_(char[] : out, PACKCMD_RW_T : in, cmd_typ06_t : out, int : out)
+
+ext pack_cmd254_(char[] : out, PACKCMD_RW_T : in, cmd_typ07_t : out, int : out)
+
+ext pack_cmd255_(char[] : out, PACKCMD_RW_T : in, cmd_typ07_t : out, int : out)
+
+enddat
+

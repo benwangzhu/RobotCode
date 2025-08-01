@@ -1,0 +1,84 @@
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_path_t
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2023 - 03 - 24
+--   Modification Data    ==   2023 - 03 - 24
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+
+const 
+    PTH_G1_AXIS                     = 12
+    PTH_G2_AXIS                     = 6
+
+    PTH_MOV_J                       = 6
+    PTH_MOV_L                       = 7
+
+    PTH_JOINT                       = 11
+    PTH_CART                        = 12
+
+type 
+
+    path_hd_t from lib_path = structure
+        PthLenght           : integer
+        PthUserShort        : short
+        PthUserByte1        : byte
+        PthUserByte2        : byte
+        PthUserBool1        : boolean
+        PthUserBool2        : boolean
+        PthUserInt1         : integer
+        PthUserInt2         : integer
+        PthUserInt3         : integer
+        PthUserReal1        : real
+        PthUserReal2        : real
+        PthUserReal3        : real
+    endstructure
+
+    path_dt_t from lib_path = structure
+        PthG1PosnTyp        : byte                         -- 点位 ID
+        PthMoveTyp          : byte                          -- 运动类型 
+        PthMoveCtn          : byte 
+        PthMoveAcc          : byte                         -- CNT
+        PthMoveVel          : short 
+        PthShortAry         : array[3] of short                         -- 运动速度
+        PthGrp1Posn         : array[PTH_G1_AXIS] of real    -- 组一坐标
+        --PthGrp2Posn         : array[PTH_G2_AXIS] of real    -- 组二坐标
+    endstructure
+
+    pth_momory_t from lib_path = path pathheader = path_hd_t, nodedata = path_dt_t

@@ -1,0 +1,755 @@
+module lib_motion(sysmodule, noview)
+!***********************************************************
+!
+! Copyright 2018 - 2024 speedbot All Rights reserved.
+!
+! File Name: lib_motion
+!
+! Description:
+!   Language             ==   Rapid for ABB ROBOT
+!   Date                 ==   2021 - 09 - 03
+!   Modification Data    ==   2022 - 05 - 12
+!
+! Author: speedbot
+!
+! Version: 2.0
+!*********************************************************************************************************!
+!                                                                                                         !
+!                                                      .^^^                                               !
+!                                               .,~<c+{{{{{{t,                                            ! 
+!                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          !
+!                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        !
+!                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       !
+!                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    !
+!                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  !
+!                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                !
+!                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              !
+!                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             !
+!                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             !
+!                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             !
+!                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              !
+!                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              !
+!                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               !
+!                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               !
+!                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                !
+!                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                !
+!                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 !
+!                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 !
+!                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  !
+!                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  !
+!                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    !                         
+!                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         !
+!                                         ^!{{{{{{{{t!",^`                                                !
+!                                                                                                         !
+!*********************************************************************************************************!
+!
+
+! 2020 - 05 - 08 ++ cur_pos_() ==> robtarget
+
+! 2022 - 11 - 07 ++ cur_pos2_()
+
+! 2020 - 05 - 08 ++ cur_jpos_() ==> jointtarget
+
+! 2022 - 11 - 07 ++ cur_jpos2_()
+
+! 2022 - 03 - 03 ++ get_axs_num_() ==> num
+
+! 2021 - 09 - 03 ++ trans_pos_() ==> robtarget
+
+! 2021 - 09 - 03 ++ trans_axis_() ==> jointtarget
+
+! 2023 - 02 - 27 ++ trans_spd_() ==> speeddata
+
+! 2023 - 02 - 27 ++ trans_zone_() ==> zonedata
+
+! 2022 - 11 - 07 ++ null_pos_()
+
+! 2021 - 09 - 03 ++ chk_pos_() ==> bool
+
+! 2022 - 05 - 11 ++ cur_trq_()
+
+! 2022 - 05 - 12 ++ jnt_2cart_()
+
+! 2022 - 05 - 12 ++ cart_2jnt_()
+
+! 2022 - 07 - 22 ++ offs_posn_() ==> robtarget
+
+! 2022 - 11 - 07 + speed_lim_() ==> num  
+
+! 2022 - 11 - 07 ++ rob_2pos_()
+
+! 2022 - 11 - 07 ++ joint_2axis_()
+
+! 2022 - 11 - 07 ++ pos_2rob_()
+
+! 2022 - 11 - 07 ++ frame_2pose_()
+
+! 2023 - 01 - 07 ++ pose_2frame_()
+
+record frame_t
+    num X;
+    num Y;
+    num Z;
+    num Rz;
+    num Ry;
+    num Rx;
+endrecord
+
+record pos_t
+    num X;
+    num Y;
+    num Z;
+    num Rz;
+    num Ry;
+    num Rx;
+    confdata ConfigData;
+endrecord
+
+record e6_pos_t
+    num X;
+    num Y;
+    num Z;
+    num Rz;
+    num Ry;
+    num Rx;
+    num E1;
+    num E2;
+    num E3;
+    num E4;
+    num E5;
+    num E6;
+    confdata ConfigData; 
+endrecord
+
+record axis_t
+    num A1;
+    num A2;
+    num A3;
+    num A4;
+    num A5;
+    num A6;
+endrecord
+
+record e6_axis_t
+    num A1;
+    num A2;
+    num A3;
+    num A4;
+    num A5;
+    num A6;
+    num E1;
+    num E2;
+    num E3;
+    num E4;
+    num E5;
+    num E6;
+endrecord
+
+!***********************************************************
+! func cur_pos_()
+!***********************************************************
+!     in : \Wobj         * wobjdata *	    * 如果未指定此参数，代表使用当前激活的工件坐标系 *
+!     in : \Tool         * tooldata *	    * 如果未指定此参数，代表使用当前激活的工具坐标系 *
+! return : 				 * robtarget *	    * 返回当前直角坐标 *
+!***********************************************************
+! 获取指定坐标系下的当前直角坐标位置 -- robtarget 
+!***********************************************************
+func robtarget cur_pos_(\pers wobjdata ThisWobj, \pers tooldata ThisTool)
+
+    if ((present(ThisWobj)) and (not present(ThisTool))) return(crobt(\Wobj := ThisWobj)); 
+    if ((not present(ThisWobj)) and (present(ThisTool))) return(crobt(\Tool := ThisTool)); 
+    if ((present(ThisWobj)) and (present(ThisTool))) return(crobt(\Tool := ThisTool \Wobj := ThisWobj)); 
+    return(crobt());
+endfunc
+
+!***********************************************************
+! func cur_pos2_()
+!***********************************************************
+!     in : \Wobj         * wobjdata *	    * 如果未指定此参数，代表使用当前激活的工件坐标系 *
+!     in : \Tool         * tooldata *	    * 如果未指定此参数，代表使用当前激活的工具坐标系 *
+!  inout : \CurPos		 * pos_t *	        * 指定此参数，则赋值在此参数 *
+!  inout : \E6CurPos	 * e6_pos_t *	    * 指定此参数，则赋值在此参数 *
+!***********************************************************
+! 获取指定坐标系下的当前直角坐标位置 -- pos_t / e6_pos_t
+!***********************************************************
+proc cur_pos2_(\pers wobjdata ThisWobj, \pers tooldata ThisTool, \inout pos_t CurPos, \inout e6_pos_t E6CurPos)
+    var robtarget CurRob;
+    
+    if ((present(ThisWobj)) and (not present(ThisTool))) CurRob := crobt(\Wobj := ThisWobj); 
+    if ((not present(ThisWobj)) and (present(ThisTool))) CurRob := crobt(\Tool := ThisTool); 
+    if ((present(ThisWobj)) and (present(ThisTool))) CurRob := crobt(\Tool := ThisTool \Wobj := ThisWobj); 
+    if ((not present(ThisWobj)) and (not present(ThisTool))) CurRob := crobt(); 
+    if present(CurPos) rob_2pos_ CurRob, \CartPos := CurPos;
+    if present(E6CurPos) rob_2pos_ CurRob, \E6CartPos := E6CurPos;
+endproc
+
+!***********************************************************
+! func cur_jpos_()
+!***********************************************************
+! return : 					* jointtarget *	    * 返回当前关节位置 *
+!***********************************************************
+! 获取当前关节位置 -- jointtarget
+!***********************************************************
+func jointtarget cur_jpos_() return(cjointt()); endfunc
+
+!***********************************************************
+! func cur_jpos2_()
+!***********************************************************
+!  inout : \CurJointPos		 * axis_t *	        * 指定此参数，则赋值在此参数 *
+!  inout : \CurE6JointPos	 * e6_axis_t *	    * 指定此参数，则赋值在此参数 *
+!***********************************************************
+! 获取当前关节位置 -- axis_t / e6_axis_t
+!***********************************************************
+proc cur_jpos2_(\inout axis_t CurJointPos, \inout e6_axis_t CurE6JointPos)
+    var jointtarget CurJoint;
+
+    CurJoint := cjointt();
+    if present(CurJointPos) joint_2axis_ CurJoint, \JointPos := CurJointPos;
+    if present(CurE6JointPos) joint_2axis_ CurJoint, \E6JointPos := CurE6JointPos;
+endproc
+
+!***********************************************************
+! func get_axs_num_()
+!***********************************************************
+! return : 					* num *	    * 返回机器人轴数量 *
+!***********************************************************
+! 获取当前机器人轴数量
+!***********************************************************
+func num get_axs_num_()
+    var num NAxis := 0;
+    var string UnitName;
+    var num AttrVal;
+    var bool ReadSuccess;
+
+    ReadSuccess := true;
+    readcfgdata "/moc/arm/rob1_1", "upper_joint_bound", AttrVal;
+    if (ReadSuccess) incr NAxis;
+
+    ReadSuccess := true;
+    readcfgdata "/moc/arm/rob1_2", "upper_joint_bound", AttrVal;
+    if (ReadSuccess) incr NAxis;
+
+    ReadSuccess := true;
+    readcfgdata "/moc/arm/rob1_3", "upper_joint_bound", AttrVal;
+    if (ReadSuccess) incr NAxis;
+
+    ReadSuccess := true;
+    readcfgdata "/moc/arm/rob1_4", "upper_joint_bound", AttrVal;
+    if (ReadSuccess) incr NAxis;
+
+    ReadSuccess := true;
+    readcfgdata "/moc/arm/rob1_5", "upper_joint_bound", AttrVal;
+    if (ReadSuccess) incr NAxis;
+
+    ReadSuccess := true;
+    readcfgdata "/moc/arm/rob1_6", "upper_joint_bound", AttrVal;
+    if (ReadSuccess) incr NAxis;
+
+    ReadSuccess := true;
+    readcfgdata "/moc/joint/track1", "use_drive_system", UnitName;
+    if (ReadSuccess) then  
+
+        ReadSuccess := true;
+        readcfgdata "/moc/arm/" + UnitName, "upper_joint_bound", AttrVal;
+        if (ReadSuccess) incr NAxis;
+    endif
+
+    return(NAxis);
+    !error
+    error
+    ReadSuccess := false;
+    skipwarn;
+    trynext;   
+endfunc
+
+!***********************************************************
+! func trans_pos_()
+!***********************************************************
+!	  in : \Dim1Ary{*} 		* num *			* 指定一维数组 *
+!	  in : \Dim2Ary{*, *}   * num *			* 指定二维数组 *
+!	  in : \DimNum{*} 		* num *			* 当指定为二维数组时，需指定所在的下标，当忽略此参数时，默认指定第一下标 *
+! return : 					* robtarget *	* 返回直角坐标 *
+!***********************************************************
+! 将实数数组转化为一个直角坐标
+! 如果传入的参数是一维数组，将忽略二维数组
+! 如果传入的参数是二维数组，将忽略一维数组
+! 如果传入的参数是二位数组，将使用第三个参数的下标
+! 如果三个参数都不指定，将返回一个 NULL 坐标
+!***********************************************************
+func robtarget trans_pos_(\num Dim1Ary{*} \num Dim2Ary{*, *} \num DimNum)
+    var robtarget RtnPos;
+    var num ThisDim := 1;
+
+    RtnPos := crobt();
+    if present(Dim1Ary) then
+        RtnPos.Trans := [Dim1Ary{1}, Dim1Ary{2}, Dim1Ary{3}];
+        RtnPos.Rot := orientzyx(Dim1Ary{4}, Dim1Ary{5}, Dim1Ary{6});
+        if (dim(Dim1Ary, 1) > 6) RtnPos.extax.eax_a := Dim1Ary{7};
+        if (dim(Dim1Ary, 1) > 7) RtnPos.extax.eax_b := Dim1Ary{8};
+        if (dim(Dim1Ary, 1) > 8) RtnPos.extax.eax_c := Dim1Ary{9};
+        if (dim(Dim1Ary, 1) > 9) RtnPos.extax.eax_d := Dim1Ary{10};
+        if (dim(Dim1Ary, 1) > 10) RtnPos.extax.eax_e := Dim1Ary{11};
+        if (dim(Dim1Ary, 1) > 11) RtnPos.extax.eax_f := Dim1Ary{12};  
+    elseif present(Dim2Ary) then
+        if present(DimNum) ThisDim := DimNum;
+        RtnPos.Trans := [Dim2Ary{ThisDim, 1}, Dim2Ary{ThisDim, 2}, Dim2Ary{ThisDim, 3}];
+        RtnPos.Rot := orientzyx(Dim2Ary{ThisDim, 4}, Dim2Ary{ThisDim, 5}, Dim2Ary{ThisDim, 6});
+        if (dim(Dim2Ary, 2) > 6) RtnPos.extax.eax_a := Dim2Ary{ThisDim, 7};
+        if (dim(Dim2Ary, 2) > 7) RtnPos.extax.eax_b := Dim2Ary{ThisDim, 8};
+        if (dim(Dim2Ary, 2) > 8) RtnPos.extax.eax_c := Dim2Ary{ThisDim, 9};
+        if (dim(Dim2Ary, 2) > 9) RtnPos.extax.eax_d := Dim2Ary{ThisDim, 10};
+        if (dim(Dim2Ary, 2) > 10) RtnPos.extax.eax_e := Dim2Ary{ThisDim, 11};
+        if (dim(Dim2Ary, 2) > 11) RtnPos.extax.eax_f := Dim2Ary{ThisDim, 12};  
+    else
+        RtnPos.Trans := [0, 0, 0];
+        RtnPos.Rot := orientzyx(0, 0, 0);
+        RtnPos.extax := [0, 0, 0, 0, 0, 0];
+    endif
+    return(RtnPos);
+endfunc
+
+!***********************************************************
+! func null_pos_()
+!***********************************************************
+! return : 					* robtarget *	* 返回直角坐标 *
+!***********************************************************
+! 返回一个 NULL 坐标
+!***********************************************************
+func robtarget null_pos_()
+
+    return(trans_pos_());
+endfunc
+
+!***********************************************************
+! func trans_axis_()
+!***********************************************************
+!	  in : \Dim1Ary{*} 		* num *			* 指定一维数组 *
+!	  in : \Dim2Ary{*, *}   * num *			* 指定二维数组 *
+!	  in : \DimNum{*} 		* num *			* 当指定为二维数组时，需指定所在的下标，当忽略此参数时，默认指定第一下标 *
+! return : 					* robtarget *	* 返回关节坐标 *
+!***********************************************************
+! 将实数数组转化为一个关节坐标
+! 如果传入的参数是一维数组，将忽略二维数组
+! 如果传入的参数是二维数组，将忽略一维数组
+! 如果传入的参数是二位数组，将使用第三个参数的下标
+! 如果三个参数都不指定，将返回一个 NULL 坐标
+!***********************************************************
+func jointtarget trans_axis_(\num Dim1Ary{*} \num Dim2Ary{*, *} \num DimNum)
+    var jointtarget RtnAxis;
+    var num ThisDim := 1;
+
+    RtnAxis := cjointt();
+    if present(Dim1Ary) then
+        RtnAxis.robax := [Dim1Ary{1}, Dim1Ary{2}, Dim1Ary{3}, Dim1Ary{4}, Dim1Ary{5}, Dim1Ary{6}];
+        if (dim(Dim1Ary, 1) > 6) RtnAxis.extax.eax_a := Dim1Ary{7};
+        if (dim(Dim1Ary, 1) > 7) RtnAxis.extax.eax_b := Dim1Ary{8};
+        if (dim(Dim1Ary, 1) > 8) RtnAxis.extax.eax_c := Dim1Ary{9};
+        if (dim(Dim1Ary, 1) > 9) RtnAxis.extax.eax_d := Dim1Ary{10};
+        if (dim(Dim1Ary, 1) > 10) RtnAxis.extax.eax_e := Dim1Ary{11};
+        if (dim(Dim1Ary, 1) > 11) RtnAxis.extax.eax_f := Dim1Ary{12};  
+    elseif present(Dim2Ary) then
+        if present(DimNum) ThisDim := DimNum;
+        RtnAxis.robax := [Dim2Ary{ThisDim, 1}, Dim2Ary{ThisDim, 2}, Dim2Ary{ThisDim, 3}, 
+                          Dim2Ary{ThisDim, 4}, Dim2Ary{ThisDim, 5}, Dim2Ary{ThisDim, 6}];
+        if (dim(Dim2Ary, 2) > 6) RtnAxis.extax.eax_a := Dim2Ary{ThisDim, 7};
+        if (dim(Dim2Ary, 2) > 7) RtnAxis.extax.eax_b := Dim2Ary{ThisDim, 8};
+        if (dim(Dim2Ary, 2) > 8) RtnAxis.extax.eax_c := Dim2Ary{ThisDim, 9};
+        if (dim(Dim2Ary, 2) > 9) RtnAxis.extax.eax_d := Dim2Ary{ThisDim, 10};
+        if (dim(Dim2Ary, 2) > 10) RtnAxis.extax.eax_e := Dim2Ary{ThisDim, 11};
+        if (dim(Dim2Ary, 2) > 11) RtnAxis.extax.eax_f := Dim2Ary{ThisDim, 12};  
+    else
+        RtnAxis.robax := [0, 0, 0, 0, 0, 0];
+        RtnAxis.extax := [0, 0, 0, 0, 0, 0];  
+    endif
+    return(RtnAxis);
+endfunc
+
+!***********************************************************
+! func trans_spd_()
+!***********************************************************
+!	  in : SpeedVal 		* num *			* 指定速度 mm/s *
+!***********************************************************
+! 将指定的 mm/s 的单位值转为机器人可用的速度单位
+!***********************************************************
+func speeddata trans_spd_(\num SpeedVal)
+    var speeddata RtnSpeedDt;
+
+    RtnSpeedDt          := vmax;
+
+    if present(SpeedVal) RtnSpeedDt.v_tcp    := min(vmax.v_tcp, SpeedVal);
+
+    return(RtnSpeedDt);
+endfunc
+
+!***********************************************************
+! func trans_zone_()
+!***********************************************************
+!	  in : SpeedVal 		* num *			* 指定区域 mm *
+!***********************************************************
+! 将指定的 mm 的单位的飞越值转为机器人可用的飞越值
+!***********************************************************
+func zonedata trans_zone_(\num ZoneVal)
+    var zonedata RtnZoneDt;
+
+    if present(ZoneVal) then 
+
+        if ZoneVal <= 3.0 then
+
+            if ZoneVal <= 0.1 then
+
+                RtnZoneDt := FINE;
+            else
+
+                RtnZoneDt := [false, ZoneVal, ZoneVal, ZoneVal, ZoneVal / 10.0, ZoneVal, ZoneVal / 10.0];
+            endif
+        else
+
+            RtnZoneDt := [false, ZoneVal, ZoneVal * 1.5, ZoneVal * 1.5, ZoneVal / 10.0 * 1.5, ZoneVal * 1.5, ZoneVal / 10.0 * 1.5];
+        endif
+    else
+
+        RtnZoneDt := fine;
+    endif
+
+    return(RtnZoneDt);
+endfunc
+
+!***********************************************************
+! func chk_pos_()
+!***********************************************************
+!	  in : NeedChkPos 		* robtarget *	* 需要检查的直角坐标 *
+!     in : ThisWobj         * wobjdata *	* 如果指定此工件坐标系，将针指定此工件坐标系进行计算，不指定则指定当前激活的工件坐标系进行计算 *
+!     in : ThisTool         * tooldata *	* 指定需要计算的工具坐标系 *
+! return : 					* bool *		* 返回 true 代表可达 *
+!***********************************************************
+! 检查一个直角坐标在指定坐标系下是否可达
+!***********************************************************
+func bool chk_pos_(robtarget NeedChkPos, \pers wobjdata ThisWobj, pers tooldata ThisTool)
+    var jointtarget JntReach;
+    if present(ThisWobj) then
+        JntReach := calcjointt(NeedChkPos, ThisTool \Wobj := ThisWobj);
+    else
+        JntReach := calcjointt(NeedChkPos, ThisTool);
+    endif
+    return(true);
+    !error
+    error
+    return(false);
+endfunc
+
+!***********************************************************
+! func cur_trq_()
+!***********************************************************
+!  inout : TrqVal{*} 		* num *	    * 输出的各轴力矩值 *
+!     in : \NumAxis         * num *     * 指定需要获取的轴数,不指定则默认获取所有轴 *
+!***********************************************************
+! 获取机器人当前每个轴的力矩
+! 如果声明的 TrqVal{*} 维度 < NumAxis ，则返回最大维度的值 
+!***********************************************************
+proc cur_trq_(inout num TrqVal{*} \num NumAxis)
+    var num I;
+    var num J;
+
+    if present(NumAxis) then J := NumAxis; else J := get_axs_num_(); endif
+    for I from 1 to J do
+        if ((I <= dim(TrqVal, 1)) and (I <= get_axs_num_())) TrqVal{I} := getmotortorque(I);
+    endfor
+endproc
+
+!***********************************************************
+! func jnt_2cart_()
+!***********************************************************
+!	  in : ThisJoint 		* jointtarget *	    * 需要转化的关节坐标 *
+!     in : \WObj            * wobjdata *	    * 指定需要进行计算的工件坐标系，未指定则引用当前激活的工件坐标系 *
+!     in : Tool             * tooldata *	    * 指定需要进行计算的工具坐标系 *
+! return : 					* robtarget *		* 返回转化后的直角坐标 *
+!***********************************************************
+! 将一组关节坐标在指定坐标系下转化为直角坐标
+!***********************************************************
+func robtarget jnt_2cart_(jointtarget ThisJoint, \pers wobjdata Wobj, pers tooldata Tool)
+    if (present(Wobj)) return(calcrobt(ThisJoint, Tool \WObj := Wobj));
+    return(calcrobt(ThisJoint, Tool));
+endfunc
+
+!***********************************************************
+! func cart_2jnt_()
+!***********************************************************
+!	  in : ThisJoint 		* robtarget *	    * 需要转化的直角坐标 *
+!     in : \WObj            * wobjdata *	    * 指定需要进行计算的工件坐标系，未指定则引用当前激活的工件坐标系 *
+!     in : Tool             * tooldata *	    * 指定需要进行计算的工具坐标系 *
+! return : 					* jointtarget *		* 返回转化后的关节坐标 *
+!***********************************************************
+! 将一组直角坐标在指定坐标系下转化为关节坐标
+!***********************************************************
+func jointtarget cart_2jnt_(robtarget ThisCtPos, \pers wobjdata Wobj, pers tooldata Tool)
+
+    if (present(Wobj)) return(calcjointt(ThisCtPos, Tool \WObj := Wobj));
+    return(calcjointt(ThisCtPos, Tool));
+endfunc
+
+!***********************************************************
+! func offs_posn_()
+!***********************************************************
+!	  in : \Posn1 		* robtarget *	    * 指定需要偏移的直角坐标 ，未指定则为当前坐标*
+!     in : \X           * num *	            * 指定是否偏移 X 方向 ，不指定则为 0 *
+!     in : \Y           * num *	            * 指定是否偏移 Y 方向 ，不指定则为 0 *
+!     in : \Z           * num *	            * 指定是否偏移 Z 方向 ，不指定则为 0 *
+!     in : \Oz          * num *	            * 指定是否偏移 Rz 方向 ，不指定则为 0 *
+!     in : \Oy          * num *	            * 指定是否偏移 Ry 方向 ，不指定则为 0 *
+!     in : \Ox          * num *	            * 指定是否偏移 Rx 方向 ，不指定则为 0 *
+! return : 			    * robtarget *		* 返回偏移后的直角坐标 *
+!***********************************************************
+! 将一组直角坐标在当前工件坐标系下进行偏移
+!***********************************************************
+func robtarget offs_posn_(\robtarget Posn1, \num X, \num Y, \num Z, \num Oz, \num Oy, \num Ox)
+    var robtarget Posn2;
+    var robtarget Posn3;
+    var pose P1;
+    var pose P2;
+    var pose P3;
+    var num OffsX := 0.0;
+    var num OffsY := 0.0;
+    var num OffsZ := 0.0;
+    var num OffsRz := 0.0;
+    var num OffsRy := 0.0;
+    var num OffsRx := 0.0;
+    
+    if present(Posn1) then Posn2 := Posn1; else Posn2 := cur_pos_(); endif
+    if (present(X)) OffsX := X;
+    if (present(Y)) OffsY := Y;
+    if (present(Z)) OffsZ := Z; 
+    if (present(Oz)) OffsRz := Oz;
+    if (present(Oy)) OffsRy := Oy; 
+    if (present(Ox)) OffsRx := Ox; 
+
+    P1.Trans := [0, 0, 0];
+    P1.Rot := Posn2.Rot;
+    P2.Trans := [0, 0, 0];
+    P2.Rot := orientzyx(OffsRz, OffsRy, OffsRx);
+    P3 := posemult(P2, P1);
+    Posn3.Trans := [Posn2.Trans.X + OffsX, Posn2.Trans.Y + OffsY, Posn2.Trans.Z + OffsZ];
+    Posn3.Rot := P3.Rot;
+    Posn3.robconf := Posn2.robconf;
+    Posn3.extax := Posn2.extax;
+    return(Posn3);
+endfunc
+
+!***********************************************************
+! func speed_lim_()
+!***********************************************************
+!  inout : \MaxSpeed 		* num *	        * 指定此参数, 则赋值最大速度 mm/s *
+!  inout : \MaxSpeedData    * speeddata *	* 指定此参数, 则赋值最大速度一个速度参数 *
+!***********************************************************
+!   获取机器人得最大运动速度
+!***********************************************************
+proc speed_lim_(\inout num MaxSpeed, \inout speeddata MaxSpeedData)
+
+    if present(MaxSpeed) MaxSpeed := maxrobspeed(); 
+
+    if present(MaxSpeedData) MaxSpeedData := [maxrobspeed(), 500, 5000, 1000]; 
+
+endproc
+
+!***********************************************************
+! func rob_2pos_()
+!***********************************************************
+!     in : ThisPosn         * robtarget *
+!  inout : \CartPos 		* pos_t *	    * 指定此参数, 则转化为 pos_t 类型 *
+!  inout : \E6CartPos       * e6_pos_t *	* 指定此参数, 则转化为 e6_pos_t 类型 *
+!***********************************************************
+!   robottarge 数据类型转化为 pos_t 或者 e6_pos_t 类型
+!***********************************************************
+proc rob_2pos_(robtarget ThisPosn, \inout pos_t CartPos, \inout e6_pos_t E6CartPos)
+
+    if present(CartPos) then  
+        CartPos.X           := ThisPosn.Trans.X;
+        CartPos.Y           := ThisPosn.Trans.Y;
+        CartPos.Z           := ThisPosn.Trans.Z;
+        CartPos.Rz          := eulerzyx(\Z, ThisPosn.Rot);
+        CartPos.Ry          := eulerzyx(\Y, ThisPosn.Rot);
+        CartPos.Rx          := eulerzyx(\X, ThisPosn.Rot);
+        CartPos.ConfigData  := ThisPosn.RobConf;
+    endif
+
+    if present(E6CartPos) then  
+        E6CartPos.X           := ThisPosn.Trans.X;
+        E6CartPos.Y           := ThisPosn.Trans.Y;
+        E6CartPos.Z           := ThisPosn.Trans.Z;
+        E6CartPos.Rz          := eulerzyx(\Z, ThisPosn.Rot);
+        E6CartPos.Ry          := eulerzyx(\Y, ThisPosn.Rot);
+        E6CartPos.Rx          := eulerzyx(\X, ThisPosn.Rot);
+        E6CartPos.E1          := ThisPosn.ExtAx.Eax_a;
+        E6CartPos.E2          := ThisPosn.ExtAx.Eax_b;
+        E6CartPos.E3          := ThisPosn.ExtAx.Eax_c;
+        E6CartPos.E4          := ThisPosn.ExtAx.Eax_d;
+        E6CartPos.E5          := ThisPosn.ExtAx.Eax_e;
+        E6CartPos.E5          := ThisPosn.ExtAx.Eax_f;
+        E6CartPos.ConfigData  := ThisPosn.RobConf;
+    endif
+
+endproc
+
+!***********************************************************
+! func joint_2axis_()
+!***********************************************************
+!     in : ThisJoint        * jointtarget *
+!  inout : \JointPos 		* axis_t *	    * 指定此参数, 则转化为 axis_t 类型 *
+!  inout : \E6JointPos      * e6_axis_t *	* 指定此参数, 则转化为 e6_axis_t 类型 *
+!***********************************************************
+!   jointtarget 数据类型转化为 axis_t 或者 e6_axis_t 类型
+!***********************************************************
+proc joint_2axis_(jointtarget ThisJoint, \inout axis_t JointPos, \inout e6_axis_t E6JointPos)
+
+    if present(JointPos) JointPos := [ThisJoint.robax.rax_1,
+                                      ThisJoint.robax.rax_2,
+                                      ThisJoint.robax.rax_3,
+                                      ThisJoint.robax.rax_4,
+                                      ThisJoint.robax.rax_5,
+                                      ThisJoint.robax.rax_6];
+
+    if present(E6JointPos) e6JointPos := [ThisJoint.robax.rax_1,
+                                          ThisJoint.robax.rax_2,
+                                          ThisJoint.robax.rax_3,
+                                          ThisJoint.robax.rax_4,
+                                          ThisJoint.robax.rax_5,
+                                          ThisJoint.robax.rax_6,
+                                          ThisJoint.extax.eax_a,
+                                          ThisJoint.extax.eax_b,
+                                          ThisJoint.extax.eax_c,
+                                          ThisJoint.extax.eax_d,
+                                          ThisJoint.extax.eax_e,
+                                          ThisJoint.extax.eax_f];
+
+endproc
+
+!***********************************************************
+! func pos_2rob_()
+!***********************************************************
+!     in : \CartPos 		* pos_t *	    * 指定此参数, 则转化目标为 pos_t 类型 *
+!     in : \E6CartPos       * e6_pos_t *	* 指定此参数, 则转化目标为 e6_pos_t 类型 *
+!  inout : ThisPosn         * robtarget *
+!***********************************************************
+!   将 pos_t 或者 e6_pos_t 类型转化为 robottarge 数据类型
+!***********************************************************
+proc pos_2rob_(\pos_t CartPos, \e6_pos_t E6CartPos, inout robtarget ThisPosn)
+
+    if present(E6CartPos) then  
+        ThisPosn.Trans.X        := E6CartPos.X;
+        ThisPosn.Trans.Y        := E6CartPos.Y;
+        ThisPosn.Trans.Z        := E6CartPos.Z;
+        ThisPosn.Rot            := orientzyx(E6CartPos.Rz, E6CartPos.Ry, E6CartPos.Rx);
+        ThisPosn.RobConf        := E6CartPos.ConfigData;
+        ThisPosn.ExtAx.Eax_a    := E6CartPos.E1;
+        ThisPosn.ExtAx.Eax_b    := E6CartPos.E2;
+        ThisPosn.ExtAx.Eax_c    := E6CartPos.E3;
+        ThisPosn.ExtAx.Eax_d    := E6CartPos.E4;
+        ThisPosn.ExtAx.Eax_e    := E6CartPos.E5;
+        ThisPosn.ExtAx.Eax_f    := E6CartPos.E6;
+        ThisPosn.RobConf        := E6CartPos.ConfigData;
+    elseif present(CartPos) then  
+        ThisPosn.Trans.X    := CartPos.X;
+        ThisPosn.Trans.Y    := CartPos.Y;
+        ThisPosn.Trans.Z    := CartPos.Z;
+        ThisPosn.Rot        := orientzyx(CartPos.Rz, CartPos.Ry, CartPos.Rx);
+        ThisPosn.RobConf    := CartPos.ConfigData;
+    else
+        errwrite "pos_2rob_", "Parm 1 Error !!!";
+        stop;
+    endif
+endproc
+
+!***********************************************************
+! func axis_2joint_()
+!***********************************************************
+!     in : \JointPos 		* axis_t *	    * 指定此参数, 则转化目标为 axis_t 类型 *
+!     in : \E6JointPos      * e6_axis_t *	* 指定此参数, 则转化目标为 e6_axis_t 类型 *
+!  inout : ThisJoint        * jointtarget *
+!***********************************************************
+!   将 axis_t 或者 e6_axis_t 类型转化为 jointtarget 数据类型
+!***********************************************************
+proc axis_2joint_(\axis_t JointPos, \e6_axis_t E6JointPos, inout jointtarget ThisJoint)
+
+    if present(E6JointPos) then
+        ThisJoint.robax := [E6JointPos.A1, E6JointPos.A2, E6JointPos.A3,
+                            E6JointPos.A4, E6JointPos.A5, E6JointPos.A6];
+
+        ThisJoint.extax := [E6JointPos.E1, E6JointPos.E2, E6JointPos.E3,
+                            E6JointPos.E4, E6JointPos.E5, E6JointPos.E6];
+    elseif present(JointPos) then                                       
+        ThisJoint.robax := [JointPos.A1, JointPos.A2, JointPos.A3,
+                            JointPos.A4, JointPos.A5, JointPos.A6];
+    else
+        errwrite "axis_2joint_", "Parm 1 Error !!!";
+        stop;
+    endif
+endproc
+
+!***********************************************************
+! func frame_2pose_()
+!***********************************************************
+!     in : FrameData 		* frame_t *	    * 转化目标为 frame_t 类型 *
+!  inout : PoseData         * pose *
+!***********************************************************
+!   将 frame_t 类型转化为 pose 数据类型
+!***********************************************************
+proc frame_2pose_(frame_t FrameData, inout pose PoseData)
+
+    PoseData.Trans.X        := FrameData.X;
+    PoseData.Trans.Y        := FrameData.Y;
+    PoseData.Trans.Z        := FrameData.Z;
+    PoseData.Rot            := orientzyx(FrameData.Rz, FrameData.Ry, FrameData.Rx);
+endproc
+
+!***********************************************************
+! func pose_2frame_()
+!***********************************************************
+!     in : PoseData 		* pose *	    * 转化目标为 pose 类型 *
+!  inout : FrameData        * frame_t *
+!***********************************************************
+!   将 pose 类型转化为 frame_t 数据类型
+!***********************************************************
+proc pose_2frame_(pose PoseData, inout frame_t FrameData)
+
+    FrameData.X           := PoseData.Trans.X;
+    FrameData.Y           := PoseData.Trans.Y;
+    FrameData.Z           := PoseData.Trans.Z;
+    FrameData.Rz          := eulerzyx(\Z, PoseData.Rot);
+    FrameData.Ry          := eulerzyx(\Y, PoseData.Rot);
+    FrameData.Rx          := eulerzyx(\X, PoseData.Rot);
+endproc
+
+!***********************************************************
+! func j_in_here_()
+!***********************************************************
+!     in : JointCoord 		* jointtarget *	    * 转化目标为 pose 类型 *
+!     in : \Alw             * num *             * 容忍误差值，默认值 0.1° *
+! return :                  * bool *            * true 代表在容忍误差值内 *
+!***********************************************************
+!   检查当前关节坐标和输入的关节坐标所有轴位置是否都在容忍误差值以内
+!***********************************************************
+func bool j_in_here_(jointtarget JointCoord, \num Alw)
+    var num ThisAlw := 0.1;
+    var jointtarget HereJoint;
+
+    if present(Alw) ThisAlw := abs(Alw);
+
+    waittime \INPOS, 0.0;
+
+    HereJoint := cur_jpos_();
+
+    return((abs(HereJoint.robax.rax_1 - JointCoord.robax.rax_1) <= ThisAlw) and 
+           (abs(HereJoint.robax.rax_2 - JointCoord.robax.rax_2) <= ThisAlw) and 
+           (abs(HereJoint.robax.rax_3 - JointCoord.robax.rax_3) <= ThisAlw) and 
+           (abs(HereJoint.robax.rax_4 - JointCoord.robax.rax_4) <= ThisAlw) and 
+           (abs(HereJoint.robax.rax_5 - JointCoord.robax.rax_5) <= ThisAlw) and 
+           (abs(HereJoint.robax.rax_6 - JointCoord.robax.rax_6) <= ThisAlw) and 
+           (abs(HereJoint.extax.eax_a - JointCoord.extax.eax_a) <= ThisAlw) and 
+           (abs(HereJoint.extax.eax_b - JointCoord.extax.eax_b) <= ThisAlw) and 
+           (abs(HereJoint.extax.eax_c - JointCoord.extax.eax_c) <= ThisAlw) and 
+           (abs(HereJoint.extax.eax_d - JointCoord.extax.eax_d) <= ThisAlw) and 
+           (abs(HereJoint.extax.eax_e - JointCoord.extax.eax_e) <= ThisAlw) and 
+           (abs(HereJoint.extax.eax_f - JointCoord.extax.eax_f) <= ThisAlw));
+
+endfunc
+
+endmodule

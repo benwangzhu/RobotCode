@@ -1,0 +1,7 @@
+MESSAGE("Intr StopMove");
+CopyPointNum := 0;
+CALL: new_ack_(CMD_INIT);
+MESSAGE("Intr StopMove Suceess");
+STOPMOVE(0.5);
+CLEARMOVE;
+STARTMOVE();

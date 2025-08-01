@@ -1,0 +1,168 @@
+&ACCESS RO
+&COMMENT Lib Tp Iface 240227
+def lib_tp_if()
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: lib_tp_if.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 01 - 13
+;   Modification Data    ==   2024 - 02 - 27
+;
+; Author: speedbot
+;
+; Version: 2.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+; 2021 - 01 - 13 ++ prog_stat_() ==> pro_state
+
+; 2021 - 01 - 13 ++ is_fault_() ==> bool
+
+; 2021 - 01 - 13 ++ get_err_() ==> int
+
+; 2021 - 01 - 13 ++ get_mode_() ==> mode_op
+
+; 2021 - 01 - 13 ++ coord_activated_() ==> bool
+
+; 2024 - 02 - 27 ++ uninit_() ==> bool
+
+; 2024 - 02 - 27 ++ override_() 
+end
+
+;FOLD CHECK PROGRAM STATUS
+global deffct PRO_STATE prog_stat_(ProgName[] : in)
+    decl char ProgName[]
+    decl char SelName[24] 
+    decl int K
+    if not strclear(SelName[]) then
+        err_write_("prog_stat_", "Clear String Err")
+    endif
+
+    SelName[] = "/R1/"
+    if stradd(SelName[], ProgName[]) < 0 then 
+        err_write_("prog_stat_", "Add String Err")
+    endif
+
+    for K = 1 to 9 
+        continue
+        if strcomp(SelName[], $PROG_INFO[K].SEL_NAME[], #NOT_CASE_SENS) then 
+            continue
+            return($PROG_INFO[K].P_STATE)
+        endif
+    endfor
+
+    return(#P_FREE)
+endfct
+;ENDFOLD
+
+;FOLD CHECK MOVING
+global deffct bool is_moving_()
+    continue
+    return(not $rob_stopped)
+endfct
+;ENDFOLD
+
+;FOLD CHECK RUNNING
+global deffct bool is_running_()
+    continue
+    return($pro_act)
+endfct
+;ENDFOLD
+
+;FOLD CHECK FAULT
+global deffct bool is_fault_()
+    continue
+    return($stopmess)
+endfct
+;ENDFOLD
+
+;FOLD GET ERROR CODE
+global deffct int get_err_()
+    if not is_fault_() then 
+        return(0)
+    endif
+
+    return($err.number)
+endfct
+;ENDFOLD
+
+;FOLD GET OP MODE
+global deffct MODE_OP get_mode_()
+    continue
+    return($mode_op)
+endfct
+;ENDFOLD
+
+;FOLD CHECK COORD ACTIVE
+global deffct bool coord_activated_()
+    continue
+    return((varstate("$base") == #initialized) and (varstate("$tool") == #initialized))
+endfct
+;ENDFOLD
+
+;FOLD UNINIT
+global deffct bool uninit_(VarName[] : in)
+    decl char VarName[]
+
+    return(not (varstate(VarName[]) == #initialized))
+endfct
+;ENDFOLD
+
+;FOLD OVERRIDE
+global def override_(Speed : in)
+    decl int Speed
+
+    if (varstate("Speed") <> #initialized) then
+
+        Speed = 100
+    endif
+
+    continue
+    $ov_pro = Speed
+end 
+;ENDFOLD
+
+;FOLD GET ROBOT AXIS LIMITS
+global def get_axis_lim_(Up[] : out, Down[] : out)
+    decl int j
+    decl real Up[]
+    decl real Down[]
+    for j = 1 to 12  
+        continue
+        Up[j] = $softp_end[j]
+        continue
+        Down[j] = $softn_end[j]
+    endfor
+end
+;ENDFOLD

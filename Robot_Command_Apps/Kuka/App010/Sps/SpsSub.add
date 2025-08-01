@@ -1,0 +1,20 @@
+[Version]
+Version=1.0.0
+Type=Block
+
+[Insert_SPS_SUB Init]
+Type=INSERT
+Before=;ENDFOLD (INI)
+What=SpsSub_Init.txt
+Start=;FOLD SbtComm010 Init
+End=;ENDFOLD (SbtComm010 Init)
+
+[Insert_SPS_SUB PLC Loop]
+Type=INSERT
+Before=ENDLOOP
+What=SpsSub_Loop.txt
+Start=;FOLD SbtComm010 Loop
+End=;ENDFOLD (SbtComm010 Loop)
+
+
+

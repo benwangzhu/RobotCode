@@ -1,0 +1,436 @@
+program lib_logs
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_logs
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 09 - 03
+--   Modification Data    ==   2021 - 10 - 13
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--  
+-- 2021 - 09 - 05 ++ log_clear_() 
+   
+-- 2021 - 09 - 05 ++ log_force_() 
+   
+-- 2021 - 09 - 05 ++ log_error_() 
+   
+-- 2021 - 09 - 05 ++ log_info_()
+   
+-- 2021 - 09 - 05 ++ log_warn_()
+
+-- 2021 - 12 - 07 ++ u_select_s_() ==> string
+   
+-- 2021 - 12 - 07 ++ u_select_i_() ==> integer
+   
+-- 2021 - 12 - 07 ++ u_select_r_() ==> real
+
+-- 2022 - 04 - 29 ++ open_file_() ==> integer
+
+-- 2022 - 04 - 29 ++ close_file_()
+
+-- 2022 - 04 - 29 ++ file_wteln_()
+
+-- 2022 - 04 - 29 ++ file_puts_()
+
+-- 2022 - 04 - 29 ++ file_size_() ==> integer
+
+-- 2022 - 04 - 29 ++ delete_file_()
+
+-- 2022 - 04 - 29 ++ rename_file_()
+
+-- 2022 - 04 - 29 ++ file_creatd_()
+
+-- 2022 - 04 - 29 ++ logs_()
+--
+-- 2022 - 11 - 10 ++ get_xml_prm_() ==> integer
+--
+%nolockgroup
+%nobusylamp
+%nopause = tpenable + command + error
+%comment = 'Logs 231129'
+
+%include klevccdf
+%include include/lib_transform_t
+%include include/lib_logs_t
+
+var
+    LogsLock            : boolean
+
+%include include/lib_logs_h
+%include include/lib_string_h
+
+
+begin
+
+
+end lib_logs
+
+
+routine log_clear_
+begin
+    write tpdisplay(chr(CC_HOME), chr(CC_CLEAR_WIN))
+    write tpstatus(chr(CC_HOME), chr(CC_CLEAR_WIN))
+    write tpprompt(chr(CC_HOME), chr(CC_CLEAR_WIN))
+    write tpfunc(chr(CC_HOME), chr(CC_CLEAR_WIN))
+    LogsLock = true
+end log_clear_
+
+routine log_force_
+begin
+    force_spmenu(TP_PANEL, SPI_TPUSER, 1)
+    LogsLock = true
+end log_force_
+
+routine log_error_
+begin
+    if uninit(LogsLock) then ; LogsLock = true ; endif
+    wait for LogsLock = true
+    LogsLock = false
+    --log_force_
+    write tpdisplay(chr(CC_BGCOLOR), chr(CC_CYAN), chr(CC_FGCOLOR), chr(CC_RED), Tag, &
+                    chr(CC_BGCOLOR), chr(CC_DFCOLOR), ' E> ', Msg, &
+                    chr(CC_FGCOLOR), chr(CC_DFCOLOR), cr)
+    LogsLock = true
+end log_error_
+
+routine log_info_
+begin
+    if uninit(LogsLock) then ; LogsLock = true ; endif
+    wait for LogsLock = true
+    LogsLock = false
+    write tpdisplay(chr(CC_BGCOLOR), chr(CC_CYAN), chr(CC_FGCOLOR), chr(CC_BLUE), Tag, &
+                    chr(CC_BGCOLOR), chr(CC_DFCOLOR), ' I> ', Msg, &
+                    chr(CC_FGCOLOR), chr(CC_DFCOLOR), cr)
+    LogsLock = true
+end log_info_
+
+routine log_warn_
+begin
+    if uninit(LogsLock) then ; LogsLock = true ; endif
+    wait for LogsLock = true
+    LogsLock = false
+    write tpdisplay(chr(CC_BGCOLOR), chr(CC_CYAN), chr(CC_FGCOLOR), chr(CC_YELLOW), Tag, &
+                    chr(CC_BGCOLOR), chr(CC_DFCOLOR), ' W> ', Msg, &
+                    chr(CC_FGCOLOR), chr(CC_DFCOLOR), cr)
+    LogsLock = true
+end log_warn_
+
+routine u_select_s_
+var
+    UserKey					: string[128]
+begin
+    write tpprompt(chr(CC_FGCOLOR), chr(CC_BLUE), 'Input >> ', chr(CC_FGCOLOR), chr(CC_DFCOLOR))
+    read tpprompt(UserKey)
+    write tpprompt(chr(CC_HOME), chr(CC_CLEAR_WIN))
+    return(UserKey)
+end u_select_s_
+
+routine u_select_i_
+var
+    UserKey					: integer
+begin
+    write tpprompt(chr(CC_FGCOLOR), chr(CC_BLUE), 'Input >> ', chr(CC_FGCOLOR), chr(CC_DFCOLOR))
+    read tpprompt(UserKey)
+    write tpprompt(chr(CC_HOME), chr(CC_CLEAR_WIN))
+    return(UserKey)
+end u_select_i_
+
+routine u_select_r_
+var
+    UserKey					: real
+begin
+    write tpprompt(chr(CC_FGCOLOR), chr(CC_BLUE), 'Input >> ', chr(CC_FGCOLOR), chr(CC_DFCOLOR))
+    read tpprompt(UserKey)
+    write tpprompt(chr(CC_HOME), chr(CC_CLEAR_WIN))
+    return(UserKey)
+end u_select_r_
+
+routine open_file_
+begin
+    clr_io_stat(Filevar)
+    select OpenMode of
+    case(STR_READ):
+        open file FileVar('ro', FileName)
+    case(STR_RW):
+        open file FileVar('rw', FileName)
+    case(STR_AP):
+        open file FileVar('ap', FileName)
+    case(BIN_READ):
+        set_file_atr(FileVar, ATR_UF)
+        open file FileVar('ro', FileName)
+    case(BIN_RW):
+        set_file_atr(FileVar, ATR_UF)
+        open file FileVar('rw', FileName)
+    case(BIN_AP):
+        set_file_atr(FileVar, ATR_UF)
+        open file FileVar('ap', FileName)
+    else:
+        open file FileVar('ap', FileName)
+    endselect
+    return(-abs(io_status(FileVar)))
+end open_file_
+
+routine close_file_
+begin
+    clr_io_stat(Filevar)
+    close file FileVar
+    if io_status(FileVar) <> CC_SUCCESS then ; close file FileVar ; endif
+end close_file_
+
+routine file_wteln_
+var
+    I                   : integer
+begin
+    for I = 1 to NumOfLn do ; write FileVar (cr) ; endfor
+end file_wteln_
+
+routine file_puts_
+begin
+    write FileVar(Msg)
+    if NewLine then ; write FileVar (cr) ; endif
+end file_puts_
+
+routine file_size_
+var
+    ThisStatus              : integer
+begin
+    ThisStatus = open_file_(FileVar, FileName, STR_READ)
+    if ThisStatus = CC_SUCCESS then
+        set_file_pos(FileVar, at_eof, ThisStatus)
+        if ThisStatus = CC_SUCCESS then ; ThisStatus = get_file_pos(FileVar) ; else ; ThisStatus = -abs(ThisStatus) ; endif
+    else
+        ThisStatus = -abs(ThisStatus)
+    endif                
+    close_file_(FileVar)
+    return(ThisStatus)
+end file_size_
+
+routine delete_file_
+var
+    ThisStatus                  : integer
+begin
+    delete_file(FileName, false, ThisStatus)
+    if ThisStatus <> CC_SUCCESS then ; delete_file(FileName, false, ThisStatus) ; endif
+end delete_file_
+
+routine rename_file_
+var
+    ThisStatus                  : integer
+begin
+    if file_creatd_(FileVar, NewFileName) then ; delete_file_(NewFileName) ; endif
+    rename_file(FileName, NewFileName, false, ThisStatus)
+end rename_file_
+
+routine file_creatd_
+var
+    ThisStatus                  : integer
+begin
+    ThisStatus = open_file_(FileVar, FileName, STR_READ)
+    close_file_(FileVar)
+    return(ThisStatus = CC_SUCCESS)
+end file_creatd_
+
+routine logs_
+var
+    NewFileName                 : string[48]
+    IntVal                      : integer
+begin
+    IntVal = index(FileName, '.')
+    if IntVal = 0 then
+        NewFileName = FileName + '_old'
+    else
+        NewFileName = sub_str(FileName, 1, IntVal - 1) + '_old' + sub_str(FileName, IntVal, str_len(FileName) - IntVal + 1)
+    endif
+    if file_size_(FileVar, FileName) > MAX_LOG_SIZE then ; rename_file_(FileVar, FileName, NewFileName) ; endif
+    if open_file_(FileVar, FileName, STR_AP) = CC_SUCCESS then
+        file_puts_(FileVar, cur_ios_tm_ + ' ==> ' + Msg, true)
+    endif
+    close_file_(FileVar)
+end logs_
+
+routine get_xml_prm_
+var  
+    GetStatus           : integer
+    RemStatus           : integer
+    TagIndex            : integer
+    IntVal              : integer
+    NumOfData           : integer
+    ParmName            : array[12] of string[12]
+    ParmVal             : array[12] of string[64]
+    StringVal           : string[12]
+    TypeVal             : integer
+    Dims                : array[3] of integer
+    I                   : integer
+    NotFind             : boolean
+    VectorVal           : vector
+    XyzwprVal           : xyzwpr
+    JointsAry           : array[9] of real
+    joints              : jointpos
+
+
+begin 
+    set_file_atr(FileVar, ATR_XML)
+    open file FileVar('ro', XmlFileName)
+    GetStatus = io_status(FileVar)
+    clr_io_stat(Filevar)
+    if GetStatus <> CC_SUCCESS then ; return(-abs(GetStatus)); endif 
+
+    xml_addtag(FileVar, XmlTagName, 32, false, 1, GetStatus)
+
+    if GetStatus <> CC_SUCCESS then ; close file FileVar; return(-abs(GetStatus)); endif 
+    
+    xml_scan(FileVar, XmlTagName, TagIndex, IntVal, GetStatus)
+
+    xml_getdata(FileVar, NumOfData, ParmName, ParmVal, StringVal, true, GetStatus)
+    
+    if GetStatus <> CC_SUCCESS then ; xml_remtag(FileVar, XmlTagName, RemStatus); close file FileVar; return(-abs(GetStatus)); endif 
+
+    var_info(ProgramName, VarName, true, StringVal, TypeVal, Dims, IntVal, GetStatus)
+
+    if GetStatus <> CC_SUCCESS then ; xml_remtag(FileVar, XmlTagName, RemStatus); close file FileVar; return(-abs(GetStatus)); endif 
+    
+    NotFind = true
+    
+    select TypeVal of
+        case(2):
+
+            NotFind = false
+            for I = 1 to 7 do ; if uninit(ParmName[I]) then ; ParmName[I] = ' '; endif ; endfor  
+
+            if (not str_comp_(ParmName[1], 'x', true)) or &
+               (not str_comp_(ParmName[2], 'y', true)) or &
+               (not str_comp_(ParmName[3], 'z', true)) or &
+               (not str_comp_(ParmName[4], 'w', true)) or &
+               (not str_comp_(ParmName[5], 'p', true)) or &
+               (not str_comp_(ParmName[6], 'r', true)) or &
+               (not str_comp_(ParmName[7], 'config', true)) then
+
+               GetStatus = -1
+            else
+               
+                XyzwprVal.x = str_2real_(ParmVal[1])
+                XyzwprVal.y = str_2real_(ParmVal[2])
+                XyzwprVal.z = str_2real_(ParmVal[3])
+                XyzwprVal.w = str_2real_(ParmVal[4])
+                XyzwprVal.p = str_2real_(ParmVal[5])
+                XyzwprVal.r = str_2real_(ParmVal[6])
+                cnv_str_conf(ParmVal[7], XyzwprVal.config_data, GetStatus)
+                if GetStatus = CC_SUCCESS then ;set_var(IntVal, ProgramName, VarName, XyzwprVal, GetStatus); endif
+            endif
+
+        case(19):
+
+            NotFind = false
+            for I = 1 to 3 do ; if uninit(ParmName[I]) then ; ParmName[I] = ' '; endif ; endfor  
+            
+
+            if (not str_comp_(ParmName[1], 'x', true)) or &
+               (not str_comp_(ParmName[2], 'y', true)) or &
+               (not str_comp_(ParmName[3], 'z', true)) then 
+
+               GetStatus = -19
+            else
+               
+                VectorVal.x = str_2real_(ParmVal[1])
+                VectorVal.y = str_2real_(ParmVal[2])
+                VectorVal.z = str_2real_(ParmVal[3])
+                set_var(IntVal, ProgramName, VarName, VectorVal, GetStatus)
+            endif
+        case(210):
+
+            NotFind = false
+            xml_setvar(FileVar, ProgramName, VarName, GetStatus)
+        case(16, 17, 18, 209):
+            
+            for I = 1 to NumOfData do
+
+                if str_comp_(VarName, ParmName[I], true) then
+
+                    NotFind = false
+
+                    select TypeVal of
+                        case(16):
+                        
+                            set_var(IntVal, ProgramName, VarName, str_2int_(ParmVal[I]), GetStatus)
+                        case(17):
+
+                            set_var(IntVal, ProgramName, VarName, str_2real_(ParmVal[I]), GetStatus)
+                        case(18):
+
+                            set_var(IntVal, ProgramName, VarName, (str_2int_(ParmVal[I]) > 0), GetStatus)
+                        case(209):
+
+                            set_var(IntVal, ProgramName, VarName, ParmVal[I], GetStatus)
+                    endselect
+                endif
+
+            endfor
+        case(25, 41, 57, 73, 89, 105, 121, 137, 153):
+
+            NotFind = false
+
+            for I = 1 to 9 do 
+
+                JointsAry[I] = 0.0
+
+                if uninit(ParmName[I]) then ; ParmName[I] = ' '; endif 
+
+                if str_comp_(ParmName[I], ('J' + int_2str_(I)), true) then 
+
+                    JointsAry[I] = str_2real_(ParmVal[I])
+                    write(JointsAry[i], cr)
+                endif
+            endfor
+
+            cnv_rel_jpos(JointsAry, joints, GetStatus)
+            --write(GetStatus, cr)
+            if GetStatus = CC_SUCCESS then ;set_var(IntVal, ProgramName, VarName, joints, GetStatus); endif
+        else:
+
+            NotFind = false
+            GetStatus = -99
+    endselect
+
+    xml_remtag(FileVar, XmlTagName, RemStatus)
+    close file FileVar
+
+    if NotFind then ; return(-100); else ; return(-abs(GetStatus)); endif
+
+end get_xml_prm_
+
+    

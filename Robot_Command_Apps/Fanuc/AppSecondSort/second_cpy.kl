@@ -1,0 +1,100 @@
+program second_cpy
+--***********************************************************
+--
+-- file Name: second_cpy.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 09 - 03
+--   Modification Data    ==   2023 - 07 - 03
+--
+-- Author: speedbot
+--
+-- Version: 5.0
+--***********************************************************
+--   
+%comment = 'Snd Copy Dt V5.0'
+%nolockgroup
+%nobusylamp
+%nopause = error + tpenable + command
+%include second_t
+%include second_global
+
+var 
+
+    CurPlacePos                 : xyzwprext
+    CurPlUpPos                  : xyzwprext
+    CurPickOfs                  : array[6] of real
+    CnvPos                      : xyzwpr
+    
+
+%include include\lib_motion_h
+%include include\lib_string_h
+%include include\lib_tp_if_h
+
+begin
+
+    using PkPlCfg do
+
+        select get_iparm_(2) of
+        case (0):
+
+            set_ireg_(ServoDistReg + get_iparm_(1) - 1, round(get_sys_rel_('$vr[' + int_to_str_(PkCvCfg[get_iparm_(1)].VReg) + '].$meas[1]')))
+
+            CurPickOfs[1] = get_sys_rel_('$vr[' + int_to_str_(PkCvCfg[get_iparm_(1)].VReg) + '].$offset.$x')
+            CurPickOfs[2] = get_sys_rel_('$vr[' + int_to_str_(PkCvCfg[get_iparm_(1)].VReg) + '].$offset.$y')
+            CurPickOfs[3] = get_sys_rel_('$vr[' + int_to_str_(PkCvCfg[get_iparm_(1)].VReg) + '].$offset.$z')
+            CurPickOfs[4] = get_sys_rel_('$vr[' + int_to_str_(PkCvCfg[get_iparm_(1)].VReg) + '].$offset.$w')
+            CurPickOfs[5] = get_sys_rel_('$vr[' + int_to_str_(PkCvCfg[get_iparm_(1)].VReg) + '].$offset.$p')
+            CurPickOfs[6] = get_sys_rel_('$vr[' + int_to_str_(PkCvCfg[get_iparm_(1)].VReg) + '].$offset.$r')
+
+            set_sys_rel_('$vr[' + int_to_str_(PkCvCfg[get_iparm_(1)].VReg) + '].$offset.$x', CurPickOfs[1] + PkCvCfg[get_iparm_(1)].ManualZerOfs.X)
+            set_sys_rel_('$vr[' + int_to_str_(PkCvCfg[get_iparm_(1)].VReg) + '].$offset.$y', CurPickOfs[2] + PkCvCfg[get_iparm_(1)].ManualZerOfs.Y)
+            set_sys_rel_('$vr[' + int_to_str_(PkCvCfg[get_iparm_(1)].VReg) + '].$offset.$z', CurPickOfs[3] + PkCvCfg[get_iparm_(1)].ManualZerOfs.Z)
+
+            CnvPos      = $mor_grp[1].$nilpos
+            CnvPos.X    = PkCvCfg[get_iparm_(1)].ManualAdjOfs.X
+            CnvPos.Y    = PkCvCfg[get_iparm_(1)].ManualAdjOfs.Y
+            set_preg_(AdjOfsPreg + get_iparm_(1) - 1, (CnvPos))
+
+            CnvPos      = $mor_grp[1].$nilpos
+            CnvPos.Z    = PkCvCfg[get_iparm_(1)].TolOfsUpDst
+            CnvPos.R    = CurPickOfs[6] * (-1)
+            set_preg_(TolOfsUPreg + get_iparm_(1) - 1, (CnvPos))
+
+            CnvPos      = $mor_grp[1].$nilpos
+            CnvPos.Z    = PkCvCfg[get_iparm_(1)].TolOfsRUpDst
+            CnvPos.R    = CurPickOfs[6] * (-1)
+            set_preg_(TolOfsRUPreg + get_iparm_(1) - 1, (CnvPos))
+            
+        case (1):
+
+            set_ireg_(PlaceIDReg, get_sys_int_('$vr[' + int_to_str_(pkcvCfg[get_iparm_(1)].VReg) + '].$view[4].$modelid'))
+
+            CurPlacePos     = null_pos_
+            CurPlacePos.X   = get_sys_rel_('$vr[' + int_to_str_(PkCvCfg[get_iparm_(1)].VReg) + '].$view[4].$x')
+            CurPlacePos.Y   = get_sys_rel_('$vr[' + int_to_str_(PkCvCfg[get_iparm_(1)].VReg) + '].$view[4].$y')
+            CurPlacePos.Z   = get_sys_rel_('$vr[' + int_to_str_(PkCvCfg[get_iparm_(1)].VReg) + '].$view[4].$z')
+            CurPlacePos.W   = get_sys_rel_('$vr[' + int_to_str_(PkCvCfg[get_iparm_(1)].VReg) + '].$view[4].$w')
+            CurPlacePos.P   = get_sys_rel_('$vr[' + int_to_str_(PkCvCfg[get_iparm_(1)].VReg) + '].$view[4].$p')
+            CurPlacePos.R   = get_sys_rel_('$vr[' + int_to_str_(PkCvCfg[get_iparm_(1)].VReg) + '].$view[4].$r')
+
+            if NumAxis > 6 then  
+
+                CurPlacePos.Ext1 = plfsCfg[get_sys_int_('$vr[' + int_to_str_(pkcvCfg[get_iparm_(1)].VReg) + '].$view[4].$modelid')].PlaceE7Pos
+
+            endif
+
+            set_preg_(PlacePreg, CurPlacePos)
+
+            CurPlUpPos      = CurPlacePos
+            CurPlUpPos.Z    = plfsCfg[get_sys_int_('$vr[' + int_to_str_(pkcvCfg[get_iparm_(1)].VReg) + '].$view[4].$modelid')].PlaceUpDst
+            set_preg_(PlaceUpPreg, CurPlUpPos)
+
+        endselect
+
+    endusing
+
+end second_cpy

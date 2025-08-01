@@ -1,0 +1,766 @@
+program lib_motion
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_motion
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 09 - 03
+--   Modification Data    ==   2023 - 03 - 31
+--
+-- Author: speedbot
+--
+-- Version: 2.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+-- 2021 - 11 - 17 ++ get_axs_num_() ==> integer
+
+-- 2021 - 11 - 24 ++ null_pos_() ==> xyzwpr
+
+-- 2021 - 09 - 03 ++ cur_pos_() ==> xyzwprext
+
+-- 2023 - 02 - 27 ++ g2_cur_pos_() ==> xyzwprext in group[2]
+
+-- 2023 - 03 - 24 ++ c_mulgp_ps_() ==> xyzwprext
+
+-- 2022 - 05 - 07 ++ cur_jpos_() ==> jointpos
+
+-- 2023 - 02 - 27 ++ g2_cur_jpos_() ==> jointpos in group[2]
+
+-- 2023 - 03 - 24 ++ c_mulgp_jps_() ==> jointpos
+   
+-- 2021 - 09 - 03 ++ trans_pos_() ==> xyzwpr
+      
+-- 2021 - 09 - 03 ++ trans_axis_() ==> jointpos
+
+-- 2021 - 09 - 03 ++ decom_pos_() ==> array of real
+
+-- 2023 - 03 - 31 ++ decom_pos2_()
+
+-- 2021 - 09 - 03 ++ decom_axis_() ==> array of real
+
+-- 2023 - 03 - 31 ++ decom_axis2_()
+      
+-- 2021 - 09 - 03 ++ chk_pos_() ==> boolean
+
+-- 2022 - 05 - 07 ++ chk_joint_() ==> boolean
+
+-- 2023 - 02 - 27 ++ g2_chk_jnt_() ==> boolean
+   
+-- 2021 - 09 - 03 ++ move_j_()
+   
+-- 2021 - 09 - 03 ++ move_l_()
+   
+-- 2021 - 09 - 03 ++ move_abs_j_()
+
+-- 2023 - 02 - 27 ++ g2_m_abs_j_()
+
+-- 2021 - 09 - 05 ++ lock_grp_()
+   
+-- 2021 - 09 - 05 ++ unlock_grp_()
+
+-- 2021 - 11 - 17 ++ j_in_here_() ==> boolean
+
+-- 2021 - 11 - 17 ++ l_in_here_() ==> boolean
+
+-- 2021 - 11 - 25 ++ speed_lim_() ==> real
+
+-- 2022 - 05 - 07 ++ jnt_2cart_() ==> xyzwprext
+
+-- 2022 - 05 - 07 ++ cart_2jnt_() ==> jointpos
+
+-- 2022 - 05 - 11 ++ cur_trq_()
+
+-- 2022 - 11 - 04 ++ cur_vel_()
+
+-- 2023 - 02 - 24 ++ trans_dx_() ==> xyzwpr
+
+-- 2023 - 02 - 24 ++ trans_dy_() ==> xyzwpr
+
+-- 2023 - 02 - 24 ++ trans_dz_() ==> xyzwpr
+
+-- 2023 - 02 - 24 ++ trans_dw_() ==> xyzwpr
+
+-- 2023 - 02 - 24 ++ trans_dp_() ==> xyzwpr
+
+-- 2023 - 02 - 24 ++ trans_dr_() ==> xyzwpr
+
+%nolockgroup
+%nobusylamp
+%nopause = tpenable + command + error
+%comment = 'Motion 231128'
+
+%include include/lib_transform_t
+
+	
+%include include/lib_motion_h
+%include include/lib_string_h
+%include include/lib_tp_if_h
+
+begin
+
+
+end lib_motion
+
+
+routine get_axs_num_
+
+begin
+    if ($scr.$num_group < GrpNo) then return(0); endif
+	return($scr_grp[GrpNo].$num_axes)
+
+end get_axs_num_
+
+routine null_pos_
+
+var
+    NullPos 		: xyzwpr
+begin
+
+    NullPos                             = curpos(0, 0)
+    NullPos.x                           = 0
+    NullPos.y                           = 0
+    NullPos.z                           = 0
+    NullPos.w                           = 0
+    NullPos.p                           = 0
+    NullPos.r                           = 0
+
+    -- NullPos.config_data.cfg_turn_no1    = 0 
+    -- NullPos.config_data.cfg_turn_no2    = 0
+    -- NullPos.config_data.cfg_turn_no3    = 0
+    -- NullPos.config_data.cfg_flip        = false
+    -- NullPos.config_data.cfg_left        = false
+    -- NullPos.config_data.cfg_up          = true
+    -- NullPos.config_data.cfg_front       = true
+    return(NullPos)
+
+end null_pos_
+
+routine cur_pos_
+var
+    TPos			: xyzwprext
+    CPos			: xyzwprext
+    Uf       		: position
+    Ut				: position
+begin
+    CPos = curpos(0, 0)
+
+    if UframeNo = 0 then ; Uf = null_pos_ ; else ; Uf = $mnuframe[1, UframeNo] ; endif 
+    if UtoolNo = 0 then ; Ut = null_pos_ ; else ; Ut = $mnutool[1, UtoolNo] ; endif 
+    
+    TPos = inv(Uf) : ($uframe : CPos : inv($utool)) : Ut
+
+    CPos.X = TPos.X
+    CPos.Y = TPos.Y
+    CPos.Z = TPos.Z
+    CPos.W = TPos.W
+    CPos.P = TPos.P
+    CPos.R = TPos.R
+
+    return(CPos)
+end cur_pos_
+
+routine g2_cur_pos_
+var
+    TPos			: xyzwprext in group[2]
+    CPos			: xyzwprext in group[2]
+    Uf       		: position
+    Ut				: position
+begin
+    CPos = curpos(0, 0, 2)
+
+    if UframeNo = 0 then ; Uf = null_pos_ ; else ; Uf = $mnuframe[1, UframeNo] ; endif 
+    if UtoolNo = 0 then ; Ut = null_pos_ ; else ; Ut = $mnutool[1, UtoolNo] ; endif 
+    
+    TPos = inv(Uf) : ($uframe : CPos : inv($utool)) : Ut
+
+    CPos.X = TPos.X
+    CPos.Y = TPos.Y
+    CPos.Z = TPos.Z
+    CPos.W = TPos.W
+    CPos.P = TPos.P
+    CPos.R = TPos.R
+
+    return(CPos)
+end g2_cur_pos_
+
+routine c_mulgp_ps_
+var
+    TPos			: xyzwprext 
+    CPos			: xyzwprext 
+    Uf       		: position
+    Ut				: position
+begin
+    CPos = curpos(0, 0, GrpId)
+
+    if UframeNo = 0 then ; Uf = null_pos_ ; else ; Uf = $mnuframe[GrpId, UframeNo] ; endif 
+    if UtoolNo = 0 then ; Ut = null_pos_ ; else ; Ut = $mnutool[GrpId, UtoolNo] ; endif 
+    
+    TPos = inv(Uf) : ($uframe : CPos : inv($utool)) : Ut
+
+    CPos.X = TPos.X
+    CPos.Y = TPos.Y
+    CPos.Z = TPos.Z
+    CPos.W = TPos.W
+    CPos.P = TPos.P
+    CPos.R = TPos.R
+
+    return(CPos)
+end c_mulgp_ps_
+
+routine cur_jpos_
+begin
+
+    return(curjpos(0, 0))
+end cur_jpos_
+
+routine g2_cur_jpos_
+begin
+
+    return(curjpos(0, 0, 2))
+end g2_cur_jpos_
+
+routine c_mulgp_jps_
+begin
+
+    return(curjpos(0, 0, GrpId))
+end c_mulgp_jps_
+
+routine trans_pos_
+var
+    RtnPos       : xyzwprext
+begin
+    RtnPos = null_pos_
+    RtnPos.X = PosAry[1]
+    RtnPos.Y = PosAry[2]
+    RtnPos.Z = PosAry[3]
+    RtnPos.W = PosAry[4]
+    RtnPos.P = PosAry[5]
+    RtnPos.R = PosAry[6]
+    if (array_len(PosAry) > 6) then
+        if (not uninit(PosAry[7])) then ; RtnPos.EXT1 = PosAry[7] ; endif
+    endif
+    if (array_len(PosAry) > 7) then
+        if (not uninit(PosAry[8])) then ; RtnPos.EXT2 = PosAry[8] ; endif
+    endif
+    if (array_len(PosAry) > 8) then
+        if (not uninit(PosAry[9])) then ; RtnPos.EXT3 = PosAry[9] ; endif
+    endif
+
+    -- RtnPos.config_data.cfg_turn_no1     = 0 
+    -- RtnPos.config_data.cfg_turn_no2     = 0
+    -- RtnPos.config_data.cfg_turn_no3     = 0
+    -- RtnPos.config_data.cfg_flip         = false
+    -- RtnPos.config_data.cfg_left         = false
+    -- RtnPos.config_data.cfg_up           = true
+    -- RtnPos.config_data.cfg_front        = true
+
+    return(RtnPos)
+end trans_pos_
+
+routine trans_axis_
+var
+    AxisAry9	  : array[9] of real
+    AxisPos       : jointpos
+    CnvStatus	  : integer
+    I			  : integer
+begin
+    for I = 1 to array_len(AxisAry9) do
+        if (array_len(AxisAry) > (I - 1)) then
+            if (not uninit(AxisAry[I])) then ; AxisAry9[I] = AxisAry[I] ; else ; AxisAry9[I] = 0 ; endif
+        else
+            AxisAry9[I] = 0	
+        endif
+    endfor
+    cnv_rel_jpos(AxisAry9, AxisPos, CnvStatus)
+    if CnvStatus <> CC_SUCCESS then ; post_err(CnvStatus, '', 0, CC_ABORT) ; endif
+    return(AxisPos)
+end trans_axis_
+
+routine decom_pos_
+var
+    PosAry       : array[9] of real
+    InfoStat	 : integer
+
+begin
+    PosAry[1] = ThisPos.X
+    PosAry[2] = ThisPos.Y
+    PosAry[3] = ThisPos.Z
+    PosAry[4] = ThisPos.W 
+    PosAry[5] =	ThisPos.P 
+    PosAry[6] =	ThisPos.R 
+
+    if not uninit(ThisPos.Ext1) then
+
+        PosAry[7] = ThisPos.Ext1
+    endif
+
+    if not uninit(ThisPos.Ext2) then
+
+        PosAry[8] = ThisPos.Ext2
+    endif
+
+    if not uninit(ThisPos.Ext3) then
+
+        PosAry[9] = ThisPos.Ext3
+    endif
+
+    --var_info('', 'ThisPos.EXT1', UninitB, TypeName, TypeValue, Dim, Slen, InfoStat)
+    --if (InfoStat = CC_SUCCESS) and (not UninitB) then ; PosAry[7] = ThisPos.EXT1 ; endif
+    --var_info('', 'ThisPos.EXT2', UninitB, TypeName, TypeValue, Dim, Slen, InfoStat)
+    --if (InfoStat = CC_SUCCESS) and (not UninitB) then ; PosAry[8] = ThisPos.EXT2 ; endif
+    --var_info('', 'ThisPos.EXT3', UninitB, TypeName, TypeValue, Dim, Slen, InfoStat)
+    --if (InfoStat = CC_SUCCESS) and (not UninitB) then ; PosAry[9] = ThisPos.EXT3 ; endif
+    return(PosAry)
+end decom_pos_
+
+routine decom_pos2_
+
+begin
+    if (array_len(ThisAry) >= 1) and (not uninit(ThisPos.X)) then ThisAry[1] = ThisPos.X; endif 
+    if (array_len(ThisAry) >= 2) and (not uninit(ThisPos.Y)) then ThisAry[2] = ThisPos.Y; endif 
+    if (array_len(ThisAry) >= 3) and (not uninit(ThisPos.Z)) then ThisAry[3] = ThisPos.Z; endif 
+    if (array_len(ThisAry) >= 4) and (not uninit(ThisPos.W)) then ThisAry[4] = ThisPos.W; endif 
+    if (array_len(ThisAry) >= 5) and (not uninit(ThisPos.P)) then ThisAry[5] = ThisPos.P; endif 
+    if (array_len(ThisAry) >= 6) and (not uninit(ThisPos.R)) then ThisAry[6] = ThisPos.R; endif 
+    if (array_len(ThisAry) >= 7) and (not uninit(ThisPos.Ext1)) then ThisAry[7] = ThisPos.Ext1; endif 
+    if (array_len(ThisAry) >= 8) and (not uninit(ThisPos.Ext2)) then ThisAry[8] = ThisPos.Ext2; endif 
+    if (array_len(ThisAry) >= 9) and (not uninit(ThisPos.Ext3)) then ThisAry[9] = ThisPos.Ext3; endif 
+
+    -- var_info('', 'ThisPos.EXT1', UninitB, TypeName, TypeValue, Dim, Slen, InfoStat)
+    -- if (array_len(ThisAry) >= 7) and (InfoStat = CC_SUCCESS) and (not UninitB) then ThisAry[7] = ThisPos.EXT1; endif
+    -- var_info('', 'ThisPos.EXT2', UninitB, TypeName, TypeValue, Dim, Slen, InfoStat)
+    -- if (array_len(ThisAry) >= 8) and (InfoStat = CC_SUCCESS) and (not UninitB) then ThisAry[8] = ThisPos.EXT2; endif
+    -- var_info('', 'ThisPos.EXT3', UninitB, TypeName, TypeValue, Dim, Slen, InfoStat)
+    -- if (array_len(ThisAry) >= 9) and (InfoStat = CC_SUCCESS) and (not UninitB) then ThisAry[9] = ThisPos.EXT3; endif
+end decom_pos2_
+
+
+routine decom_axis_
+var
+    PosAry       : array[9] of real
+    CnvStatus	 : integer
+begin
+    cnv_jpos_rel(ThisJPos, PosAry, CnvStatus)
+    if CnvStatus <> CC_SUCCESS then ; post_err(CnvStatus, '', 0, CC_ABORT) ; endif
+    return(PosAry)
+end decom_axis_
+
+routine decom_axis2_
+var
+    PosAry       : array[9] of real
+    I            : integer
+    Lens         : integer
+    CnvStatus	 : integer
+begin
+    if array_len(PosAry) < array_len(ThisAry) then Lens = array_len(PosAry); else Lens = array_len(ThisAry); endif
+         
+    cnv_jpos_rel(ThisJPos, PosAry, CnvStatus)
+    if CnvStatus <> CC_SUCCESS then ; post_err(CnvStatus, '', 0, CC_ABORT) ; endif
+    for I = 1 to Lens do  
+        if (not uninit(PosAry[I])) then ThisAry[I] = PosAry[I]; endif
+    endfor
+end decom_axis2_
+
+routine chk_pos_
+var
+    ChkStat     : integer
+    Uf			: position
+    Ut			: position
+    HereJnt     : jointpos
+    OutJoint    : jointpos
+    AxisAry     : array[9] of real
+    ExtAry      : array[3] of real
+begin
+    if UframeNo = 0 then ; Uf = $mor_grp[1].$nilpos ; else ; Uf = $mnuframe[1, UframeNo] ; endif
+    if UtoolNo = 0 then ; Ut = $mor_grp[1].$nilpos ; else ; Ut = $mnutool[1, UtoolNo] ; endif
+    check_epos(NeedChkPos, Uf, Ut, ChkStat)
+    if ChkStat = CC_SUCCESS then ; return(true) ; endif
+
+    HereJnt = cur_jpos_
+    ExtAry[1] = 0
+    ExtAry[2] = 0
+    ExtAry[3] = 0
+    pos2joint(HereJnt, (NeedChkPos), Uf, Ut, 8, NeedChkPos.config_data, ExtAry, OutJoint, ChkStat)
+    if ChkStat <> CC_SUCCESS then ; return(false) ; endif
+    AxisAry = decom_axis_(OutJoint)
+
+    while AxisAry[6] >= 360.0 do ; AxisAry[6] = AxisAry[6] - 360.0 ; endwhile
+    while AxisAry[6] <= -360.0 do ; AxisAry[6] = AxisAry[6] + 360.0 ; endwhile
+    return(j_in_range(trans_axis_(AxisAry)))
+end chk_pos_
+
+routine chk_joint_
+begin
+
+    return(j_in_range(ThisJoint))
+
+end chk_joint_  
+
+routine g2_chk_jnt_
+begin
+
+    return(j_in_range(ThisJoint))
+
+end g2_chk_jnt_  
+
+routine move_j_
+begin
+    $group[1].$cnstnt_path = false
+    if UframeNo = 0 then ; $uframe = $mor_grp[1].$nilpos ; else ; $uframe = $mnuframe[1, UframeNo] ; endif
+    if UtoolNo = 0 then ; $utool = $mor_grp[1].$nilpos ; else ; $utool = $mnutool[1, UtoolNo] ; endif
+    if (Accu < 1) or (Accu > 4) then ; Accu = FINE ; endif
+    if Speed < 1 then ; Speed = 1 ; endif
+    if Speed > speed_lim_(1) then ; Speed = speed_lim_(1) ; endif
+    if Accu = FINE then 
+        with $speed = Speed, $termtype = Accu, $motype = JOINT
+        move to PointName 
+    else
+        with $speed = Speed, $termtype = Accu, $motype = JOINT
+        move to PointName nowait
+    endif
+end move_j_
+
+routine move_l_
+begin
+    $group[1].$cnstnt_path = false
+    if UframeNo = 0 then ; $uframe = $mor_grp[1].$nilpos ; else ; $uframe = $mnuframe[1, UframeNo] ; endif
+    if UtoolNo = 0 then ; $utool = $mor_grp[1].$nilpos ; else ; $utool = $mnutool[1, UtoolNo] ; endif
+    if (Accu < 1) or (Accu > 4) then ; Accu = FINE ; endif
+    if Speed < 1 then ; Speed = 1 ; endif
+    if Speed > speed_lim_(1) then ; Speed = speed_lim_(1) ; endif
+    if Accu = FINE then 
+        with $speed = Speed, $termtype = Accu, $motype = LINEAR
+        move to PointName 
+    else
+        with $speed = Speed, $termtype = Accu, $motype = LINEAR
+        move to PointName nowait
+    endif
+end move_l_
+
+routine move_abs_j_
+begin
+    --$GROUP[1].$CNSTNT_PATH = false
+    if (Accu < 1) or (Accu > 4) then ; Accu = 1 ; endif
+    if Speed < 1 then ; Speed = 1 ; endif
+    if Speed > speed_lim_(1) then ; Speed = speed_lim_(1) ; endif
+    if Accu = FINE then 
+        with $speed = Speed, $termtype = Accu, $motype = JOINT
+        move to PointName
+    else
+        with $speed = Speed, $termtype = Accu, $motype = JOINT
+        move to PointName nowait
+    endif
+end move_abs_j_
+
+routine g2_m_abs_j_
+begin
+    --$GROUP[1].$CNSTNT_PATH = false
+    if (Accu < 1) or (Accu > 4) then ; Accu = 1 ; endif
+    if Speed < 1 then ; Speed = 1 ; endif
+    if Speed > speed_lim_(2) then ; Speed = speed_lim_(2) ; endif
+    if Accu = FINE then 
+        with $param_group[2].$speed = Speed, $param_group[2].$termtype = Accu, $param_group[2].$motype = JOINT
+        move to PointName
+    else
+        with $param_group[2].$speed = Speed, $param_group[2].$termtype = Accu, $param_group[2].$motype = JOINT
+        move to PointName nowait
+    endif
+end g2_m_abs_j_
+
+routine lock_grp_
+var 
+    LockStatus 			: integer
+begin
+    lock_group(GrpNo, LockStatus)
+    return(LockStatus = CC_SUCCESS)
+end lock_grp_
+
+routine unlock_grp_
+var 
+    UnLockStatus 			: integer
+begin
+    unlock_group(GrpNo, UnLockStatus)
+    if UnLockStatus <> CC_SUCCESS then ; unlock_group(GrpNo, UnLockStatus) ; endif
+end unlock_grp_
+
+routine j_in_here_
+var
+    curjoint	: jointpos
+    CurjAry 	: array[9] of real
+    InJoint		: array[9] of real
+    CnvStat 	: integer
+begin
+    curjoint = cur_jpos_
+
+    cnv_jpos_rel(curjoint, CurjAry, CnvStat)
+    if CnvStat <> CC_SUCCESS then ; return(false) ; endif
+
+    cnv_jpos_rel(JointCoord, InJoint, CnvStat)
+    if CnvStat <> CC_SUCCESS then ; return(false) ; endif
+    
+    return((abs(CurjAry[1] - InJoint[1]) <= 0.1) and &
+            (abs(CurjAry[2] - InJoint[2]) <= 0.1) and &
+            (abs(CurjAry[3] - InJoint[3]) <= 0.1) and &
+            (abs(CurjAry[4] - InJoint[4]) <= 0.1) and &
+            (abs(CurjAry[5] - InJoint[5]) <= 0.1) and &
+            (abs(CurjAry[6] - InJoint[6]) <= 0.1))
+end j_in_here_
+
+routine l_in_here_
+var
+    curjoint	: jointpos
+    CurjAry 	: array[9] of real
+    CnvStat 	: integer
+begin
+    $loctol = 0.2
+    $orienttol = 0.1
+    $checkconfig = false
+
+    return(cur_pos_(UframeNo, UtoolNo) >=< LPosCoord)
+end l_in_here_
+
+routine speed_lim_
+
+begin
+
+    return($param_group[GrpNo].$speedlim)
+
+end speed_lim_
+
+routine is_moving_
+var
+   -- IsMoving            : boolean
+    I                   : integer
+begin
+   -- IsMoving = false
+
+    for i = 1 to $scr.$num_group do
+        if $mor_grp[i].$rob_move then
+            return(true)
+        endif
+    endfor
+
+    return(false)
+end is_moving_
+
+routine is_ready_
+var
+    --IsReady            : boolean
+    I                   : integer
+begin
+   --IsReady = false
+
+    for i = 1 to $scr.$num_group do
+        if not $mor_grp[i].$servo_ready then
+            return(false)
+        endif
+    endfor
+
+    return(true)
+end is_ready_
+
+routine jnt_2cart_
+var
+    Uf			: position
+    Ut			: position
+    OutPos      : position
+    WjntCfg     : config
+    HereCart    : xyzwprext
+    OutCtPos    : xyzwprext
+    ExtAry      : array[3] of real
+    CnvStatus   : integer
+begin
+    if UframeNo = 0 then ; Uf = $mor_grp[1].$nilpos ; else ; Uf = $mnuframe[1, UframeNo] ; endif
+    if UtoolNo = 0 then ; Ut = $mor_grp[1].$nilpos ; else ; Ut = $mnutool[1, UtoolNo] ; endif
+    HereCart = null_pos_
+    OutPos = null_pos_
+    joint2pos(ThisJoint, Uf, Ut, 0, OutPos, WjntCfg, ExtAry, CnvStatus)
+    if CnvStatus <> CC_SUCCESS then ; post_err(CnvStatus, '', 0, CC_ABORT) ; else ; OutCtPos = OutPos ; endif
+    if uninit(ExtAry[1]) then ; ExtAry[1] = 0.0 ; endif
+    OutCtPos.ext1 = ExtAry[1]
+    return(OutCtPos)
+end jnt_2cart_
+
+routine cart_2jnt_
+var
+    Uf			: position
+    Ut			: position
+    HereJnt     : jointpos
+    OutJoint    : jointpos
+    AxisAry     : array[9] of real
+    HereCart    : xyzwprext
+    ExtAry      : array[3] of real
+    CnvStatus   : integer
+    I           : integer
+begin
+    if UframeNo = 0 then ; Uf = $mor_grp[1].$nilpos ; else ; Uf = $mnuframe[1, UframeNo] ; endif
+    if UtoolNo = 0 then ; Ut = $mor_grp[1].$nilpos ; else ; Ut = $mnutool[1, UtoolNo] ; endif
+    HereJnt = cur_jpos_
+    HereCart = cur_pos_(0, 0)
+    for I = 1 to 9 do ; AxisAry[I] = 0.0 ; endfor
+    pos2joint(HereJnt, (ThisCtPos), Uf, Ut, 0, HereCart.config_data, ExtAry, OutJoint, CnvStatus)
+    if CnvStatus <> CC_SUCCESS then ; post_err(CnvStatus, '', 0, CC_ABORT) ; endif
+    return(OutJoint)
+end cart_2jnt_
+
+routine cur_trq_
+var 
+    I                   : integer
+begin
+    for I = 1 to array_len(TrqVal) do
+        if I <= get_axs_num_(1) then ; TrqVal[I] = ($mor_grp[1].$cur_dis_trq[I]) / 1.0 ; else ; TrqVal[I] = 0.0 ; endif
+    endfor
+end cur_trq_
+
+routine cur_vel_   
+begin
+    set_sys_bol_('$scr_grp[' + int_2str_(GrpNo) + '].$m_pos_enb', true)
+    set_sys_bol_('$scr_grp[' + int_2str_(GrpNo) + '].$m_dst_enb', true)
+    return(get_sys_rel_('$scr_grp[' + int_2str_(GrpNo) + '].$mch_spd'))
+end cur_vel_
+
+routine trans_dx_ 
+var
+    RtnPos              : xyzwpr
+
+begin
+    RtnPos                              = null_pos_
+    RtnPos.X                            = Dx
+
+    RtnPos.config_data.cfg_turn_no1     = 0 
+    RtnPos.config_data.cfg_turn_no2     = 0
+    RtnPos.config_data.cfg_turn_no3     = 0
+    RtnPos.config_data.cfg_flip         = false
+    RtnPos.config_data.cfg_left         = false
+    RtnPos.config_data.cfg_up           = true
+    RtnPos.config_data.cfg_front        = true
+
+    return(RtnPos)
+end trans_dx_
+
+routine trans_dy_ 
+var
+    RtnPos              : xyzwpr
+
+begin
+    RtnPos                              = null_pos_
+    RtnPos.Y                            = Dy
+
+    RtnPos.config_data.cfg_turn_no1     = 0 
+    RtnPos.config_data.cfg_turn_no2     = 0
+    RtnPos.config_data.cfg_turn_no3     = 0
+    RtnPos.config_data.cfg_flip         = false
+    RtnPos.config_data.cfg_left         = false
+    RtnPos.config_data.cfg_up           = true
+    RtnPos.config_data.cfg_front        = true
+
+    return(RtnPos)
+end trans_dy_
+
+routine trans_dz_ 
+var
+    RtnPos              : xyzwpr
+
+begin
+    RtnPos                              = null_pos_
+    RtnPos.Z                            = Dz
+
+    RtnPos.config_data.cfg_turn_no1     = 0 
+    RtnPos.config_data.cfg_turn_no2     = 0
+    RtnPos.config_data.cfg_turn_no3     = 0
+    RtnPos.config_data.cfg_flip         = false
+    RtnPos.config_data.cfg_left         = false
+    RtnPos.config_data.cfg_up           = true
+    RtnPos.config_data.cfg_front        = true
+
+    return(RtnPos)
+end trans_dz_
+
+routine trans_dw_ 
+var
+    RtnPos              : xyzwpr
+
+begin
+    RtnPos                              = null_pos_
+    RtnPos.W                            = Dw
+
+    RtnPos.config_data.cfg_turn_no1     = 0 
+    RtnPos.config_data.cfg_turn_no2     = 0
+    RtnPos.config_data.cfg_turn_no3     = 0
+    RtnPos.config_data.cfg_flip         = false
+    RtnPos.config_data.cfg_left         = false
+    RtnPos.config_data.cfg_up           = true
+    RtnPos.config_data.cfg_front        = true
+
+    return(RtnPos)
+end trans_dw_
+
+routine trans_dp_ 
+var
+    RtnPos              : xyzwpr
+
+begin
+    RtnPos                              = null_pos_
+    RtnPos.P                            = Dp
+
+    RtnPos.config_data.cfg_turn_no1     = 0 
+    RtnPos.config_data.cfg_turn_no2     = 0
+    RtnPos.config_data.cfg_turn_no3     = 0
+    RtnPos.config_data.cfg_flip         = false
+    RtnPos.config_data.cfg_left         = false
+    RtnPos.config_data.cfg_up           = true
+    RtnPos.config_data.cfg_front        = true
+
+    return(RtnPos)
+end trans_dp_
+
+routine trans_dr_ 
+var
+    RtnPos              : xyzwpr
+
+begin
+    RtnPos                              = null_pos_
+    RtnPos.R                            = Dr
+
+    RtnPos.config_data.cfg_turn_no1     = 0 
+    RtnPos.config_data.cfg_turn_no2     = 0
+    RtnPos.config_data.cfg_turn_no3     = 0
+    RtnPos.config_data.cfg_flip         = false
+    RtnPos.config_data.cfg_left         = false
+    RtnPos.config_data.cfg_up           = true
+    RtnPos.config_data.cfg_front        = true
+
+    return(RtnPos)
+end trans_dr_
+

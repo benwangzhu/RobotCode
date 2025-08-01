@@ -1,0 +1,118 @@
+'!TITLE "lib_packages"
+
+#Include "lib_packages.h"
+#Include "Variant.h"
+Sub Main
+'!***********************************************************
+'!
+'! Copyright 2018 - 2025 speedbot All Rights reserved.
+'!
+'! File Name: lib_packages.pcs
+'!
+'! Description:
+'!   Language             ==   PacScipt for DENSO ROBOT
+'!   Date                 ==   2025 - 02 - 24
+'!   Modification Data    ==   2025 - 03 - 01
+'!
+'! Author: speedbot
+'!
+'! Version: 1.0
+'!*********************************************************************************************************;
+End Sub
+
+#Pragma Encrypt(On) 
+
+Sub EncodeDatFrame_UINT8(ByRef Buffer As Variant, ByRef Offset As Integer, ByVal Value As Integer) 
+    Dim Bytes As Variant 
+
+    Bytes = CreateArray(1) 
+    Bytes(0) = Value
+    WriteByteArray Bytes(0), Buffer, Offset 
+    Offset = Offset + 1
+End Sub 
+
+Sub EncodeDatFrame_INT32(ByRef Buffer As Variant, ByRef Offset As Integer, ByVal Value As Integer) 
+
+    WriteByteArray Value, Buffer, Offset
+    Offset = Offset + 4
+End Sub 
+
+Sub EncodeDatFrame_FLOAT(ByRef Buffer As Variant, ByRef Offset As Integer, ByVal Value As Single) 
+
+    WriteByteArray Value, Buffer, Offset
+    Offset = Offset + 4
+End Sub 
+
+Sub EncodeDatFrame_HEADER(ByRef Buffer As Variant, ByRef Offset As Integer, ByVal Value As Variant) 
+
+	Offset = 0
+   	EncodeDatFrame_INT32 Buffer, Offset, Value(0)
+   	EncodeDatFrame_INT32 Buffer, Offset, Value(1)
+   	EncodeDatFrame_INT32 Buffer, Offset, Value(2)
+	EncodeDatFrame_UINT8 Buffer, Offset, Value(3)
+	EncodeDatFrame_UINT8 Buffer, Offset, Value(4)
+	EncodeDatFrame_UINT8 Buffer, Offset, Value(5)
+	EncodeDatFrame_UINT8 Buffer, Offset, Value(6)
+End Sub 
+
+Sub EncodeDatFrame_TAIL(ByRef Buffer As Variant, ByRef Offset As Integer, ByVal Value As Variant) 
+
+   	EncodeDatFrame_INT32 Buffer, Offset, Value(0)
+End Sub 
+
+
+Sub DecodeDatFrame_UINT8(ByVal Buffer As Variant, ByRef Offset As Integer, ByRef Value As Integer) 
+
+    Value = Buffer(Offset)
+	Offset = Offset + 1
+End Sub 
+
+Sub DecodeDatFrame_INT32(ByVal Buffer As Variant, ByRef Offset As Integer, ByRef Value As Integer) 
+
+    ReadByteArray Value, Buffer, Offset
+    Offset = Offset + 4
+End Sub 
+
+Sub DecodeDatFrame_FLOAT(ByVal Buffer As Variant, ByRef Offset As Integer, ByRef Value As Single) 
+
+    ReadByteArray Value, Buffer, Offset
+    Offset = Offset + 4
+End Sub 
+
+Sub DecodeDatFrame_HEADER(ByVal Buffer As Variant, ByRef Offset As Integer, ByRef Value As Variant) 
+    Dim TmpInt(3) As Integer
+
+    Offset = 0
+
+    DecodeDatFrame_INT32 Buffer, Offset, TmpInt(0)
+    DecodeDatFrame_INT32 Buffer, Offset, TmpInt(1)
+    DecodeDatFrame_INT32 Buffer, Offset, TmpInt(2)
+
+    Value = Array(TmpInt(0), TmpInt(1), TmpInt(2), Buffer(Offset), Buffer(Offset + 1), Buffer(Offset + 2), Buffer(Offset + 3))
+
+    If (TmpInt(0) <> PACKAGE_HEADER) Then
+
+        PrintMsg "报文头校验错误", 2, "Speedbot"
+        Halt
+    End If
+    
+	Offset = Offset + 4
+End Sub 
+
+Sub DecodeDatFrame_TAIL(ByVal Buffer As Variant, ByRef Offset As Integer, ByRef Value As Variant) 
+    Dim TmpInt(3) As Integer
+
+    DecodeDatFrame_INT32 Buffer, Offset, TmpInt(0)
+
+    Value = Array(TmpInt(0))
+
+    If (TmpInt(0) <> PACKAGE_TAIL) Then
+
+        PrintMsg "报文尾校验错误", 2, "Speedbot"
+        Halt
+    End If
+
+	Offset = Offset + 4
+End Sub 
+
+#Pragma Encrypt(Off) 

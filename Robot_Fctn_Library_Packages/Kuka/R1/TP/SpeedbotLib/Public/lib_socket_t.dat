@@ -1,0 +1,325 @@
+&access RP
+&comment Lib Socket-h 221122
+defdat lib_socket_t public
+;***********************************************************
+;
+; Copyright 2018 - 2023 speedbot All Rights reserved.
+;
+; File Name: lib_socket_t.dat
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2021 - 08 - 17
+;   Modification Data    ==   2021 - 09 - 17
+;
+; Author: speedbot
+;
+; Version: 1.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+                  
+global const char JSON_POS_TYP[24] 
+JSON_POS_TYP[] = "xyzabc"
+global const char JSON_INT_TYP[24]
+JSON_INT_TYP[] = "int"
+global const char JSON_FLT_TYP[24]
+JSON_FLT_TYP[] = "float"
+global const char JSON_STR_TYP[24] 
+JSON_STR_TYP[] = "str"
+global const char JSON_DEC_EL1[24] 
+JSON_DEC_EL1[] = "{"
+global const char JSON_DEC_EL2[24] 
+JSON_DEC_EL2[] = "}"
+global const char JSON_DEC_EL3[24]
+JSON_DEC_EL3[] = ":"
+global const char JSON_DEC_EL4[24] 
+JSON_DEC_EL4[] = ";"
+global const char JSON_DEC_EL5[24]
+JSON_DEC_EL5[] = ","
+global const char JSON_DEC_KEY[24] 
+JSON_DEC_KEY[] = "key"
+global const char JSON_DEC_VAL[24]  
+JSON_DEC_VAL[] = "value"
+global const char JSON_DEC_NUL[24]  
+JSON_DEC_NUL[] = " "
+
+global const char XML_TAG_NAME[24]
+XML_TAG_NAME[] = "Buffer"
+
+global const int JSON_MAX_DATA	    = 30
+
+global const int JSON_MAX_AXS	    = 6
+
+global const int SOCK_SUCCESS	    = 0
+global const int SOCK_NUM_DAT	    = 800001
+global const int SOCK_TYP_DAT	    = 800002
+global const int SOCK_HED_NAM	    = 800003
+global const int SOCK_HED_DAT       = 800004
+global const int SOCK_COM_ERR       = 800005
+global const int CHAR_DEC_ERR       = 800006
+global const int CHAR_CNV_ERR       = 800007
+
+global const int SOCK_TIMEOUT       = 282
+
+global struc sock_cfg_t bool Connected, char SockXmlName[24], int ActFlagNo, int RecvFlagNo, int NByte, int RecvTimeout
+
+global struc udp_cfg_t bool Connection, char SockXmlName[24], int ActFlagNo, int RecvFlagNo, int NByte, int RecvTimeout
+
+global struc data_packet_t int DataInt1, DataInt2, DataInt3,real DataReal1, DataReal2, DataReal3, DataReal4, DataReal5, DataReal6, DataReal7, DataReal8, DataReal9
+
+;***********************************************************
+; func sock_accept_()
+;***********************************************************
+;     in : ThisSock        * sock_cfg_t *       * Socket interface parameters *
+;     in : WaitConn        * bool       *       * Whether to wait for a connection *
+; return :                 * int        *       * Listening status *
+;***********************************************************
+; Create a TCP server to listen for external connections.
+; If WaitConn == true, the function will block until a connection is established.
+; If WaitConn == false, the function will not block.
+; If WaitConn is omitted, it defaults to TRUE.
+; Returns 0 upon successfully creating the listener.
+;
+; In the sock_cfg_t parameter:
+; Connected         indicates the server creation status, not the connection status. This variable is TRUE when the server is successfully created.
+; SockXmlName[]     represents configuration settings for creating the server, which are detailed in an XML file.
+; ActFlagNo         is a $FLAG number that will be set to TRUE when a successful connection is established. It must match the setting in the XML file.
+; RecvFlagNo        is a $FLAG number that will be set to TRUE when a complete data packet is received. It must match the setting in the XML file.
+; NByte             when this variable is 1, it indicates that there is data available on the SOCKET.
+; RecvTimeout       specifies the receive data timeout in milliseconds. A value of 0 means it will block indefinitely until data is input or an exception occurs.
+;***********************************************************
+extfct int sock_accept_(sock_cfg_t : out, bool : in)
+
+;***********************************************************
+; func csock_conn_()
+;***********************************************************
+;     in : ThisSock        * sock_cfg_t *       * Socket interface parameters *
+; return :                  * int *              * Connection status *
+;***********************************************************
+; Connect to a server as a TCP client.
+; Returns 0 on successful connection.
+;
+; In the sock_cfg_t parameter:
+; Connected         Set to TRUE when successfully connected to the server.
+; SockXmlName[]     Represents configurations for creating the server, detailed in an XML file.
+; ActFlagNo         This is a $FLAG number that is set to TRUE upon successful connection, and must match settings in the XML file.
+; RecvFlagNo        This is a $FLAG number that is set to TRUE when a complete data packet is received, and must match settings in the XML file.
+; NByte             When this variable is 1, it indicates that the SOCKET has data.
+; RecvTimeout       The receive data timeout, specified in milliseconds (ms). A value of 0 means it will block indefinitely until data is received or an exception occurs.
+;***********************************************************
+extfct int csock_conn_(sock_cfg_t : out)
+
+;***********************************************************
+; func sock_dconn_()
+;***********************************************************
+;     in : ThisSock        * sock_cfg_t *       * Socket interface parameters *
+;***********************************************************
+; Disconnect from a TCP connection, whether it is a server or client connection.
+;***********************************************************
+ext sock_dconn_(sock_cfg_t : out)
+
+;***********************************************************
+; func sock_write_()
+;***********************************************************
+;     in : ThisSock        * sock_cfg_t *       * Socket interface parameters *
+;     in : Msg[]           * char *              * Message to send *
+;     in : Len             * int *               * Length of bytes to send *
+; return :                  * int *              * Send status *
+;***********************************************************
+; Send a message over a TCP connection.
+; Returns 0 on successful send.
+; The Len parameter specifies the length in bytes.
+; If Len is omitted, it defaults to the initialized length of Msg[].
+; Binary data needs to be packed into Msg[] using the CAST_TO instruction.
+;***********************************************************
+extfct int sock_write_(sock_cfg_t : out, char[] : in, int : in)
+
+;***********************************************************
+; func sock_read_()
+;***********************************************************
+;     in : ThisSock        * sock_cfg_t *       * Socket interface parameters *
+;    out : Msg[]           * char *              * Variable to store the received message *
+; return :                  * int *              * Receive status *
+;***********************************************************
+; Read a message from the TCP buffer.
+; Returns > 0 on successful read.
+; Binary data needs to be unpacked from Msg[] using the CAST_FROM instruction.
+;***********************************************************
+extfct int sock_read_(sock_cfg_t : out, char[] : out)
+
+;***********************************************************
+; func get_bits_()
+;***********************************************************
+;     in : ThisSock        * sock_cfg_t *       * Socket interface parameters *
+; return :                  * int *              * Number of bytes cached but not yet received in the TCP SOCKET channel *
+;***********************************************************
+; Get the number of bytes in the TCP buffer that have not been read yet.
+; A return value > 0 indicates unread data, = 0 indicates no data, < 0 indicates a connection anomaly.
+;***********************************************************
+extfct int get_bits_(sock_cfg_t : out)
+
+;***********************************************************
+; func sock_rjson_()
+;***********************************************************
+;     in : ThisSock        * sock_cfg_t *       * Socket interface parameters *
+;    out : IntData[]       * int *               * Array to store integer parameters *
+;    out : FloatData[]     * real *              * Array to store floating-point parameters *
+;    out : StringData[,]   * char *              * Array to store string parameters *
+;    out : PosData[,]      * real *              * Array to store position parameters *
+; return :                  * int *              * Receive status *
+;***********************************************************
+; Read and parse a JSON-formatted data packet from the TCP SOCKET buffer.
+; The parsed data is stored in the respective arrays.
+; Returns 0 on successful extraction.
+;***********************************************************
+extfct int sock_rjson_(sock_cfg_t : out, int[] : out, real[] : out, char[ , ] : out, real[ , ] : out)
+
+;***********************************************************
+; func sock_clr_buff_()
+;***********************************************************
+;    out : ThisSock        * sock_cfg_t *       * Socket interface parameters *
+;***********************************************************
+; Clear the TCP data buffer.
+;***********************************************************
+ext sock_clr_buff_(sock_cfg_t : out)
+
+;***********************************************************
+; func udp_create_()
+;***********************************************************
+;     in : UdpSock         * udp_cfg_t *        * UDP interface parameters *
+; return :                  * int *              * Creation status *
+;***********************************************************
+; Create a UDP communication, which can be either SERVER or CLIENT.
+; The standard XML file defining the configuration is located in the XML folder.
+; SockXmlName[]     Represents configurations for creating UDP communications, detailed in an XML file.
+; RecvFlagNo        This is a $FLAG number that is set to TRUE when a complete data packet is received, and must match settings in the XML file.
+; NByte             When this variable is 1, it indicates that the SOCKET has data.
+; RecvTimeout       The receive data timeout, specified in milliseconds (ms). A value of 0 means it will block indefinitely until data is received or an exception occurs.
+; Returns 0 on successful creation.
+;***********************************************************
+extfct int udp_create_(udp_cfg_t : out)
+
+;***********************************************************
+; func udp_create_reset_()
+;***********************************************************
+;     in : UdpSock         * udp_cfg_t *        * UDP interface parameters *
+;***********************************************************
+; Used in interrupts for reconnection mechanisms.
+;***********************************************************
+ext udp_create_reset_(udp_cfg_t : out)
+
+;***********************************************************
+; func udp_close_()
+;***********************************************************
+;     in : UdpSock         * udp_cfg_t *        * UDP interface parameters *
+;***********************************************************
+; Close and delete the UDP SERVER/CLIENT channel.
+;***********************************************************
+ext udp_close_(udp_cfg_t : out)
+
+;***********************************************************
+; func udp_bits_()
+;***********************************************************
+;     in : UdpSock         * udp_cfg_t *        * UDP interface parameters *
+; return :                  * int *              * Number of bytes cached but not yet received in the UDP SOCKET channel *
+;***********************************************************
+; Get the number of bytes in the UDP buffer that have not been read yet.
+; A return value > 0 indicates unread data, = 0 indicates no data, < 0 indicates a connection anomaly.
+;***********************************************************
+extfct int udp_bits_(udp_cfg_t : out)
+
+;***********************************************************
+; func udp_sendto_()
+;***********************************************************
+;     in : ThisSock        * udp_cfg_t *        * UDP interface parameters *
+;     in : Msg[]           * char *              * Message to send *
+;     in : Len             * int *               * Length of bytes to send *
+; return :                  * int *              * Send status *
+;***********************************************************
+; Send a message to a UDP object.
+; Returns 0 on successful send.
+; The Len parameter specifies the length in bytes.
+; Binary data needs to be packed into Msg[] using the CAST_TO instruction.
+;***********************************************************
+extfct int udp_sendto_(udp_cfg_t : out, char[] : in, int : in)
+
+;***********************************************************
+; func udp_recvfm_()
+;***********************************************************
+;     in : UdpSock         * udp_cfg_t *        * UDP interface parameters *
+;    out : Msg[]           * char *              * Variable to store the received message *
+; return :                  * int *              * Receive status *
+;***********************************************************
+; Read a message from the UDP buffer.
+; Returns > 0 on successful read.
+; Binary data needs to be unpacked from Msg[] using the CAST_FROM instruction.
+;***********************************************************
+extfct int udp_recvfm_(udp_cfg_t : out, char[] : out)
+
+;***********************************************************
+; func udp_rjson_()
+;***********************************************************
+;     in : UdpSock         * udp_cfg_t *        * UDP interface parameters *
+;    out : IntData[]       * int *               * Array to store integer parameters *
+;    out : FloatData[]     * real *              * Array to store floating-point parameters *
+;    out : StringData[,]   * char *              * Array to store string parameters *
+;    out : PosData[,]      * real *              * Array to store position parameters *
+; return :                  * int *              * Receive status *
+;***********************************************************
+; Read and parse a JSON-formatted data packet from the UDP SOCKET buffer.
+; The parsed data is stored in the respective arrays.
+; Returns 0 on successful extraction.
+;***********************************************************
+extfct int udp_rjson_(udp_cfg_t : out, int[] : out, real[] : out, char[ , ] : out, real[ , ] : out)
+
+;***********************************************************
+; func recv_udp_pack_
+;***********************************************************
+;     in : UdpSock         * udp_cfg_t *        * UDP interface parameters *
+;    out : UdpPacks        * data_packet_t *    * Data packet *
+; return :                  * int *              * Receive status *
+;***********************************************************
+; Read a specified protocol packet from the UDP buffer.
+; Returns 0 on successful read.
+; The specified protocol packet is declared in a .DAT file.
+;***********************************************************
+extfct int recv_udp_pack_(udp_cfg_t : out, data_packet_t : out)
+
+;***********************************************************
+; func udp_clr_buff_()
+;***********************************************************
+;    out : ThisUdp         * udp_cfg_t *        * UDP interface parameters *
+;***********************************************************
+; Clear the UDP data buffer.
+;***********************************************************
+ext udp_clr_buff_(sock_cfg_t : out)
+
+enddat

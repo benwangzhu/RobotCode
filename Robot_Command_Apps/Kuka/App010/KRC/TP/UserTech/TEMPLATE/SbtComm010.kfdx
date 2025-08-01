@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--For an example how to add menu entries for UserTech InlineForms see file C:\KRC\TP\UserTech\SmartHMI\SmartHMI.exe.UserTech.InlineForms.config-->
+<KukaTechDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	
+	<!-- ===================================================================================== -->
+	<!-- =============================== SbtComm010 ========================================== -->
+	<!-- ===================================================================================== -->
+	<Application Name="SbtComm010" SOT="FALSE" SOC="TRUE">							
+		<!-- ================================ Global Data Type ========================================= -->
+
+		<Param Name="x" ShortName="Vector X" ShortCut="" Unit="mm" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-1000000.0" Max="1000000.0" Step="100.0" Autolimit="TRUE" />
+		</Param>
+		<Param Name="y" ShortName="Vector Y" ShortCut="" Unit="mm" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-1000000.0" Max="1000000.0" Step="100.0" Autolimit="TRUE" />
+		</Param>
+		<Param Name="z" ShortName="Vector Z" ShortCut="" Unit="mm" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-1000000.0" Max="1000000.0" Step="100.0" Autolimit="TRUE" />
+		</Param>
+
+		<Param Name="PL_Max" ShortName="Max" ShortCut="" Unit="TOOL" Var="vector_t" Enable="">
+			<Value Type="FREE" Default="_" />
+		</Param>
+		<Param Name="Max" ShortName="IN Max: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="Max" />
+		</Param>
+		<PList Name="Max" Param="Max">
+			<Val>x</Val>
+			<Val>y</Val>
+			<Val>z</Val>
+		</PList>
+
+		<Param Name="PL_Min" ShortName="Min" ShortCut="" Unit="TOOL" Var="vector_t" Enable="">
+			<Value Type="FREE" Default="_" />
+		</Param>
+		<Param Name="Min" ShortName="IN Min: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="Min" />
+		</Param>
+		<PList Name="Min" Param="Min">
+			<Val>x</Val>
+			<Val>y</Val>
+			<Val>z</Val>
+		</PList>
+
+		<Param Name="Comm010Mode" ShortName="IN Mode: " ShortCut="" Unit="" Var="" Enable="">
+			<List SelectedItem="">
+               <Item Disp="STACK" 	Key="1" />
+               <Item Disp="UNSTACK" Key="2" />
+			</List>
+		</Param>
+
+		<Param Name="Comm010FeekMode" ShortName="IN Mode: " ShortCut="" Unit="" Var="" Enable="">
+			<List SelectedItem="">
+               <Item Disp="SUCCESS" 	Key="0" />
+               <Item Disp="MISS" 		Key="-1" />
+               <Item Disp="PRESS" 		Key="-2" />
+               <Item Disp="FAILED" 		Key="-3" />
+			</List>
+		</Param>
+
+		<Param Name="Comm010AreaId" ShortName="IN Area: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="255" Step="1" Autolimit="True" />
+		</Param>
+
+		<Param Name="DelayPath" ShortName="IN PATH: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-2000.0" Max="2000.0" Step="20" Autolimit="False" />
+		</Param>
+
+		<Param Name="DelayTime" ShortName="IN DELAY: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="12" Max="12000" Step="12" Autolimit="" />
+		</Param>
+
+		<!-- ================================ Global Script ========================================= -->
+
+		<!-- <Script Name="DeclOutPoint">
+			<Redecl Path="%MODULE/" Declaration= "DECL E6POS X%OutP/={X 0,Y 0,Z 0,A 0,B 0,C 0,S 0,T 0,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}" />
+			<Message Text="Define X%OutP/ In %MODULE/" />
+		</Script> -->
+		
+		<!-- ================================ Init ========================================= -->
+		
+		<Fold Name="InitFold">
+			<Line>Comm010WorkMode = %Comm010Mode/</Line>		
+			<Line>ProcessComm010Init()</Line>		
+		</Fold>
+		<InlineForm Name="Init" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="InitFold" />	
+			<PRM Name="Comm010Mode" />
+		</InlineForm>
+
+		<!-- ================================ ReqData ========================================= -->
+		
+		<Fold Name="ReqDataFold">	
+			<Line>ProcessComm010Data()</Line>	
+		</Fold>
+		<InlineForm Name="ReqData" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="ReqDataFold" />	
+		</InlineForm>
+
+		<!-- ================================ ReqPos2 ========================================= -->
+		
+		<Fold Name="ReqPos2Fold">		
+			<Line>ProcessComm010Pos02(%SoldId/)</Line>		
+		</Fold>
+		<InlineForm Name="ReqPos2" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="ReqPos2Fold" />
+		</InlineForm>
+
+		<!-- ================================ PickFeek ========================================= -->
+		
+		<Fold Name="PickFeekFold">	
+			<Line>wait sec 0.0</Line>		
+			<Line>ProcessComm010PickFeek(%Comm010FeekMode/)</Line>		
+		</Fold>
+		<InlineForm Name="PickFeek" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="PickFeekFold" />
+			<PRM Name="Comm010FeekMode" />
+		</InlineForm>
+
+
+		<!-- ================================ AreaFeek ========================================= -->
+		
+		<Fold Name="AreaFeekFold">	
+			<Line>TRIGGER WHEN PATH=%DelayPath/ DELAY=%DelayTime/ DO ProcessComm010AreaFeek(%Comm010AreaId/) PRIO = -1</Line>
+		</Fold>
+		<InlineForm Name="AreaFeek" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="AreaFeekFold" />
+			<PRM Name="DelayPath" />
+			<PRM Name="DelayTime" />
+			<PRM Name="Comm010AreaId" />
+		</InlineForm>
+
+		<!-- ================================ FsConfig ========================================= -->
+		
+		<Param Name="FsId" ShortName="IN Fs Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="8" Step="1" Autolimit="" />
+		</Param>
+		
+		<Fold Name="FsConfigFold">	
+			<Line>Comm010LimUp[%FsId/] = %Max/</Line>		
+			<Line>Comm010LimDown[%FsId/] = %Min/</Line>		
+		</Fold>
+		<InlineForm Name="FsConfig" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="FsConfigFold" />
+			<PRM Name="FsId" />									
+			<PRM Name="Max" />									
+			<PRM Name="Min" />									
+		</InlineForm>
+
+	</Application>
+</KukaTechDescription>
+<!--checksum 25562007144 -->

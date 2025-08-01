@@ -1,0 +1,1344 @@
+&access RP
+&comment Lib Motion 240227
+def lib_motion ()
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: lib_motion.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2021 - 08 - 31
+;   Modification Data    ==   2024 - 02 - 27
+;
+; Author: speedbot
+;
+; Version: 1.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+; 2022 - 03 - 03 ++ get_axs_num_() ==> int
+
+; 2021 - 08 - 29 ++ cur_pos_() ==> e6pos
+
+; 2021 - 08 - 29 ++ cur_jpos_() ==> e6axis
+
+; 2021 - 08 - 29 ++ trans_pos_() ==> pos
+    
+; 2021 - 08 - 29 ++ trans_axis_() ==> axis
+
+; 2021 - 09 - 01 ++ chk_pos_() ==> bool
+
+; 2021 - 09 - 01 ++ move_j_() 
+
+; 2021 - 09 - 01 ++ move_l_() 
+
+; 2021 - 09 - 02 ++ move_abs_j_() 
+
+; 2022 - 09 - 26 ++ smove_j_() 
+
+; 2022 - 09 - 26 ++ smove_l_() 
+
+; 2022 - 09 - 26 ++ smove_abs_j_() 
+    
+; 2021 - 10 - 20 ++ move_axis_offset_()
+
+; 2021 - 10 - 20 ++ move_pos_offset_()
+
+; 2022 - 05 - 13 ++ jnt_2cart_()
+
+; 2022 - 05 - 13 ++ cart_2jnt_()
+
+; 2022 - 07 - 05 ++ ufrm_offs_()
+
+; 2022 - 07 - 05 ++ tool_offs_()
+
+end
+
+;FOLD GET NUMBER OF AXIS
+global deffct int get_axs_num_()
+    continue
+    return($ex_ax_num + $num_ax)
+endfct
+;ENDFOLD
+
+;FOLD GET CURRENT POSITION
+global deffct e6pos cur_pos_(UframeNo : in, UtoolNo : in)
+   decl int UframeNo
+   decl int UtoolNo
+   decl e6pos CPos
+   decl e6pos TPos
+   decl frame Uf
+   decl frame Ut
+   decl bool IsRemoteTcp
+
+    IsRemoteTcp = false
+
+    if (varstate("UframeNo") <> #initialized) then
+
+        UframeNo = 0
+    endif
+    if (varstate("UtoolNo") <> #initialized) then
+
+        UtoolNo = 0
+    endif
+    if UframeNo == 0 then
+        continue
+        Uf = $nullframe
+    else
+        Uf = base_data[UframeNo]
+    endif
+
+    continue
+    if $act_base > 0 then
+        continue
+        IsRemoteTcp = (base_type[$act_base] == #TCP)
+    endif
+
+    if UtoolNo == 0 then
+        continue
+        Ut = $nullframe
+    else
+        Ut = tool_data[UtoolNo]
+    endif
+
+    if (varstate("$base") <> #initialized) or (varstate("$tool") <> #initialized) then  
+
+        return({X -9999, Y -9999, Z -9999 , A -9999, B -9999, C -9999})
+    endif
+
+    continue
+    CPos = $pos_act_mes
+
+    if IsRemoteTcp then 
+        continue
+        TPos = inv_pos(Uf) : ($base : inv_pos($pos_act_mes) : inv_pos($tool)) : Ut
+    else
+        continue
+        TPos = inv_pos(Uf) : ($base : $pos_act_mes : inv_pos($tool)) : Ut
+    endif
+    CPos.x = TPos.x
+    CPos.y = TPos.y
+    CPos.z = TPos.z
+    CPos.a = TPos.a
+    CPos.b = TPos.b
+    CPos.c = TPos.c
+
+    return(CPos)
+endfct
+;ENDFOLD
+
+;FOLD GET CURRENT JOINT POSITION
+global deffct e6axis cur_jpos_()
+    continue
+    return($axis_act_meas)
+endfct
+;ENDFOLD
+
+;FOLD TRANS E6POS
+global deffct e6pos trans_pos_(PosAry[] : out)
+    decl real PosAry[]
+    decl e6pos TPos
+
+    TPos = cur_pos_(0, 0)
+    TPos.X = PosAry[1]
+    TPos.Y = PosAry[2]
+    TPos.Z = PosAry[3]
+    TPos.A = PosAry[4]
+    TPos.B = PosAry[5]
+    TPos.C = PosAry[6]
+    if varstate("PosAry[7]") == #INITIALIZED then
+        TPos.E1 = PosAry[7]
+    endif
+    if varstate("PosAry[8]") == #INITIALIZED then
+        TPos.E2 = PosAry[8]
+    endif
+    if varstate("PosAry[9]") == #INITIALIZED then
+        TPos.E3 = PosAry[9]
+    endif
+    if varstate("PosAry[10]") == #INITIALIZED then
+        TPos.E4 = PosAry[10]
+    endif
+    if varstate("PosAry[11]") == #INITIALIZED then
+        TPos.E5 = PosAry[11]
+    endif
+    if varstate("PosAry[12]") == #INITIALIZED then
+        TPos.E6 = PosAry[12]
+    endif
+    
+    return(TPos)
+endfct
+;ENDFOLD
+
+;FOLD TRANS E6POS 2 
+global deffct e6pos trans_pos2_(PosAry[, ] : out, ArrayIndex : in)
+    decl real PosAry[, ]
+    decl int ArrayIndex
+    decl real PosAry1[9]
+    decl int J
+    decl char VarString[24]
+    decl bool ClrStat
+    decl state_t State
+    decl int Offset
+
+    if (varstate("ArrayIndex") <> #initialized) then
+
+        ArrayIndex = 1
+    endif
+    
+    for J = 1 to 9
+        Offset = 0
+        ClrStat = strclear(VarString[])   
+        continue
+        swrite(VarString[], State, Offset, "PosAry[%d,%d]", ArrayIndex, J)
+        if (varstate(VarString[]) == #initialized) then
+
+            PosAry1[J] = PosAry[ArrayIndex, J]
+        endif
+    endfor
+
+    return(trans_pos_(PosAry1[]))
+endfct
+;ENDFOLD
+
+;FOLD TRANS AXIS POS
+global deffct e6axis trans_axis_(AxisAry[] : out)
+    decl real AxisAry[]
+    e6axis TPos
+    TPos = cur_jpos_()
+    TPos.A1 = AxisAry[1]
+    TPos.A2 = AxisAry[2]
+    TPos.A3 = AxisAry[3]
+    TPos.A4 = AxisAry[4]
+    TPos.A5 = AxisAry[5]
+    TPos.A6 = AxisAry[6]
+    if varstate("AxisAry[7]") == #INITIALIZED then
+        TPos.E1 = AxisAry[7]
+    endif
+    if varstate("AxisAry[8]") == #INITIALIZED then
+        TPos.E2 = AxisAry[8]
+    endif
+    if varstate("AxisAry[9]") == #INITIALIZED then
+        TPos.E3 = AxisAry[9]
+    endif
+    if varstate("AxisAry[10]") == #INITIALIZED then
+        TPos.E4 = AxisAry[10]
+    endif
+    if varstate("AxisAry[11]") == #INITIALIZED then
+        TPos.E5 = AxisAry[11]
+    endif
+    if varstate("AxisAry[12]") == #INITIALIZED then
+        TPos.E6 = AxisAry[12]
+    endif
+    
+    return(TPos)
+endfct
+;ENDFOLD
+
+;FOLD TRANS AXIS POS 2 
+global deffct e6axis trans_axis2_(PosAry[, ] : out, ArrayIndex : in)
+    decl real PosAry[, ]
+    decl int ArrayIndex
+    decl real PosAry1[9]
+    decl int J
+    decl char VarString[24]
+    decl bool ClrStat
+    decl state_t State
+    decl int Offset
+
+    if (varstate("ArrayIndex") <> #initialized) then
+
+        ArrayIndex = 1
+    endif
+    
+    for J = 1 to 9
+        Offset = 0
+        ClrStat = strclear(VarString[]) 
+        continue  
+        swrite(VarString[], State, Offset, "PosAry[%d,%d]", ArrayIndex, J)
+        if (varstate(VarString[]) == #initialized) then
+
+            PosAry1[J] = PosAry[ArrayIndex, J]
+        endif
+    endfor
+
+    return(trans_axis_(PosAry1[]))
+endfct
+;ENDFOLD
+
+;FOLD CHECK POS
+global deffct bool chk_pos_(NeedChkPos : in, UframeNo : in, UtoolNo : in)
+    decl e6pos NeedChkPos
+    decl int UframeNo 
+    decl int UtoolNo 
+    decl e6pos ChkPos
+    decl frame Uf
+    decl frame Ut
+    decl e6axis ChkAxis
+    decl int ErrStatus
+
+    if (varstate("UframeNo") <> #initialized) then
+
+        UframeNo = 0
+    endif
+    if (varstate("UtoolNo") <> #initialized) then
+
+        UtoolNo = 0
+    endif
+    if UframeNo == 0 then
+        continue
+        Uf = $nullframe
+    else
+        Uf = base_data[UframeNo]
+    endif
+    if UtoolNo == 0 then
+        continue
+        Ut = $nullframe
+    else
+        Ut = tool_data[UtoolNo]
+    endif
+
+    if (varstate("$base") <> #initialized) or (varstate("$tool") <> #initialized) then
+
+        return(false)
+    endif
+
+    continue
+    ChkPos = inv_pos($base) : (Uf : NeedChkPos : inv_pos(Ut)) : $tool
+
+    if varstate("NeedChkPos.E1") == #INITIALIZED then
+        ChkPos.E1 = NeedChkPos.E1
+    endif
+    if varstate("NeedChkPos.E2") == #INITIALIZED then
+        ChkPos.E2 = NeedChkPos.E2
+    endif
+    if varstate("NeedChkPos.E3") == #INITIALIZED then
+        ChkPos.E3 = NeedChkPos.E3
+    endif
+    if varstate("NeedChkPos.E4") == #INITIALIZED then
+        ChkPos.E4 = NeedChkPos.E4
+    endif
+    if varstate("NeedChkPos.E5") == #INITIALIZED then
+        ChkPos.E5 = NeedChkPos.E5
+    endif
+    if varstate("NeedChkPos.E6") == #INITIALIZED then
+        ChkPos.E6 = NeedChkPos.E6
+    endif
+    ChkPos.S = NeedChkPos.S
+    ChkPos.T = NeedChkPos.T
+    
+    ErrStatus = 0
+    on_error_proceed
+    ChkAxis = inverse(ChkPos, cur_jpos_(), ErrStatus)
+    return(ErrStatus == 0)
+endfct
+;ENDFOLD
+
+;FOLD ROBOT MOVE J
+global def move_j_(PointName : in, Speed : in, Accu : in, UframeNo : in, UtoolNo : in, Acc : in)
+    decl e6pos PointName
+    decl real Speed
+    decl real Accu
+    decl int UframeNo
+    decl int UtoolNo
+    decl real Acc
+    decl fdat ThisFdat
+    decl pdat ThisPdat
+
+    if (varstate("Speed") <> #initialized) then
+
+        Speed = 100.0
+    endif
+    if (varstate("Accu") <> #initialized) then
+
+        Accu = 0.00
+    endif
+    if (varstate("UframeNo") <> #initialized) then
+
+        continue
+        UframeNo = $act_base
+    endif
+    if (varstate("UtoolNo") <> #initialized) then
+
+        continue
+        UtoolNo = $act_tool
+    endif
+    if (varstate("Acc") <> #initialized) then
+
+        Acc = 100.0
+    endif
+    if Speed < 0.00 then
+        Speed = 0.01
+    endif
+    if Speed > 100.00 then
+        Speed = 100.00
+    endif
+    if Accu < 0.00 then
+        Accu = DEF_APO_CPTP
+    endif
+    if Accu > 500.00 then
+        Accu = 100.00
+    endif
+    if Acc <= 0.00 then
+        Acc = 1.0
+    endif
+    if Acc > 100.00 then
+        Acc = 100.00
+    endif
+
+    ThisFdat.TOOL_NO = UtoolNo
+    ThisFdat.BASE_NO = UframeNo
+    ThisFdat.IPO_FRAME = #BASE
+    ThisFdat.POINT2[] = " "
+    ;
+    ThisPdat.VEL = Speed
+    ThisPdat.ACC = Acc
+    ThisPdat.APO_DIST = Accu
+    ThisPdat.APO_MODE = #CPTP
+    ThisPdat.GEAR_JERK = 100.00
+    ThisPdat.EXAX_IGN = 0
+    ;
+    $bwdstart = false
+    PDAT_ACT = ThisPdat
+    FDAT_ACT = ThisFdat
+    BAS(#PTP_PARAMS, Speed)
+    set_cd_params (0)
+    ;
+    continue
+    if Accu <= 1.0 then
+        ptp PointName 
+        wait sec 0.0
+    else
+        ptp PointName c_ptp c_vel
+    endif
+end
+;ENDFOLD
+
+;FOLD ROBOT MOVE L
+global def move_l_(PointName : in, Speed : in, Accu : in, UframeNo : in, UtoolNo : in, Acc : in, OrtType : in)
+    decl e6pos PointName
+    decl real Speed
+    decl real Accu
+    decl int UframeNo
+    decl int UtoolNo
+    decl real Acc
+    decl ORI_TYPE OrtType
+    decl fdat ThisFdat
+    decl ldat ThisLdat
+
+    if (varstate("Speed") <> #initialized) then
+
+        Speed = DEF_VEL_CP * 1000.0
+    endif
+    if (varstate("Accu") <> #initialized) then
+
+        Accu = 0.00
+    endif
+    if (varstate("UframeNo") <> #initialized) then
+
+        continue
+        UframeNo = $act_base
+    endif
+    if (varstate("UtoolNo") <> #initialized) then
+
+        continue
+        UtoolNo = $act_tool
+    endif
+    if (varstate("Acc") <> #initialized) then
+
+        Acc = 100.0
+    endif
+
+    if (varstate("OrtType") <> #initialized) then
+
+        OrtType = #var
+    endif
+
+    if Speed < 0.00 then
+        Speed = 0.1
+    endif
+    if Speed > (DEF_VEL_CP * 1000.0) then
+        Speed = (DEF_VEL_CP * 1000.0)
+    endif
+    if Accu < 0.00 then
+        Accu = DEF_APO_CVEL
+    endif
+    if Accu > 100.00 then
+        Accu = 100.00
+    endif
+    if Acc <= 0.00 then
+        Acc = 1.0
+    endif
+    if Acc > 100.00 then
+        Acc = 100.00
+    endif
+    ThisFdat.TOOL_NO = UtoolNo
+    ThisFdat.BASE_NO = UframeNo
+    ThisFdat.IPO_FRAME = #base
+    ThisFdat.POINT2[] = " "
+    ;      
+    ThisLdat.VEL = Speed / 1000.0
+    ThisLdat.ACC = Acc
+    ThisLdat.APO_DIST = Accu
+    ThisLdat.APO_FAC = 50.00
+    ThisLdat.AXIS_VEL = 100.00
+    ThisLdat.AXIS_ACC = 100.000
+    ThisLdat.ORI_TYP = OrtType
+    ThisLdat.CIRC_TYP = #base
+    ThisLdat.JERK_FAC = 50.0000
+    ThisLdat.GEAR_JERK = 100.000
+    ThisLdat.EXAX_IGN = 0
+    ;
+    $bwdstart = false
+    $apo.cvel = Accu
+    LDAT_ACT = ThisLdat
+    FDAT_ACT = ThisFdat
+    BAS(#CP_PARAMS, Speed / 1000.0)
+    set_cd_params (0)
+    ;
+    continue
+    if Accu <= 1.0 then
+        lin PointName 
+        wait sec 0.0
+    else
+        lin PointName c_vel
+    endif      
+end
+;ENDFOLD
+
+;FOLD ROBOT MOVE ABS J
+global def move_abs_j_(PointName : in, Speed : in, Accu : in, UframeNo : in, UtoolNo : in, Acc : in)
+    decl e6axis PointName
+    decl real Speed
+    decl real Accu
+    decl int UframeNo
+    decl int UtoolNo
+    decl real Acc
+    decl fdat ThisFdat
+    decl pdat ThisPdat
+
+    if (varstate("Speed") <> #initialized) then
+
+        Speed = 100.0
+    endif
+    if (varstate("Accu") <> #initialized) then
+
+        Accu = 0.00
+    endif
+    if (varstate("UframeNo") <> #initialized) then
+
+        continue
+        UframeNo = $act_base
+    endif
+    if (varstate("UtoolNo") <> #initialized) then
+
+        continue
+        UtoolNo = $act_tool
+    endif
+    if (varstate("Acc") <> #initialized) then
+
+        Acc = 100.0
+    endif
+
+    if Speed < 0.00 then
+        Speed = 0.01
+    endif
+    if Speed > 100.00 then
+        Speed = 100.00
+    endif
+    if Accu < 0.00 then
+        Accu = 0.00
+    endif
+    if Accu > 500.00 then
+        Accu = 500.00
+    endif
+    if Acc <= 0.00 then
+        Acc = 1.00
+    endif
+    if Acc > 100.00 then
+        Acc = 100.00
+    endif
+    
+    ThisFdat.TOOL_NO = UtoolNo
+    ThisFdat.BASE_NO = UframeNo
+    ThisFdat.IPO_FRAME = #base
+    ThisFdat.POINT2[] = " "
+    ;
+    ThisPdat.VEL = Speed
+    ThisPdat.ACC = Acc
+    ThisPdat.APO_DIST = Accu
+    ThisPdat.APO_MODE = #CDIS
+    ThisPdat.GEAR_JERK = 100.00
+    ThisPdat.EXAX_IGN = 0
+    ;
+    $bwdstart = false
+    PDAT_ACT = ThisPdat
+    FDAT_ACT = ThisFdat
+    BAS(#PTP_PARAMS, Speed)
+    set_cd_params (0)
+    ;
+    continue
+    if Accu <= 1.0 then
+        ptp PointName 
+        wait sec 0.0
+    else
+        ptp PointName C_Dis
+    endif
+end
+;ENDFOLD
+
+;FOLD ROBOT SMOVE J
+global def smove_j_(PointName : in, Speed : in, Accu : in, UframeNo : in, UtoolNo : in, Acc : in, UserColl : in)
+    decl e6pos PointName
+    decl real Speed
+    decl real Accu
+    decl int UframeNo
+    decl int UtoolNo
+    decl real Acc
+    decl int UserColl
+    decl pdat PtpData
+    decl fdat FData
+
+    if (varstate("Speed") <> #initialized) then
+
+        Speed = 100.0
+    endif
+    if (varstate("Accu") <> #initialized) then
+
+        Accu = 0.00
+    endif
+    if (varstate("UframeNo") <> #initialized) then
+
+        continue
+        UframeNo = $act_base
+    endif
+    if (varstate("UtoolNo") <> #initialized) then
+
+        continue
+        UtoolNo = $act_tool
+    endif
+    if (varstate("Acc") <> #initialized) then
+
+        Acc = 100.0
+    endif
+    if (varstate("UserColl") <> #initialized) then
+
+        UserColl = 0
+    endif
+    if Speed < 0.00 then
+        Speed = 0.01
+    endif
+    if Speed > 100.00 then
+        Speed = 100.00
+    endif
+    if Accu < 0.00 then
+        Accu = 0.00
+    endif
+    if Accu > 500.00 then
+        Accu = 500.00
+    endif
+    if Acc <= 0.00 then
+        Acc = 1.0
+    endif
+    if Acc > 100.00 then
+        Acc = 100.00
+    endif
+    if UserColl < 0 then  
+        UserColl = 0
+    endif
+    if UserColl > 30 then  
+        UserColl = 30
+    endif
+
+    PtpData             = {apo_mode #cdis, gear_jerk 100.0, exax_ign 0}
+    PtpData.apo_dist    = Accu
+    PtpData.vel         = Speed
+    PtpData.acc         = Acc
+
+
+    FData               = {ipo_frame #base, point2[] " "}
+    FData.base_no       = UframeNo
+    FData.tool_no       = UtoolNo
+
+    continue
+    if Accu <= 1.0 then
+        sptp PointName with $vel_axis[1] = svel_joint(PtpData.vel), $tool = stool2(FData), $base = sbase(FData.base_no), $ipo_mode = sipo_mode(FData.ipo_frame), $load = sload(FData.tool_no), $acc_axis[1] = sacc_joint(PtpData), $apo = sapo_ptp(PtpData), $gear_jerk[1] = sgear_jerk(PtpData), $collmon_tol_pro[1] = use_cm_pro_values(UserColl)
+        wait sec 0.0
+    else
+        sptp PointName with $vel_axis[1] = svel_joint(PtpData.vel), $tool = stool2(FData), $base = sbase(FData.base_no), $ipo_mode = sipo_mode(FData.ipo_frame), $load = sload(FData.tool_no), $acc_axis[1] = sacc_joint(PtpData), $apo = sapo_ptp(PtpData), $gear_jerk[1] = sgear_jerk(PtpData), $collmon_tol_pro[1] = use_cm_pro_values(UserColl) c_spl
+    endif
+end
+;ENDFOLD
+
+;FOLD ROBOT SMOVE L
+global def smove_l_(PointName : in, Speed : in, Accu : in, UframeNo : in, UtoolNo : in, Acc : in, UserColl : in)
+    decl e6pos PointName
+    decl real Speed
+    decl real Accu
+    decl int UframeNo
+    decl int UtoolNo
+    decl real Acc
+    decl int UserColl
+    decl ldat LinData 
+    decl fdat FData 
+    if (varstate("Speed") <> #initialized) then
+
+        Speed = DEF_VEL_CP * 1000.0
+    endif
+    if (varstate("Accu") <> #initialized) then
+
+        Accu = 0.00
+    endif
+    if (varstate("UframeNo") <> #initialized) then
+
+        continue
+        UframeNo = $act_base
+    endif
+    if (varstate("UtoolNo") <> #initialized) then
+
+        continue
+        UtoolNo = $act_tool
+    endif
+    if (varstate("Acc") <> #initialized) then
+
+        Acc = 100.0
+    endif
+    if (varstate("UserColl") <> #initialized) then
+
+        UserColl = 0
+    endif
+    
+    if Speed < 0.00 then
+        Speed = 0.1
+    endif
+    if Speed > (DEF_VEL_CP * 1000.0) then
+        Speed = (DEF_VEL_CP * 1000.0)
+    endif
+    if Accu < 0.00 then
+        Accu = 0.00
+    endif
+    if Accu > 500.00 then
+        Accu = 500.00
+    endif
+    if Acc <= 0.00 then
+        Acc = 1.0
+    endif
+    if Acc > 100.00 then
+        Acc = 100.00
+    endif
+    if UserColl < 0 then  
+        UserColl = 0
+    endif
+    if UserColl > 30 then  
+        UserColl = 30
+    endif
+          
+    LinData.Cb.aux_pt = {ORI #CONSIDER, e1 #CONSIDER, e2 #CONSIDER, e3 #CONSIDER, e4 #CONSIDER, e5 #CONSIDER, e6 #CONSIDER}
+    LinData.Cb.target_pt = {ori #INTERPOLATE, e1 #INTERPOLATE, e2 #INTERPOLATE, e3 #INTERPOLATE, e4 #INTERPOLATE, e5 #INTERPOLATE, e6 #INTERPOLATE}
+    LinData = {apo_fac 50.0, axis_acc 100.0, axis_vel 100.0, circ_typ #BASE, jerk_fac 50.0, ori_typ #VAR, gear_jerk 100.0, exax_ign 0}
+    LinData.apo_dist = Accu
+    LinData.vel = Speed / 1000.0
+    LinData.Acc = Acc
+
+    FData               = {ipo_frame #base, point2[] " "}
+    FData.base_no       = UframeNo
+    FData.tool_no       = UtoolNo
+
+
+    continue
+    if Accu <= 1.0 then
+        slin PointName with $vel = svel_cp(LinData.vel, , LinData), $tool = stool2(FData), $base = sbase(FData.base_no), $ipo_mode = sipo_mode(FData.ipo_frame), $load = sload(FData.tool_no), $acc = sacc_cp(LinData), $ori_type = sori_typ(LinData), $apo = sapo(LinData), $jerk = sjerk(LinData), $collmon_tol_pro[1] = use_cm_pro_values(UserColl)
+        wait sec 0.0
+    else
+        slin PointName with $vel = svel_cp(LinData.vel, , LinData), $tool = stool2(FData), $base = sbase(FData.base_no), $ipo_mode = sipo_mode(FData.ipo_frame), $load = sload(FData.tool_no), $acc = sacc_cp(LinData), $ori_type = sori_typ(LinData), $apo = sapo(LinData), $jerk = sjerk(LinData), $collmon_tol_pro[1] = use_cm_pro_values(UserColl) c_spl    
+    endif
+end
+;ENDFOLD
+
+;FOLD ROBOT SMOVE C
+global def smove_c_(PointName : in, PointName2 : in, Speed : in, Accu : in, UframeNo : in, UtoolNo : in, Acc : in, UserColl : in)
+    decl e6pos PointName
+    decl e6pos PointName2
+    decl real Speed
+    decl real Accu
+    decl int UframeNo
+    decl int UtoolNo
+    decl real Acc
+    decl int UserColl
+    decl ldat LinData 
+    decl fdat FData 
+    if (varstate("Speed") <> #initialized) then
+
+        Speed = DEF_VEL_CP * 1000.0
+    endif
+    if (varstate("Accu") <> #initialized) then
+
+        Accu = 0.00
+    endif
+    if (varstate("UframeNo") <> #initialized) then
+
+        continue
+        UframeNo = $act_base
+    endif
+    if (varstate("UtoolNo") <> #initialized) then
+
+        continue
+        UtoolNo = $act_tool
+    endif
+    if (varstate("Acc") <> #initialized) then
+
+        Acc = 100.0
+    endif
+    if (varstate("UserColl") <> #initialized) then
+
+        UserColl = 0
+    endif
+    
+    if Speed < 0.00 then
+        Speed = 0.1
+    endif
+    if Speed > (DEF_VEL_CP * 1000.0) then
+        Speed = (DEF_VEL_CP * 1000.0)
+    endif
+    if Accu < 0.00 then
+        Accu = 0.00
+    endif
+    if Accu > 500.00 then
+        Accu = 500.00
+    endif
+    if Acc <= 0.00 then
+        Acc = 1.0
+    endif
+    if Acc > 100.00 then
+        Acc = 100.00
+    endif
+    if UserColl < 0 then  
+        UserColl = 0
+    endif
+    if UserColl > 30 then  
+        UserColl = 30
+    endif
+          
+    LinData.Cb.aux_pt = {ORI #CONSIDER, e1 #CONSIDER, e2 #CONSIDER, e3 #CONSIDER, e4 #CONSIDER, e5 #CONSIDER, e6 #CONSIDER}
+    LinData.Cb.target_pt = {ori #INTERPOLATE, e1 #INTERPOLATE, e2 #INTERPOLATE, e3 #INTERPOLATE, e4 #INTERPOLATE, e5 #INTERPOLATE, e6 #INTERPOLATE}
+    LinData = {apo_fac 50.0, axis_acc 100.0, axis_vel 100.0, circ_typ #BASE, jerk_fac 50.0, ori_typ #VAR, gear_jerk 100.0, exax_ign 0}
+    LinData.apo_dist = Accu
+    LinData.vel = Speed / 1000.0
+    LinData.Acc = Acc
+
+    FData               = {ipo_frame #base, point2[] " "}
+    FData.base_no       = UframeNo
+    FData.tool_no       = UtoolNo
+
+
+    continue
+    if Accu <= 1.0 then
+        scirc pointname, pointname2 with $vel = svel_cp(LinData.vel, , LinData), $tool = stool2(FData), $base = sbase(FData.base_no), $ipo_mode = sipo_mode(FData.ipo_frame), $load = sload(FData.tool_no), $acc = sacc_cp(LinData), $ori_type = sori_typ(LinData), $circ_type = scirc_typ(LinData), $apo = sapo(LinData), $circ_mode = scirc_m(LinData), $jerk = sjerk(LinData), $collmon_tol_pro[1] = use_cm_pro_values(UserColl)
+        wait sec 0.0
+    else
+        scirc pointname, pointname2 with $vel = svel_cp(LinData.vel, , LinData), $tool = stool2(FData), $base = sbase(FData.base_no), $ipo_mode = sipo_mode(FData.ipo_frame), $load = sload(FData.tool_no), $acc = sacc_cp(LinData), $ori_type = sori_typ(LinData), $circ_type = scirc_typ(LinData), $apo = sapo(LinData), $circ_mode = scirc_m(LinData), $jerk = sjerk(LinData), $collmon_tol_pro[1] = use_cm_pro_values(UserColl) C_Spl
+    endif
+end
+;ENDFOLD
+
+;FOLD ROBOT SMOVE ABS J
+global def smove_abs_j_(PointName : in, Speed : in, Accu : in, UframeNo : in, UtoolNo : in, Acc : in, UserColl : in)
+    decl e6axis PointName
+    decl real Speed
+    decl real Accu
+    decl int UframeNo
+    decl int UtoolNo
+    decl real Acc
+    decl int UserColl
+    decl pdat PtpData
+    decl fdat FData
+
+    if (varstate("Speed") <> #initialized) then
+
+        Speed = 100.0
+    endif
+    if (varstate("Accu") <> #initialized) then
+
+        Accu = 0.00
+    endif
+    if (varstate("UframeNo") <> #initialized) then
+
+        continue
+        UframeNo = $act_base
+    endif
+    if (varstate("UtoolNo") <> #initialized) then
+
+        continue
+        UtoolNo = $act_tool
+    endif
+    if (varstate("Acc") <> #initialized) then
+
+        Acc = 100.0
+    endif
+    if (varstate("UserColl") <> #initialized) then
+
+        UserColl = 0
+    endif
+    if Speed < 0.00 then
+        Speed = 0.01
+    endif
+    if Speed > 100.00 then
+        Speed = 100.00
+    endif
+    if Accu < 0.00 then
+        Accu = 0.00
+    endif
+    if Accu > 500.00 then
+        Accu = 500.00
+    endif
+    if Acc <= 0.00 then
+        Acc = 1.0
+    endif
+    if Acc > 100.00 then
+        Acc = 100.00
+    endif
+    if UserColl < 0 then  
+        UserColl = 0
+    endif
+    if UserColl > 30 then  
+        UserColl = 30
+    endif
+
+    PtpData             = {apo_mode #cdis, gear_jerk 100.0, exax_ign 0}
+    PtpData.apo_dist    = Accu
+    PtpData.vel         = Speed
+    PtpData.acc         = Acc
+
+
+    FData               = {ipo_frame #base, point2[] " "}
+    FData.base_no       = UframeNo
+    FData.tool_no       = UtoolNo
+
+    continue
+    if Accu <= 1.0 then
+        sptp PointName with $vel_axis[1] = svel_joint(PtpData.vel), $tool = stool2(FData), $base = sbase(FData.base_no), $ipo_mode = sipo_mode(FData.ipo_frame), $load = sload(FData.tool_no), $acc_axis[1] = sacc_joint(PtpData), $apo = sapo_ptp(PtpData), $gear_jerk[1] = sgear_jerk(PtpData), $collmon_tol_pro[1] = use_cm_pro_values(UserColl)
+        wait sec 0.0
+    else
+        sptp PointName with $vel_axis[1] = svel_joint(PtpData.vel), $tool = stool2(FData), $base = sbase(FData.base_no), $ipo_mode = sipo_mode(FData.ipo_frame), $load = sload(FData.tool_no), $acc_axis[1] = sacc_joint(PtpData), $apo = sapo_ptp(PtpData), $gear_jerk[1] = sgear_jerk(PtpData), $collmon_tol_pro[1] = use_cm_pro_values(UserColl) c_spl
+    endif
+end
+;ENDFOLD
+
+;FOLD MOVE AXIS OFFSET
+global def move_axis_offset_(Monopodium[] : in, Distance : in, UframeNo : in, UtoolNo : in)
+    decl char Monopodium[]
+    decl real Distance
+    decl int UframeNo
+    decl int UtoolNo
+    decl int K
+    decl e6pos Deptmp
+    decl e6axis Jptmp
+    decl char AxisStr[50]
+    decl bool Res
+    Res = false
+    AxisStr[]="XYZABC"
+    if UframeNo==0 then
+        $base = $nullframe
+    else
+        $base = base_data[UframeNo]
+    endif
+    if UtoolNo==0 then
+        $tool = $nullframe
+    else
+        $tool = tool_data[UtoolNo]
+    endif
+    Deptmp = $pos_act
+    Jptmp = $axis_act
+    
+    if strcomp(Monopodium[], "X", #NOT_CASE_SENS) then
+        Deptmp.x = Deptmp.x + Distance
+    endif
+    if strcomp(Monopodium[], "Y", #NOT_CASE_SENS) then
+        Deptmp.y = Deptmp.y + Distance
+    endif
+    if strcomp(Monopodium[], "Z", #NOT_CASE_SENS)  then
+        Deptmp.z = Deptmp.z + Distance
+    endif
+    if strcomp(Monopodium[], "A", #NOT_CASE_SENS) then
+        Deptmp.a = Deptmp.a + Distance
+    endif
+    if strcomp(Monopodium[], "B", #NOT_CASE_SENS) then
+        Deptmp.b = Deptmp.b + Distance
+    endif
+    if strcomp(Monopodium[], "C", #NOT_CASE_SENS) then
+        Deptmp.c = Deptmp.c + Distance
+    endif
+    if strcomp(Monopodium[], "A1", #NOT_CASE_SENS) then
+        Jptmp.A1 = Jptmp.A1 + Distance
+    endif
+    if strcomp(Monopodium[], "A2", #NOT_CASE_SENS) then
+        Jptmp.A2 = Jptmp.A2 + Distance
+    endif
+    if strcomp(Monopodium[], "A3", #NOT_CASE_SENS) then
+        Jptmp.A3 = Jptmp.A3 + Distance
+    endif
+    if strcomp(Monopodium[], "A4", #NOT_CASE_SENS) then
+        Jptmp.A4 = Jptmp.A4 + Distance
+    endif
+    if strcomp(Monopodium[], "A5", #NOT_CASE_SENS) then
+        Jptmp.A5 = Jptmp.A5 + Distance
+    endif
+    if strcomp(Monopodium[], "A6", #NOT_CASE_SENS) then
+        Jptmp.A6 = Jptmp.A6 + Distance
+    endif
+    if strcomp(Monopodium[], "E1", #NOT_CASE_SENS) then
+        Jptmp.E1 = Jptmp.E1 + Distance
+    endif
+    if strcomp(Monopodium[], "E2", #NOT_CASE_SENS) then
+        Jptmp.E1 = Jptmp.E1 + Distance
+    endif
+    for K = 1 to strlen(AxisStr[])
+        if strcomp(Monopodium[], AxisStr[K], #NOT_CASE_SENS) then
+            Res = true
+        endif
+    endfor
+    if Res then
+        move_j_(Deptmp, 500, 1, UframeNo, UtoolNo)
+    else
+        move_abs_j_(Jptmp, 500, 1, UframeNo, UtoolNo)
+    endif
+end
+;ENDFOLD
+
+;FOLD MOVE POS OFFSET
+global def move_pos_offset_(Ptmp : in, Monopodium[]:in, Distance:in, UframeNo : in, UtoolNo : in)
+    decl e6pos Ptmp
+    decl char Monopodium[]
+    decl real Distance
+    decl int UframeNo
+    decl int UtoolNo
+    if UframeNo==0 then
+        $base = $nullframe
+    else
+        $base = base_data[UframeNo]
+    endif
+    if UtoolNo==0 then
+        $tool = $nullframe
+    else
+        $tool = tool_data[UtoolNo]
+    endif
+
+    if strcomp(Monopodium[], "X", #NOT_CASE_SENS) then
+        Ptmp.x = Ptmp.x + Distance
+    endif
+    if strcomp(Monopodium[], "Y", #NOT_CASE_SENS) then
+        Ptmp.y = Ptmp.y + Distance
+    endif
+    if strcomp(Monopodium[], "Z", #NOT_CASE_SENS)  then
+        Ptmp.z = Ptmp.z + Distance
+    endif
+    if strcomp(Monopodium[], "A", #NOT_CASE_SENS) then
+        Ptmp.a = Ptmp.a + Distance
+    endif
+    if strcomp(Monopodium[], "B", #NOT_CASE_SENS) then
+        Ptmp.b = Ptmp.b + Distance
+    endif
+    if strcomp(Monopodium[], "C", #NOT_CASE_SENS) then
+        Ptmp.c = Ptmp.c + Distance
+    endif
+    if strcomp(Monopodium[], "E1", #NOT_CASE_SENS) then
+        Ptmp.E1 = Ptmp.E1 + Distance
+    endif
+    if strcomp(Monopodium[], "E2", #NOT_CASE_SENS) then
+        Ptmp.E1 = Ptmp.E1 + Distance
+    endif
+    wait sec 0.0
+    move_l_(Ptmp, 500, 1, UframeNo, UtoolNo)
+end
+;ENDFOLD
+
+;FOLD GET CURRENT TORQUE
+global def cur_trq_(TrqVal[] : out)
+    decl real TrqVal[]
+    decl int K
+    for K = 1 to get_axs_num_() step 1
+        
+        continue
+        TrqVal[K] = $torque_axis_act[K]
+    endfor
+end
+;ENDFOLD
+
+;FOLD JOINT POS TO CART POS
+global deffct bool jnt_2cart_(ThisJoint : in, UframeNo : in, UtoolNo : in, RltCartPos : out)
+    decl e6axis ThisJoint 
+    decl int UframeNo 
+    decl int UtoolNo 
+    decl e6pos RltCartPos, CnvPos
+    decl int Status
+    decl frame Uf
+    decl frame Ut
+    if UframeNo == 0 then
+        continue
+        Uf = $nullframe
+    else
+        Uf = base_data[UframeNo]
+    endif
+
+    if UtoolNo == 0 then
+        continue
+        Ut = $nullframe
+    else
+        Ut = tool_data[UtoolNo]
+    endif
+ 
+
+    if (varstate("$base") <> #initialized) or (varstate("$tool") <> #initialized) then
+
+        return(false)
+    endif
+
+    Status = 1
+    CnvPos = forward(ThisJoint, Status)
+
+    if Status == 0 then
+
+        continue
+        RltCartPos = inv_pos(Uf) : ($base : CnvPos : inv_pos($tool)) : Ut
+        RltCartPos.E1 = CnvPos.E1
+        RltCartPos.E2 = CnvPos.E2
+        RltCartPos.E3 = CnvPos.E3
+        RltCartPos.S  = CnvPos.S
+        RltCartPos.T  = CnvPos.T
+    endif
+
+    return(Status == 0)
+endfct
+;ENDFOLD
+
+;FOLD CART POS TO JOINT POS
+global deffct bool cart_2jnt_(ThisCartPos : in, UframeNo : in, UtoolNo : in, RltJoint : out)
+    decl e6axis RltJoint 
+    decl int UframeNo 
+    decl int UtoolNo 
+    decl e6pos ThisCartPos, CnvPos
+    decl int Status
+    decl frame Uf
+    decl frame Ut
+
+    if UframeNo == 0 then
+        continue
+        Uf = $nullframe
+    else
+        Uf = base_data[UframeNo]
+    endif
+
+    if UtoolNo == 0 then
+        continue
+        Ut = $nullframe
+    else
+        Ut = tool_data[UtoolNo]
+    endif
+
+    if (varstate("$base") <> #initialized) or (varstate("$tool") <> #initialized) then
+
+        return(false)
+    endif
+    
+    continue
+    CnvPos = inv_pos($base) : (Uf : ThisCartPos : inv_pos(Ut)) : $tool
+    CnvPos.E1 = ThisCartPos.E1
+    CnvPos.E2 = ThisCartPos.E2
+    CnvPos.E3 = ThisCartPos.E3
+    CnvPos.S = ThisCartPos.S
+    CnvPos.T = ThisCartPos.T
+
+    Status = 1
+    RltJoint = inverse(CnvPos, cur_jpos_(), Status)
+
+    return(Status == 0)
+endfct
+;ENDFOLD
+
+;FOLD USER OFFSET
+global deffct e6pos ufrm_offs_(ThisPos : in, OffsX : in, OffsY : in, OffsZ : in)
+    decl e6pos ThisPos
+    decl e6pos TmpPos
+    decl real OffsX, OffsY, OffsZ
+    decl e6pos OffsPos
+
+    OffsPos = {x 0.0, y 0.0, z 0.0, a 0.0, b 0.0, c 0.0}
+    
+    if (varstate("OffsX") <> #initialized) then
+
+        OffsX = 0.0
+    endif
+
+    if (varstate("OffsY") <> #initialized) then
+
+        OffsY = 0.0
+    endif
+
+    if (varstate("OffsZ") <> #initialized) then
+
+        OffsZ = 0.0
+    endif
+
+    OffsPos.X = OffsX
+    OffsPos.Y = OffsY
+    OffsPos.Z = OffsZ
+    OffsPos = OffsPos : ThisPos
+    TmpPos = ThisPos
+    TmpPos.x = OffsPos.x
+    TmpPos.y = OffsPos.y
+    TmpPos.z = OffsPos.z
+    TmpPos.a = OffsPos.a
+    TmpPos.b = OffsPos.b
+    TmpPos.c = OffsPos.c
+
+    return(TmpPos)
+endfct
+;ENDFOLD
+
+;FOLD USER OFFSET BY FRAME
+global deffct e6pos ufrm_offs_byframe_(ThisPos : in, OffsFrame : in)
+    decl e6pos ThisPos
+    decl e6pos TmpPos
+    decl frame OffsFrame
+    decl e6pos OffsPos
+    
+    OffsPos = OffsFrame : ThisPos
+    TmpPos = ThisPos
+    TmpPos.x = OffsPos.x
+    TmpPos.y = OffsPos.y
+    TmpPos.z = OffsPos.z
+    TmpPos.a = OffsPos.a
+    TmpPos.b = OffsPos.b
+    TmpPos.c = OffsPos.c
+
+    return(TmpPos)
+endfct
+;ENDFOLD
+
+;FOLD TOOL OFFSET
+global deffct e6pos tool_offs_(ThisPos : in, OffsX : in, OffsY : in, OffsZ : in)
+    decl e6pos ThisPos
+    decl e6pos TmpPos
+    decl real OffsX, OffsY, OffsZ
+    decl e6pos OffsPos
+
+    OffsPos = {x 0.0, y 0.0, z 0.0, a 0.0, b 0.0, c 0.0}
+    
+    if (varstate("OffsX") <> #initialized) then
+
+        OffsX = 0.0
+    endif
+
+    if (varstate("OffsY") <> #initialized) then
+
+        OffsY = 0.0
+    endif
+
+    if (varstate("OffsZ") <> #initialized) then
+
+        OffsZ = 0.0
+    endif
+
+    OffsPos.X = OffsX
+    OffsPos.Y = OffsY
+    OffsPos.Z = OffsZ
+    OffsPos = ThisPos : OffsPos
+    TmpPos = ThisPos
+    TmpPos.x = OffsPos.x
+    TmpPos.y = OffsPos.y
+    TmpPos.z = OffsPos.z
+    TmpPos.a = OffsPos.a
+    TmpPos.b = OffsPos.b
+    TmpPos.c = OffsPos.c
+
+    return(TmpPos)
+endfct
+;ENDFOLD
+
+;FOLD TOOL OFFSET BY FRAME
+global deffct e6pos tool_offs_byframe_(ThisPos : in, OffsFrame : in)
+    decl e6pos ThisPos
+    decl e6pos TmpPos
+    decl frame OffsFrame
+    decl e6pos OffsPos
+    
+    OffsPos = ThisPos : OffsFrame
+    TmpPos = ThisPos
+    TmpPos.x = OffsPos.x
+    TmpPos.y = OffsPos.y
+    TmpPos.z = OffsPos.z
+    TmpPos.a = OffsPos.a
+    TmpPos.b = OffsPos.b
+    TmpPos.c = OffsPos.c
+
+    return(TmpPos)
+endfct
+;ENDFOLD
+
+;FOLD SET FRAME
+global deffct frame set_frame_(x : in, y : in, z : in, a : in, b : in, c : in)
+    decl frame FrameData
+    decl real x, y, z, a, b, c
+    if (varstate("x") <> #initialized) then
+        x = 0.0
+    endif
+
+    if (varstate("y") <> #initialized) then
+        y = 0.0
+    endif
+
+    if (varstate("z") <> #initialized) then
+        z = 0.0
+    endif
+
+    if (varstate("a") <> #initialized) then
+        a = 0.0
+    endif
+
+    if (varstate("b") <> #initialized) then
+        b = 0.0
+    endif
+    
+    if (varstate("c") <> #initialized) then
+        c = 0.0
+    endif
+    
+    FrameData.x = x
+    FrameData.y = y
+    FrameData.z = z
+    FrameData.a = a
+    FrameData.b = b
+    FrameData.c = c
+
+    return(FrameData)
+endfct
+;ENDFOLD
+

@@ -1,0 +1,18 @@
+/JOB
+//NAME SET_SEGM
+///FOLDERNAME SPEEDBOT
+//POS
+///NPOS 0,0,0,0,0,0
+//INST
+///DATE 2020/04/01 15:08
+///ATTR SC,RW,MC
+///LVARS 1,0,0,0,0,0,0,0
+NOP
+'***********************
+'***宏：设置路径段号***
+'***********************
+GETARG LB000 IARG#(1)
+DOUT OG#(5) LB000
+'复位请求
+DOUT OT#(41) OFF
+END

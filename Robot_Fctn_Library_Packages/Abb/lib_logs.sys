@@ -1,0 +1,480 @@
+module lib_logs(sysmodule, noview)
+!***********************************************************
+!
+! Copyright 2018 - 2024 speedbot All Rights reserved.
+!
+! File Name: lib_logs
+!
+! Description:
+!   Language             ==   Rapid for ABB ROBOT
+!   Date                 ==   2021 - 10 - 14
+!   Modification Data    ==   2022 - 04 - 29
+!
+! Author: speedbot
+!
+! Version: 2.0
+!*********************************************************************************************************!
+!                                                                                                         !
+!                                                      .^^^                                               !
+!                                               .,~<c+{{{{{{t,                                            ! 
+!                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          !
+!                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        !
+!                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       !
+!                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    !
+!                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  !
+!                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                !
+!                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              !
+!                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             !
+!                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             !
+!                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             !
+!                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              !
+!                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              !
+!                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               !
+!                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               !
+!                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                !
+!                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                !
+!                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 !
+!                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 !
+!                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  !
+!                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  !
+!                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    !                         
+!                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         !
+!                                         ^!{{{{{{{{t!",^`                                                !
+!                                                                                                         !
+!*********************************************************************************************************!
+!
+! 2021 - 10 - 14 ++ log_clear_()
+
+! 2021 - 10 - 14 ++ log_info_()
+
+! 2021 - 10 - 14 ++ log_warn_()
+
+! 2021 - 10 - 14 ++ log_error_()
+
+! 2021 - 04 - 29 ++ open_file_() ==> errnum
+
+! 2021 - 04 - 29 ++ file_writeln_()
+
+! 2021 - 04 - 29 ++ file_puts_()
+
+! 2021 - 04 - 29 ++ close_file_()
+
+! 2021 - 04 - 29 ++ get_file_size_() ==> num
+
+! 2021 - 04 - 29 ++ delete_file_()
+
+! 2021 - 04 - 29 ++ rename_file_()
+
+! 2021 - 04 - 29 ++ file_created_() ==> bool
+
+! 2021 - 04 - 29 ++ logs_()
+
+local const num FILE_MAX_SIZE   := 1024000;
+
+const errnum OK					:= 0;
+const errnum NG					:= -1;
+
+!***********************************************************
+! proc log_clear_()
+!***********************************************************
+!     功能 : 清除终端屏幕上的显示内容。
+!***********************************************************
+proc log_clear_() tperase; endproc
+
+!***********************************************************
+! proc log_info_()
+!***********************************************************
+!     输入参数 : Tag           * 可选字符串 * * 标签 *
+!     输入参数 : Msg           * 字符串 *   * 信息内容 *
+!     输入参数 : \switch ELOG  * 可选开关 * * 是否记录到错误日志 *
+!     输入参数 : Id            * 可选数字 * * 信息ID *
+!     输入参数 : RL2           * 可选字符串 * * 第二个附加信息 *
+!     输入参数 : RL3           * 可选字符串 * * 第三个附加信息 *
+!     输入参数 : RL4           * 可选字符串 * * 第四个附加信息 *
+!***********************************************************
+! 功能 : 记录信息内容。
+!        如果提供了标签，则使用标签格式化信息内容。
+!        如果需要记录到错误日志，则记录信息内容及附加信息。
+!***********************************************************
+proc log_info_(\string Tag, string Msg, \switch ELOG, \num Id, \string RL2, \string RL3, \string RL4)
+    var string Header := "INFO";
+
+    if present(Tag) then
+        tpwrite Tag + " I> " + Msg;
+    else
+        tpwrite "I> " + Msg;
+    endif
+    
+
+    if present(ELOG) then
+        if present(Id) 
+            Header := Header + "[" + num_to_str_(Id \INTEGER) + "]";
+        errwrite \I, Header, Msg, \RL2?RL2, \RL3?RL3, \RL4?RL4;
+    endif
+endproc
+
+!***********************************************************
+! proc log_warn_()
+!***********************************************************
+!     输入参数 : Tag           * 可选字符串 * * 标签 *
+!     输入参数 : Msg           * 字符串 *   * 警告信息 *
+!     输入参数 : \switch ELOG  * 可选开关 * * 是否记录到错误日志 *
+!     输入参数 : Id            * 可选数字 * * 警告ID *
+!     输入参数 : RL2           * 可选字符串 * * 第二个附加信息 *
+!     输入参数 : RL3           * 可选字符串 * * 第三个附加信息 *
+!     输入参数 : RL4           * 可选字符串 * * 第四个附加信息 *
+!***********************************************************
+! 功能 : 记录警告信息。
+!        如果提供了标签，则使用标签格式化警告信息。
+!        如果需要记录到错误日志，则记录警告信息及附加信息。
+!***********************************************************
+
+proc log_warn_(\string Tag, string Msg, \switch ELOG, \num Id, \string RL2, \string RL3, \string RL4)
+    var string Header := "WARN";
+    if present(Tag) then
+        tpwrite Tag + " W> " + Msg;
+    else
+        tpwrite "W> " + Msg;
+    endif
+    if present(ELOG) then
+        if present(Id) 
+            Header := Header + "[" + num_to_str_(Id \INTEGER) + "]";
+        errwrite \W, Header, Msg, \RL2?RL2, \RL3?RL3, \RL4?RL4;
+        !stop;
+    endif
+endproc
+
+!***********************************************************
+! proc log_error_()
+!***********************************************************
+!     输入参数 : Tag           * 可选字符串 * * 标签 *
+!     输入参数 : Msg           * 字符串 *   * 错误信息 *
+!     输入参数 : \switch ELOG  * 可选开关 * * 是否记录到错误日志 *
+!     输入参数 : Id            * 可选数字 * * 错误ID *
+!     输入参数 : RL2           * 可选字符串 * * 第二个附加信息 *
+!     输入参数 : RL3           * 可选字符串 * * 第三个附加信息 *
+!     输入参数 : RL4           * 可选字符串 * * 第四个附加信息 *
+!***********************************************************
+! 功能 : 记录错误信息。
+!        如果提供了标签，则使用标签格式化错误信息。
+!        如果需要记录到错误日志，则记录错误信息及附加信息。
+!***********************************************************
+proc log_error_(\string Tag, string Msg, \switch ELOG, \num Id, \string RL2, \string RL3, \string RL4)
+    var string Header := "ERROR";
+
+    if present(Tag) then
+        tpwrite Tag + " E> " + Msg;
+    else
+        tpwrite "E> " + Msg;
+    endif
+    if present(ELOG) then
+        if present(Id) 
+            Header := Header + "[" + num_to_str_(Id \INTEGER) + "]";
+        errwrite Header, Msg, \RL2?RL2, \RL3?RL3, \RL4?RL4;
+        stop;
+    endif
+endproc
+
+!***********************************************************
+! func open_file_()
+!***********************************************************
+!     输入参数 : FileDev       * iodev *       * 文件读/写通道 *
+!     输入参数 : FileName      * string *      * 文件名 *
+!     输入参数 : \switch STR_READ      * 可选参数 * * ASCII 模式只读 *
+!     输入参数 : \switch STR_WRITE     * 可选参数 * * ASCII 模式只写 *
+!     输入参数 : \switch STR_AP        * 可选参数 * * ASCII 模式追加 *
+!     输入参数 : \switch BIN_READ      * 可选参数 * * 二进制模式只读 *
+!     输入参数 : \switch BIN_WRITE     * 可选参数 * * 二进制模式只写 *
+!     输入参数 : \switch BIN_AP        * 可选参数 * * 二进制模式追加 *
+! 返回 :                     * errnum *     * 返回的错误代码，非零表示失败 *
+!***********************************************************
+! 功能 : 在 "HOME:" 文件夹中以指定模式打开一个文件。
+!        如果文件不存在，则创建该文件。
+!***********************************************************
+func errnum open_file_(var iodev FileDev, string FileName, \switch STR_READ | switch STR_WRITE | switch STR_AP | switch BIN_READ | switch BIN_WRITE | switch BIN_AP)
+
+    if present(STR_READ) then
+        open "HOME:"\File:= FileName, FileDev \Read; 
+    elseif present(STR_WRITE) then
+        open "HOME:"\File:= FileName, FileDev \Write;
+    elseif present(STR_AP) then
+        open "HOME:"\File:= FileName, FileDev \Append;
+    elseif present(BIN_READ) then
+        open "HOME:"\File:= FileName, FileDev \Read \Bin;
+    elseif present(BIN_WRITE) then
+        open "HOME:"\File:= FileName, FileDev \Write \Bin;
+    elseif present(BIN_AP) then
+        open "HOME:"\File:= FileName, FileDev \Append \Bin;
+    else
+        open "HOME:"\File:= FileName, FileDev \Write;
+    endif
+    return(OK);
+    !error
+    error
+    return -abs(errno);
+    undo
+    close_file_ FileDev;
+endfunc
+
+!***********************************************************
+! proc file_writeln_()
+!***********************************************************
+!     输入参数 : FileDev       * iodev *       * 文件读/写通道 *
+!     输入参数 : \num NumOfLn  * 可选参数 *     * 写入换行符的数量 *
+!***********************************************************
+! 功能 : 向文件写入指定数量的换行符。
+!        如果未指定数量，则默认写入一个换行符。
+!***********************************************************
+proc file_writeln_(var iodev FileDev, \num NumOfLn)
+    var num I;
+    if present(NumOfLn) then 
+        for I from 1 to NumOfLn do write FileDev, " " ; endfor
+    else
+        write FileDev, " " ;
+    endif
+
+    !error
+    error
+    return;
+endproc
+
+!***********************************************************
+! proc file_puts_()
+!***********************************************************
+!     输入参数 : FileDev       * iodev *       * 文件读/写通道 *
+!     输入参数 : Msg           * 字符串 *     * 要写入的消息 *
+!     输入参数 : \switch Cr    * 可选开关 *    * 是否插入换行符 *
+!***********************************************************
+! 功能 : 将消息写入文件。
+!        如果提供了 Cr 开关，则在消息末尾插入换行符。
+!        否则，不插入换行符。
+!***********************************************************
+proc file_puts_(var iodev FileDev, string Msg, \switch Cr)
+
+    if present(Cr) then write FileDev, Msg; else write FileDev, Msg \NoNewLine; endif
+    !error
+    error
+    return;
+endproc
+
+!***********************************************************
+! proc close_file_()
+!***********************************************************
+!     输入参数 : FileDev       * iodev *       * 文件读/写通道 *
+!***********************************************************
+! 功能 : 关闭指定的文件。
+!***********************************************************
+proc close_file_(var iodev FileDev)
+    close FileDev;
+    !error
+    error
+    close FileDev;
+    return;
+endproc
+
+!***********************************************************
+! func get_file_size_()
+!***********************************************************
+!     输入参数 : FileName      * 字符串 *     * 文件名 *
+! 返回 :                     * 数字 *       * 文件大小 *
+!***********************************************************
+! 功能 : 获取指定文件的大小。
+!***********************************************************
+func num get_file_size_(string FileName)
+
+    return(filesize(FileName));
+    !error
+    error
+    return(-abs(errno));
+endfunc
+
+!***********************************************************
+! func delete_file_()
+!***********************************************************
+!	  in : FileName 		* string *       * 文件名 *
+!***********************************************************
+! 删除指定的文件
+!***********************************************************
+proc delete_file_(string FileName)
+
+    removefile "HOME:/" + FileName;
+    !error
+    error
+    return;
+endproc
+
+!***********************************************************
+! proc rename_file_()
+!***********************************************************
+!     输入参数 : FileName      * 字符串 *     * 原文件名 *
+!     输入参数 : NewFileName   * 字符串 *     * 新文件名 *
+!***********************************************************
+! 功能 : 重命名文件。
+!        如果新文件名已存在，则删除旧文件后再重命名。
+!***********************************************************
+proc rename_file_(string FileName, string NewFileName)
+
+    if file_created_(NewFileName) delete_file_(NewFileName);
+    renamefile FileName, NewFileName;
+    !error
+    error
+    return;
+endproc
+
+!***********************************************************
+! func file_created_()
+!***********************************************************
+!     输入参数 : FileName      * 字符串 *     * 文件名 *
+! 返回 :                     * 布尔值 *     * 文件是否存在 *
+!***********************************************************
+! 功能 : 检查文件是否已经存在。
+!***********************************************************
+func bool file_created_(string FileName) return(isfile(FileName)); endfunc
+
+!***********************************************************
+! proc logs_()
+!***********************************************************
+!     输入参数 : FileName      * 字符串 *     * 日志文件名 *
+!     输入参数 : Msg           * 字符串 *     * 日志消息 *
+!***********************************************************
+! 功能 : 记录日志信息。
+!        如果文件大小超过最大限制，则重命名旧文件并创建新日志文件。
+!        否则，在现有文件末尾追加日志信息。
+!***********************************************************
+proc logs_(string FileName, string Msg)
+    var string NewFileName;
+    var num IntVal;
+    var iodev FileDev;
+
+    IntVal := strfind(FileName, 1, ".");
+    if IntVal > strlen(FileName) then 
+        NewFileName := FileName + "_old";
+    else
+        NewFileName := strpart(FileName, 1, IntVal - 1) + "_old" + strpart(FileName, IntVal, strlen(FileName) - IntVal + 1);
+    endif
+    if get_file_size_(FileName) > FILE_MAX_SIZE then rename_file_ FileName, NewFileName; endif
+    if open_file_(FileDev, FileName \STR_AP) = 0 then
+        file_puts_ FileDev, cdate() + " ";
+        file_puts_ FileDev, ctime() + " ";
+        file_puts_ FileDev, Msg \Cr;
+    endif
+    close_file_ FileDev;
+    !error
+    error
+    return;
+    undo
+    close_file_ FileDev;
+endproc
+
+!***********************************************************
+! func text_get_parm_()
+!***********************************************************
+!     输入参数 : TextName      * 字符串 *     * 文本文件名 *
+!     输入参数 : TableName     * 字符串 *     * 表格名称 *
+!     输入参数 : Id            * 数字 *       * ID *
+!     输入输出参数 : NumVal     * 数字 *       * 数字值 *
+!     输入输出参数 : NumValAry  * 数字数组 *   * 数字数组值 *
+!     输入输出参数 : DNumVal    * 十进制数字 *   * 十进制数字值 *
+!     输入输出参数 : DNumValAry * 十进制数字数组 * * 十进制数字数组值 *
+!     输入输出参数 : StrVal     * 字符串 *     * 字符串值 *
+!     输入输出参数 : StrValAry  * 字符串数组 *   * 字符串数组值 *
+!     输入输出参数 : BoolVal    * 布尔值 *     * 布尔值 *
+!     输入输出参数 : BoolValAry * 布尔值数组 *   * 布尔值数组 *
+!     输入输出参数 : PosVal     * 位置 *       * 位置值 *
+!     输入输出参数 : OrientVal  * 方向 *       * 方向值 *
+!     输入输出参数 : PoseVal    * 姿态 *       * 姿态值 *
+!     输入输出参数 : RobJointVal* 机器人关节 *   * 机器人关节值 *
+!     输入输出参数 : RobTargetVal* 机器人目标 *   * 机器人目标值 *
+!     输入输出参数 : ToolDataVal* 工具数据 *    * 工具数据值 *
+!     输入输出参数 : WobjDataVal* 工件坐标系数据 * * 工件坐标系数据值 *
+!     输入输出参数 : SpeedDataVal* 速度数据 *   * 速度数据值 *
+!     输入输出参数 : ZoneDataVal* 区域数据 *    * 区域数据值 *
+!     输入输出参数 : TasksVal   * 任务 *       * 任务值 *
+! 返回 :                     * errnum *      * 错误代码 *
+!***********************************************************
+! 功能 : 从文本文件中根据 ID 获取指定类型的数据。
+!        如果获取失败，尝试重新加载表格并再次获取。
+!        支持多种数据类型，包括数字、字符串、布尔值等。
+!***********************************************************
+func errnum text_get_parm_(string TextName, string TableName, num Id, 
+                            \inout num          NumVal, 
+                            \inout num          NumValAry{*},
+                            \inout dnum         DNumVal, 
+                            \inout dnum         DNumValAry{*},
+                            \inout string       StrVal,
+                            \inout string       StrValAry{*},
+                            \inout bool         BoolVal, 
+                            \inout bool         BoolValAry{*}, 
+                            \inout pos          PosVal, 
+                            \inout orient       OrientVal, 
+                            \inout pose         PoseVal,
+                            \inout robjoint     RobJointVal,
+                            \inout robtarget    RobTargetVal,
+                            \inout tooldata     ToolDataVal,
+                            \inout wobjdata     WobjDataVal,
+                            \inout speeddata    SpeedDataVal,
+                            \inout zonedata     ZoneDataVal,
+                            \inout tasks        TasksVal)
+    var bool GetStatus;
+    var num RetryCount := 0;
+
+    if texttabfreetouse(TableName) texttabinstall "HOME:/" + TextName;
+
+    if present(NumVal) then
+        GetStatus := strtoval(textget(texttabget(TableName), Id), NumVal);
+    elseif present(NumValAry) then
+        GetStatus := strtoval(textget(texttabget(TableName), Id), NumValAry);
+    elseif present(DNumVal) then  
+        GetStatus := strtoval(textget(texttabget(TableName), Id), DNumVal);
+    elseif present(DNumValAry) then
+        GetStatus := strtoval(textget(texttabget(TableName), Id), DNumValAry);
+    elseif present(StrVal) then
+        GetStatus := strtoval(textget(texttabget(TableName), Id), StrVal);
+    elseif present(StrValAry) then
+        GetStatus := strtoval(textget(texttabget(TableName), Id), StrValAry);
+    elseif present(BoolVal) then
+        GetStatus := strtoval(textget(texttabget(TableName), Id), BoolVal);
+    elseif present(BoolValAry) then
+        GetStatus := strtoval(textget(texttabget(TableName), Id), BoolValAry);
+    elseif present(PosVal) then
+        GetStatus := strtoval(textget(texttabget(TableName), Id), PosVal);
+    elseif present(OrientVal) then
+        GetStatus := strtoval(textget(texttabget(TableName), Id), OrientVal);
+    elseif present(PoseVal) then
+        GetStatus := strtoval(textget(texttabget(TableName), Id), PoseVal);
+    elseif present(RobJointVal) then
+        GetStatus := strtoval(textget(texttabget(TableName), Id), RobJointVal);
+    elseif present(RobTargetVal) then
+        GetStatus := strtoval(textget(texttabget(TableName), Id), RobTargetVal);
+    elseif present(ToolDataVal) then
+        GetStatus := strtoval(textget(texttabget(TableName), Id), ToolDataVal);
+    elseif present(WobjDataVal) then
+        GetStatus := strtoval(textget(texttabget(TableName), Id), WobjDataVal);
+    elseif present(SpeedDataVal) then
+        GetStatus := strtoval(textget(texttabget(TableName), Id), SpeedDataVal);
+    elseif present(ZoneDataVal) then
+        GetStatus := strtoval(textget(texttabget(TableName), Id), ZoneDataVal);
+    elseif present(TasksVal) then
+        GetStatus := strtoval(textget(texttabget(TableName), Id), TasksVal);
+    else
+        errwrite "text_get_parm_", "Get Data Type Error !!!";
+        stop;
+    endif 
+
+    if (not GetStatus) return(NG);  
+
+    return(OK);
+
+    !error
+    error
+    if (errno = ERR_FILEACC) and (RetryCount < 3) then  
+        
+        incr RetryCount;
+        waittime 0.5;
+        retry;
+    else 
+        return -abs(errno);
+    endif
+endfunc
+
+endmodule

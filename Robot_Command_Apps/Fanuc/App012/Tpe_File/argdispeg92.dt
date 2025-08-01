@@ -1,0 +1,40 @@
+{* -*-coding:chinese-gbk-*-}
+{Basic}
+
+[PROGRAM]
+NAME = "SBTPOLITRIG"
+ARGUMENT = '2'
+[ARGUMENT]
+N01 = "Camer Id"  	 
+N02 = " Point Id"   
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBTPOLIPROC"
+ARGUMENT = '3'
+[ARGUMENT]
+N01 = "Job Id"  	  
+N02 = " Plan Num"  	
+N03 = " Proc R[]" 
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBTPOLIPARA"
+ARGUMENT = '4'
+[ARGUMENT]
+N01 = "Job Id"  	  
+N02 = " Para Num"  	
+N03 = " Head R[]"      
+N04 = " Speed R[]"      
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBTPOLIPATH"
+ARGUMENT = '5'
+[ARGUMENT]
+N01 = "Job Id"	    
+V02 = " Appr Path" : '1' , " Proc Path" : '2' , " End Path" : '3'
+N03 = " Para Num"  
+N04 = " Inter Dis"    
+S05 = " Tpe Name"       : "PATH_PROC"
+[ENDPROGRAM]

@@ -1,0 +1,202 @@
+
+! 应用安装
+PRINT "**********************************"
+PRINT "**********************************"
+PRINT "FUNCTION : Install Sbt Comm Apps"
+PRINT "USER		: Speedbot
+PRINT "**********************************"
+PRINT "**********************************"
+DELAY 1000
+
+PRINT "ABORT ALL"
+KCL ABORT ALL
+DELAY 200
+
+! 加载?? LIB PC程序
+PRINT "Loading Library"
+PRINT "Loading global_cfg.pc"			
+PCLOAD .\Lib\global_cfg.pc				! global_cfg.pc	
+PRINT "Loading lib_buscmd.pc"			
+PCLOAD .\Lib\lib_buscmd.pc				! lib_buscmd.pc
+PRINT "Loading lib_busio.pc"			
+PCLOAD .\Lib\lib_busio.pc				! lib_busio.pc
+PRINT "Loading lib_dpm.pc"				
+PCLOAD .\Lib\lib_dpm.pc					! lib_dpm.pc
+PRINT "Loading lib_fsetup.pc"			
+PCLOAD .\Lib\lib_fsetup.pc				! lib_fsetup.pc
+PRINT "Loading lib_logs.pc"		
+PCLOAD .\Lib\lib_logs.pc				! lib_logs.pc
+PRINT "Loading lib_math.pc"
+PCLOAD .\Lib\lib_math.pc				! lib_math.pc
+PRINT "Loading lib_momory.pc"
+PCLOAD .\Lib\lib_momory.pc				! lib_momory.pc
+PRINT "Loading lib_motion.pc"
+PCLOAD .\Lib\lib_motion.pc				! lib_motion.pc
+PRINT "Loading lib_path.pc"
+PCLOAD .\Lib\lib_path.pc				! lib_path.pc
+PRINT "Loading lib_socket.pc"
+PCLOAD .\Lib\lib_socket.pc				! lib_socket.pc
+PRINT "Loading lib_string.pc"
+PCLOAD .\Lib\lib_string.pc				! lib_string.pc
+PRINT "Loading lib_thread.pc"
+PCLOAD .\Lib\lib_thread.pc				! lib_thread.pc
+PRINT "Loading lib_tp_if.pc"
+PCLOAD .\Lib\lib_tp_if.pc				! lib_tp_if.pc
+PRINT "Loading lib_tpe.pc"
+PCLOAD .\Lib\lib_tpe.pc					! lib_tpe.pc
+
+PRINT "Loading Sbt Comm Apps"
+
+SPEP_OFF
+
+! 加载 BASE PC程序
+PCLOAD .\Apps\sbt_ggframe.pc			! sbt_ggframe.pc
+PCLOAD .\Apps\sbt_pr2vr.pc			    ! sbt_pr2vr.pc
+PCLOAD .\Apps\sbt_chkpos.pc			    ! sbt_chkpos.pc
+PCLOAD .\Apps\commenting.pc			    ! commenting.pc
+
+! 加载 SBT_COMM PC程序
+PCLOAD .\Apps\sbt_comm000.pc			! sbt_comm000.pc
+PCLOAD .\Apps\sbt_comm002.pc			! sbt_comm002.pc
+PCLOAD .\Apps\sbt_comm003.pc			! sbt_comm003.pc
+PCLOAD .\Apps\sbt_comm004.pc			! sbt_comm004.pc
+PCLOAD .\Apps\sbt_comm010.pc			! sbt_comm010.pc
+PCLOAD .\Apps\sbt_comm010_process.pc	! sbt_comm010_process.pc
+
+! 加载 分拣 MIXSORT PC程序
+PCLOAD .\Apps\mixsort_sr.pc				! mixsort_sr.pc
+PCLOAD .\Apps\mixsort_cfg.pc			! mixsort_cfg.pc
+
+! 加载 码垛 SECONDSORT PC程序
+PCLOAD .\Apps\lib_second.pc				! lib_second.pc
+PCLOAD .\Apps\second_cfg.pc			    ! second_cfg.pc
+PCLOAD .\Apps\second_cpy.pc			    ! second_cpy.pc
+PCLOAD .\Apps\second_fdbk.pc		    ! second_fdbk.pc
+PCLOAD .\Apps\second_getq.pc		    ! second_getq.pc
+PCLOAD .\Apps\second_sr.pc			    ! second_sr.pc
+PCLOAD .\Apps\second_wpos.pc		    ! second_wpos.pc
+PCLOAD .\Apps\track_frame.pc		    ! track_frame.pc
+
+! 加载 焊接应用 PC程序
+PCLOAD .\Apps\sbt_Comm011_2dScanEd.pc		    ! sbt_Comm011_2dScanEd.pc
+PCLOAD .\Apps\sbt_Comm011_2dScanSt.pc		    ! sbt_Comm011_2dScanSt.pc
+PCLOAD .\Apps\sbt_Comm011_3dScanEd.pc			! sbt_Comm011_3dScanEd.pc
+PCLOAD .\Apps\sbt_Comm011_3dScanSt.pc			! sbt_Comm011_3dScanSt.pc
+PCLOAD .\Apps\sbt_Comm011_adap2Ed.pc			! sbt_Comm011_adap2Ed.pc
+PCLOAD .\Apps\sbt_Comm011_adap2St.pc			! sbt_Comm011_adap2St.pc
+PCLOAD .\Apps\sbt_Comm011_adapEd.pc			    ! sbt_Comm011_adapEd.pc
+PCLOAD .\Apps\sbt_Comm011_adapSt.pc			    ! sbt_Comm011_adapSt.pc
+PCLOAD .\Apps\sbt_Comm011_close.pc			    ! sbt_Comm011_close.pc
+PCLOAD .\Apps\sbt_Comm011_GetPath.pc			! sbt_Comm011_GetPath.pc
+PCLOAD .\Apps\sbt_Comm011_lsScanEd.pc			! sbt_Comm011_lsScanEd.pc
+PCLOAD .\Apps\sbt_Comm011_lsScanSt.pc			! sbt_Comm011_lsScanSt.pc
+PCLOAD .\Apps\sbt_Comm011_network.pc		    ! sbt_Comm011_network.pc
+PCLOAD .\Apps\sbt_Comm011_open.pc			    ! sbt_Comm011_open.pc
+PCLOAD .\Apps\sbt_Comm011_ParamEd.pc		    ! sbt_Comm011_ParamEd.pc
+PCLOAD .\Apps\sbt_Comm011_ParamSt.pc		    ! sbt_Comm011_ParamSt.pc
+PCLOAD .\Apps\sbt_Comm011_realtime.pc		    ! sbt_Comm011_realtime.pc
+PCLOAD .\Apps\sbt_Comm011_addTeach.pc		    ! sbt_Comm011_addTeach.pc
+
+! 加载 控制器 PC程序
+PCLOAD .\Apps\sbt_comm128.pc				    ! sbt_comm128.pc
+PCLOAD .\Apps\sbt_comm128_motion.pc				! sbt_comm128_motion.pc
+PCLOAD .\Apps\sbt_comm128_state.pc				! sbt_comm128_state.pc
+
+! 加载 宏程序
+PRINT "Loading Sbt Tpes"
+TPLOAD .\Tpe\ENTRIZON.tp				! ENTRIZON.tp
+TPLOAD .\Tpe\EXITIZON.tp				! EXITIZON.tp
+TPLOAD .\Tpe\HOME_IO.tp					! HOME_IO.tp
+TPLOAD .\Tpe\MOV_HOME.tp				! MOV_HOME.tp
+TPLOAD .\Tpe\POUNCE.tp					! POUNCE.tp
+TPLOAD .\Tpe\REQ_CONT.tp				! REQ_CONT.tp
+TPLOAD .\Tpe\SET_SEGM.tp				! SET_SEGM.tp
+TPLOAD .\Tpe\SERVO01CTRL.tp				! SERVO01CTRL.tp
+TPLOAD .\Tpe\ECHOJOBINFO.tp				! ECHOJOBINFO.tp
+TPLOAD .\Tpe\ECHOCHANNEL.tp				! ECHOCHANNEL.tp
+
+! 加载 拆码垛 TPE程序
+TPLOAD .\Tpe\COMM010_SKILL.tp			! COMM010_SKILL.tp
+TPLOAD .\Tpe\P_STACK.tp					! P_STACK.tp
+TPLOAD .\Tpe\P_STACK_COPY.tp			! P_STACK_COPY.tp
+TPLOAD .\Tpe\P_STACK_INIT.tp			! P_STACK_INIT.tp
+TPLOAD .\Tpe\P_STACK_PICK01.tp			! P_STACK_PICK01.tp
+TPLOAD .\Tpe\P_STACK_PLACE01.tp			! P_STACK_PLACE01.tp
+TPLOAD .\Tpe\P_STACK_PLACE02.tp			! P_STACK_PLACE02.tp
+TPLOAD .\Tpe\P_UNSTACK.tp				! P_UNSTACK.tp
+TPLOAD .\Tpe\P_UNSTACK_INIT.tp			! P_UNSTACK_INIT.tp
+TPLOAD .\Tpe\P_UNSTACK_PICK01.tp		! P_UNSTACK_PICK01.tp
+TPLOAD .\Tpe\P_UNSTACK_PICK02.tp		! P_UNSTACK_PICK02.tp
+TPLOAD .\Tpe\P_UNSTACK_PLACE01.tp		! P_UNSTACK_PLACE01.tp
+
+! 加载 分拣 MIXSORT TP程序
+TPLOAD .\Tpe\MIXSORT_ACK.tp						! MIXSORT_ACK.tp
+TPLOAD .\Tpe\MIXSORT_COPY.tp					! MIXSORT_COPY.tp
+TPLOAD .\Tpe\MIXSORT_DROP01.tp					! MIXSORT_DROP01.tp
+TPLOAD .\Tpe\MIXSORT_DT2PLC.tp					! MIXSORT_DT2PLC.tp
+TPLOAD .\Tpe\MIXSORT_FORMAGOFF.tp				! MIXSORT_FORMAGOFF.tp
+TPLOAD .\Tpe\MIXSORT_FORMAGON.tp				! MIXSORT_FORMAGON.tp
+TPLOAD .\Tpe\MIXSORT_INIT.tp					! MIXSORT_INIT.tp
+TPLOAD .\Tpe\MIXSORT_MAGOFF.tp					! MIXSORT_MAGOFF.tp
+TPLOAD .\Tpe\MIXSORT_MAGON.tp					! MIXSORT_MAGON.tp
+TPLOAD .\Tpe\MIXSORT_PICK.tp					! MIXSORT_PICK.tp
+TPLOAD .\Tpe\MIXSORT_PICTURE.tp					! MIXSORT_PICTURE.tp
+TPLOAD .\Tpe\MIXSORT_PLACE01.tp					! MIXSORT_PLACE01.tp
+TPLOAD .\Tpe\MIXSORT_PLACE02.tp					! MIXSORT_PLACE02.tp
+TPLOAD .\Tpe\MIXSORT_PLACE03.tp					! MIXSORT_PLACE03.tp
+TPLOAD .\Tpe\MIXSORT_PLACE04.tp					! MIXSORT_PLACE04.tp
+TPLOAD .\Tpe\MIXSORT_PLACE05.tp					! MIXSORT_PLACE05.tp
+TPLOAD .\Tpe\MIXSORT_PLACE06.tp					! MIXSORT_PLACE06.tp
+TPLOAD .\Tpe\MIXSORT_WORK.tp					! MIXSORT_WORK.tp
+TPLOAD .\Tpe\MIXSORT_WPOS.tp					! MIXSORT_WPOS.tp
+TPLOAD .\Tpe\PNS0001.tp							! PNS0001.tp
+
+! 加载 码垛 SECONDSORT TP程序
+TPLOAD .\Tpe\SECOND_FORMAGOFF.tp			    ! SECOND_FORMAGOFF.tp
+TPLOAD .\Tpe\SECOND_FORMAGON.tp					! SECOND_FORMAGON.tp
+TPLOAD .\Tpe\SECOND_INIT.tp					    ! SECOND_INIT.tp
+TPLOAD .\Tpe\SECOND_PICK01.tp					! SECOND_PICK01.tp
+TPLOAD .\Tpe\SECOND_PICK02.tp				    ! SECOND_PICK02.tp
+TPLOAD .\Tpe\SECOND_PICK03.tp				    ! SECOND_PICK03.tp
+TPLOAD .\Tpe\SECOND_PICK04.tp					! SECOND_PICK04.tp
+TPLOAD .\Tpe\SECOND_PKCV_SELECT.tp			    ! SECOND_PKCV_SELECT.tp
+TPLOAD .\Tpe\SECOND_PLACE01.tp					! SECOND_PLACE01.tp
+TPLOAD .\Tpe\SECOND_PLACE02.tp					! SECOND_PLACE02.tp
+TPLOAD .\Tpe\SECOND_PLACE03.tp					! SECOND_PLACE03.tp
+TPLOAD .\Tpe\SECOND_PLACE04.tp					! SECOND_PLACE04.tp
+TPLOAD .\Tpe\SECOND_PLACE05.tp					! SECOND_PLACE05.tp
+TPLOAD .\Tpe\SECOND_PLACE06.tp					! SECOND_PLACE06.tp
+TPLOAD .\Tpe\SECOND_PLACE07.tp					! SECOND_PLACE07.tp
+TPLOAD .\Tpe\SECOND_PLACE08.tp					! SECOND_PLACE08.tp
+TPLOAD .\Tpe\SECOND_PLFS_SELECT.tp			    ! SECOND_PLFS_SELECT.tp
+TPLOAD .\Tpe\ENC_STAT.tp			            ! ENC_STAT.tp
+TPLOAD .\Tpe\PNS0001.tp							! PNS0001.tp
+TPLOAD .\Tpe\PNS0025.tp							! PNS0025.tp
+
+! 加载 控制器 TP程序
+TPLOAD .\Tpe\SBTCTRL_INST01.tp					! SBTCTRL_INST01.tp
+TPLOAD .\Tpe\SBTCTRL_INST02.tp					! SBTCTRL_INST02.tp
+TPLOAD .\Tpe\sbtctrl_main.tp					! sbtctrl_main.tp
+TPLOAD .\Tpe\sbtctrl_tj.tp						! sbtctrl_tj.tp
+TPLOAD .\Tpe\sbttraje1.tp						! sbttraje1.tp
+TPLOAD .\Tpe\sbttraje2.tp						! sbttraje2.tp
+TPLOAD .\Tpe\sbttraje3.tp						! sbttraje3.tp
+TPLOAD .\Tpe\sbttraje4.tp						! sbttraje4.tp
+TPLOAD .\Tpe\sbttraje5.tp						! sbttraje5.tp
+
+
+! 加载 参数显示 DT文件
+PRINT "Loading Sbt DT"
+FRCOPY .\Dt\argdispch91.dt md:\argdispch91.dt			! argdispch91.dt
+FRCOPY .\Dt\argdispeg91.dt md:\argdispeg91.dt			! argdispeg91.dt
+
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+SPEP_ON
+SETVAR $KAREL_ENB 1
+
+PRINT ""
+PRINT "Finished !!!"
+
+EXIT

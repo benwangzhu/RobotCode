@@ -1,0 +1,44 @@
+(*
+T: FUNCTION_BLOCK STRING_TO_BUF
+FW: YES
+CI#: 48
+QSL: 0
+QJM: 2
+QJ: 2
+*)
+		LD	@IV 1
+		ANDN	@IV 5
+		JMPCN	@LBL 1
+		LD	@IV 2
+		BOOL_TO_BYTE		
+		ST	@IV 7
+		PARV	@IV 7
+		PARV	@IV 3
+		PARV	@IV 4
+		PARV	@TYP:8# 16#0010
+		PARA	@IV 8
+		PARA	@IV 9
+		PARA	@IV 12
+		PARA	@IVDT 13
+		PARA	@IVDT 14
+		CAL	@SFB 37
+		LD	@IV 8
+		BYTE_TO_BOOL		
+		ST	@IV 10
+		LD	@IV 9
+		BYTE_TO_BOOL		
+		ST	@IV 11
+	@LBL 1		
+		LDN	@IV 1
+		AND	@IV 5
+		JMPCN	@LBL 2
+		LD	@TYP:1# 16#0
+		ST	@IV 10
+		LD	@TYP:1# 16#0
+		ST	@IV 11
+		LD	@TYP:3# 16#0
+		ST	@IV 12
+	@LBL 2		
+		LD	@IV 1
+		ST	@IV 5
+

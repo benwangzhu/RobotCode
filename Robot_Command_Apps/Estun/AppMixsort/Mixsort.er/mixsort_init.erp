@@ -1,0 +1,177 @@
+// InstParseVersion: V1.02
+Start:
+/**********************************/
+/*初始化重要配置程序*/
+/**********************************/
+/*通讯输入输出起始地址*/
+t_p.BusOutput.BusIoSt = 1
+t_p.BusInput.BusIoSt = 1
+/*总线通讯超时时间 ms*/
+t_p.BusTimeout.value = 60000
+/*机器人编号*/
+t_p.CfgRobotId.value = 1
+/*放置位置数量*/
+t_p.CfgNumPlPoint.value = 8
+/*机器人轴数量*/
+t_p.CfgNumAxis.value = 6
+/*true 为眼在手上 false 为眼在手外*/
+t_p.CfgEyeInHand.value = false
+/*true 为放框 false 为放传送带*/
+t_p.CfgBoxOrConv.value = true
+IF t_p.CfgNumAxis.value > 6 THEN
+/*1 为地轨与 +X 轴协调 2 为地轨与 +Y 轴协调*/
+t_p.CfgE7Coordinate.value = 2
+/*地轨轴上极限*/
+t_p.CfgE7UpLim.value = 10000.0
+/*地轨轴下极限*/
+t_p.CfgE7DwLim.value = -10000.0
+/*抓取和拍照时得最小 TCP 位置距离*/
+t_p.CfgPtMinDist.value = 1600.0
+/*抓取和拍照时得最小 TCP 位置距离*/
+t_p.CfgPtRlE7Pos.value = t_p.CfgE7UpLim.value - t_p.CfgE7DwLim.value / 2
+ELSE
+    t_p.CfgE7Coordinate.value = 0
+ENDIF
+/*拍照位置极限设置*/
+/*包含地轨轴时，极限必需包含地轨值*/
+t_p.CfgPtMaxData.x = 3000.0
+t_p.CfgPtMaxData.y = 3000.0
+t_p.CfgPtMaxData.z = 3000.0
+t_p.CfgPtMinData.x = -3000.0
+t_p.CfgPtMinData.y = -3000.0
+t_p.CfgPtMinData.z = -3000.0
+/*抓取位置极限设置*/
+/*包含地轨轴时，极限必需包含地轨值*/
+t_p.CfgPkMaxData.x = 3000.0
+t_p.CfgPkMaxData.y = 3000.0
+t_p.CfgPkMaxData.z = 3000.0
+t_p.CfgPkMinData.x = -3000.0
+t_p.CfgPkMinData.y = -3000.0
+t_p.CfgPkMinData.z = -3000.0
+/*****************料框 1 配置********************/
+/*码放时的抬高高度*/
+t_p.CfgBoxPlaceUpDst.value [ 1 ] = 300.0
+/*码放时的地轨位置*/
+t_p.CfgBoxPlaceE7Pos.value [ 1 ] = 0.0
+/*极限配置*/
+t_g.CfgBoxLimitUp [ 1 ] .x = 3000.0
+t_g.CfgBoxLimitUp [ 1 ] .y = 3000.0
+t_g.CfgBoxLimitUp [ 1 ] .z = 3000.0
+t_g.CfgBoxLimitDown [ 1 ] .x = -3000.0
+t_g.CfgBoxLimitDown [ 1 ] .y = -3000.0
+t_g.CfgBoxLimitDown [ 1 ] .z = -3000.0
+/*****************料框 2 配置********************/
+/*码放时的抬高高度*/
+t_p.CfgBoxPlaceUpDst.value [ 2 ] = 300.0
+/*码放时的地轨位置*/
+t_p.CfgBoxPlaceE7Pos.value [ 2 ] = 0.0
+/*极限配置*/
+t_g.CfgBoxLimitUp [ 2 ] .x = 3000.0
+t_g.CfgBoxLimitUp [ 2 ] .y = 3000.0
+t_g.CfgBoxLimitUp [ 2 ] .z = 3000.0
+t_g.CfgBoxLimitDown [ 2 ] .x = -3000.0
+t_g.CfgBoxLimitDown [ 2 ] .y = -3000.0
+t_g.CfgBoxLimitDown [ 2 ] .z = -3000.0
+/*****************料框 3 配置********************/
+/*码放时的抬高高度*/
+t_p.CfgBoxPlaceUpDst.value [ 3 ] = 300.0
+/*码放时的地轨位置*/
+t_p.CfgBoxPlaceE7Pos.value [ 3 ] = 0.0
+/*极限配置*/
+t_g.CfgBoxLimitUp [ 3 ] .x = 3000.0
+t_g.CfgBoxLimitUp [ 3 ] .y = 3000.0
+t_g.CfgBoxLimitUp [ 3 ] .z = 3000.0
+t_g.CfgBoxLimitDown [ 3 ] .x = -3000.0
+t_g.CfgBoxLimitDown [ 3 ] .y = -3000.0
+t_g.CfgBoxLimitDown [ 3 ] .z = -3000.0
+/*****************料框 4 配置********************/
+/*码放时的抬高高度*/
+t_p.CfgBoxPlaceUpDst.value [ 4 ] = 300.0
+/*码放时的地轨位置*/
+t_p.CfgBoxPlaceE7Pos.value [ 4 ] = 0.0
+/*极限配置*/
+t_g.CfgBoxLimitUp [ 4 ] .x = 3000.0
+t_g.CfgBoxLimitUp [ 4 ] .y = 3000.0
+t_g.CfgBoxLimitUp [ 4 ] .z = 3000.0
+t_g.CfgBoxLimitDown [ 4 ] .x = -3000.0
+t_g.CfgBoxLimitDown [ 4 ] .y = -3000.0
+t_g.CfgBoxLimitDown [ 4 ] .z = -3000.0
+/*****************料框 5 配置********************/
+/*码放时的抬高高度*/
+t_p.CfgBoxPlaceUpDst.value [ 5 ] = 300.0
+/*码放时的地轨位置*/
+t_p.CfgBoxPlaceE7Pos.value [ 5 ] = 0.0
+/*极限配置*/
+t_g.CfgBoxLimitUp [ 5 ] .x = 3000.0
+t_g.CfgBoxLimitUp [ 5 ] .y = 3000.0
+t_g.CfgBoxLimitUp [ 5 ] .z = 3000.0
+t_g.CfgBoxLimitDown [ 5 ] .x = -3000.0
+t_g.CfgBoxLimitDown [ 5 ] .y = -3000.0
+t_g.CfgBoxLimitDown [ 5 ] .z = -3000.0
+/*****************料框 6 配置********************/
+/*码放时的抬高高度*/
+t_p.CfgBoxPlaceUpDst.value [ 6 ] = 300.0
+/*码放时的地轨位置*/
+t_p.CfgBoxPlaceE7Pos.value [ 6 ] = 0.0
+/*极限配置*/
+t_g.CfgBoxLimitUp [ 6 ] .x = 3000.0
+t_g.CfgBoxLimitUp [ 6 ] .y = 3000.0
+t_g.CfgBoxLimitUp [ 6 ] .z = 3000.0
+t_g.CfgBoxLimitDown [ 6 ] .x = -3000.0
+t_g.CfgBoxLimitDown [ 6 ] .y = -3000.0
+t_g.CfgBoxLimitDown [ 6 ] .z = -3000.0
+/*****************料框 7 配置********************/
+/*码放时的抬高高度*/
+t_p.CfgBoxPlaceUpDst.value [ 7 ] = 300.0
+/*码放时的地轨位置*/
+t_p.CfgBoxPlaceE7Pos.value [ 7 ] = 0.0
+/*极限配置*/
+t_g.CfgBoxLimitUp [ 7 ] .x = 3000.0
+t_g.CfgBoxLimitUp [ 7 ] .y = 3000.0
+t_g.CfgBoxLimitUp [ 7 ] .z = 3000.0
+t_g.CfgBoxLimitDown [ 7 ] .x = -3000.0
+t_g.CfgBoxLimitDown [ 7 ] .y = -3000.0
+t_g.CfgBoxLimitDown [ 7 ] .z = -3000.0
+/*****************料框 8 配置********************/
+/*码放时的抬高高度*/
+t_p.CfgBoxPlaceUpDst.value [ 8 ] = 300.0
+/*码放时的地轨位置*/
+t_p.CfgBoxPlaceE7Pos.value [ 8 ] = 0.0
+/*极限配置*/
+t_g.CfgBoxLimitUp [ 8 ] .x = 3000.0
+t_g.CfgBoxLimitUp [ 8 ] .y = 3000.0
+t_g.CfgBoxLimitUp [ 8 ] .z = 3000.0
+t_g.CfgBoxLimitDown [ 8 ] .x = -3000.0
+t_g.CfgBoxLimitDown [ 8 ] .y = -3000.0
+t_g.CfgBoxLimitDown [ 8 ] .z = -3000.0
+/*****************码放传送带 1 配置********************/
+/*1为 x 方向偏移 2为 y 方向偏移*/
+t_p.CfgConvCtrlMode.value [ 1 ] = 1
+/*极限配置*/
+t_p.CfgConvMaxOfs.value [ 1 ] = 200
+t_p.CfgConvMinOfs.value [ 1 ] = -200
+/*****************码放传送带 2 配置********************/
+/*1为 x 方向偏移 2为 y 方向偏移*/
+t_p.CfgConvCtrlMode.value [ 2 ] = 1
+/*极限配置*/
+t_p.CfgConvMaxOfs.value [ 2 ] = 200
+t_p.CfgConvMinOfs.value [ 2 ] = -200
+/*****************码放传送带 3 配置********************/
+/*1为 x 方向偏移 2为 y 方向偏移*/
+t_p.CfgConvCtrlMode.value [ 3 ] = 1
+/*极限配置*/
+t_p.CfgConvMaxOfs.value [ 3 ] = 200
+t_p.CfgConvMinOfs.value [ 3 ] = -200
+/*****************码放传送带 4 配置********************/
+/*1为 x 方向偏移 2为 y 方向偏移*/
+t_p.CfgConvCtrlMode.value [ 4 ] = 1
+/*极限配置*/
+t_p.CfgConvMaxOfs.value [ 4 ] = 200
+t_p.CfgConvMinOfs.value [ 4 ] = -200
+/*****************************************************/
+t_p.GlobalToSensorCmd.value = 0
+t_p.GlobalToRobotCmd.value = 0
+t_p.GlobalToRobotFlg.value = false
+t_p.IsPicking.value = true
+BusInitialize{BusIn=t_p.BusInput,BusOut=t_p.BusOutput,RonId=t_p.CfgRobotId,ProtocolId=1}
+End;

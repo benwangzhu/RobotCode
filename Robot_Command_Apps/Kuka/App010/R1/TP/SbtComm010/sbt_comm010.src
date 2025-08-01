@@ -1,0 +1,677 @@
+&ACCESS RP
+&comment Sbt Comm010
+def  sbt_comm010( )
+    ;***********************************************************
+    ;
+    ; Copyright 2018 - 2025 speedbot All Rights reserved.
+    ;
+    ; file Name: sbt_comm010.src
+    ;
+    ; Description:
+    ;   Language             ==   Krl for KUKA ROBOT
+    ;   Date                 ==   2025 - 05 - 08
+    ;   Modification Data    ==   2025 - 06 - 20
+    ;
+    ; Author: speedbot
+    ;
+    ; Version: 1.0
+    ;***********************************************************
+end
+
+
+;FOLD ----------------------------------------------- Sub Init ----------------------------------------------
+
+global def Comm010_SubMitInit()
+
+    SEComm010SortKey = 0
+end
+
+global def Comm010_SubMitLoop()
+
+    if SEComm010SortKey > 0 then
+        switch (SEComm010SortKey)
+        case 1
+            ; TODO
+        case 2
+            ; TODO
+        case 3
+            ; TODO
+        case 4
+            ; TODO
+        default
+        endswitch
+        SEComm010SortKey = 0
+    endif
+end
+
+;ENDFOLD
+
+;FOLD ----------------------------------------------- Global Function ----------------------------------------------
+
+global def ProcessComm010Init()
+
+    bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+
+    CmdType08.Byte01 = Comm010WorkMode
+
+    Comm010CommandId = COMM010_COMMAND_INIT
+
+    Status = bus_cmd027_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CmdType08)
+    Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, 30)
+
+    if Status <> OK then
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "ProcessComm010Init NOTOK![WorkMode:%d, Status:%d]", Comm010WorkMode, Status)
+        log_warn_(Msg[])
+        Comm010ResultId = COMM010_RESULT_NOTOK
+        return
+    endif
+
+    Offset = 0
+    str_clear_(Msg[])
+    swrite(Msg[], State, Offset, "ProcessComm010Init OK![WorkMode:%d]", Comm010WorkMode)
+    log_info_(Msg[])
+    Comm010ResultId = COMM010_RESULT_OK
+
+	; $timer_stop[COMM010_TIMEOUT_TIME_IDX] = true
+	; $timer[COMM010_TIMEOUT_TIME_IDX] = -abs(BusTimeout)
+		
+	Comm010ResultFlg = false
+
+	global interrupt decl PRIO_COMM010_TELL_NO when GiTellId == GoRobTellId do Comm010DataReception()
+	global interrupt decl PRIO_COMM010_TIMEOUT_NO when $TIMER[COMM010_TIMEOUT_TIME_IDX] > 0 do Comm010Timeout()
+	global interrupt decl PRIO_COMM010_READY_NO when DiSysReady == false do Comm010NotReady()
+	interrupt on PRIO_COMM010_TELL_NO
+	interrupt on PRIO_COMM010_READY_NO
+
+	wait sec 0.012
+end
+
+global def ProcessComm010Data()
+
+    Comm010SensorTable = {Mode 0, TaskNum 0, Area 0, Pip 0, BoxLenght 0.0, BoxWidth 0.0, BoxHigh 0.0, ObliPos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}, PickPos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}, PlacePos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}}
+
+    CmdType01 = {Byte01 0, Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}
+    CmdType08 = {Byte01 0, Byte02 0, Byte03 0, Byte04 0, Short05 0, Short06 0, Short07 0, Short08 0, Int09 0, Int10 0, Int11 0, Int12 0, Float13 0.0, Float14 0.0, Float15 0.0, Float16 0.0}
+    CmdType09 = {Int01 0, Int02 0, Float03 0.0, Float04 0.0, Float05 0.0, Float06 0.0, Float07 0.0, Float08 0.0, Float09 0.0, Float10 0.0, Float11 0.0, Float12 0.0, Float13 0.0, Float14 0.0}
+
+    continue
+    wait for (GiTellId == GoRobTellId)
+
+    Comm010CommandId = COMM010_COMMAND_DATA
+
+    ; interrupt off PRIO_COMM010_TIMEOUT_NO
+	; continue
+	; $timer_stop[COMM010_TIMEOUT_TIME_IDX] = true
+
+
+    Status = bus_cmd021_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CmdType01)
+
+	if BusTimeout > 0 then
+		continue
+		$timer[MIXSORT_TIMEOUT_TIME_IDX] = -abs(BusTimeout)
+		continue
+		$timer_stop[COMM010_TIMEOUT_TIME_IDX] = false
+		interrupt on PRIO_COMM010_TIMEOUT_NO
+	endif
+
+end
+
+global def ProcessComm010Pos02()
+    decl int Timeout
+
+    ReqMode = COMM010_REQ_TWO
+    CmdType01 = {Byte01 1, Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}
+    CmdType01.Byte01 = ReqMode
+
+    continue
+    wait for (GiTellId == GoRobTellId)
+
+    Comm010CommandId = COMM010_COMMAND_POS2
+
+    ; interrupt off PRIO_COMM010_TIMEOUT_NO
+	; continue
+	; $timer_stop[COMM010_TIMEOUT_TIME_IDX] = true
+    Timeout = 30000
+    Status = bus_cmd022_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CmdType01)
+
+	if Timeout > 0 then
+		continue
+		$timer[MIXSORT_TIMEOUT_TIME_IDX] = -abs(Timeout)
+		continue
+		$timer_stop[COMM010_TIMEOUT_TIME_IDX] = false
+		interrupt on PRIO_COMM010_TIMEOUT_NO
+	endif
+end
+
+global def ProcessComm010PickFeek(FeedMode : in)
+    decl int FeedMode
+    decl int Timeout
+
+    CmdType01 = {Byte01 0, Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}
+    CmdType01.Byte01 = COMM010_FEEDBACK_STATE
+    CmdType01.Int05 = FeedMode
+
+    continue
+    wait for (GiTellId == GoRobTellId)
+
+    switch (CmdType01.Int05)
+    case COMM010_STATE_SUCCESS
+        Comm010CommandId = COMM010_COMMAND_PKSU
+    case COMM010_STATE_MISS
+        Comm010CommandId = COMM010_COMMAND_MISS
+    case COMM010_STATE_PERSS
+        Comm010CommandId = COMM010_COMMAND_PRESS
+    case COMM010_STATE_FAILED
+        Comm010CommandId = COMM010_COMMAND_PKFL
+    default
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "FeedMode Mode Error![FeedMode:%d]", CmdType01.Int05)
+        log_error_(Msg[])            
+    endswitch
+    
+    ; interrupt off PRIO_COMM010_TIMEOUT_NO
+	; continue
+	; $timer_stop[COMM010_TIMEOUT_TIME_IDX] = true
+    Timeout = 3000
+    Status = bus_cmd026_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CmdType01)
+
+	if Timeout > 0 then
+		continue
+		$timer[MIXSORT_TIMEOUT_TIME_IDX] = -abs(Timeout)
+		continue
+		$timer_stop[COMM010_TIMEOUT_TIME_IDX] = false
+		interrupt on PRIO_COMM010_TIMEOUT_NO
+	endif
+    ; Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, 30)
+end
+
+global def ProcessComm010AreaFeek(AreaId : in)
+    decl char AreaId
+    decl int Timeout
+
+    CmdType01 = {Byte01 0, Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}
+    CmdType01.Byte01 = COMM010_FEEDBACK_AREA
+    CmdType01.Byte02 = AreaId
+    Comm010CurAreaId = AreaId
+
+    continue
+    wait for (GiTellId == GoRobTellId)
+
+    Comm010CommandId = COMM010_COMMAND_AREA
+
+    ; interrupt off PRIO_COMM010_TIMEOUT_NO
+	; continue
+	; $timer_stop[COMM010_TIMEOUT_TIME_IDX] = true
+    Timeout = 3000
+    Status = bus_cmd026_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CmdType01)
+
+	if Timeout > 0 then
+		continue
+		$timer[MIXSORT_TIMEOUT_TIME_IDX] = -abs(Timeout)
+		continue
+		$timer_stop[COMM010_TIMEOUT_TIME_IDX] = false
+		interrupt on PRIO_COMM010_TIMEOUT_NO
+	endif
+    ; Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, 30)
+end
+
+;ENDFOLD
+
+;FOLD ----------------------------------------------- Local Function ----------------------------------------------
+
+def ProcessComm010Pos01()
+    decl int Timeout
+
+    ReqMode = COMM010_REQ_ONE
+    CmdType01 = {Byte01 0, Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}
+    CmdType01.Byte01 = ReqMode
+
+    continue
+    wait for (GiTellId == GoRobTellId)
+
+    Comm010CommandId = COMM010_COMMAND_POS1
+    
+    ; interrupt off PRIO_COMM010_TIMEOUT_NO
+	; continue
+	; $timer_stop[COMM010_TIMEOUT_TIME_IDX] = true
+    Timeout = 30000
+    Status = bus_cmd022_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CmdType01)
+
+	if Timeout > 0 then
+		continue
+		$timer[MIXSORT_TIMEOUT_TIME_IDX] = -abs(Timeout)
+		continue
+		$timer_stop[COMM010_TIMEOUT_TIME_IDX] = false
+		interrupt on PRIO_COMM010_TIMEOUT_NO
+	endif
+end
+
+def ProcessComm010DataFeek()
+    decl int CopyAreaId
+    decl int Timeout
+    
+    CopyAreaId = Comm010SensorTable.Area
+
+    if (CopyAreaId <= 0) or (CopyAreaId > 8) then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Area Id Error![AreaId:%d, TaskNum:%d]", CopyAreaId, Comm010SensorTable.TaskNum)
+        log_error_(Msg[])
+    endif
+
+    CheckStatus = 0 
+
+    if Comm010WorkMode == COMM010_WORKMODE_STACK then  
+
+        if (Comm010SensorTable.PickPos.x > Comm010LimUp[1].x) or (Comm010SensorTable.PickPos.x < Comm010LimDown[1].x) then
+            
+            CheckStatus = COMM010_POS_TYPE_PICK
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "PickPos.x Out of range![X:%.3f, Max:%.3f, Min:%.3f, Area:%d, TaskNum:%d]", Comm010SensorTable.PickPos.x, Comm010LimUp[1].x, Comm010LimDown[1].x, CopyAreaId, Comm010SensorTable.TaskNum)
+            log_warn_(Msg[])
+            goto LBL_ACK
+        endif
+        if (Comm010SensorTable.PickPos.y > Comm010LimUp[1].y) or (Comm010SensorTable.PickPos.y < Comm010LimDown[1].y) then
+
+            CheckStatus = COMM010_POS_TYPE_PICK
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "PickPos.y Out of range![X:%.3f, Max:%.3f, Min:%.3f, Area:%d, TaskNum:%d]", Comm010SensorTable.PickPos.x, Comm010LimUp[1].y, Comm010LimDown[1].y, CopyAreaId, Comm010SensorTable.TaskNum)
+            log_warn_(Msg[])
+            goto LBL_ACK
+        endif
+        if (Comm010SensorTable.PickPos.z > Comm010LimUp[1].z) or (Comm010SensorTable.PickPos.z < Comm010LimDown[1].z) then
+
+            CheckStatus = COMM010_POS_TYPE_PICK
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "PickPos.z Out of range![X:%.3f, Max:%.3f, Min:%.3f, Area:%d, TaskNum:%d]", Comm010SensorTable.PickPos.x, Comm010LimUp[1].z, Comm010LimDown[1].z, CopyAreaId, Comm010SensorTable.TaskNum)
+            log_warn_(Msg[])
+            goto LBL_ACK
+        endif
+
+        if (ReqMode == COMM010_REQ_TWO) or (Comm010SensorTable.Mode == COMM010_MODE_ONE) then  
+
+            if (Comm010SensorTable.PlacePos.x > Comm010LimUp[CopyAreaId].x) or (Comm010SensorTable.PlacePos.x < Comm010LimDown[CopyAreaId].x) then
+                
+                CheckStatus = COMM010_POS_TYPE_PLACE
+                Offset = 0
+                str_clear_(Msg[])
+                swrite(Msg[], State, Offset, "PlacePos.x Out of range![X:%.3f, Max:%.3f, Min:%.3f, Area:%d, TaskNum:%d]", Comm010SensorTable.PlacePos.x, Comm010LimUp[CopyAreaId].x, Comm010LimDown[CopyAreaId].x, CopyAreaId, Comm010SensorTable.TaskNum)
+                log_warn_(Msg[])
+                goto LBL_ACK
+            endif
+            if (Comm010SensorTable.PlacePos.y > Comm010LimUp[CopyAreaId].y) or (Comm010SensorTable.PlacePos.y < Comm010LimDown[CopyAreaId].y) then
+
+                CheckStatus = COMM010_POS_TYPE_PLACE
+                Offset = 0
+                str_clear_(Msg[])
+                swrite(Msg[], State, Offset, "PlacePos.y Out of range![X:%.3f, Max:%.3f, Min:%.3f, Area:%d, TaskNum:%d]", Comm010SensorTable.PlacePos.x, Comm010LimUp[CopyAreaId].y, Comm010LimDown[CopyAreaId].y, CopyAreaId, Comm010SensorTable.TaskNum)
+                log_warn_(Msg[])
+                goto LBL_ACK
+            endif
+            if (Comm010SensorTable.PlacePos.z > Comm010LimUp[CopyAreaId].z) or (Comm010SensorTable.PlacePos.z < Comm010LimDown[CopyAreaId].z) then
+
+                CheckStatus = COMM010_POS_TYPE_PLACE
+                Offset = 0
+                str_clear_(Msg[])
+                swrite(Msg[], State, Offset, "PlacePos.z Out of range![X:%.3f, Max:%.3f, Min:%.3f, Area:%d, TaskNum:%d]", Comm010SensorTable.PlacePos.x, Comm010LimUp[CopyAreaId].z, Comm010LimDown[CopyAreaId].z, CopyAreaId, Comm010SensorTable.TaskNum)
+                log_warn_(Msg[])
+                goto LBL_ACK
+            endif
+
+            if (Comm010SensorTable.ObliPos.x > Comm010LimUp[CopyAreaId].x) or (Comm010SensorTable.ObliPos.x < Comm010LimDown[CopyAreaId].x) then
+                
+                CheckStatus = COMM010_POS_TYPE_OBLI
+                Offset = 0
+                str_clear_(Msg[])
+                swrite(Msg[], State, Offset, "ObliPos.x Out of range![X:%.3f, Max:%.3f, Min:%.3f, Area:%d, TaskNum:%d]", Comm010SensorTable.ObliPos.x, Comm010LimUp[CopyAreaId].x, Comm010LimDown[CopyAreaId].x, CopyAreaId, Comm010SensorTable.TaskNum)
+                log_warn_(Msg[])
+                goto LBL_ACK
+            endif
+            if (Comm010SensorTable.ObliPos.y > Comm010LimUp[CopyAreaId].y) or (Comm010SensorTable.ObliPos.y < Comm010LimDown[CopyAreaId].y) then
+
+                CheckStatus = COMM010_POS_TYPE_OBLI
+                Offset = 0
+                str_clear_(Msg[])
+                swrite(Msg[], State, Offset, "ObliPos.y Out of range![X:%.3f, Max:%.3f, Min:%.3f, Area:%d, TaskNum:%d]", Comm010SensorTable.ObliPos.x, Comm010LimUp[CopyAreaId].y, Comm010LimDown[CopyAreaId].y, CopyAreaId, Comm010SensorTable.TaskNum)
+                log_warn_(Msg[])
+                goto LBL_ACK
+            endif
+            if (Comm010SensorTable.ObliPos.z > Comm010LimUp[CopyAreaId].z) or (Comm010SensorTable.ObliPos.z < Comm010LimDown[CopyAreaId].z) then
+
+                CheckStatus = COMM010_POS_TYPE_OBLI
+                Offset = 0
+                str_clear_(Msg[])
+                swrite(Msg[], State, Offset, "ObliPos.z Out of range![X:%.3f, Max:%.3f, Min:%.3f, Area:%d, TaskNum:%d]", Comm010SensorTable.ObliPos.x, Comm010LimUp[CopyAreaId].z, Comm010LimDown[CopyAreaId].z, CopyAreaId, Comm010SensorTable.TaskNum)
+                log_warn_(Msg[])
+                goto LBL_ACK
+            endif
+
+        endif
+
+    else
+        if Comm010WorkMode == COMM010_WORKMODE_UNSTACK then  
+
+            if (Comm010SensorTable.PickPos.x > Comm010LimUp[CopyAreaId].x) or (Comm010SensorTable.PickPos.x < Comm010LimDown[CopyAreaId].x) then
+                
+                CheckStatus = COMM010_POS_TYPE_PICK
+                Offset = 0
+                str_clear_(Msg[])
+                swrite(Msg[], State, Offset, "PickPos.x Out of range![X:%.3f, Max:%.3f, Min:%.3f, Area:%d, TaskNum:%d]", Comm010SensorTable.PickPos.x, Comm010LimUp[CopyAreaId].x, Comm010LimDown[CopyAreaId].x, CopyAreaId, Comm010SensorTable.TaskNum)
+                log_warn_(Msg[])
+                goto LBL_ACK
+            endif
+            if (Comm010SensorTable.PickPos.y > Comm010LimUp[CopyAreaId].y) or (Comm010SensorTable.PickPos.y < Comm010LimDown[CopyAreaId].y) then
+
+                CheckStatus = COMM010_POS_TYPE_PICK
+                Offset = 0
+                str_clear_(Msg[])
+                swrite(Msg[], State, Offset, "PickPos.y Out of range![X:%.3f, Max:%.3f, Min:%.3f, Area:%d, TaskNum:%d]", Comm010SensorTable.PickPos.x, Comm010LimUp[CopyAreaId].y, Comm010LimDown[CopyAreaId].y, CopyAreaId, Comm010SensorTable.TaskNum)
+                log_warn_(Msg[])
+                goto LBL_ACK
+            endif
+            if (Comm010SensorTable.PickPos.z > Comm010LimUp[CopyAreaId].z) or (Comm010SensorTable.PickPos.z < Comm010LimDown[CopyAreaId].z) then
+
+                CheckStatus = COMM010_POS_TYPE_PICK
+                Offset = 0
+                str_clear_(Msg[])
+                swrite(Msg[], State, Offset, "PickPos.z Out of range![X:%.3f, Max:%.3f, Min:%.3f, Area:%d, TaskNum:%d]", Comm010SensorTable.PickPos.x, Comm010LimUp[CopyAreaId].z, Comm010LimDown[CopyAreaId].z, CopyAreaId, Comm010SensorTable.TaskNum)
+                log_warn_(Msg[])
+                goto LBL_ACK
+            endif
+            
+        else
+
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Work Mode Error![WorkMode:%d]", Comm010WorkMode)
+            log_error_(Msg[])            
+        endif
+    endif
+
+LBL_ACK:
+
+    continue
+    wait for (GiTellId == GoRobTellId)
+
+    Comm010CommandId = COMM010_COMMAND_DTFEEK
+    
+    CmdType01 = {Byte01 0, Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}
+    CmdType01.Byte01 = COMM010_FEEDBACK_DATA
+    CmdType01.Byte02 = CheckStatus
+    
+    Timeout = 3000
+    Status = bus_cmd026_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CmdType01)
+
+	if Timeout > 0 then
+		continue
+		$timer[MIXSORT_TIMEOUT_TIME_IDX] = -abs(Timeout)
+		continue
+		$timer_stop[COMM010_TIMEOUT_TIME_IDX] = false
+		interrupt on PRIO_COMM010_TIMEOUT_NO
+	endif
+end
+
+def Comm010DataReception()
+
+	interrupt off PRIO_MIXSORT_TIMEOUT_NO
+	continue
+	$timer_stop[COMM010_TIMEOUT_TIME_IDX] = true
+
+    switch (BusInput.MsgType)
+    case 148
+        Status = bus_cmd148_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, CmdType08, BusTimeout)
+        if Status <> OK then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Failed Get Data![WorkMode:%d, Status:%d]", Comm010WorkMode, Status)
+            log_warn_(Msg[])
+            Comm010ResultId = COMM010_RESULT_NOTOK
+            Comm010ResultFlg = true
+            return
+        endif
+
+        Comm010SensorTable.Mode         = CmdType08.byte01
+        Comm010SensorTable.TaskNum      = CmdType08.Int09
+        Comm010SensorTable.Area         = CmdType08.byte02
+        Comm010SensorTable.Pip          = CmdType08.byte03
+        Comm010SensorTable.BoxLenght    = CmdType08.Float13
+        Comm010SensorTable.BoxWidth     = CmdType08.Float14
+        Comm010SensorTable.BoxHigh      = CmdType08.Float15
+
+        if (Comm010SensorTable.Mode == COMM010_MODE_UNKNOWN) then  
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Task finished![WorkMode:%d]", Comm010WorkMode)
+            log_info_(Msg[])
+            Comm010ResultId = COMM010_RESULT_UNKNOWN
+            Comm010ResultFlg = true
+            return
+        endif
+
+        if not ((Comm010SensorTable.Mode == COMM010_MODE_ONE) or (Comm010SensorTable.Mode == COMM010_MODE_TWO)) then
+
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Unknow Comm010SensorTable.Mode![WorkMode:%d, Mode:%d, TaskNum:%d]", Comm010WorkMode, Comm010SensorTable.Mode, Comm010SensorTable.TaskNum)
+            log_error_(Msg[])
+            Comm010ResultId = COMM010_RESULT_NOTOK
+            Comm010ResultFlg = true
+            return
+        endif
+        
+        ProcessComm010Pos01()
+
+    case 134
+        Status = bus_cmd134_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, CmdType09, BusTimeout)
+        if Status <> OK then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Failed Get Pos![WorkMode:%d, ReqMode:%d, Status:%d]", Comm010WorkMode, ReqMode, Status)
+            log_warn_(Msg[])
+            Comm010ResultId = COMM010_RESULT_NOTOK
+            Comm010ResultFlg = true
+            return
+        endif
+        Posn01 = cur_pos_(0, 0)
+        Posn02 = cur_pos_(0, 0)
+        Posn01.x = CmdType09.Float03
+        posn01.y = CmdType09.Float04
+        posn01.z = CmdType09.Float05
+        posn01.a = CmdType09.Float06
+        posn01.b = CmdType09.Float07
+        posn01.c = CmdType09.Float08
+        Posn02.x = CmdType09.Float09
+        posn02.y = CmdType09.Float10
+        posn02.z = CmdType09.Float11
+        posn02.a = CmdType09.Float12
+        posn02.b = CmdType09.Float13
+        posn02.c = CmdType09.Float14
+
+        switch (CmdType09.Int01)
+        case COMM010_POS_TYPE_NULL
+        case COMM010_POS_TYPE_PICK
+            Comm010SensorTable.PickPos = Posn01
+        case COMM010_POS_TYPE_PLACE
+            Comm010SensorTable.PlacePos = Posn01
+        case COMM010_POS_TYPE_OBLI
+            Comm010SensorTable.ObliPos = Posn01
+        default
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Unknown Pos Type![WorkMode:%d, Type:%d]", Comm010WorkMode, CmdType09.Int01)
+            log_error_(Msg[])
+            Comm010ResultId = COMM010_RESULT_NOTOK
+            Comm010ResultFlg = true
+            return
+        endswitch
+        switch (CmdType09.Int02)
+        case COMM010_POS_TYPE_NULL
+        case COMM010_POS_TYPE_PICK
+            Comm010SensorTable.PickPos = Posn02
+        case COMM010_POS_TYPE_PLACE
+            Comm010SensorTable.PlacePos = Posn02
+        case COMM010_POS_TYPE_OBLI
+            Comm010SensorTable.ObliPos = Posn02
+        default
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Unknown Pos Type![WorkMode:%d, Type:%d]", Comm010WorkMode, CmdType09.Int01)
+            log_error_(Msg[])
+            Comm010ResultId = COMM010_RESULT_NOTOK
+            Comm010ResultFlg = true
+            return
+        endswitch
+
+        if (Comm010SensorTable.Mode == COMM010_MODE_TWO) or (ReqMode == COMM010_REQ_TWO) then
+            ProcessComm010DataFeek()
+        else
+            ProcessComm010Pos02()
+        endif
+    case 1
+        Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+        if (CheckStatus == 0) and (Status == OK) then
+            Comm010ResultId = COMM010_RESULT_OK
+            Comm010ResultFlg = true
+            return
+        endif
+        
+        if CheckStatus <> 0 then
+            Comm010ResultId = COMM010_RESULT_NOTOK
+            Comm010ResultFlg = true
+            return
+        endif
+
+        Offset = 0
+        str_clear_(Msg[])
+
+        switch (Comm010CommandId)
+        case COMM010_COMMAND_DTFEEK
+            swrite(Msg[], State, Offset, "Failed Feekback Data![WorkMode:%d, TaskNum:%d]", Comm010WorkMode, Comm010SensorTable.TaskNum)
+            log_error_(Msg[])
+            Comm010ResultId = COMM010_RESULT_NOTOK
+            Comm010ResultFlg = true
+        case COMM010_COMMAND_PKSU
+            swrite(Msg[], State, Offset, "Failed Feekback Pk Succ![WorkMode:%d, TaskNum:%d]", Comm010WorkMode, Comm010SensorTable.TaskNum)
+            log_error_(Msg[])
+            Comm010ResultId = COMM010_RESULT_NOTOK
+            Comm010ResultFlg = true
+        case COMM010_COMMAND_MISS
+            swrite(Msg[], State, Offset, "Failed Feekback Miss![WorkMode:%d, TaskNum:%d]", Comm010WorkMode, Comm010SensorTable.TaskNum)
+            log_error_(Msg[])
+            Comm010ResultId = COMM010_RESULT_NOTOK
+            Comm010ResultFlg = true
+        case COMM010_COMMAND_PRESS
+            swrite(Msg[], State, Offset, "Failed Feekback Press![WorkMode:%d, TaskNum:%d]", Comm010WorkMode, Comm010SensorTable.TaskNum)
+            log_error_(Msg[])
+            Comm010ResultId = COMM010_RESULT_NOTOK
+            Comm010ResultFlg = true
+        case COMM010_COMMAND_PKFL
+            swrite(Msg[], State, Offset, "Failed Feekback Pk Fail![WorkMode:%d, TaskNum:%d]", Comm010WorkMode, Comm010SensorTable.TaskNum)
+            log_error_(Msg[])
+            Comm010ResultId = COMM010_RESULT_NOTOK
+            Comm010ResultFlg = true
+        case COMM010_COMMAND_AREA
+            swrite(Msg[], State, Offset, "Failed Feekback Area![WorkMode:%d, AreaId:%d]", Comm010WorkMode, Comm010CurAreaId)
+            log_error_(Msg[])
+            Comm010ResultId = COMM010_RESULT_NOTOK
+            Comm010ResultFlg = true
+        default
+            swrite(Msg[], State, Offset, "Unknown Command Id![WorkMode:%d, CommandId:%d]", Comm010WorkMode, Comm010CommandId)
+            log_error_(Msg[])
+            Comm010ResultId = COMM010_RESULT_NOTOK
+            Comm010ResultFlg = true
+        endswitch
+        
+    default
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Unknown MsgType![WorkMode:%d, MsgType:%d]", Comm010WorkMode, BusInput.MsgType)
+        log_error_(Msg[])
+        Comm010ResultId = COMM010_RESULT_NOTOK
+        Comm010ResultFlg = true
+    endswitch
+
+
+end 
+
+def Comm010Timeout()
+
+	$timer_stop[COMM010_TIMEOUT_TIME_IDX] = true
+	interrupt off PRIO_COMM010_TELL_NO
+	interrupt off PRIO_COMM010_READY_NO
+	interrupt off PRIO_COMM010_TIMEOUT_NO
+
+    Offset = 0
+    str_clear_(Msg[])
+
+    switch (Comm010CommandId)
+    case COMM010_COMMAND_DATA
+        swrite(Msg[], State, Offset, "Timeout Receive Data![WorkMode:%d, Timeout:%d]", Comm010WorkMode, $TIMER[COMM010_TIMEOUT_TIME_IDX])
+        log_info_(Msg[])
+        Comm010ResultId = COMM010_RESULT_NOTOK
+        Comm010ResultFlg = true
+    case COMM010_COMMAND_POS1
+        swrite(Msg[], State, Offset, "Timeout Receive Pos1![WorkMode:%d, Timeout:%d]", Comm010WorkMode, $TIMER[COMM010_TIMEOUT_TIME_IDX])
+        log_info_(Msg[])
+        Comm010ResultId = COMM010_RESULT_NOTOK
+        Comm010ResultFlg = true
+    case COMM010_COMMAND_POS2
+        swrite(Msg[], State, Offset, "Timeout Receive Pos2![WorkMode:%d, Timeout:%d]", Comm010WorkMode, $TIMER[COMM010_TIMEOUT_TIME_IDX])
+        log_error_(Msg[])
+        Comm010ResultId = COMM010_RESULT_NOTOK
+        Comm010ResultFlg = true
+    case COMM010_COMMAND_DTFEEK
+        swrite(Msg[], State, Offset, "Timeout Feekback Data![WorkMode:%d, TaskNum:%d, Timeout:%d]", Comm010WorkMode, Comm010SensorTable.TaskNum, $TIMER[COMM010_TIMEOUT_TIME_IDX])
+        log_error_(Msg[])
+        Comm010ResultId = COMM010_RESULT_NOTOK
+        Comm010ResultFlg = true
+    case COMM010_COMMAND_PKSU
+        swrite(Msg[], State, Offset, "Timeout Feekback Pk Succ![WorkMode:%d, TaskNum:%d, Timeout:%d]", Comm010WorkMode, Comm010SensorTable.TaskNum, $TIMER[COMM010_TIMEOUT_TIME_IDX])
+        log_error_(Msg[])
+        Comm010ResultId = COMM010_RESULT_NOTOK
+        Comm010ResultFlg = true
+    case COMM010_COMMAND_MISS
+        swrite(Msg[], State, Offset, "Timeout Feekback Miss![WorkMode:%d, TaskNum:%d, Timeout:%d]", Comm010WorkMode, Comm010SensorTable.TaskNum, $TIMER[COMM010_TIMEOUT_TIME_IDX])
+        log_error_(Msg[])
+        Comm010ResultId = COMM010_RESULT_NOTOK
+        Comm010ResultFlg = true
+    case COMM010_COMMAND_PRESS
+        swrite(Msg[], State, Offset, "Timeout Feekback Press![WorkMode:%d, TaskNum:%d, Timeout:%d]", Comm010WorkMode, Comm010SensorTable.TaskNum, $TIMER[COMM010_TIMEOUT_TIME_IDX])
+        log_error_(Msg[])
+        Comm010ResultId = COMM010_RESULT_NOTOK
+        Comm010ResultFlg = true
+    case COMM010_COMMAND_PKFL
+        swrite(Msg[], State, Offset, "Timeout Feekback Pk Fail![WorkMode:%d, TaskNum:%d, Timeout:%d]", Comm010WorkMode, Comm010SensorTable.TaskNum, $TIMER[COMM010_TIMEOUT_TIME_IDX])
+        log_error_(Msg[])
+        Comm010ResultId = COMM010_RESULT_NOTOK
+        Comm010ResultFlg = true
+    case COMM010_COMMAND_AREA
+        swrite(Msg[], State, Offset, "Timeout Feekback Area![WorkMode:%d, AreaId:%d, Timeout:%d]", Comm010WorkMode, Comm010CurAreaId, $TIMER[COMM010_TIMEOUT_TIME_IDX])
+        log_error_(Msg[])
+        Comm010ResultId = COMM010_RESULT_NOTOK
+        Comm010ResultFlg = true
+    default
+        swrite(Msg[], State, Offset, "Unknown Command Id![WorkMode:%d, CommandId:%d]", Comm010WorkMode, Comm010CommandId)
+        log_error_(Msg[])
+        Comm010ResultId = COMM010_RESULT_NOTOK
+        Comm010ResultFlg = true
+    endswitch
+end 
+
+def Comm010NotReady()
+
+	Offset = 0
+	str_clear_(Msg[])
+	swrite(Msg[], State, Offset, "DiSysReady Miss![BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
+	log_error_(Msg[])
+end 
+
+;ENDFOLD
+

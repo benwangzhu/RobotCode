@@ -1,0 +1,185 @@
+'!TITLE "tsr0128"
+
+#Include "tsr0128.h"
+#Include "global_variable.h"
+Sub Main
+'!***********************************************************
+'!
+'! Copyright 2018 - 2025 speedbot All Rights reserved.
+'!
+'! File Name: tsr0128.pcs
+'!
+'! Description:
+'!   Language             ==   PacScipt for DENSO ROBOT
+'!   Date                 ==   2025 - 02 - 24
+'!   Modification Data    ==   2025 - 02 - 24
+'!
+'! Author: speedbot
+'!
+'! Version: 1.0
+'!*********************************************************************************************************;
+	Dim CommConfig As Variant
+	Dim Buffer As Variant
+	Dim CurJoints As Joint
+	Dim Res As Integer = _ERROR_
+	Dim Offset As Integer = 0
+	Dim Count As Integer = 0
+
+	Dim StatePackageHeader As Variant
+	Dim StatePackageTail As Variant
+	Dim StatePackageData As Variant
+	Dim StatePackageIo As Variant
+	Dim StatePackageJoints As Variant
+	
+
+	CommConfig = Array(False, COMM128_STATE_COMM_ID, 0, COMM_WAIT_DEFAULT)
+
+	UDP_CREATE:
+
+	Res = CommOpen(CommConfig)
+	If Res <> _OK_ Then 
+		Goto UDP_CREATE
+	End If
+
+	StatePackageHeader = Array(PACKAGE_HEADER, 16 + 23 * 4 + 4, 1, 255, TYPE_DENSO, 0, 0)
+	StatePackageTail = Array(PACKAGE_TAIL)
+	StatePackageData = Array(0, NUM_OF_ROBOT_AXIS, NUM_OF_ROT_AXIS, 0, 0, 0, 0, 0, 0, 0, 0)
+	StatePackageIo = Array(0, 0, 0, 0, 0, 0, 0, 0, 0)
+	StatePackageJoints = Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+#Pragma Encrypt(On) 
+
+	Do While True
+
+		If StatePackageHeader(4) < 255 Then
+			StatePackageHeader(4) = StatePackageHeader(4) + 1
+		Else
+			StatePackageHeader(4) = 1
+		End If
+
+		StatePackageData(0) = 0
+
+		If ((Status(sbt_comm128_main) = 3) And ((SysState And 4) = 4)) Then  
+
+			StatePackageData(0) = StatePackageData(0) Or 1 
+		End If
+
+		If (Status(sbt_comm128_main) = 1) Then  
+
+			StatePackageData(0) = StatePackageData(0) Or 2
+		End If
+
+		If ((SysState And 2) = 2) Then  
+
+			StatePackageData(0) = StatePackageData(0) Or 4
+		End If
+
+		If ((SysState And 1048576) = 1048576) Then  
+
+			StatePackageData(0) = StatePackageData(0) Or 8
+		End If
+
+
+		CurJoints = CurJnt
+
+		StatePackageData(4) = I[VARIABLE_I_MOVE_ID]
+
+		For Count = 1 To NUM_OF_ROBOT_AXIS
+
+			StatePackageJoints(Count - 1) = Joint(Count, CurJoints)
+		Next
+
+		GetInputIo StatePackageIo
+
+		EncodeDatFrame_HEADER  Buffer, Offset, StatePackageHeader
+		EncodeDatFrame_UINT8  Buffer, Offset, StatePackageData(0)
+		EncodeDatFrame_UINT8  Buffer, Offset, StatePackageData(1)
+		EncodeDatFrame_UINT8  Buffer, Offset, StatePackageData(2)
+		EncodeDatFrame_UINT8  Buffer, Offset, StatePackageData(3)
+		EncodeDatFrame_INT32  Buffer, Offset, StatePackageData(4)
+		EncodeDatFrame_UINT8  Buffer, Offset, StatePackageIo(0)
+		EncodeDatFrame_UINT8  Buffer, Offset, StatePackageIo(1)
+		EncodeDatFrame_UINT8  Buffer, Offset, StatePackageIo(2)
+		EncodeDatFrame_UINT8  Buffer, Offset, StatePackageIo(3)
+		EncodeDatFrame_UINT8  Buffer, Offset, StatePackageIo(4)
+		EncodeDatFrame_UINT8  Buffer, Offset, StatePackageIo(5)
+		EncodeDatFrame_UINT8  Buffer, Offset, StatePackageIo(6)
+		EncodeDatFrame_UINT8  Buffer, Offset, StatePackageIo(7)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageJoints(0)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageJoints(1)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageJoints(2)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageJoints(3)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageJoints(4)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageJoints(5)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageJoints(6)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageJoints(7)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageJoints(8)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageJoints(9)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageJoints(10)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageJoints(11)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageJoints(12)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageData(5)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageData(6)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageData(7)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageData(8)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageData(9)
+		EncodeDatFrame_FLOAT  Buffer, Offset, StatePackageData(10)
+		EncodeDatFrame_TAIL  Buffer, Offset, StatePackageTail
+
+		Res = CommWrite(CommConfig, Buffer, Offset)
+
+		If Res <> _OK_ Then Exit Do
+	Loop
+
+#Pragma Encrypt(Off) 
+
+	GoTo UDP_CREATE
+End Sub
+
+#Pragma Encrypt(On) 
+
+Sub GetInputIo(ByRef InputIo As Variant)
+	InputIo = Array(0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+	On Error GoTo ERRORS
+
+#If INPUT_INDEX01 >= 0 
+	defio input1 = byte, INPUT_INDEX01
+	InputIo(0) = input1
+#EndIf
+#If INPUT_INDEX02 >= 0 
+	defio input2 = byte, INPUT_INDEX02
+	InputIo(1) = input2
+#EndIf
+#If INPUT_INDEX03 >= 0 
+	defio input3 = byte, INPUT_INDEX03
+	InputIo(2) = input3
+#EndIf
+#If INPUT_INDEX04 >= 0 
+	defio input4 = byte, INPUT_INDEX04
+	InputIo(3) = input4
+#EndIf
+#If INPUT_INDEX05 >= 0 
+	defio input5 = byte, INPUT_INDEX05
+	InputIo(4) = input5
+#EndIf
+#If INPUT_INDEX06 >= 0 
+	defio input6 = byte, INPUT_INDEX06
+	InputIo(5) = input6
+#EndIf
+#If INPUT_INDEX07 >= 0 
+	defio input7 = byte, INPUT_INDEX07
+	InputIo(6) = input7
+#EndIf
+#If INPUT_INDEX08 >= 0 
+	defio input8 = byte, INPUT_INDEX08
+	InputIo(7) = input8
+#EndIf
+
+	Exit Sub
+ERRORS:
+
+	Resume Next
+End Sub
+
+#Pragma Encrypt(Off) 

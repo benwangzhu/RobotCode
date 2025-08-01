@@ -1,0 +1,703 @@
+program lib_tp_if
+--***********************************************************
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- file Name: lib_tp_if
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 09 - 05
+--   Modification Data    ==   2021 - 11 - 25
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+-- 2021 - 09 - 05 ++ get_iparm_() ==> integer
+   
+-- 2021 - 09 - 05 ++ get_rparm_() ==> real
+   
+-- 2021 - 09 - 05 ++ get_sparm_() ==> string
+   
+-- 2021 - 09 - 05 ++ get_ireg_() ==> integer
+   
+-- 2021 - 09 - 05 ++ get_rreg_() ==> real 
+   
+-- 2021 - 09 - 05 ++ get_preg_() ==> xyzwprext
+
+-- 2023 - 02 - 27 ++ get_g2_preg_() ==> xyzwprext in group[2]
+
+-- 2023 - 03 - 24 ++ g_mulgrp_pr_() ==> xyzwprext
+   
+-- 2021 - 09 - 05 ++ get_jpreg_() ==> jointpos
+
+-- 2023 - 02 - 27 ++ get_g2_jpr_() ==> jointpos in group[2]
+
+-- 2023 - 03 - 24 ++ get_g2_jpr_() ==> jointpos
+   
+-- 2021 - 09 - 05 ++ get_sreg_() ==> string
+
+-- 2022 - 02 - 14 ++ get_io_() ==> integer
+   
+-- 2021 - 09 - 05 ++ get_sys_int_() ==> string
+
+-- 2021 - 09 - 05 ++ get_sys_rel_() ==> real
+
+-- 2021 - 09 - 05 ++ get_sys_str_() ==> string
+
+-- 2021 - 09 - 05 ++ get_sys_pos_() ==> position
+
+-- 2021 - 12 - 06 ++ get_sys_bol_() ==> boolean
+
+-- 2021 - 09 - 05 ++ set_ireg_()
+   
+-- 2021 - 09 - 05 ++ set_rreg_()
+   
+-- 2021 - 09 - 05 ++ set_preg_()
+
+-- 2023 - 02 - 27 ++ set_g2_preg_()
+
+-- 2023 - 03 - 24 ++ s_mulgp_pr_()
+   
+-- 2021 - 09 - 05 ++ set_jpreg_()
+
+-- 2023 - 02 - 27 ++ set_g2_jpr_()
+
+-- 2023 - 03 - 24 ++ s_mulgp_jpr_()
+   
+-- 2021 - 09 - 05 ++ set_sreg_()
+
+-- 2022 - 02 - 14 ++ set_io_()
+
+-- 2021 - 11 - 03 ++ set_sys_int_()
+   
+-- 2021 - 11 - 03 ++ set_sys_rel_()
+   
+-- 2021 - 11 - 03 ++ set_sys_str_()
+   
+-- 2021 - 11 - 03 ++ set_sys_pos_()
+
+-- 2021 - 12 - 06 ++ set_sys_bol_()
+
+-- 2021 - 11 - 03 ++ init_vr_()
+
+-- 2021 - 11 - 03 ++ abort_task_()
+   
+-- 2021 - 11 - 03 ++ multi_task_() ==> boolean
+
+-- 2021 - 11 - 23 ++ tp_enabled_() ==> boolean
+
+-- 2021 - 11 - 23 ++ tp_fault_() ==> boolean
+
+-- 2021 - 11 - 23 ++ tp_running_() ==> boolean
+
+-- 2021 - 11 - 23 ++ tp_pause_() ==> boolean
+
+-- 2021 - 11 - 23 ++ tsk_running_() ==> boolean
+
+-- 2021 - 12 - 17 ++ get_err_() ==> integer
+
+-- 2021 - 12 - 17 ++ op_mode_() ==> integer
+
+-- 2024 - 03 - 04 ++ chk_order_() ==> boolean
+
+--
+
+%nolockgroup
+%nobusylamp
+%nopause = tpenable + command + error
+%comment = 'TpIf 221129'
+
+%include include/lib_transform_t
+
+	
+%include include/lib_tp_if_h
+%include include/lib_string_h
+
+
+begin
+
+
+end lib_tp_if
+
+    
+routine get_iparm_
+var
+    ParmStat        : integer		
+    DataType		: integer           
+    ParmInt         : integer     
+    Parmreal        : real    
+    ParmStr         : string[127]   
+begin
+    get_tpe_prm(ParmNo, DataType, ParmInt, Parmreal, ParmStr, ParmStat)
+    if (DataType <> 1) or (ParmStat <> CC_SUCCESS) then ; post_err(CC_UALARM, 'Check Parm ' + int_2str_(ParmNo), 0, CC_ABORT) ; endif 
+    return(ParmInt)
+end get_iparm_
+
+routine get_rparm_
+var
+    ParmStat        : integer		
+    DataType		: integer           
+    ParmInt         : integer     
+    Parmreal        : real    
+    ParmStr         : string[127]   
+begin
+    get_tpe_prm(ParmNo, DataType, ParmInt, Parmreal, ParmStr, ParmStat)
+    if ParmStat <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check Parm ' + int_2str_(ParmNo), 0, CC_ABORT) ; endif 
+    if DataType = 1 then ; Parmreal = ParmInt ; endif 
+    return(Parmreal)
+end get_rparm_
+
+routine get_sparm_
+var
+    ParmStat        : integer		
+    DataType		: integer           
+    ParmInt         : integer     
+    Parmreal        : real    
+    ParmStr         : string[127]   
+begin
+    get_tpe_prm(ParmNo, DataType, ParmInt, Parmreal, ParmStr, ParmStat)
+    if (DataType <> 3) or (ParmStat <> CC_SUCCESS) then ; post_err(CC_UALARM, 'Check Parm ' + int_2str_(ParmNo), 0, CC_ABORT) ; endif 
+    return(ParmStr)
+end get_sparm_
+
+routine get_ireg_
+var
+    GetStatus     : integer
+    realFlg       : boolean
+    IntVal        : integer
+    RelVal        : real
+begin
+    get_reg(RegNo, realFlg, IntVal, RelVal, GetStatus)
+    if (GetStatus <> CC_SUCCESS) or (realFlg) then ; post_err(CC_UALARM, 'Check R[' + int_2str_(RegNo) + ']' , 0, CC_ABORT) ; endif
+    return(IntVal)
+end get_ireg_
+
+routine get_rreg_
+var
+    GetStatus     : integer
+    realFlg       : boolean
+    IntVal        : integer
+    RelVal        : real
+begin
+    get_reg(RegNo, realFlg, IntVal, RelVal, GetStatus)
+    if GetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check R[' + int_2str_(RegNo) + ']' , 0, CC_ABORT) ; endif
+    if not realFlg then ; RelVal = IntVal ; endif
+    return(RelVal)
+end get_rreg_
+
+routine get_preg_
+var
+    GetStatus     : integer
+    PosVal        : xyzwprext
+begin
+    PosVal = get_pos_reg(PRegNo, GetStatus)
+    if GetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check PR[' + int_2str_(PRegNo) + ']' , 0, CC_ABORT) ; endif
+    return(PosVal)
+end get_preg_
+
+routine get_g2_preg_
+var
+    GetStatus     : integer
+    PosVal        : xyzwprext in group[2]
+begin
+    PosVal = get_pos_reg(PRegNo, GetStatus, 2)
+    if GetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check PR[' + int_2str_(PRegNo) + '] In Group[2]' , 0, CC_ABORT) ; endif
+    return(PosVal)
+end get_g2_preg_
+
+routine g_mulgp_pr_
+var
+    GetStatus     : integer
+    PosVal        : xyzwprext
+begin
+    PosVal = get_pos_reg(PRegNo, GetStatus, GrpId)
+    if GetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check PR[' + int_2str_(PRegNo) + '] In Group[2]' , 0, CC_ABORT) ; endif
+    return(PosVal)
+end g_mulgp_pr_
+
+routine get_jpreg_
+var
+    GetStatus     : integer
+    JPosVal       : jointpos
+begin
+    JPosVal = get_jpos_reg(JPRegNo, GetStatus)
+    if GetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check PR[' + int_2str_(JPRegNo) + ']' , 0, CC_ABORT) ; endif
+    return(JPosVal)
+end get_jpreg_
+
+routine get_g2_jpr_
+var
+    GetStatus     : integer
+    JPosVal       : jointpos in group[2]
+begin
+    JPosVal = get_jpos_reg(JPRegNo, GetStatus, 2)
+    if GetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check PR[' + int_2str_(JPRegNo) + '] In Group[2]' , 0, CC_ABORT) ; endif
+    return(JPosVal)
+end get_g2_jpr_
+
+routine g_mulgp_jpr_
+var
+    GetStatus     : integer
+    JPosVal       : jointpos
+begin
+    JPosVal = get_jpos_reg(JPRegNo, GetStatus, GrpId)
+    if GetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check PR[' + int_2str_(JPRegNo) + '] In Group[2]' , 0, CC_ABORT) ; endif
+    return(JPosVal)
+end g_mulgp_jpr_
+
+routine get_sreg_
+var
+    GetStatus     : integer
+    StrVal     	  : string[254]
+begin
+    get_str_reg(SRegNo, StrVal, GetStatus)
+    if GetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check SR[' + int_2str_(SRegNo) + ']' , 0, CC_ABORT) ; endif
+    return(StrVal)
+end get_sreg_
+
+routine get_io_ 
+var
+    GetStatus     : integer
+    PortVal       : integer
+begin
+    get_port_val(PortType, PortNo, PortVal, GetStatus)
+    if GetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check Io['+ int_2str_(PortType) + ',' + int_2str_(PortNo) + ']' , 0, CC_ABORT) ; endif
+    return(PortVal)
+end get_io_
+
+routine io_is_cfg_
+var
+    PortVal       : integer
+    GetStatus     : integer 
+begin
+    get_port_val(PortType, PortNo, PortVal, GetStatus)
+	return(GetStatus = 0)
+end io_is_cfg_
+
+
+routine get_sys_int_
+var
+    SvEntry      : integer
+    GetStatus    : integer
+    SvValue      : integer
+begin
+    get_var(SvEntry, '*SYSTEM*', SysvarName, SvValue, GetStatus)
+    if GetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check ' + SysvarName , 0, CC_ABORT) ; endif
+    return(SvValue)
+end get_sys_int_
+
+routine get_sys_rel_
+var
+    SvEntry      : integer
+    GetStatus    : integer
+    SvValue      : real
+begin
+    get_var(SvEntry, '*SYSTEM*', SysvarName, SvValue, GetStatus)
+    if GetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check ' + SysvarName , 0, CC_ABORT) ; endif
+    return(SvValue)
+end get_sys_rel_
+
+routine get_sys_str_
+var
+    SvEntry      : integer
+    GetStatus    : integer
+    SvValue      : string[127]
+begin
+    get_var(SvEntry, '*SYSTEM*', SysvarName, SvValue, GetStatus)
+    if GetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check ' + SysvarName , 0, CC_ABORT) ; endif
+    return(SvValue)
+end get_sys_str_
+
+routine get_sys_pos_
+var
+    SvEntry      : integer
+    GetStatus    : integer
+    SvValue      : position
+begin
+    get_var(SvEntry, '*SYSTEM*', SysvarName, SvValue, GetStatus)
+    if GetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check ' + SysvarName , 0, CC_ABORT) ; endif
+    return(SvValue)
+end get_sys_pos_
+
+routine get_sys_bol_
+var
+    SvEntry      : integer
+    GetStatus    : integer
+    SvValue      : boolean
+begin
+    get_var(SvEntry, '*SYSTEM*', SysvarName, SvValue, GetStatus)
+    if GetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check ' + SysvarName , 0, CC_ABORT) ; endif
+    return(SvValue)
+end get_sys_bol_
+
+routine set_ireg_
+var
+    SetStatus     : integer
+begin
+    set_int_reg(RegNo, IntVal, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check R[' + int_2str_(RegNo) + ']' , 0, CC_ABORT) ; endif
+end set_ireg_
+
+routine set_rreg_
+var
+    SetStatus     : integer
+begin
+    set_real_reg(RegNo, realVal, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check R[' + int_2str_(RegNo) + ']' , 0, CC_ABORT) ; endif
+end set_rreg_
+
+routine set_preg_
+var
+    SetStatus     : integer
+begin
+    set_epos_reg(PRegNo, PosVal, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check PR[' + int_2str_(PRegNo) + ']' , 0, CC_ABORT) ; endif
+end set_preg_
+
+routine set_g2_preg_
+var
+    SetStatus     : integer
+begin
+    set_epos_reg(PRegNo, (PosVal), SetStatus, 2)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check PR[' + int_2str_(PRegNo) + '] In Group[2]' , 0, CC_ABORT) ; endif
+end set_g2_preg_
+
+routine s_mulgp_pr_
+var
+    SetStatus     : integer
+begin
+    set_epos_reg(PRegNo, (PosVal), SetStatus, GrpId)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check PR[' + int_2str_(PRegNo) + '] In Group[2]' , 0, CC_ABORT) ; endif
+end s_mulgp_pr_
+
+routine set_jpreg_
+var
+    SetStatus     : integer
+begin
+    set_jpos_reg(JPRegNo, JPosVal, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check PR[' + int_2str_(JPRegNo) + ']' , 0, CC_ABORT) ; endif
+end set_jpreg_
+
+routine set_g2_jpr_
+var
+    SetStatus     : integer
+begin
+    set_jpos_reg(JPRegNo, JPosVal, SetStatus, 2)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check PR[' + int_2str_(JPRegNo) + '] In Group[2]' , 0, CC_ABORT) ; endif
+end set_g2_jpr_
+
+routine s_mulgp_jpr_
+var
+    SetStatus     : integer
+begin
+    set_jpos_reg(JPRegNo, JPosVal, SetStatus, GrpId)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check PR[' + int_2str_(JPRegNo) + '] In Group[2]' , 0, CC_ABORT) ; endif
+end s_mulgp_jpr_
+
+routine set_sreg_
+var
+    SetStatus     : integer
+begin
+    set_str_reg(SRegNo, StrVal, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check SR[' + int_2str_(SRegNo) + ']' , 0, CC_ABORT) ; endif
+end set_sreg_
+
+routine set_io_
+var
+    SetStatus     : integer
+begin
+    set_port_val(PortType, PortNo, PortVal, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check Io['+ int_2str_(PortType) + ',' + int_2str_(PortNo) + ']' , 0, CC_ABORT) ; endif
+end set_io_
+
+routine set_sys_int_
+var
+    SvEntry      : integer
+    SetStatus    : integer
+begin
+    set_var(SvEntry, '*SYSTEM*', SysvarName, IntVal, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check [' + SysvarName + ']' , 0, CC_ABORT) ; endif
+end set_sys_int_
+
+routine set_sys_rel_
+var
+    SvEntry      : integer
+    SetStatus    : integer
+begin
+    set_var(SvEntry, '*SYSTEM*', SysvarName, RelVal, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check [' + SysvarName + ']' , 0, CC_ABORT) ; endif
+end set_sys_rel_
+
+routine set_sys_str_
+var
+    SvEntry      : integer
+    SetStatus    : integer
+begin
+    set_var(SvEntry, '*SYSTEM*', SysvarName, StrVal, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check [' + SysvarName + ']' , 0, CC_ABORT) ; endif
+end set_sys_str_
+
+routine set_sys_pos_
+var
+    SvEntry      : integer
+    SetStatus    : integer
+begin
+    set_var(SvEntry, '*SYSTEM*', SysvarName, PosVal, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check [' + SysvarName + ']' , 0, CC_ABORT) ; endif
+end set_sys_pos_
+
+routine set_sys_bol_
+var
+    SvEntry      : integer
+    SetStatus    : integer
+begin
+    set_var(SvEntry, '*SYSTEM*', SysvarName, BoolVal, SetStatus)
+    if SetStatus <> CC_SUCCESS then ; post_err(CC_UALARM, 'Check [' + SysvarName + ']' , 0, CC_ABORT) ; endif
+end set_sys_bol_
+
+routine init_vr_
+var
+    I			: integer
+begin
+    set_sys_int_('$vr['+int_2str_(VregNo)+'].$workid', 0)
+    
+    set_sys_int_('$vr['+int_2str_(VregNo)+'].$type', 1)
+    
+    set_sys_rel_('$vr['+int_2str_(VregNo)+'].$offset.$x', 0)
+    set_sys_rel_('$vr['+int_2str_(VregNo)+'].$offset.$y', 0)
+    set_sys_rel_('$vr['+int_2str_(VregNo)+'].$offset.$z', 0)
+    set_sys_rel_('$vr['+int_2str_(VregNo)+'].$offset.$w', 0)
+    set_sys_rel_('$vr['+int_2str_(VregNo)+'].$offset.$p', 0)
+    set_sys_rel_('$vr['+int_2str_(VregNo)+'].$offset.$r', 0)
+    
+    set_sys_int_('$vr['+int_2str_(VregNo)+'].$enc_count', 0)
+    set_sys_int_('$vr['+int_2str_(VregNo)+'].$frm_num', 0)
+    
+    for I = 1 to 4 do
+        set_sys_rel_('$vr['+int_2str_(VregNo)+'].$view['+int_2str_(I)+'].$x', 0)
+        set_sys_rel_('$vr['+int_2str_(VregNo)+'].$view['+int_2str_(I)+'].$y', 0)
+        set_sys_rel_('$vr['+int_2str_(VregNo)+'].$view['+int_2str_(I)+'].$z', 0)
+        set_sys_rel_('$vr['+int_2str_(VregNo)+'].$view['+int_2str_(I)+'].$w', 0)
+        set_sys_rel_('$vr['+int_2str_(VregNo)+'].$view['+int_2str_(I)+'].$p', 0)
+        set_sys_rel_('$vr['+int_2str_(VregNo)+'].$view['+int_2str_(I)+'].$r', 0)
+        set_sys_int_('$vr['+int_2str_(VregNo)+'].$view['+int_2str_(I)+'].$modelid', 0)
+    endfor
+end init_vr_
+
+routine abort_task_
+var                                                    
+    AbortStat    : integer  
+    ThisTask	 : string[16]  
+begin
+    ThisTask = TaskName
+    if ThisTask = '*' then ; ThisTask = '*ALL*' ; endif
+    abort_task(ThisTask, false, true, AbortStat)
+    if AbortStat <> CC_SUCCESS then ; abort_task(ThisTask, false, true, AbortStat) ; endif
+end abort_task_
+
+routine multi_task_
+var
+    RunStat    : integer
+begin
+    run_task(TaskName, 0, false, false, 0, RunStat)
+    return(RunStat = CC_SUCCESS)
+end multi_task_ 
+
+routine tp_enable_
+
+begin
+
+    return(opout[7])
+
+end tp_enable_
+
+routine tp_fault_
+
+begin
+
+    return(opout[3])
+
+end tp_fault_
+
+routine tp_running_
+
+begin
+
+    return($opwork.$intprunning > 0)
+
+end tp_running_
+
+routine tp_pause_
+
+begin
+
+    return($opwork.$intppaused > 0)
+    
+end tp_pause_
+
+routine tsk_running_
+
+var
+    TaskNo				: integer
+    IntVal				: integer
+    StrVal				: string[24]
+    GetStatus			: integer
+
+begin
+
+    get_tsk_info(TaskName, TaskNo, TSK_STATUS, IntVal, StrVal, GetStatus)
+
+    if GetStatus <> CC_SUCCESS then ; return(false) ; endif
+
+    return(IntVal = PG_RUNNING)
+
+end tsk_running_
+
+routine get_err_
+var
+	SeqNum      : integer
+	ErrCode     : integer
+	CauseCode   : integer
+	TimeInt     : integer
+	Severity    : integer
+	ErrStr      : string[64]
+	CauseStr    : string[64]
+	ProgName    : string[32]
+begin
+	-- MAXINT requests most recent error
+	SeqNum = MAXINT
+
+    repeat
+        if not tp_fault_ then ; return(0) ; endif
+	    err_data(SeqNum, ErrCode, ErrStr, CauseCode, CauseStr, TimeInt, Severity, ProgName)
+        SeqNum = SeqNum - 2
+        delay(8)
+    until (Severity = 1) or (Severity = 2)
+
+	return (ErrCode)
+end get_err_
+
+routine get_err_msg_
+var
+	SeqNum      : integer
+	ErrCode     : integer
+	CauseCode   : integer
+	TimeInt     : integer
+	Severity    : integer
+	ErrStr      : string[64]
+	CauseStr    : string[64]
+	ProgName    : string[32]
+begin
+	-- MAXINT requests most recent error
+	SeqNum = MAXINT
+
+    repeat
+        if not tp_fault_ then ; return('No Error !') ; endif
+	    err_data(SeqNum, ErrCode, ErrStr, CauseCode, CauseStr, TimeInt, Severity, ProgName)
+        SeqNum = SeqNum - 2
+        delay(8)
+    until (Severity = 1) or (Severity = 2)
+
+	return (ErrStr)
+end get_err_msg_
+
+routine op_mode_
+
+begin
+
+    if (opin[8]) and (not opin[9]) then ; return(1) ; endif			--	T1
+
+    if (not opin[8]) and (not opin[9]) then ; return(2) ; endif		--	T2
+
+    if (opin[8]) and (opin[9]) then ; return(3) ; endif				--	AUTO
+
+    return(0);														-- UNKNOWN
+
+end op_mode_
+
+routine is_vir_rob_
+var 
+    CtrlFno             : string[24]
+    FnoInt              : integer
+begin
+
+    CtrlFno = get_sys_str_('$application[4]')
+
+    CtrlFno = sub_str(CtrlFno, 2, str_len(CtrlFno) - 1)
+
+    cnv_str_int(CtrlFno, FnoInt)
+
+    return(FnoInt = 0)
+end is_vir_rob_
+
+routine get_host_ip_
+
+begin
+    select HostNum of
+    case(1): return(get_sys_str_('$hostent[17].$h_addr'))
+    case(2): return(get_sys_str_('$hostent[18].$h_addr'))
+    else: return('')
+    endselect
+end get_host_ip_
+
+routine chk_order_
+var
+    OrderName       : string[8]
+    I               : integer
+    CheckStatus     : boolean
+    SvEntry         : integer
+    GetStatus       : integer
+    SvValue         : string[127]
+begin
+    OrderName = low_2upper_(OrderfilName)
+    CheckStatus = false
+    I = 0
+    repeat 
+        I = I + 1
+        get_var(SvEntry, '*SYSTEM*', '$feature.$mod[' + int_2str_(I) + ']', SvValue, GetStatus)
+        if uninit(SvValue) then SvValue = '*uninit*'; endif
+        CheckStatus = (low_2upper_(SvValue) = OrderName)
+    until (GetStatus <> 0) or (SvValue = '*uninit*') or (CheckStatus)
+    
+    return(CheckStatus)
+end chk_order_
+
+routine set_io_cmt_
+var
+   SetStatus       : integer
+begin
+
+    set_port_cmt(IoType, IoIndex, IoComment, SetStatus) 
+end set_io_cmt_
+

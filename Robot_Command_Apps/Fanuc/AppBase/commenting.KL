@@ -1,0 +1,786 @@
+PROGRAM COMMENTING
+%RWACCESS
+%NOLOCKGROUP
+%NOPAUSESHFT
+%NOPAUSE = ERROR + COMMAND + TPENABLE
+%COMMENT='Commenting V1.0'
+
+
+
+    CONST
+	        cc_home                 = 128
+			cc_clear_win            = 37
+			success                 = 0
+			cc_pause                = 1
+			cc_abort                = 2
+			time1                   = 24
+			save_cmt                = 1
+			load_cmt                = 2
+			exit                    = 0
+			file_spec1              = 'SYMNAME1.TXT'
+			file_spec2              = 'SYMNAME2.TXT'
+		    io_din                  = 1
+			io_dout                 = 2
+			io_anin                 = 3
+			io_anout                = 4
+			io_rdi                  = 8
+			io_rdo                  = 9
+			io_uopin                = 20
+			io_uopout               = 21
+			io_flag                 = 35
+			io_gpin                 = 18
+			io_gpout                = 19
+			registers               = 100
+			position_reg            = 101
+			string_reg              = 102
+			
+			 
+			 
+			 
+			 
+			 
+			 
+			 
+			 
+			  
+			  
+	VAR
+	        crnt_file                         : FILE
+			version,cmt,stime_str,spath       : STRING[127]
+			sdevice                           : STRING[127]
+			status,iaction,count,entry        : INTEGER
+			max_dio_num,max_flag_num          : INTEGER
+			r_comp,pr_comp,sr_comp            : BOOLEAN
+			load_stat                         : BOOLEAN
+			
+			
+    ROUTINE DELECT_HEAD(str_in:STRING)
+	    VAR
+		    str_bit      : STRING[1]
+       BEGIN
+		        REPEAT
+				        str_bit = SUB_STR(str_in,1,1)
+						       IF str_bit=' ' THEN
+							           str_in = SUB_STR(str_in,2,(STR_LEN(str_in)-1))
+							   ENDIF
+				UNTIL str_bit<>' '
+		END DELECT_HEAD
+		
+    ROUTINE GET_CMT(stype:INTEGER;num:INTEGER;cmt_value:STRING;cmt_stat:INTEGER)
+	    BEGIN
+		        SELECT stype OF
+				                CASE(io_din):
+								            GET_PORT_CMT(io_din,num,cmt_value,cmt_stat)
+											        IF cmt_stat<>success THEN
+													        status = cmt_stat
+															RETURN
+													ENDIF
+				                CASE(io_dout):
+								            GET_PORT_CMT(io_dout,num,cmt_value,cmt_stat)
+											        IF cmt_stat<>success THEN
+													        status = cmt_stat
+															RETURN
+													ENDIF
+				                CASE(io_anin):
+								            GET_PORT_CMT(io_anin,num,cmt_value,cmt_stat)
+											        IF cmt_stat<>success THEN
+													        status = cmt_stat
+															RETURN
+													ENDIF
+				                CASE(io_anout):
+								            GET_PORT_CMT(io_anout,num,cmt_value,cmt_stat)
+											        IF cmt_stat<>success THEN
+													        status = cmt_stat
+															RETURN
+													ENDIF
+				                CASE(io_rdi):
+								            GET_PORT_CMT(io_rdi,num,cmt_value,cmt_stat)
+											        IF cmt_stat<>success THEN
+													        status = cmt_stat
+															RETURN
+													ENDIF
+				                CASE(io_rdo):
+								            GET_PORT_CMT(io_rdo,num,cmt_value,cmt_stat)
+											        IF cmt_stat<>success THEN
+													        status = cmt_stat
+															RETURN
+													ENDIF
+				                CASE(io_uopin):
+								            GET_PORT_CMT(io_uopin,num,cmt_value,cmt_stat)
+											        IF cmt_stat<>success THEN
+													        status = cmt_stat
+															RETURN
+													ENDIF
+				                CASE(io_flag):
+								            GET_PORT_CMT(io_flag,num,cmt_value,cmt_stat)
+											        IF cmt_stat<>success THEN
+													        status = cmt_stat
+															RETURN
+													ENDIF
+				                CASE(io_gpin):
+								            GET_PORT_CMT(io_gpin,num,cmt_value,cmt_stat)
+											        IF cmt_stat<>success THEN
+													        status = cmt_stat
+															RETURN
+													ENDIF
+				                CASE(io_gpout):
+								            GET_PORT_CMT(io_gpout,num,cmt_value,cmt_stat)
+											        IF cmt_stat<>success THEN
+													        status = cmt_stat
+															RETURN
+													ENDIF
+				                CASE(io_uopout):
+								            GET_PORT_CMT(io_uopout,num,cmt_value,cmt_stat)
+											        IF cmt_stat<>success THEN
+													        status = cmt_stat
+															RETURN
+													ENDIF
+				                CASE(registers):
+								            GET_REG_CMT(num,cmt_value,cmt_stat)
+											        IF cmt_stat<>success THEN
+													        status = cmt_stat
+															RETURN
+													ENDIF
+				                CASE(position_reg):
+								            GET_PREG_CMT(num,cmt_value,cmt_stat)
+											        IF cmt_stat<>success THEN
+													        status = cmt_stat
+															RETURN
+													ENDIF
+				                CASE(string_reg):
+								            GET_SREG_CMT(num,cmt_value,cmt_stat)
+											        IF cmt_stat<>success THEN
+													        status = cmt_stat
+															RETURN
+													ENDIF
+				ENDSELECT				
+	END GET_CMT
+	
+	ROUTINE CMT_TYPE(str_val:STRING;int_val:INTEGER)
+	    CONST
+		        sdi       ='DI' 
+				sdo       ='DO'
+				sai       ='AI'
+				sao       ='AO'
+				sri       ='RI'
+				sro       ='RO'
+				sui       ='UI'
+				suo       ='UO'
+				sgi       ='GI'
+				sgo       ='GO'
+				sf        ='F '
+				sr        ='R '
+				spr       ='PR'
+				ssr       ='SR'
+				scr       ='--'
+	    BEGIN
+		       DELECT_HEAD(str_val)
+		--       IF UNINIT(str_val) OR (str_val='') THEN 
+		--	          int_val = 16
+		--	   ELSE
+		       IF str_val = sdi THEN 
+			          int_val = 1
+			   ELSE
+		       IF str_val = sdo THEN 
+			          int_val = 2
+			   ELSE
+		       IF str_val = sai THEN 
+			          int_val = 3
+			   ELSE
+		       IF str_val = sao THEN 
+			          int_val = 4
+			   ELSE
+		       IF str_val = sri THEN 
+			          int_val = 5
+			   ELSE
+		       IF str_val = sro THEN 
+			          int_val = 6
+			   ELSE
+		       IF str_val = sui THEN 
+			          int_val = 7
+			   ELSE
+		       IF str_val = suo THEN 
+			          int_val = 8
+			   ELSE
+		       IF str_val = sgi THEN 
+			          int_val = 9
+			   ELSE
+		       IF str_val = sgo THEN 
+			          int_val = 10
+			   ELSE
+		       IF str_val = sf THEN 
+			          int_val = 11
+			   ELSE
+		       IF str_val = sr THEN 
+			          int_val = 12
+			   ELSE
+		       IF str_val = spr THEN 
+			          int_val = 13
+			   ELSE
+		       IF str_val = ssr THEN 
+			          int_val = 14
+			   ELSE
+		       IF str_val = scr THEN 
+			          int_val = 15
+			   ELSE
+			          int_val = 16
+			   ENDIF
+			   ENDIF
+			   ENDIF
+			   ENDIF
+			   ENDIF
+			   ENDIF
+			   ENDIF
+			   ENDIF
+			   ENDIF
+			   ENDIF
+			   ENDIF
+			   ENDIF
+			   ENDIF
+			   ENDIF
+			   ENDIF
+--			   ENDIF
+        END CMT_TYPE
+
+    ROUTINE LOAD_CMTS
+	        VAR
+		            int1        : INTEGER
+					int2        : INTEGER
+					str1        : STRING[2]
+					str2        : STRING[16]
+        BEGIN
+		         load_stat = FALSE
+                 REPEAT
+				    --    DELAY time1
+                        READ crnt_file(str1::2)
+                        CMT_TYPE(str1,int2)
+                            SELECT int2 OF
+                                        CASE(1):
+                                                 READ crnt_file(int1)
+                                                 READ crnt_file(str2)
+												      IF UNINIT(str2) THEN
+													         str2 = ''
+													  ELSE
+															 DELECT_HEAD(str2)
+															 IF str_len(str2) <> 0 THEN
+																 DELAY time1
+															     WRITE(' SV: DI[',int1::4,']',' ',str2,CR)
+															 ENDIF
+													  ENDIF
+												SET_PORT_CMT(io_din,int1,str2,status)
+                                        CASE(2):
+                                                 READ crnt_file(int1)
+                                                 READ crnt_file(str2)
+												      IF UNINIT(str2) THEN
+													         str2 = ''
+													  ELSE
+															 DELECT_HEAD(str2)
+															 IF str_len(str2) <> 0 THEN
+																 DELAY time1
+																 WRITE(' SV: DO[',int1::4,']',' ',str2,CR)
+															 ENDIF
+													  ENDIF
+												 SET_PORT_CMT(io_dout,int1,str2,status)
+			                        --             READ crnt_file(CR)
+                                        CASE(3):
+                                                 READ crnt_file(int1)
+                                                 READ crnt_file(str2)
+												      IF UNINIT(str2) THEN
+													         str2 = ''
+													  ELSE
+															 DELECT_HEAD(str2)
+															 IF str_len(str2) <> 0 THEN
+																 DELAY time1
+																 WRITE(' SV: AI[',int1::4,']',' ',str2,CR)
+															 ENDIF
+													  ENDIF
+												 SET_PORT_CMT(io_anin,int1,str2,status)
+			                        --             READ crnt_file(CR)
+                                        CASE(4):
+                                                 READ crnt_file(int1)
+                                                 READ crnt_file(str2)
+												      IF UNINIT(str2) THEN
+													         str2 = ''
+													  ELSE
+															 DELECT_HEAD(str2)
+															 IF str_len(str2) <> 0 THEN
+																 DELAY time1
+																 WRITE(' SV: AO[',int1::4,']',' ',str2,CR)
+															 ENDIF
+													  ENDIF
+													  SET_PORT_CMT(io_anout,int1,str2,status)
+			                        --            READ crnt_file(CR)
+                                        CASE(5):
+                                                 READ crnt_file(int1)
+                                                 READ crnt_file(str2)
+												      IF UNINIT(str2) THEN
+													         str2 = ''
+													  ELSE
+															 DELECT_HEAD(str2)
+															 IF str_len(str2) <> 0 THEN
+																 DELAY time1
+																 WRITE(' SV: RI[',int1::4,']',' ',str2,CR)
+															 ENDIF
+													  ENDIF
+													  SET_PORT_CMT(io_rdi,int1,str2,status)
+			                        --             READ crnt_file(CR)
+                                        CASE(6):
+                                                 READ crnt_file(int1)
+                                                 READ crnt_file(str2)
+												      IF UNINIT(str2) THEN
+													         str2 = ''
+													  ELSE
+															 DELECT_HEAD(str2)
+															 IF str_len(str2) <> 0 THEN
+																 DELAY time1
+																 WRITE(' SV: RO[',int1::4,']',' ',str2,CR)	
+															 ENDIF
+													  ENDIF
+													  SET_PORT_CMT(io_rdo,int1,str2,status)
+			                        --             READ crnt_file(CR)
+                                        CASE(7):
+                                                 READ crnt_file(int1)
+                                                 READ crnt_file(str2)
+												      IF UNINIT(str2) THEN
+													         str2 = ''
+													  ELSE
+															 DELECT_HEAD(str2)
+															 IF str_len(str2) <> 0 THEN
+																 DELAY time1
+																 WRITE(' SV: UI[',int1::4,']',' ',str2,CR)
+															 ENDIF
+													  ENDIF
+													  SET_PORT_CMT(io_uopin,int1,str2,status)
+			                        --             READ crnt_file(CR)
+                                        CASE(8):
+                                                 READ crnt_file(int1)
+                                                 READ crnt_file(str2)
+												      IF UNINIT(str2) THEN
+													         str2 = ''
+													  ELSE
+															 DELECT_HEAD(str2)
+															 IF str_len(str2) <> 0 THEN
+																 DELAY time1
+																 WRITE(' SV: UO[',int1::4,']',' ',str2,CR)
+															 ENDIF
+													  ENDIF
+													  SET_PORT_CMT(io_uopout,int1,str2,status)
+			                        --             READ crnt_file(CR)
+                                        CASE(9):
+                                                 READ crnt_file(int1)
+                                                 READ crnt_file(str2)
+												      IF UNINIT(str2) THEN
+													         str2 = ''
+													  ELSE
+															 DELECT_HEAD(str2)
+															 IF str_len(str2) <> 0 THEN
+																 DELAY time1
+																 WRITE(' SV: GI[',int1::4,']',' ',str2,CR)
+															 ENDIF
+													  ENDIF
+													  SET_PORT_CMT(io_gpin,int1,str2,status)
+			                        --             READ crnt_file(CR)
+                                        CASE(10):
+                                                 READ crnt_file(int1)
+                                                 READ crnt_file(str2)
+												      IF UNINIT(str2) THEN
+													         str2 = ''
+													  ELSE
+															 DELECT_HEAD(str2)
+															 IF str_len(str2) <> 0 THEN
+																 DELAY time1
+																 WRITE(' SV: GO[',int1::4,']',' ',str2,CR)
+															 ENDIF
+													  ENDIF
+													  SET_PORT_CMT(io_gpout,int1,str2,status)
+			                        --             READ crnt_file(CR)
+                                        CASE(11):
+                                                 READ crnt_file(int1)
+                                                 READ crnt_file(str2)
+												      IF UNINIT(str2) THEN
+													         str2 = ''
+													  ELSE
+															 DELECT_HEAD(str2)
+															 IF str_len(str2) <> 0 THEN
+																 DELAY time1
+																 WRITE(' SV: F[',int1::4,']',' ',str2,CR)
+															 ENDIF
+													  ENDIF
+													  SET_PORT_CMT(io_flag,int1,str2,status)
+			                        --             READ crnt_file(CR)
+                                        CASE(12):
+                                                 READ crnt_file(int1)
+                                                 READ crnt_file(str2)
+												      IF UNINIT(str2) THEN
+													         str2 = ''
+													  ELSE
+															 DELECT_HEAD(str2)
+															 IF str_len(str2) <> 0 THEN
+																 DELAY time1
+																 WRITE(' SV: R[',int1::4,']',' ',str2,CR)
+															 ENDIF
+													  ENDIF
+													  SET_REG_CMT(int1,str2,status)
+                                    --             READ crnt_file(CR)												 
+                                        CASE(13):
+                                                 READ crnt_file(int1)
+                                                 READ crnt_file(str2)
+												      IF UNINIT(str2) THEN
+													         str2 = ''
+													  ELSE
+															 DELECT_HEAD(str2)
+															 IF str_len(str2) <> 0 THEN
+																 DELAY time1
+																 WRITE(' SV: PR[',int1::4,']',' ',str2,CR)
+															 ENDIF
+													  ENDIF
+												 SET_PREG_CMT(int1,str2,status)
+                                    --             READ crnt_file(CR)												 
+			   
+                                        CASE(14):
+                                                 READ crnt_file(int1)
+                                                 READ crnt_file(str2)
+												      IF UNINIT(str2) THEN
+													         str2 = ''
+													  ELSE
+															 DELECT_HEAD(str2)
+															 IF str_len(str2) <> 0 THEN
+																 DELAY time1
+																 WRITE(' SV: SR[',int1::4,']',' ',str2,CR)
+															 ENDIF
+													  ENDIF
+												 SET_SREG_CMT(int1,str2,status)
+									--			 READ crnt_file(CR)
+                                        CASE(15):
+                                                 READ crnt_file(CR)
+			   
+                                        CASE(16):
+                                                 load_stat = TRUE
+                            ENDSELECT
+                UNTIL load_stat
+        END	LOAD_CMTS			   
+			   
+    ROUTINE MENU(smenu:INTEGER)
+	    BEGIN
+		        SELECT smenu OF
+				         CASE(1):
+		                       WRITE(CHR(cc_clear_win),CHR(cc_home))
+				               FORCE_SPMENU(TP_PANEL,SPI_TPUSER,1)
+                               WRITE(' Save/Load comments of',CR)
+                               WRITE(' DIO,GIO,UIO,AIO,F,R,PR,SR',CR,CR)
+		                       WRITE(' 1: Save with empty comments(SYMNAME1)',CR)
+		                       WRITE(' 2: Load new comments only(SYMNAME2)',CR)
+		                       WRITE(' 0: EXIT',CR,CR)
+							   WRITE(' SELECT>:')							   
+				         CASE(2):
+		                       WRITE(CHR(cc_clear_win),CHR(cc_home))
+				               FORCE_SPMENU(TP_PANEL,SPI_TPUSER,1)
+                               WRITE(' Program aborted (EXIT)',CR)
+				         CASE(3):
+		                       WRITE(CHR(cc_clear_win),CHR(cc_home))
+							   FORCE_SPMENU(TP_PANEL,SPI_TPUSER,1)
+				ENDSELECT
+		END MENU
+		
+    ROUTINE CHK_STAT(stat_no:INTEGER;stat_cc:INTEGER)
+        BEGIN
+             IF stat_no<>success THEN
+                     POST_ERR(stat_no,'',0,stat_cc)	
+             ENDIF
+        END CHK_STAT
+		
+    ROUTINE GET_TIME_STR:STRING
+        VAR
+            time_int    : INTEGER
+			time_str    : STRING[127]
+        BEGIN
+              GET_TIME(time_int)
+              CNV_TIME_STR(time_int,time_str)
+              RETURN(time_str)
+        END GET_TIME_STR		
+                       				
+	    
+		
+BEGIN
+      MENU(1)
+	  READ(iaction)
+	      SELECT iaction OF
+		            CASE(save_cmt):
+					             GET_VAR(entry,'*system*','$device',sdevice,status)
+								 spath = sdevice+'\'+file_spec1
+					             OPEN FILE crnt_file('RW',spath)
+								 status = IO_STATUS(crnt_file)
+								 CHK_STAT(status,cc_pause)
+								 stime_str = GET_TIME_STR
+								 version = $VERSION
+								 WRITE crnt_file('--- I/O Comments',CR) 
+								 WRITE crnt_file('---',CR) 
+								 WRITE crnt_file('--- ==================== DI ====================',CR)
+								 MENU(3)
+							--------------------  DI  -----------------------
+								 FOR count=1 TO $MAX_DIG_PRT DO
+								        -- DELAY time1
+								         GET_CMT(1,count,cmt,status)
+										     IF status=13030 THEN
+											         cmt = ''
+											 ELSE
+												DELAY time1
+												WRITE(' WR: DI[',count::4,']',' ',cmt,CR)
+											 ENDIF
+										 WRITE crnt_file('DI'+'  ',count::4,'  ',cmt,CR)
+								 ENDFOR
+							--------------------  DO  -----------------------	
+                                 WRITE crnt_file('--- ==================== DO ====================',CR)	
+                                 GET_VAR(entry,'*system*','$MAX_DIG_PRT',max_dio_num,status)								 
+								 FOR count=1 TO max_dio_num DO
+								        -- DELAY time1
+								         GET_CMT(2,count,cmt,status)
+										     IF status=13030 THEN
+											         cmt = ''
+											 ELSE
+												DELAY time1
+												WRITE(' WR: DO[',count::4,']',' ',cmt,CR)
+											 ENDIF
+										 WRITE crnt_file('DO'+'  ',count::4,'  ',cmt,CR)
+								 ENDFOR
+							--------------------  AI  -----------------------
+							     WRITE crnt_file('--- ==================== AI ====================',CR)
+								 FOR count=1 TO 64 DO
+								       --  DELAY time1
+								         GET_CMT(3,count,cmt,status)
+										     IF status=13030 THEN
+											         cmt = ''
+											 ELSE
+												DELAY time1
+												WRITE(' WR: AI[',count::4,']',' ',cmt,CR)
+											 ENDIF
+										 WRITE crnt_file('AI'+'  ',count::4,'  ',cmt,CR)
+								 ENDFOR
+							--------------------  AO  -----------------------
+							     WRITE crnt_file('--- ==================== AO ====================',CR)
+								 FOR count=1 TO 64 DO
+								        -- DELAY time1
+								         GET_CMT(4,count,cmt,status)
+										     IF status=13030 THEN
+											         cmt = ''
+											 ELSE
+												DELAY time1
+												WRITE(' WR: AO[',count::4,']',' ',cmt,CR)
+											 ENDIF
+										 WRITE crnt_file('AO'+'  ',count::4,'  ',cmt,CR)
+								 ENDFOR
+							--------------------  RI  -----------------------
+							     WRITE crnt_file('--- ==================== RI ====================',CR)
+								 FOR count=1 TO 8 DO
+								        -- DELAY time1
+								         GET_CMT(8,count,cmt,status)
+										     IF status=13030 THEN
+											         cmt = ''
+											 ELSE
+												DELAY time1
+												WRITE(' WR: RI[',count::4,']',' ',cmt,CR)
+											 ENDIF
+										 WRITE crnt_file('RI'+'  ',count::4,'  ',cmt,CR)
+								 ENDFOR
+							--------------------  RO  -----------------------
+							     WRITE crnt_file('--- ==================== RO ====================',CR)
+								 FOR count=1 TO 8 DO
+								        -- DELAY time1
+								         GET_CMT(9,count,cmt,status)
+										     IF status=13030 THEN
+											         cmt = ''
+											 ELSE
+												DELAY time1
+												WRITE(' WR: RO[',count::4,']',' ',cmt,CR)
+											 ENDIF
+										 WRITE crnt_file('RO'+'  ',count::4,'  ',cmt,CR)
+								 ENDFOR
+							--------------------  UI  -----------------------
+							     WRITE crnt_file('--- ==================== UI ====================',CR)
+								 FOR count=1 TO 18 DO
+								        -- DELAY time1
+								         GET_CMT(20,count,cmt,status)
+										     IF status=13030 THEN
+											         cmt = ''
+											 ELSE
+												DELAY time1
+												WRITE(' WR: UI[',count::4,']',' ',cmt,CR)
+											 ENDIF
+										 WRITE crnt_file('UI'+'  ',count::4,'  ',cmt,CR)
+								 ENDFOR
+							--------------------  UO  -----------------------
+							     WRITE crnt_file('--- ==================== UO ====================',CR)
+								 FOR count=1 TO 20 DO
+								        -- DELAY time1
+								         GET_CMT(21,count,cmt,status)
+										     IF status=13030 THEN
+											         cmt = ''
+											 ELSE
+												DELAY time1
+												WRITE(' WR: UO[',count::4,']',' ',cmt,CR)
+											 ENDIF
+										 WRITE crnt_file('UO'+'  ',count::4,'  ',cmt,CR)
+								 ENDFOR
+							--------------------  GI  -----------------------
+							     WRITE crnt_file('--- ==================== GI ====================',CR)
+								 FOR count=1 TO 300 DO
+								        -- DELAY time1
+								         GET_CMT(18,count,cmt,status)
+										     IF status=13030 THEN
+											         cmt = ''
+											 ELSE
+												DELAY time1
+												WRITE(' WR: GI[',count::4,']',' ',cmt,CR)
+											 ENDIF
+										 WRITE crnt_file('GI'+'  ',count::4,'  ',cmt,CR)
+								 ENDFOR
+							--------------------  GO  -----------------------
+							     WRITE crnt_file('--- ==================== GO ====================',CR)
+								 FOR count=1 TO 300 DO
+								       --  DELAY time1
+								         GET_CMT(19,count,cmt,status)
+										     IF status=13030 THEN
+											         cmt = ''
+											 ELSE
+												DELAY time1
+												WRITE(' WR: GO[',count::4,']',' ',cmt,CR)
+											 ENDIF
+										 WRITE crnt_file('GO'+'  ',count::4,'  ',cmt,CR)
+								 ENDFOR
+							--------------------  F  -----------------------
+							     WRITE crnt_file('--- ==================== F ====================',CR)
+								 GET_VAR(entry,'*system*','$MIX_LOGIC.$NUM_FLG',max_flag_num,status)
+								 FOR count=1 TO max_flag_num DO
+								       --  DELAY time1
+								         GET_CMT(35,count,cmt,status)
+										     IF status=13030 THEN
+											         cmt = ''
+											 ELSE
+												DELAY time1
+												WRITE(' WR: F[',count::4,']',' ',cmt,CR)
+											 ENDIF
+										 WRITE crnt_file('F '+'  ',count::4,'  ',cmt,CR)
+								 ENDFOR
+							--------------------  R  -----------------------
+							     WRITE crnt_file('--- ==================== R ====================',CR)
+								 r_comp = FALSE
+								 count = 0
+								 REPEAT
+										 count = count + 1
+								         GET_CMT(100,count,cmt,status)
+										     IF status=17030 THEN
+											         r_comp  = TRUE
+											 ELSE
+												 IF cmt	<> '' THEN
+													DELAY time1
+													WRITE(' WR: R[',count::4,']',' ',cmt,CR)
+												 ENDIF
+												 WRITE crnt_file('R '+'  ',count::4,'  ',cmt,CR)
+											 ENDIF
+								 UNTIL r_comp
+							--------------------  PR  -----------------------
+							     WRITE crnt_file('--- ==================== PR ====================',CR)
+								 pr_comp = FALSE
+								 count = 0
+								 REPEAT
+								     --    DELAY time1
+										 count = count + 1
+								         GET_CMT(101,count,cmt,status)
+										     IF status=17030 THEN
+											         pr_comp  = TRUE
+											 ELSE
+												 IF cmt	<> '' THEN
+													 DELAY time1
+													 WRITE(' WR: PR[',count::4,']',' ',cmt,CR)
+												 ENDIF
+												 WRITE crnt_file('PR'+'  ',count::4,'  ',cmt,CR)
+											 ENDIF
+								 UNTIL pr_comp
+							--------------------  SR  -----------------------
+							     WRITE crnt_file('--- ==================== SR ====================',CR)
+								 sr_comp = FALSE
+								 count = 0
+								 REPEAT
+								      --   DELAY time1
+										 count = count + 1
+								         GET_CMT(102,count,cmt,status)
+										     IF status=17030 THEN
+											         sr_comp  = TRUE
+											 ELSE
+											     IF cmt	<> '' THEN
+													DELAY time1
+													WRITE(' WR: SR[',count::4,']',' ',cmt,CR)
+												 ENDIF
+												 WRITE crnt_file('SR'+'  ',count::4,'  ',cmt,CR)
+											 ENDIF
+								 UNTIL sr_comp
+							--------------------  END  -----------------------
+							     WRITE(CR,' Saving comments finished',CR)
+								 WRITE(' ',spath,CR)
+							     WRITE crnt_file(CR,'--- End of data -------',CR)
+								 WRITE crnt_file('--- Robot date/time :',stime_str,CR)
+								 WRITE crnt_file('---',CR)
+								 WRITE crnt_file('--- Software version robot:',version,CR)
+								-- WRITE crnt_file('--- F-number robot:',$FNO,CR)
+								 WRITE crnt_file('---',CR)
+								 WRITE crnt_file('--- V1.0.SPEEDBOT/2020.03.17',CR)	
+							     CLOSE FILE crnt_file
+					CASE(load_cmt):
+					             GET_VAR(entry,'*system*','$device',sdevice,status)
+								 spath = sdevice+'\'+file_spec2
+					             OPEN FILE crnt_file('RO',spath)
+								 status = IO_STATUS(crnt_file)
+								 CHK_STAT(status,cc_pause)
+								 LOAD_CMTS
+								 CLOSE FILE crnt_file
+							     WRITE(CR,' Reading comments from file finished',CR)
+								 WRITE(' ',spath,CR)
+					CASE(exit):
+					             MENU(2)
+          ENDSELECT
+      								 
+								 
+								 
+					             
+							  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+END COMMENTING
+       		 
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+                		 
+	

@@ -1,0 +1,873 @@
+&access RP
+&comment Lib Math 240227
+def lib_math ()
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: lib_math.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 05 - 05
+;   Modification Data    ==   2024 - 02 - 27
+;
+; Author: speedbot
+;
+; Version: 1.1
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+; 2022 - 05 - 05 ++ mod_() ==> int
+
+; 2022 - 05 - 05 ++ random_() ==> int
+
+; 2022 - 05 - 05 ++ deg_to_rad_() ==> real
+
+; 2022 - 05 - 05 ++ rad_to_deg_() ==> real
+
+; 2022 - 05 - 29 ++ bol_to_int_() ==> int
+
+; 2022 - 05 - 29 ++ int_to_bol_() ==> bool
+
+; 2022 - 11 - 10 ++ sq_() ==> real 
+
+; 2022 - 11 - 10 ++ pow_() ==> real 
+
+; 2022 - 11 - 10 ++ x_pow_() ==> real 
+
+; 2022 - 11 - 09 ++ round_() ==> int
+
+; 2022 - 11 - 09 ++ int_2bits_() 
+
+; 2022 - 11 - 09 ++ bits_2int_()
+
+; 2022 - 11 - 09 ++ rel_2bits_()
+
+; 2022 - 11 - 09 ++ bits_2rel_()
+
+; 2022 - 11 - 23 ++ io_2byte_()
+
+; 2022 - 11 - 23 ++ byte_2io_()
+
+; 2022 - 12 - 31 ++ max_()
+
+; 2022 - 12 - 31 ++ min_()
+
+end
+
+;FOLD MOD
+global deffct int mod_(Dividend : in, Divisor : in)
+    decl int Dividend
+    decl int Divisor
+    return(Dividend - (Dividend / Divisor) * Divisor)
+endfct
+;ENDFOLD
+
+;FOLD RANDOM
+global deffct int random_(MinNum : in, MaxNum : in)
+    decl int MaxNum
+    decl int MinNum
+    decl int RtnNum
+    return(frand(MinNum, MaxNum))
+endfct
+;ENDFOLD
+
+;FOLD DEG to RAD
+global deffct real deg_to_rad_(Rdeg : in)
+    decl real Rdeg
+
+    return(Rdeg * DEG_2_RAD)
+endfct
+;ENDFOLD
+
+;FOLD DEG to RAD
+global deffct real rad_to_deg_(Rrad : in)
+    decl real Rrad
+   
+    return(Rrad * RAD_2_DEG)
+endfct
+;ENDFOLD
+
+;FOLD BOOL TO INTEGER
+global deffct int bol_to_int_(Boolean : in)
+    decl bool Boolean
+    if Boolean then
+        return(1)
+    endif
+    return(0)
+endfct
+;ENDFOLD
+
+;FOLD INTEGER TO BOOL
+global deffct bool int_to_bol_(Integer : in)
+    decl int Integer
+    return(Integer > 0)
+endfct
+;ENDFOLD
+
+;FOLD SQ
+global deffct real sq_(RelVal : in)
+    decl real RelVal
+
+    return(RelVal * RelVal)
+endfct
+;ENDFOLD
+
+;FOLD POW
+global deffct real pow_(RelVal : in)
+    decl real RelVal
+
+    return(RelVal * RelVal * RelVal)
+endfct
+;ENDFOLD
+
+;FOLD X POW
+global deffct real x_pow_(RelVal : in, ExpVal : in)
+    decl real RelVal, RtnVal
+    decl int ExpVal
+    decl int J
+
+    if ExpVal == 0 then  
+
+        return(1.0)
+    endif
+
+    RtnVal = RelVal
+    for J = 1 to (ExpVal - 1)
+
+        RtnVal = RtnVal * RelVal
+    endfor
+
+    return(RtnVal)
+endfct
+;ENDFOLD
+
+;FOLD ROUND
+global deffct int round_(RealVal : in)
+    decl real RealVal
+    return(RealVal)
+endfct
+;ENDFOLD
+
+;FOLD TRUNC
+global deffct int trunc_(RelVal : in)
+    decl real RelVal
+    if RelVal > 0.0 then  
+
+        return(RelVal - 0.5)
+    endif
+    if RelVal < 0.0 then  
+
+        return(RelVal + 0.5)
+    endif
+    return(0)
+endfct
+;ENDFOLD
+
+;FOLD INTEGER TO BITS
+global def int_2bits_(IntVal : in, IntType : in, Reversed : in, ByteAry[] : out, boolAry[] : out)
+    decl int IntVal
+    decl int_type_t IntType
+    decl int Offset, J, K, Lens
+    decl bool Reversed
+    decl int ByteAry[]
+    decl bool boolAry[]
+    decl bool BoolVal
+    decl char CnvChar[4]
+    if varstate("IntVal") <> #initialized then  
+
+        IntVal = 0
+    endif
+
+    if varstate("IntType") <> #initialized then  
+
+        IntType = #DINT
+    endif
+
+    if varstate("Reversed") <> #initialized then  
+
+        Reversed = true
+    endif
+
+    switch (IntType)
+
+    case #SINT
+       
+        Lens = 1
+
+        while (IntVal < MIN_SINT) or (IntVal > MAX_SINT) 
+
+            err_write_("int_2bits_", "IntVal <> [-127, 128]")
+            halt      
+        endwhile
+    case #USINT
+        
+        while (IntVal < MIN_USINT) or (IntVal > MAX_USINT) 
+
+            err_write_("int_2bits_", "IntVal <> [0, 255]")
+            halt      
+        endwhile
+        Lens = 1
+    case #SHORT
+
+        while (IntVal < MIN_INT) or (IntVal > MAX_INT) 
+
+            err_write_("int_2bits_", "IntVal <> [-32768, 32767]")
+            halt      
+        endwhile
+        Lens = 2
+    case #USHORT
+
+        while (IntVal < MIN_UINT) or (IntVal > MAX_UINT) 
+
+            err_write_("int_2bits_", "IntVal <> [0, 65535]")
+            halt      
+        endwhile
+        Lens = 2
+    case #DINT
+
+        Lens = 4
+    endswitch
+    
+    if (IntVal < 0) and (IntType == #SINT) then
+
+        IntVal = IntVal + 256
+    endif
+
+    if (IntVal < 0) and (IntType == #SHORT) then
+
+        IntVal = IntVal + 65536
+    endif
+
+    Offset = 0
+    BoolVal = strclear(CnvChar[])
+    cast_to(CnvChar[], Offset, IntVal)
+
+    for J = 1 to lens
+
+        if Reversed then  
+            ByteAry[J] = CnvChar[J]
+        else
+            ByteAry[J] = CnvChar[lens - J + 1]
+        endif
+
+        for K = 1 to 8 
+
+            boolAry[(J - 1) * 8 + K] = ((ByteAry[J] b_and UMASK8[K]) > 0)
+        endfor
+    endfor
+end
+;ENDFOLD
+
+;FOLD BITS TO INTEGER
+global def bits_2int_(ByteAry[] : out, boolAry[] : out, Reversed : in, IntType : in, IntVal : out)
+    decl int IntVal, CnvIntVal
+    decl int_type_t IntType
+    decl int Offset, J, K, Lens
+    decl bool Reversed
+    decl int ByteAry[]
+    decl bool boolAry[]
+    decl bool BoolVal
+    decl char CnvChar[4]
+    CnvChar[1] = 0
+    CnvChar[2] = 0
+    CnvChar[3] = 0
+    CnvChar[4] = 0
+
+    if varstate("IntType") <> #initialized then  
+
+        IntType = #DINT
+    endif
+
+    if varstate("Reversed") <> #initialized then  
+
+        Reversed = true
+    endif
+    
+    switch (IntType)
+
+    case #SINT, #USINT
+       
+        Lens = 1
+    case #SHORT, #USHORT
+
+        Lens = 2
+    case #DINT
+
+        Lens = 4
+    endswitch
+    
+    if varstate("ByteAry[1]") == #initialized then  
+
+        for J = 1 to Lens
+            if Reversed then
+                CnvChar[J] = ByteAry[J]
+            else
+                CnvChar[J] = ByteAry[lens - J + 1]
+            endif
+        endfor
+    else
+        if varstate("boolAry[1]") == #initialized then  
+
+            for J = 1 to Lens
+
+                CnvIntVal = 0
+                if Reversed then
+
+                    for K = 1 to 8
+                        CnvIntVal = CnvIntVal + bol_to_int_(boolAry[(J - 1) * 8 + K]) * UMASK8[K]
+                    endfor
+                else
+
+                    for K = 1 to 8
+                        CnvIntVal = CnvIntVal + bol_to_int_(boolAry[(lens - J) * 8 + K]) * UMASK8[K]
+                    endfor
+                endif
+
+                CnvChar[J] = CnvIntVal
+            endfor
+        endif
+    endif
+
+    Offset = 0
+    cast_from(CnvChar[], Offset, IntVal)
+
+    switch (IntType)
+
+    case #SINT
+       
+        if IntVal > MAX_SINT then  
+
+            IntVal = IntVal - 256
+        endif
+        
+    case #SHORT
+
+        if IntVal > MAX_INT then  
+
+            IntVal = IntVal - 65536
+        endif
+        
+    endswitch
+end
+;ENDFOLD
+
+;FOLD REAL TO BITS  
+global def rel_2bits_(RealVal : in, Reversed : in, ByteAry[] : out, boolAry[] : out)
+    decl real RealVal
+    decl int Offset, J, K
+    decl bool Reversed
+    decl int ByteAry[]
+    decl bool boolAry[]
+    decl bool BoolVal
+    decl char CnvChar[4]
+    if varstate("RealVal") <> #initialized then  
+
+        RealVal = 0.0
+    endif
+
+    if varstate("Reversed") <> #initialized then  
+
+        Reversed = true
+    endif
+
+    Offset = 0
+    BoolVal = strclear(CnvChar[])
+    cast_to(CnvChar[], Offset, RealVal)
+
+    for J = 1 to 4
+
+        if Reversed then  
+            ByteAry[J] = CnvChar[J]
+        else
+            ByteAry[J] = CnvChar[4 - J + 1]
+        endif
+
+        for K = 1 to 8 
+
+            boolAry[(J - 1) * 8 + K] = ((ByteAry[J] b_and UMASK8[K]) > 0)
+        endfor
+    endfor
+end
+;ENDFOLD
+
+;FOLD BITS TO REAL 
+global def bits_2rel_(ByteAry[] : out, boolAry[] : out, Reversed : in, RealVal : out)
+    decl real RealVal
+    decl int CnvIntVal
+    decl int Offset, J, K
+    decl bool Reversed
+    decl int ByteAry[]
+    decl bool boolAry[]
+    decl bool BoolVal
+    decl char CnvChar[4]
+    CnvChar[1] = 0
+    CnvChar[2] = 0
+    CnvChar[3] = 0
+    CnvChar[4] = 0
+
+    if varstate("Reversed") <> #initialized then  
+
+        Reversed = true
+    endif
+        
+    if varstate("ByteAry[1]") == #initialized then  
+
+        for J = 1 to 4
+            if Reversed then
+                CnvChar[J] = ByteAry[J]
+            else
+                CnvChar[J] = ByteAry[4 - J + 1]
+            endif
+        endfor
+    else
+        if varstate("boolAry[1]") == #initialized then  
+
+            for J = 1 to 4
+
+                CnvIntVal = 0
+                if Reversed then
+
+                    for K = 1 to 8
+                        CnvIntVal = CnvIntVal + bol_to_int_(boolAry[(J - 1) * 8 + K]) * UMASK8[K]
+                    endfor
+                else
+
+                    for K = 1 to 8
+                        CnvIntVal = CnvIntVal + bol_to_int_(boolAry[(4 - J) * 8 + K]) * UMASK8[K]
+                    endfor
+                endif
+
+                CnvChar[J] = CnvIntVal
+            endfor
+        endif
+    endif
+
+    Offset = 0
+    cast_from(CnvChar[], Offset, RealVal)
+end
+;ENDFOLD
+
+;FOLD IO TO BYTE
+global def io_2byte_(PortType: in, StartPt : in, EndPt : in, ByteVal[] : out)
+    decl io_type_t PortType
+    decl int StartPt, EndPt
+    decl char ByteVal[]
+    decl int J, K, IntVal
+    if varstate("PortType") <> #initialized then  
+
+        PortType = #IO_DOUT
+    endif
+
+    if varstate("StartPt") <> #initialized then  
+
+        StartPt = 1
+    endif
+
+    if varstate("EndPt") <> #initialized then  
+
+        EndPt = 0
+    endif
+
+    for J = 1 to (EndPt - StartPt + 1) / 8 step 1
+
+        IntVal = 0
+        for K = 1 to 8 step 1 
+            
+            switch (PortType)
+
+            case #IO_DOUT
+                continue
+                IntVal = IntVal + UMASK8[K] * bol_to_int_($out[StartPt + (J - 1) * 8 + K - 1] == true) 
+            case #IO_DIN
+                continue
+                IntVal = IntVal + UMASK8[K] * bol_to_int_($in[StartPt + (J - 1) * 8 + K - 1] == true) 
+            case #IO_FLAG
+                continue
+                IntVal = IntVal + UMASK8[K] * bol_to_int_($flag[StartPt + (J - 1) * 8 + K - 1] == true) 
+            endswitch
+
+        endfor
+
+        ByteVal[J] = IntVal
+    endfor   
+end
+;ENDFOLD 
+
+;FOLD BYTE TO IO
+global def byte_2io_(ByteVal[] : in, StartPt : in, EndPt : in, SetPt : in)
+    decl char ByteVal[]
+    decl int StartPt, EndPt, SetPt
+    decl int J, K
+
+    if varstate("StartPt") <> #initialized then  
+
+        StartPt = 1
+    endif
+
+    if varstate("EndPt") <> #initialized then  
+
+        EndPt = 0
+    endif
+
+    if varstate("EndPt") <> #initialized then  
+
+        EndPt = StartPt
+    endif
+
+    for J = 1 to (EndPt - StartPt + 1) / 8 step 1
+
+        for K = 1 to 8 step 1
+            
+            if (((J - 1) * 8 + K) > (SetPt - StartPt)) and (((J - 1) * 8 + K) <= (EndPt - StartPt + 1)) then 
+                
+                continue
+                $out[StartPt + (J - 1) * 8 + K - 1] = (ByteVal[J] b_and UMASK8[K] > 0)
+            endif
+        endfor
+    endfor
+end
+;ENDFOLD
+
+;FOLD MAX
+global deffct real max_(Val1 : in, Val2 : in, Val3 : in)
+    decl real Val1
+    decl real Val2
+    decl real Val3
+    decl real RelVal1
+    decl real RelVal2
+    if varstate("Val3") == #initialized then 
+
+        RelVal1 = max_(Val1, Val3)
+        RelVal2 = max_(Val2, Val3)
+
+        return(max_(RelVal1, RelVal2))
+    endif
+
+    if Val1 > Val2 then  
+
+        return(Val1)
+    endif
+
+    return(Val2)
+endfct
+;ENDFOLD
+
+;FOLD MIN 
+global deffct real min_(Val1 : in, Val2 : in, Val3 : in)
+    decl real Val1
+    decl real Val2
+    decl real Val3
+    decl real RelVal1
+    decl real RelVal2
+    if varstate("Val3") == #initialized then 
+
+        RelVal1 = min_(Val1, Val3)
+        RelVal2 = min_(Val2, Val3)
+
+        return(min_(RelVal1, RelVal2))
+    endif
+
+    if Val1 > Val2 then  
+
+        return(Val2)
+    endif
+
+    return(Val1)
+endfct
+;ENDFOLD
+
+;FOLD TERN INT
+global deffct int tern_int_(Exprsn : in, Val1 : in, Val2 : in)
+    decl bool Exprsn
+    decl int Val1
+    decl int Val2 
+    if Exprsn then 
+
+        return(Val1)
+    endif
+
+    return(Val2)
+endfct
+;ENDFOLD
+
+;FOLD TERN REAL
+global deffct real tern_real_(Exprsn : in, Val1 : in, Val2 : in)
+    decl bool Exprsn
+    decl real Val1
+    decl real Val2 
+    if Exprsn then 
+
+        return(Val1)
+    endif
+
+    return(Val2)
+endfct
+;ENDFOLD
+
+;FOLD TERN BOOL
+global deffct bool tern_bool_(Exprsn : in, Val1 : in, Val2 : in)
+    decl bool Exprsn
+    decl bool Val1
+    decl bool Val2 
+    if Exprsn then 
+
+        return(Val1)
+    endif
+
+    return(Val2)
+endfct
+;ENDFOLD
+
+;FOLD TERN STRING
+global deffct char[256] tern_chars_(Exprsn : in, Val1[] : in, Val2[] : in)
+    decl bool Exprsn
+    decl char Val1[]
+    decl char Val2[] 
+    if Exprsn then 
+
+        return(Val1[])
+    endif
+
+    return(Val2[])
+endfct
+;ENDFOLD
+
+;FOLD TERN CHAR
+global deffct char tern_char_(Exprsn : in, Val1 : in, Val2 : in)
+    decl bool Exprsn
+    decl char Val1
+    decl char Val2
+    if Exprsn then 
+
+        return(Val1)
+    endif
+
+    return(Val2)
+endfct
+;ENDFOLD
+
+;FOLD TERN E6POS
+global deffct e6pos tern_cart_(Exprsn : in, Val1 : in, Val2 : in)
+    decl bool Exprsn
+    decl e6pos Val1
+    decl e6pos Val2 
+    if Exprsn then 
+
+        return(Val1)
+    endif
+
+    return(Val2)
+endfct
+;ENDFOLD
+
+;FOLD TERN AXIS POS
+global deffct e6axis tern_axis_(Exprsn : in, Val1 : in, Val2 : in)
+    decl bool Exprsn
+    decl e6axis Val1
+    decl e6axis Val2 
+    if Exprsn then 
+
+        return(Val1)
+    endif
+
+    return(Val2)
+endfct
+;ENDFOLD
+
+;FOLD TERN FRAME
+global deffct frame tern_frm_(Exprsn : in, Val1 : in, Val2 : in)
+    decl bool Exprsn
+    decl frame Val1
+    decl frame Val2 
+    if Exprsn then 
+
+        return(Val1)
+    endif
+
+    return(Val2)
+endfct
+;ENDFOLD
+
+;FOLD GG FRAME
+global def gg_frame_(CorrFrame : in, OldFrameNum : in, NewFrameNum : in) 
+    decl int  NewFrameNum, OldFrameNum
+    decl frame CorrFrame, NewFrame, OldFrame
+
+    if (varstate(" OldFrameNum") <> #initialized) then
+        OldFrameNum = 0
+    endif
+
+    if  OldFrameNum == 0 then
+        continue
+        OldFrame = $nullframe
+    else
+        OldFrame = base_data[OldFrameNum]
+    endif
+
+    base_data[NewFrameNum] = OldFrame : CorrFrame
+end
+;ENDFOLD
+
+;FOLD CHECK POS
+global def chk_pos_xyzabc_(ThisPos : in, OffsUfNum : in, ChkUfNum : in, BasLimPosMax : in, BasLimPosMin : in, ChkStat : out, Type : in) 
+    decl pos ThisPos, NewPos
+    decl frame OffsUf, ChkUf, BasLimPosMax, BasLimPosMin
+    decl int OffsUfNum, ChkUfNum, Offset
+    decl bool ChkStat
+    decl int type
+    decl state_t State
+    decl char Msg[84]
+
+    ChkStat = true
+    Offset = 0
+
+    str_clear_(Msg[])
+
+    if (varstate("OffsUfNum") <> #initialized) then
+        OffsUfNum = 0
+    endif
+    if (varstate("ChkUfNum") <> #initialized) then
+        ChkUfNum = 0
+    endif
+    if (varstate("type") <> #initialized) then
+        type = 3
+    endif
+
+    if OffsUfNum == 0 then
+        continue
+        OffsUf = $nullframe
+    else
+        OffsUf = base_data[OffsUfNum]
+    endif
+
+    if ChkUfNum == 0 then
+        continue
+        ChkUf = $nullframe
+    else
+        ChkUf = base_data[ChkUfNum]
+    endif
+
+    NewPos = (inv_pos(ChkUf) : OffsUf) : ThisPos : (inv_pos(inv_pos(ChkUf) : OffsUf))
+
+    ; Max X
+    if (NewPos.x > BasLimPosMax.x) and (ChkStat == true) then
+        swrite(Msg[], State, Offset, "Pos.x overflow[x:%0.3f, Maxx:%0.3f]", NewPos.x, BasLimPosMax.x)
+        ChkStat = false
+    endif
+
+    ; Min X
+    if (NewPos.x < BasLimPosMin.x) and (ChkStat == true) then
+        swrite(Msg[], State, Offset, "Pos.x overflow[x:%0.3f, Minx:%0.3f]", NewPos.x, BasLimPosMin.x)
+        ChkStat = false
+    endif
+
+    ; Max Y
+    if (NewPos.y > BasLimPosMax.y) and (ChkStat == true) then
+        swrite(Msg[], State, Offset, "Pos.y overflow[y:%0.3f, Maxy:%0.3f]", NewPos.y, BasLimPosMax.y)
+        ChkStat = false
+    endif
+
+    ; Min Y
+    if (NewPos.y < BasLimPosMin.y) and (ChkStat == true) then
+        swrite(Msg[], State, Offset, "Pos.y overflow[y:%0.3f, Miny:%0.3f]", NewPos.y, BasLimPosMin.y)
+        ChkStat = false
+    endif
+    
+    ; Max Z
+    if (NewPos.z > BasLimPosMax.z) and (ChkStat == true) then
+        swrite(Msg[], State, Offset, "Pos.z overflow[z:%0.3f, Maxz:%0.3f]", NewPos.z, BasLimPosMax.z)
+        ChkStat = false
+    endif
+
+    ; Min Z
+    if (NewPos.z < BasLimPosMin.z) and (ChkStat == true) then
+        swrite(Msg[], State, Offset, "Pos.z overflow[z:%0.3f, Minz:%0.3f]", NewPos.z, BasLimPosMin.z)
+        ChkStat = false
+    endif
+
+    ; Max A
+    if (NewPos.a > BasLimPosMax.a) and (ChkStat == true) then
+        swrite(Msg[], State, Offset, "Pos.a overflow[a:%0.3f, Maxa:%0.3f]", NewPos.a, BasLimPosMax.a)
+        ChkStat = false
+    endif
+
+    ; Min A
+    if(NewPos.a < BasLimPosMin.a) and (ChkStat == true) then
+        swrite(Msg[], State, Offset, "Pos.a overflow[a:%0.3f, Mina:%0.3f]", NewPos.a, BasLimPosMin.a)
+        ChkStat = false
+    endif
+
+    ; Max B
+    if (NewPos.b > BasLimPosMax.b) and (ChkStat == true) then
+        swrite(Msg[], State, Offset, "Pos.b overflow[b:%0.3f, Maxb:%0.3f]", NewPos.b, BasLimPosMax.b)
+        ChkStat = false
+    endif
+
+    ; Min B
+    if (NewPos.b < BasLimPosMin.b) and (ChkStat == true) then
+        swrite(Msg[], State, Offset, "Pos.b overflow[b:%0.3f, Maxb:%0.3f]", NewPos.b, BasLimPosMin.b)
+        ChkStat = false
+    endif
+
+    ; Max C
+    if (NewPos.c > BasLimPosMax.c) and (ChkStat == true) then
+        swrite(Msg[], State, Offset, "Pos.c overflow[c:%0.3f, Maxc:%0.3f]", NewPos.c, BasLimPosMax.c)
+        ChkStat = false
+    endif
+
+    ; Min C
+    if (NewPos.c < BasLimPosMin.c) and (ChkStat == true) then
+        swrite(Msg[], State, Offset, "Pos.c overflow[c:%0.3f, Maxc:%0.3f]", NewPos.c, BasLimPosMin.c)
+        ChkStat = false
+    endif
+    
+    if ChkStat == false then
+        
+        switch (type)
+        case 1
+            info_write_(1, Msg[])
+        case 2   
+            warn_write_(2, Msg[])
+        default
+            error_write_(3, Msg[])
+        endswitch
+    endif
+end
+;ENDFOLD
+
+
+
+
+
+
+
+

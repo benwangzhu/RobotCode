@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--For an example how to add menu entries for UserTech InlineForms see file C:\KRC\TP\UserTech\SmartHMI\SmartHMI.exe.UserTech.InlineForms.config-->
+<KukaTechDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	
+	<!-- ===================================================================================== -->
+	<!-- =============================== SbtComm012 ========================================== -->
+	<!-- ===================================================================================== -->
+	<Application Name="SbtComm012" SOT="FALSE" SOC="TRUE">							
+		<!-- ================================ Global Data Type ========================================= -->
+
+		<Param Name="JobId" ShortName="IN Job Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="255" Step="1" Autolimit="" />
+		</Param>
+
+		<Param Name="SleepTime" ShortName="IN Sleep Time: " ShortCut="" Unit="sec" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="0.0" Max="88888888.0" Step="0.5" Autolimit="True" />
+		</Param>
+
+		<Param Name="Timeout" ShortName="IN Timeout: " ShortCut="" Unit="sec" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="0.0" Max="88888888.0" Step="0.5" Autolimit="True" />
+		</Param>
+
+		<Param Name="Edge" ShortName="IN Num Edges: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="NumOfEdges" />
+		</Param>
+		
+		<Param Name="GrindHeadId" ShortName="IN GrindHead Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="5" Step="1" Autolimit="" />
+		</Param>
+		
+		<Param Name="GrindHeadIdByName" ShortName="IN GrindHead Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="GrindHead" />
+		</Param>
+		
+		<Param Name="GrindHeadIdByName_" ShortName="OUT GrindHead Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="GrindHead" />
+		</Param>
+		
+		<Param Name="ToolData" ShortName="IN TOOL: " ShortCut="" Unit="" Var="" Enable="">
+			<List SelectedItem="">
+               <Item Disp="TOOL_DATA[0]" Key="0" />
+               <Item Disp="TOOL_DATA[1]" Key="1" />
+               <Item Disp="TOOL_DATA[2]" Key="2" />
+               <Item Disp="TOOL_DATA[3]" Key="3" />
+               <Item Disp="TOOL_DATA[4]" Key="4" />
+               <Item Disp="TOOL_DATA[5]" Key="5" />
+               <Item Disp="TOOL_DATA[6]" Key="6" />
+               <Item Disp="TOOL_DATA[7]" Key="7" />
+               <Item Disp="TOOL_DATA[8]" Key="8" />
+               <Item Disp="TOOL_DATA[9]" Key="9" />
+               <Item Disp="TOOL_DATA[10]" Key="10" />
+               <Item Disp="TOOL_DATA[11]" Key="11" />
+               <Item Disp="TOOL_DATA[12]" Key="12" />
+               <Item Disp="TOOL_DATA[13]" Key="13" />
+               <Item Disp="TOOL_DATA[14]" Key="14" />
+               <Item Disp="TOOL_DATA[15]" Key="15" />
+               <Item Disp="TOOL_DATA[16]" Key="16" />
+			</List>
+		</Param>
+		
+		<Param Name="OriType" ShortName="IN Ori Type: " ShortCut="" Unit="" Var="" Enable="">
+			<List SelectedItem="">
+               <Item Disp="VAR" Key="#VAR" />
+               <Item Disp="CONSTANT" Key="#CONSTANT" />
+               <Item Disp="JOINT" Key="#JOINT" />
+               <Item Disp="IGNORE" Key="#IGNORE" />
+			</List>
+		</Param>
+
+		<Param Name="AppSpeedType" ShortName="IN Speed Type: " ShortCut="" Unit="" Var="" Enable="">
+			<List SelectedItem="">
+               <Item Disp="EXTERNAL" Key="1" />
+               <Item Disp="LOCAL" Key="2" />
+			</List>
+		</Param>
+
+		<Param Name="ToolDirection" ShortName="IN Tool Direction: " ShortCut="" Unit="" Var="" Enable="">
+			<List SelectedItem="">
+               <Item Disp="+X" Key="1" />
+               <Item Disp="-X" Key="2" />
+               <Item Disp="+Y" Key="3" />
+               <Item Disp="-Y" Key="4" />
+               <Item Disp="+Z" Key="5" />
+               <Item Disp="-Z" Key="6" />
+			</List>
+		</Param>
+
+		<Param Name="HeadCtrlType" ShortName="IN Ctrl Type: " ShortCut="" Unit="" Var="" Enable="">
+			<List SelectedItem="">
+               <Item Disp="HEAD_STARTING" Key="#HEAD_STARTING" />
+               <Item Disp="HEAD_STOPPED" Key="#HEAD_STOPPED" />
+               <Item Disp="HEAD_RELEASE" Key="#HEAD_RELEASE" />
+               <Item Disp="HEAD_CLAMP" Key="#HEAD_CLAMP" />
+               <Item Disp="DOOR_OPEN" Key="#DOOR_OPEN" />
+               <Item Disp="DOOR_CLOSE" Key="#DOOR_CLOSE" />
+			</List>
+		</Param>
+
+		<Param Name="GrindEnable" ShortName="Grind Enable" ShortCut="" Unit="" Var="" Enable="">
+		<Value Type="BOOL" Default="FALSE">
+			<False Disp="DISABLE" />
+			<True Disp="ENABLE" />
+		</Value>
+		</Param>
+
+		<Param Name="MoveSpeed" ShortName="IN Move Speed: " ShortCut="" Unit="cm/min" Var="" Enable="">
+			<Value Type="REAL" Default="600"  Min="1" Max="12000" Step="6" Autolimit="" />
+		</Param>
+
+		<Param Name="SpindleSpeedByName" ShortName="IN Spindle Speed: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="SpindleSpeed" />
+		</Param>
+
+		<Param Name="SpindleSpeedByName_" ShortName="OUT Spindle Speed: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="SpindleSpeed" />
+		</Param>
+
+		<Param Name="SpindleSpeed" ShortName="IN Spindle Speed: " ShortCut="" Unit="RPM" Var="" Enable="">
+			<Value Type="REAL" Default="50.0"  Min="0" Max="6553.5" Step="6" Autolimit="" />
+		</Param>
+
+		<!-- ================================ PolishInit ========================================= -->
+		
+		<Fold Name="PolishInitFold">	
+			<Line>WAIT SEC 0.0</Line>		
+			<Line>Comm012HeadStatus(1)</Line>
+			<Line>Comm012HeadStatus(2)</Line>
+			<Line>Comm012HeadStatus(3)</Line>
+			<Line>Comm012HeadStatus(4)</Line>
+			<Line>Comm012PolishInit()</Line>		
+		</Fold>
+		<InlineForm Name="PolishInit" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="PolishInitFold" />	
+		</InlineForm>
+
+
+		<!-- ================================ PolishTrigger ========================================= -->
+		
+		<Param Name="CameraId" ShortName="IN Camera Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="255" Step="1" Autolimit="" />
+		</Param>
+
+		<Param Name="CaptureId" ShortName="IN Capture Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="65535" Step="1" Autolimit="" />
+		</Param>
+
+		<Fold Name="PolishTriggerFold">	
+			<Line>wait sec %SleepTime/</Line>	
+			<Line>Comm012PolishTrig(%CameraId/, %CaptureId/)</Line>	
+		</Fold>
+		<InlineForm Name="PolishTrigger" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="PolishTriggerFold" />	
+			<PRM Name="SleepTime" />
+			<PRM Name="CameraId" />
+			<PRM Name="CaptureId" />
+		</InlineForm>
+
+
+		<!-- ================================ PolishPlanning ========================================= -->
+		
+		<Param Name="PlanningId" ShortName="IN Planing Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="65535" Step="1" Autolimit="" />
+		</Param>
+
+		<Param Name="NumOfEdges" ShortName="OUT Num Edges: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="NumOfEdges" />
+		</Param>
+
+		<Script Name="DeclNumOfEdges">
+			<Redecl Path="%MODULE/" Declaration= "DECL INT %NumOfEdges/ = 0 " />
+			<Message Text="Define INT %NumOfEdges/ In %MODULE/" />
+		</Script>
+
+		<Fold Name="PolishPlanningFold">								
+			<Line>Comm012PolishPlan(%JobId/, %PlanningId/, %NumOfEdges/)</Line>		
+		</Fold>
+		<InlineForm Name="PolishPlanning" IlfType="" Style="" Focus="" Spline="" OnAccept="DeclNumOfEdges" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="PolishPlanningFold" />
+			<PRM Name="JobId" />
+			<PRM Name="PlanningId" />
+			<PRM Name="NumOfEdges" />
+		</InlineForm>
+
+
+		<!-- ================================ PolishGetParam ========================================= -->
+		
+		<Script Name="DeclPolishHead">
+			<Redecl Path="%MODULE/" Declaration= "DECL INT %GrindHeadIdByName_/ = 0" />
+			<Message Text="Define INT %GrindHeadIdByName_/ In %MODULE/" />
+		</Script>
+
+		<Script Name="DeclSpindleSpeed">
+			<Redecl Path="%MODULE/" Declaration= "DECL REAL %SpindleSpeedByName_/ = 0.0 " />
+			<Message Text="Define REAL %SpindleSpeedByName_/ In %MODULE/" />
+		</Script>
+
+		<Script Name="DeclPolishParamFold">
+			<Do Script="DeclPolishHead" />
+			<Do Script="DeclSpindleSpeed" />
+		</Script>
+
+		<Fold Name="PolishGetParamFold">								
+			<Line>Comm012PolishGetPara(%JobId/, %Edge/, %GrindHeadIdByName_/, %SpindleSpeedByName_/)</Line>		
+		</Fold>
+		<InlineForm Name="PolishGetParam" IlfType="" Style="" Focus="" Spline="" OnAccept="DeclPolishParamFold" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="PolishGetParamFold" />
+			<PRM Name="JobId" />
+			<PRM Name="Edge" />
+			<PRM Name="GrindHeadIdByName_" />
+			<PRM Name="SpindleSpeedByName_" />
+		</InlineForm>
+
+
+		<!-- ================================ PolishGetPath ========================================= -->
+		
+		<Param Name="StepDistance" ShortName="IN Step Dist: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="5.0"  Min="0.1" Autolimit="" />
+		</Param>
+
+		<Fold Name="PolishGetPathFold">								
+			<Line>Comm012PolishGetPath(%JobId/,  %Edge/, %StepDistance/)</Line>		
+		</Fold>
+		<InlineForm Name="PolishGetPath" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="PolishGetPathFold" />
+			<PRM Name="JobId" />
+			<PRM Name="Edge" />
+			<PRM Name="StepDistance" />
+		</InlineForm>
+
+		
+		<!-- ================================ PolishMoveAppr ========================================= -->
+
+		<Fold Name="PolishMoveApprFold">		
+			<Line>IF %AppSpeedType/ == 1 THEN</Line>		
+			<Line>Comm012PolishMoveAppr(%GrindHeadIdByName/, )</Line>	
+			<Line>ELSE</Line>	
+			<Line>Comm012PolishMoveAppr(%GrindHeadIdByName/, %MoveSpeed/)</Line>	
+			<Line>ENDIF</Line>	
+		</Fold>
+		<InlineForm Name="PolishMoveAppr" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="PolishMoveApprFold" />
+			<PRM Name="AppSpeedType" />
+			<PRM Name="GrindHeadIdByName" />
+			<PRM Name="MoveSpeed" />
+		</InlineForm>
+
+		<!-- ================================ PolishMoveGrind ========================================= -->
+
+		<Fold Name="PolishMoveGrindFold">								
+			<Line>IF %AppSpeedType/ == 1 THEN</Line>		
+			<Line>Comm012PolishMoveGrind(%GrindHeadIdByName/, , %OriType/)</Line>	
+			<Line>ELSE</Line>	
+			<Line>Comm012PolishMoveGrind(%GrindHeadIdByName/, %MoveSpeed/, %OriType/)</Line>	
+			<Line>ENDIF</Line>	
+		</Fold>
+		<InlineForm Name="PolishMoveGrind" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="PolishMoveGrindFold" />
+			<PRM Name="AppSpeedType" />
+			<PRM Name="GrindHeadIdByName" />
+			<PRM Name="MoveSpeed" />
+			<PRM Name="OriType" />
+		</InlineForm>
+
+		<!-- ================================ PolishMoveExit ========================================= -->
+
+		<Fold Name="PolishMoveExitFold">								
+			<Line>IF %AppSpeedType/ == 1 THEN</Line>		
+			<Line>Comm012PolishMoveExit(%GrindHeadIdByName/, )</Line>	
+			<Line>ELSE</Line>	
+			<Line>Comm012PolishMoveExit(%GrindHeadIdByName/, %MoveSpeed/)</Line>	
+			<Line>ENDIF</Line>	
+		</Fold>
+		<InlineForm Name="PolishMoveExit" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="PolishMoveExitFold" />
+			<PRM Name="AppSpeedType" />
+			<PRM Name="GrindHeadIdByName" />
+			<PRM Name="MoveSpeed" />
+		</InlineForm>
+
+		<!-- ================================ HeadCtrlByName ========================================= -->
+
+		<Fold Name="HeadCtrlByNameFold">
+			<Line>WAIT SEC 0.0</Line>		
+			<Line>Comm012HeadCtrl(%HeadCtrlType/, %GrindHeadIdByName/, %SpindleSpeedByName/, %Timeout/ * 1000)</Line>		
+		</Fold>
+		<InlineForm Name="HeadCtrlByName" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="HeadCtrlByNameFold" />
+			<PRM Name="HeadCtrlType" />
+			<PRM Name="GrindHeadIdByName" />
+			<PRM Name="SpindleSpeedByName" />
+			<PRM Name="Timeout" />
+		</InlineForm>
+
+		<!-- ================================ HeadCtrl ========================================= -->
+
+		<Fold Name="HeadCtrlFold">
+			<Line>WAIT SEC 0.0</Line>		
+			<Line>Comm012HeadCtrl(%HeadCtrlType/, %GrindHeadId/, %SpindleSpeed/, %Timeout/ * 1000)</Line>		
+		</Fold>
+		<InlineForm Name="HeadCtrl" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="HeadCtrlFold" />
+			<PRM Name="HeadCtrlType" />
+			<PRM Name="GrindHeadId" />
+			<PRM Name="SpindleSpeed" />
+			<PRM Name="Timeout" />
+		</InlineForm>
+
+		<!-- ================================ HeadConfig ========================================= -->
+
+		<Param Name="DinIndex" ShortName="IN DI Index: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="0" Max="8192" Step="1" Autolimit="" />
+		</Param>
+		<Param Name="DOUTIndex" ShortName="IN DO Index: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="0" Max="8192" Step="1" Autolimit="" />
+		</Param>
+
+		<Fold Name="HeadConfigFold">	
+			<Line>GrindHeadTool[%GrindHeadId/] = {Enable %GrindEnable/, DoutputAddr %DOUTIndex/, DinputAddr %DinIndex/, BindToolNum %ToolData/, MaxGrindingSpeed %SpindleSpeed/}</Line>		
+		</Fold>
+		<InlineForm Name="HeadConfig" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="HeadConfigFold" />
+			<PRM Name="GrindHeadId" />	
+			<PRM Name="GrindEnable" />	
+			<PRM Name="DOUTIndex" />	
+			<PRM Name="DinIndex" />	
+			<PRM Name="ToolData" />
+			<PRM Name="SpindleSpeed" />
+		</InlineForm>
+
+		<!-- ================================ SafeToolRetreatDir ========================================= -->
+
+		<Fold Name="SafeToolRetreatDirFold">	
+			<Line>SafeToolRetreatDir = %ToolDirection/</Line>		
+		</Fold>
+		<InlineForm Name="SafeToolRetreatDir" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="SafeToolRetreatDirFold" />
+			<PRM Name="ToolDirection" />	
+		</InlineForm>
+
+	</Application>
+</KukaTechDescription>
+<!--checksum 25562007144 -->

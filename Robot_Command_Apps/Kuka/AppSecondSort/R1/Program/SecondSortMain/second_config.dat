@@ -1,0 +1,56 @@
+&ACCESS RVP
+&REL 50
+&COMMENT SecondSort Config
+&PARAM DISKPATH = KRC:\R1\Program\SecondSortMain
+DEFDAT  SECOND_CONFIG
+;***********************************************************
+; 
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+; 
+; File Name: second_config.dat
+; 
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 28
+;   Modification Data    ==   2022 - 06 - 28
+; 
+; Author: speedbot
+; 
+; Version: 1.0
+;***********************************************************
+
+
+
+DECL MODULEPARAM_T LAST_TP_PARAMS={PARAMS[] "SECONDSORT.ROBID=1; SECONDSORT.NUMAXIS=6; SECONDSORT.NUMOFCONV=1; SECONDSORT.NUMOFBOX=6; SECONDSORT.CONVID=4; SECONDSORT.SRPORTINDEX=0; SECONDSORT.WAITPOSSTREAM=0; SECONDSORT.UPSTREAM=0; SECONDSORT.DOWNSTREAM=0; SECONDSORT.MANUALZEROFS=ManualZerOfs4; SECONDSORT.FSID=1; SECONDSORT.PLACEUPDST=0; SECONDSORT.PLACEE7POS=0; SECONDSORT.LIMUP=LimUp1; SECONDSORT.LIMDOWN=LimDown1                        "}
+DECL vector_t ManualZerOfs1={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t ManualZerOfs2={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t ManualZerOfs3={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t ManualZerOfs4={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimUp1={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimDown1={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimUp2={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimDown2={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimUp3={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimDown3={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimUp4={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimDown4={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimUp5={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimDown5={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimUp6={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimDown6={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimUp7={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimDown7={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimUp8={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimDown8={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimUp9={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimDown9={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimUp10={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimDown10={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimUp11={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimDown11={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimUp12={X 0.0,Y 0.0,Z 0.0}
+DECL vector_t LimDown12={X 0.0,Y 0.0,Z 0.0}
+ENDDAT
+
+
+

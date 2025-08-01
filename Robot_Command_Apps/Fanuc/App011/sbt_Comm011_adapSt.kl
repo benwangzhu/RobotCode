@@ -1,0 +1,142 @@
+program sbt_adapSt
+--***********************************************************
+--
+-- file Name: sbt_adapSt
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2024 - 07 - 04
+--   Modification Data    ==   2024 - 07 - 04
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+-- 用于后台通讯，处理前台的指令
+--
+%nolockgroup
+%nobusylamp
+-- %system
+%comment = '焊接-自适应开始'
+-- %nopause = error + command + tpenable
+-- %noabort = error + command
+%include include/lib_math_t
+%include sbt_Comm011_t
+%include sbt_Comm011_global
+%include include/lib_transform_t
+
+var
+    TaskId1                     : integer
+
+%include include/lib_logs_h
+%include include/lib_thread_h
+%include include/lib_socket_h
+%include include/lib_math_h
+%include include/lib_tp_if_h
+%include include/lib_motion_h
+%include include/lib_tpe_h
+%include include/lib_packages_h
+%include include/lib_string_h
+
+routine adap_cur_(CurrentGap : real; StdGap : real; StdCur : real; Agin : real; MaxCur : real) : real from sbt_adapSt
+routine adap_vol_(CurrentGap : real; StdGap : real; StdVol : real; Agin : real; MaxVol : real) : real from sbt_adapSt
+routine adap_amp_(CurrentGap : real; StdGap : real; StdAmp : real; Agin : real; MaxAmp : real) : real from sbt_adapSt
+
+begin
+
+    GlbWeldMode = MODE_ADAP
+
+    AdapParam.WvSch         = get_iparm_(1)
+    AdapParam.WeldSch       = get_iparm_(2)
+    AdapParam.SdGap         = get_rparm_(3)
+    AdapParam.SdAWvmp       = get_rparm_(4)
+    AdapParam.SdWeldVol     = get_rparm_(5)
+    AdapParam.SdWeldCur     = get_rparm_(6)
+    AdapParam.AmpAgin       = get_rparm_(7)
+    AdapParam.VolAgin       = get_rparm_(8)
+    AdapParam.CurAgin       = get_rparm_(9)
+
+    set_sys_rel_('$awesch[1,' + int_2str_(AdapParam.WeldSch) + '].$cmd_volts', &
+                 adap_cur_(get_rreg_(REG_SLOD_GAP), AdapParam.SdGap, AdapParam.SdWeldCur, AdapParam.AmpAgin, AdapParam.MaxCur))
+
+    set_sys_rel_('$awesch[1,' + int_2str_(AdapParam.WeldSch) + '].$cmd_wfs', &
+                 adap_vol_(get_rreg_(REG_SLOD_GAP), AdapParam.SdGap, AdapParam.SdWeldVol, AdapParam.VolAgin, AdapParam.MaxVol))
+   
+    set_sys_rel_('$wvsch[' + int_2str_(AdapParam.WvSch) + '].$amplitude', &
+                 adap_amp_(get_rreg_(REG_SLOD_GAP), AdapParam.SdGap, AdapParam.SdAWvmp, AdapParam.AmpAgin, AdapParam.MaxAmp))
+    
+    ShutdownReq2 = false
+   
+    thrd_end_('sbt_realtime')
+
+    delay(100)
+
+    TaskId1 = thrd_create_('sbt_realtime', 0, false)
+    if TaskId1 <= 0 then
+
+        post_err(CC_UALARM, '创建实时任务失败', 0, CC_ABORT)         
+    endif
+    -- endif
+   
+    --$aweprr[1].$voltage_cmd.$port_num
+end sbt_adapSt
+
+routine adap_cur_
+var
+    OutputCur           : real
+begin
+
+    OutputCur = StdCur + (CurrentGap - StdGap) * Agin
+
+    return(tern_real_(OutputCur > MaxCur, MaxCur, OutputCur))
+end adap_cur_
+
+routine adap_vol_
+var
+    OutputVol           : real
+begin
+
+    OutputVol = StdVol + (CurrentGap - StdGap) * Agin
+
+    return(tern_real_(OutputVol > MaxVol, MaxVol, OutputVol))
+end adap_vol_
+
+routine adap_amp_
+var
+    OutputAmp           : real
+begin
+
+    OutputAmp = StdAmp + (CurrentGap - StdGap) * Agin
+
+    return(tern_real_(OutputAmp > MaxAmp, MaxAmp, OutputAmp))
+end adap_amp_
+

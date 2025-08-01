@@ -1,0 +1,43 @@
+// InstParseVersion: V1.02
+Start:
+/*指定为码垛模式*/
+SbtComm010Mode{Mode="STACK"}
+/*初始化反馈任务模式*/
+CALL stack_initialize
+/*反馈模式失败时结束程序*/
+IF t_p.GlobalResultId.value ~= 129 THEN
+    GOTO ENDLOOP
+ENDIF
+/*运行后台任务*/
+RUN sbt_comm010
+SbtComm010Skill{Mode="DATA1"}
+LOOP:
+/*等待新任务输入*/
+WaitCondition{JudgeCondi="t_p.ToResultFlg.value == true",T=0,InterEnable=0,Ret=t_l.Status}
+IF t_p.GlobalResultId.value ~= 129 THEN
+    GOTO ENDLOOP
+ENDIF
+CALL copy_data_table
+/*抓取程序*/
+CALL stack_pick01
+/*垛上测量模式时,等待垛上测量结果*/
+IF t_p.NewDataTableMode.value == 12 THEN
+    WaitCondition{JudgeCondi="t_p.ToResultFlg.value == true",T=0,InterEnable=0,Ret=t_l.Status}
+    IF t_p.GlobalResultId.value ~= 129 THEN
+        SetRtToErr{msg="Failed Mode Two",eid=93001}
+        Stop{}
+    ENDIF
+    CALL copy_data_table
+ENDIF
+/*根据区域号调用不同的码垛程序*/
+IF t_p.NewDataTableArea.value == 2 THEN
+    CALL stack_place01
+ELSIF t_p.NewDataTableArea.value == 3 THEN
+    CALL stack_place02
+ELSE
+    SetRtToErr{msg="DataTable Area Error",eid=90001}
+    Stop{}
+ENDIF
+GOTO LOOP
+ENDLOOP:
+End;

@@ -1,0 +1,33 @@
+&ACCESS RVP1
+&REL 2
+&COMMENT MixSort WaitPos
+&PARAM EDITMASK = *
+&PARAM DISKPATH = KRC:\R1\Program\MixSortMain
+DEFDAT mixsort_waitpos
+;***********************************************************
+;
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+;
+; File Name: mixsort_waitpos.DAT
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 27
+;   Modification Data    ==   2025 - 02 - 10
+;
+; Author: speedbot
+;
+; Version: 1.1
+;***********************************************************
+
+;FOLD EXTERNAL DECLARATIONS;%{PE}%MKUKATPBASIS,%CEXT,%VCOMMON,%P
+;FOLD BASISTECH EXT;%{PE}%MKUKATPBASIS,%CEXT,%VEXT,%P
+EXT  BAS (BAS_COMMAND  :IN,REAL  :IN )
+DECL INT SUCCESS
+;ENDFOLD (BASISTECH EXT)
+;FOLD USER EXT;%{E}%MKUKATPUSER,%CEXT,%VEXT,%P
+;Make your modifications here
+
+;ENDFOLD (USER EXT)
+;ENDFOLD (EXTERNAL DECLARATIONS)
+ENDDAT

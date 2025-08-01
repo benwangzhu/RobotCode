@@ -1,0 +1,43 @@
+--***********************************************************
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- file Name: sbt_comm128_global.kl
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2022 - 05 - 13
+--   Modification Data    ==   2022 - 05 - 28
+--
+-- Author: speedbot
+--
+-- Version: 3.0
+--***********************************************************
+--
+
+var
+
+    -- Socket Config
+    CtrlIpAddr      in cmos from sbt_comm128     : string[20]
+    CtrlSock        in cmos from sbt_comm128     : sock_cfg_t
+    StatSock        in cmos from sbt_comm128     : sock_cfg_t
+
+
+    StateFreq       in cmos from sbt_comm128     : real
+    IoMap           in cmos from sbt_comm128     : drv_io_t
+
+    OnlyCollect     in cmos from sbt_comm128     : boolean
+
+    NumOfRobAxis    in cmos from sbt_comm128     : integer
+    NumOfRotAxis    in cmos from sbt_comm128     : integer
+    IsVirRobId      in cmos from sbt_comm128     : integer
+    StopMove                from sbt_comm128     : boolean
+    Restart                 from sbt_comm128     : boolean
+
+    PathCtrl        in cmos from sbt_comm128     : boolean
+
+
+
+
+
+

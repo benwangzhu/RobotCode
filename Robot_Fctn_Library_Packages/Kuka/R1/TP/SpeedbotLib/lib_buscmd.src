@@ -1,0 +1,1479 @@
+&access RP
+&comment Lib Bus I/O 240227
+def lib_buscmd()
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: lib_buscmd.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2023 - 07 - 04
+;   Modification Data    ==   2024 - 02 - 27
+;
+; Author: speedbot
+;
+; Version: 1.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+
+
+end
+
+;FOLD COMMAND WO 
+deffct int buscmd_wo__(BusCmdId : in, BusMstSel : in, BusIn : out, BusOut : out)
+    decl char BusCmdId
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+
+    switch (BusMstSel)
+
+    case #BUSCMD_MST
+        
+        BusOut.RobMsgType = BusCmdId
+        bus_stell_(BusIn, BusOut)
+    case #BUSCMD_SLE
+
+        BusOut.MsgType = BusCmdId
+        bus_ftell_(BusIn, BusOut)
+    endswitch
+
+    return(OK)
+endfct
+;ENDFOLD
+
+;FOLD COMMAND RO 
+deffct int buscmd_ro__(BusCmdId : in, BusMstSel : in, BusIn : out, BusOut : out, Timeout : in)
+    decl char BusCmdId
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl int RoStatus
+    ; decl krlmsg_t ShowMsg
+    ; decl krlmsgpar_t Parameter[3]
+    ; decl krlmsgopt_t Option
+    ; decl int Handle
+    decl state_t State
+    decl int Offset
+    decl char Msg[255]
+    decl bool Res
+    
+    switch (BusMstSel)
+        
+    case #BUSCMD_MST
+ 
+        RoStatus = bus_rtell_(BusIn, BusOut, Timeout)
+
+        continue
+        GoRobMsgType = 0
+
+        if (not (RoStatus == 0)) then
+            
+            Offset = 0
+            
+            ; Code Modified on 2025.05.01
+            ; 将错误修改为黄色警告类型
+            ;
+            ; ShowMsg.MODUL[] = "buscmd_ro__"
+            ; ShowMsg.NR = 1001
+            
+            swrite(Msg[], State, Offset, "MST CMD[%d] Err[%d]", BusCmdId, RoStatus)
+            log_warn_(Msg[])
+
+            ; Res = strcopy(ShowMsg.MSG_TXT[], Msg[])
+
+            ; Handle = set_krlmsg(#NOTIFY, ShowMsg, Parameter[], Option)
+
+            ;
+            
+            
+            return(RoStatus)
+        endif
+
+        if (not (BusIn.MsgType == BusCmdId)) then
+            
+            Offset = 0
+
+            ; Code Modified on 2025.05.01
+
+            ; ShowMsg.MODUL[] = "buscmd_ro__"
+            ; ShowMsg.NR = 1002
+            
+            swrite(Msg[], State, Offset, "MST CMD[%d] New CMD[%d] !!!", BusCmdId, BusIn.MsgType)
+            log_error_(Msg[])
+
+            ; Res = strcopy(ShowMsg.MSG_TXT[], Msg[])
+
+            ; Handle = set_krlmsg(#QUIT, ShowMsg, Parameter[], Option)
+
+            ;
+            
+            return(NG)
+        endif
+
+    case #BUSCMD_SLE
+
+        RoStatus = bus_wtell_(BusIn, BusOut, Timeout)
+
+        if (not (RoStatus == 0)) then
+            
+            Offset = 0
+
+            ; Code Modified on 2025.05.01
+
+            ; ShowMsg.MODUL[] = "buscmd_ro__"
+            ; ShowMsg.NR = 1003
+            
+            swrite(Msg[], State, Offset, "SLE CMD[%d] Err[%d]", BusCmdId, RoStatus)
+            log_warn_(Msg[])
+
+            ; Res = strcopy(ShowMsg.MSG_TXT[], Msg[])
+
+            ; Handle = set_krlmsg(#NOTIFY, ShowMsg, Parameter[], Option)
+
+            ;
+            
+            return(RoStatus)
+        endif
+        
+        if (not (BusIn.AgentMsgType == BusCmdId)) then
+            
+            Offset = 0
+
+            ; Code Modified on 2025.05.01
+
+            ; ShowMsg.MODUL[] = "buscmd_ro__"
+            ; ShowMsg.NR = 1004
+            
+            swrite(Msg[], State, Offset, "SLE CMD[%d] New CMD[%d] !!!", BusCmdId, BusIn.AgentMsgType)
+            log_error_(Msg[])
+
+            ; Res = strcopy(ShowMsg.MSG_TXT[], Msg[])
+
+            ; Handle = set_krlmsg(#QUIT, ShowMsg, Parameter[], Option)
+
+            ;
+            
+            return(NG)
+        endif
+    endswitch
+
+    return(OK)
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 001 
+global deffct int bus_cmd001_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        return(buscmd_wo__(1, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        return(buscmd_ro__(1, BusMstSel, BusIn, BusOut, Timeout))
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 002
+global deffct int bus_cmd002_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ01_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_ssint_(BusOut.BusIoSt + 80, BusData.Short03)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short04)
+        bus_sint_(BusOut.BusIoSt + 112, BusData.Int05)
+        bus_sint_(BusOut.BusIoSt + 144, BusData.Int06)
+        bus_sfloat2_(BusOut.BusIoSt + 176, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 208, BusData.Float08)
+        return(buscmd_wo__(2, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(2, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData.Byte01 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Short03 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Short04 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Int05 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Int06 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Float07 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 176)
+            BusData.Float08 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 208)
+            return(OK)
+        endif
+
+        BusData = {Byte01 0, Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 003
+global deffct int bus_cmd003_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl pos BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_scartp_(BusOut.BusIoSt + 64, BusData)
+        return(buscmd_wo__(3, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(3, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData = bus_gcartp_(#IO_DIN, BusIn.BusIoSt + 64)
+            return(OK)
+        endif
+
+        BusData = {x 0.0, y 0.0, z 0.0, a 0.0, b 0.0, c 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 009
+global deffct int bus_cmd009_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl pos BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_scartp_(BusOut.BusIoSt + 64, BusData)
+        return(buscmd_wo__(9, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(9, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData = bus_gcartp_(#IO_DIN, BusIn.BusIoSt + 64)
+            return(OK)
+        endif
+
+        BusData = {x 0.0, y 0.0, z 0.0, a 0.0, b 0.0, c 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 010
+global deffct int bus_cmd010_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl pos BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_scartp_(BusOut.BusIoSt + 64, BusData)
+        return(buscmd_wo__(10, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(10, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData = bus_gcartp_(#IO_DIN, BusIn.BusIoSt + 64)
+            return(OK)
+        endif
+
+        BusData = {x 0.0, y 0.0, z 0.0, a 0.0, b 0.0, c 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 011
+global deffct int bus_cmd011_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl pos BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_scartp_(BusOut.BusIoSt + 64, BusData)
+        return(buscmd_wo__(11, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(11, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData = bus_gcartp_(#IO_DIN, BusIn.BusIoSt + 64)
+            return(OK)
+        endif
+
+        BusData = {x 0.0, y 0.0, z 0.0, a 0.0, b 0.0, c 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 012
+global deffct int bus_cmd012_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ01_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_ssint_(BusOut.BusIoSt + 80, BusData.Short03)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short04)
+        bus_sint_(BusOut.BusIoSt + 112, BusData.Int05)
+        bus_sint_(BusOut.BusIoSt + 144, BusData.Int06)
+        bus_sfloat2_(BusOut.BusIoSt + 176, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 208, BusData.Float08)
+        return(buscmd_wo__(12, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(12, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData.Byte01 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Short03 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Short04 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Int05 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Int06 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Float07 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 176)
+            BusData.Float08 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 208)
+            return(OK)
+        endif
+
+        BusData = {Byte01 0, Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 013
+global deffct int bus_cmd013_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ01_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_ssint_(BusOut.BusIoSt + 80, BusData.Short03)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short04)
+        bus_sint_(BusOut.BusIoSt + 112, BusData.Int05)
+        bus_sint_(BusOut.BusIoSt + 144, BusData.Int06)
+        bus_sfloat2_(BusOut.BusIoSt + 176, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 208, BusData.Float08)
+        return(buscmd_wo__(13, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(13, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData.Byte01 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Short03 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Short04 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Int05 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Int06 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Float07 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 176)
+            BusData.Float08 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 208)
+            return(OK)
+        endif
+
+        BusData = {Byte01 0, Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 014
+global deffct int bus_cmd014_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ01_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_ssint_(BusOut.BusIoSt + 80, BusData.Short03)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short04)
+        bus_sint_(BusOut.BusIoSt + 112, BusData.Int05)
+        bus_sint_(BusOut.BusIoSt + 144, BusData.Int06)
+        bus_sfloat2_(BusOut.BusIoSt + 176, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 208, BusData.Float08)
+        return(buscmd_wo__(14, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(14, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData.Byte01 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Short03 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Short04 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Int05 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Int06 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Float07 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 176)
+            BusData.Float08 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 208)
+            return(OK)
+        endif
+
+        BusData = {Byte01 0, Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 017
+global deffct int bus_cmd017_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ07_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sfloat2_(BusOut.BusIoSt + 64, BusData.Float01)
+        bus_sfloat2_(BusOut.BusIoSt + 96, BusData.Float02)
+        bus_sfloat2_(BusOut.BusIoSt + 128, BusData.Float03)
+        bus_sfloat2_(BusOut.BusIoSt + 160, BusData.Float04)
+        bus_sfloat2_(BusOut.BusIoSt + 192, BusData.Float05)
+        bus_sfloat2_(BusOut.BusIoSt + 224, BusData.Float06)
+        bus_sfloat2_(BusOut.BusIoSt + 256, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 288, BusData.Float08)
+        bus_sfloat2_(BusOut.BusIoSt + 320, BusData.Float09)
+        bus_sfloat2_(BusOut.BusIoSt + 352, BusData.Float10)
+        bus_sfloat2_(BusOut.BusIoSt + 384, BusData.Float11)
+        bus_sfloat2_(BusOut.BusIoSt + 416, BusData.Float12)
+        bus_sint_(BusOut.BusIoSt + 448, BusData.Int13)
+        bus_sint_(BusOut.BusIoSt + 480, BusData.Int14)
+
+        continue 
+        DoMeasuerSt = false       
+        continue 
+        DoMeasuerEd = false       
+
+        return(buscmd_wo__(17, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(17, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData.Float01 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Float02 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Float03 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 128)
+            BusData.Float04 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 160)
+            BusData.Float05 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 192)
+            BusData.Float06 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 224)
+            BusData.Float07 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 256)
+            BusData.Float08 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 288)
+            BusData.Float09 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 320)
+            BusData.Float10 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 352)
+            BusData.Float11 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 384)
+            BusData.Float12 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 416)
+            BusData.Int13   = bus_gint_(#IO_DIN, BusIn.BusIoSt + 448)
+            BusData.Int14   = bus_gint_(#IO_DIN, BusIn.BusIoSt + 480)
+            return(OK)
+        endif
+
+        BusData = {Float01 0.0, Float02 0.0, Float03 0.0, Float04 0.0, Float05 0.0, Float06 0.0, Float07 0.0, Float08 0.0, Float09 0.0, Float10 0.0, Float11 0.0, Float12 0.0, Int13 0, Int14 0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 018
+global deffct int bus_cmd018_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ07_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sfloat2_(BusOut.BusIoSt + 64, BusData.Float01)
+        bus_sfloat2_(BusOut.BusIoSt + 96, BusData.Float02)
+        bus_sfloat2_(BusOut.BusIoSt + 128, BusData.Float03)
+        bus_sfloat2_(BusOut.BusIoSt + 160, BusData.Float04)
+        bus_sfloat2_(BusOut.BusIoSt + 192, BusData.Float05)
+        bus_sfloat2_(BusOut.BusIoSt + 224, BusData.Float06)
+        bus_sfloat2_(BusOut.BusIoSt + 256, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 288, BusData.Float08)
+        bus_sfloat2_(BusOut.BusIoSt + 320, BusData.Float09)
+        bus_sfloat2_(BusOut.BusIoSt + 352, BusData.Float10)
+        bus_sfloat2_(BusOut.BusIoSt + 384, BusData.Float11)
+        bus_sfloat2_(BusOut.BusIoSt + 416, BusData.Float12)
+        bus_sint_(BusOut.BusIoSt + 448, BusData.Int13)
+        bus_sint_(BusOut.BusIoSt + 480, BusData.Int14)
+
+        continue 
+        DoMeasuerSt = false       
+        continue 
+        DoMeasuerEd = false       
+
+        return(buscmd_wo__(18, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(18, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData.Float01 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Float02 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Float03 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 128)
+            BusData.Float04 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 160)
+            BusData.Float05 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 192)
+            BusData.Float06 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 224)
+            BusData.Float07 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 256)
+            BusData.Float08 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 288)
+            BusData.Float09 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 320)
+            BusData.Float10 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 352)
+            BusData.Float11 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 384)
+            BusData.Float12 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 416)
+            BusData.Int13   = bus_gint_(#IO_DIN, BusIn.BusIoSt + 448)
+            BusData.Int14   = bus_gint_(#IO_DIN, BusIn.BusIoSt + 480)
+            return(OK)
+        endif
+
+        BusData = {Float01 0.0, Float02 0.0, Float03 0.0, Float04 0.0, Float05 0.0, Float06 0.0, Float07 0.0, Float08 0.0, Float09 0.0, Float10 0.0, Float11 0.0, Float12 0.0, Int13 0, Int14 0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 020
+global deffct int bus_cmd020_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl pos BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_scartp_(BusOut.BusIoSt + 64, BusData)
+        return(buscmd_wo__(20, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(20, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData = bus_gcartp_(#IO_DIN, BusIn.BusIoSt + 64)
+            return(OK)
+        endif
+
+        BusData = {x 0.0, y 0.0, z 0.0, a 0.0, b 0.0, c 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 021
+global deffct int bus_cmd021_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ01_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_ssint_(BusOut.BusIoSt + 80, BusData.Short03)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short04)
+        bus_sint_(BusOut.BusIoSt + 112, BusData.Int05)
+        bus_sint_(BusOut.BusIoSt + 144, BusData.Int06)
+        bus_sfloat2_(BusOut.BusIoSt + 176, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 208, BusData.Float08)
+        return(buscmd_wo__(21, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(21, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData.Byte01 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Short03 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Short04 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Int05 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Int06 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Float07 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 176)
+            BusData.Float08 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 208)
+            return(OK)
+        endif
+
+        BusData = {Byte01 0, Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 022
+global deffct int bus_cmd022_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ01_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_ssint_(BusOut.BusIoSt + 80, BusData.Short03)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short04)
+        bus_sint_(BusOut.BusIoSt + 112, BusData.Int05)
+        bus_sint_(BusOut.BusIoSt + 144, BusData.Int06)
+        bus_sfloat2_(BusOut.BusIoSt + 176, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 208, BusData.Float08)
+        return(buscmd_wo__(22, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(22, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData.Byte01 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Short03 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Short04 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Int05 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Int06 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Float07 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 176)
+            BusData.Float08 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 208)
+            return(OK)
+        endif
+
+        BusData = {Byte01 0, Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 026
+global deffct int bus_cmd026_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ01_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_ssint_(BusOut.BusIoSt + 80, BusData.Short03)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short04)
+        bus_sint_(BusOut.BusIoSt + 112, BusData.Int05)
+        bus_sint_(BusOut.BusIoSt + 144, BusData.Int06)
+        bus_sfloat2_(BusOut.BusIoSt + 176, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 208, BusData.Float08)
+        return(buscmd_wo__(26, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(26, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData.Byte01 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Short03 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Short04 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Int05 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Int06 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Float07 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 176)
+            BusData.Float08 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 208)
+            return(OK)
+        endif
+
+        BusData = {Byte01 0, Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 027
+global deffct int bus_cmd027_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ08_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_sbyte_(BusOut.BusIoSt + 80, BusData.Byte03)
+        bus_sbyte_(BusOut.BusIoSt + 88, BusData.Byte04)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short05)
+        bus_ssint_(BusOut.BusIoSt + 112, BusData.Short06)
+        bus_ssint_(BusOut.BusIoSt + 128, BusData.Short07)
+        bus_ssint_(BusOut.BusIoSt + 144, BusData.Short08)
+        bus_sint_(BusOut.BusIoSt + 160, BusData.Int09)
+        bus_sint_(BusOut.BusIoSt + 192, BusData.Int10)
+        bus_sint_(BusOut.BusIoSt + 224, BusData.Int11)
+        bus_sint_(BusOut.BusIoSt + 256, BusData.Int12)
+        bus_sfloat2_(BusOut.BusIoSt + 288, BusData.Float13)
+        bus_sfloat2_(BusOut.BusIoSt + 320, BusData.Float14)
+        bus_sfloat2_(BusOut.BusIoSt + 352, BusData.Float15)
+        bus_sfloat2_(BusOut.BusIoSt + 384, BusData.Float16)
+        return(buscmd_wo__(27, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(27, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData.Byte01 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Byte03 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Byte04 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 88)
+            BusData.Short05 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Short06 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Short07 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 128)
+            BusData.Short08 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Int09 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 160)
+            BusData.Int10 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 192)
+            BusData.Int11 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 224)
+            BusData.Int12 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 256)
+            BusData.Float13 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 288)
+            BusData.Float14 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 320)
+            BusData.Float15 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 352)
+            BusData.Float16 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 384)
+            return(OK)
+        endif
+
+        BusData = {Byte01 0, Byte02 0, Byte03 0, Byte04 0, Short05 0, Short06 0, Short07 0, Short08 0, Int09 0, Int10 0, Int11 0, Int12 0, Float13 0.0, Float14 0.0, Float15 0.0, Float16 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 129
+global deffct int bus_cmd129_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl pos BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_scartp_(BusOut.BusIoSt + 64, BusData)
+        return(buscmd_wo__(129, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(129, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData = bus_gcartp_(#IO_DIN, BusIn.BusIoSt + 64)
+            return(OK)
+        endif
+
+        BusData = {x 0.0, y 0.0, z 0.0, a 0.0, b 0.0, c 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 130
+global deffct int bus_cmd130_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl axis BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sjoint_(BusOut.BusIoSt + 64, BusData)
+        return(buscmd_wo__(130, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(130, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData = bus_gjoint_(#IO_DIN, BusIn.BusIoSt + 64)
+            return(OK)
+        endif
+
+        BusData = {A1 0.0, A2 0.0, A3 0.0, A4 0.0, A5 0.0, A6 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 131
+global deffct int bus_cmd131_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ02_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sfloat2_(BusOut.BusIoSt + 64, BusData.Float01)
+        bus_sfloat2_(BusOut.BusIoSt + 96, BusData.Float02)
+        bus_sfloat2_(BusOut.BusIoSt + 128, BusData.Float03)
+        bus_sfloat2_(BusOut.BusIoSt + 160, BusData.Float04)
+        bus_sfloat2_(BusOut.BusIoSt + 192, BusData.Float05)
+        bus_sfloat2_(BusOut.BusIoSt + 224, BusData.Float06)
+        return(buscmd_wo__(131, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(131, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData.Float01 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Float02 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Float03 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 128)
+            BusData.Float04 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 160)
+            BusData.Float05 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 192)
+            BusData.Float06 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 224)
+            return(OK)
+        endif
+
+        BusData = {Float01 0.0, Float02 0.0, Float03 0.0, Float04 0.0, Float05 0.0, Float06 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 132
+global deffct int bus_cmd132_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ07_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sfloat2_(BusOut.BusIoSt + 64, BusData.Float01)
+        bus_sfloat2_(BusOut.BusIoSt + 96, BusData.Float02)
+        bus_sfloat2_(BusOut.BusIoSt + 128, BusData.Float03)
+        bus_sfloat2_(BusOut.BusIoSt + 160, BusData.Float04)
+        bus_sfloat2_(BusOut.BusIoSt + 192, BusData.Float05)
+        bus_sfloat2_(BusOut.BusIoSt + 224, BusData.Float06)
+        bus_sfloat2_(BusOut.BusIoSt + 256, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 288, BusData.Float08)
+        bus_sfloat2_(BusOut.BusIoSt + 320, BusData.Float09)
+        bus_sfloat2_(BusOut.BusIoSt + 352, BusData.Float10)
+        bus_sfloat2_(BusOut.BusIoSt + 384, BusData.Float11)
+        bus_sfloat2_(BusOut.BusIoSt + 416, BusData.Float12)
+        bus_sint_(BusOut.BusIoSt + 448, BusData.Int13)
+        bus_sint_(BusOut.BusIoSt + 480, BusData.Int14)
+        return(buscmd_wo__(132, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(132, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData.Float01 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Float02 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Float03 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 128)
+            BusData.Float04 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 160)
+            BusData.Float05 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 192)
+            BusData.Float06 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 224)
+            BusData.Float07 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 256)
+            BusData.Float08 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 288)
+            BusData.Float09 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 320)
+            BusData.Float10 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 352)
+            BusData.Float11 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 384)
+            BusData.Float12 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 416)
+            BusData.Int13   = bus_gint_(#IO_DIN, BusIn.BusIoSt + 448)
+            BusData.Int14   = bus_gint_(#IO_DIN, BusIn.BusIoSt + 480)
+            return(OK)
+        endif
+
+        BusData = {Float01 0.0, Float02 0.0, Float03 0.0, Float04 0.0, Float05 0.0, Float06 0.0, Float07 0.0, Float08 0.0, Float09 0.0, Float10 0.0, Float11 0.0, Float12 0.0, Int13 0, Int14 0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 133
+global deffct int bus_cmd133_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ07_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sfloat2_(BusOut.BusIoSt + 64, BusData.Float01)
+        bus_sfloat2_(BusOut.BusIoSt + 96, BusData.Float02)
+        bus_sfloat2_(BusOut.BusIoSt + 128, BusData.Float03)
+        bus_sfloat2_(BusOut.BusIoSt + 160, BusData.Float04)
+        bus_sfloat2_(BusOut.BusIoSt + 192, BusData.Float05)
+        bus_sfloat2_(BusOut.BusIoSt + 224, BusData.Float06)
+        bus_sfloat2_(BusOut.BusIoSt + 256, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 288, BusData.Float08)
+        bus_sfloat2_(BusOut.BusIoSt + 320, BusData.Float09)
+        bus_sfloat2_(BusOut.BusIoSt + 352, BusData.Float10)
+        bus_sfloat2_(BusOut.BusIoSt + 384, BusData.Float11)
+        bus_sfloat2_(BusOut.BusIoSt + 416, BusData.Float12)
+        bus_sint_(BusOut.BusIoSt + 448, BusData.Int13)
+        bus_sint_(BusOut.BusIoSt + 480, BusData.Int14)
+        return(buscmd_wo__(133, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(133, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData.Float01 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Float02 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Float03 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 128)
+            BusData.Float04 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 160)
+            BusData.Float05 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 192)
+            BusData.Float06 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 224)
+            BusData.Float07 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 256)
+            BusData.Float08 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 288)
+            BusData.Float09 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 320)
+            BusData.Float10 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 352)
+            BusData.Float11 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 384)
+            BusData.Float12 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 416)
+            BusData.Int13   = bus_gint_(#IO_DIN, BusIn.BusIoSt + 448)
+            BusData.Int14   = bus_gint_(#IO_DIN, BusIn.BusIoSt + 480)
+            return(OK)
+        endif
+
+        BusData = {Float01 0.0, Float02 0.0, Float03 0.0, Float04 0.0, Float05 0.0, Float06 0.0, Float07 0.0, Float08 0.0, Float09 0.0, Float10 0.0, Float11 0.0, Float12 0.0, Int13 0, Int14 0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 134
+global deffct int bus_cmd134_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ09_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sint_(BusOut.BusIoSt + 64, BusData.Int01)
+        bus_sint_(BusOut.BusIoSt + 96, BusData.Int02)
+        bus_sfloat2_(BusOut.BusIoSt + 128, BusData.Float03)
+        bus_sfloat2_(BusOut.BusIoSt + 160, BusData.Float04)
+        bus_sfloat2_(BusOut.BusIoSt + 192, BusData.Float05)
+        bus_sfloat2_(BusOut.BusIoSt + 224, BusData.Float06)
+        bus_sfloat2_(BusOut.BusIoSt + 256, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 288, BusData.Float08)
+        bus_sfloat2_(BusOut.BusIoSt + 320, BusData.Float09)
+        bus_sfloat2_(BusOut.BusIoSt + 352, BusData.Float10)
+        bus_sfloat2_(BusOut.BusIoSt + 384, BusData.Float11)
+        bus_sfloat2_(BusOut.BusIoSt + 416, BusData.Float12)
+        bus_sfloat2_(BusOut.BusIoSt + 448, BusData.Float13)
+        bus_sfloat2_(BusOut.BusIoSt + 480, BusData.Float14)
+        return(buscmd_wo__(134, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(134, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData.Int01 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Int02 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Float03 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 128)
+            BusData.Float04 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 160)
+            BusData.Float05 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 192)
+            BusData.Float06 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 224)
+            BusData.Float07 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 256)
+            BusData.Float08 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 288)
+            BusData.Float09 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 320)
+            BusData.Float10 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 352)
+            BusData.Float11 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 384)
+            BusData.Float12 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 416)
+            BusData.Float13   = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 448)
+            BusData.Float14   = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 480)
+            return(OK)
+        endif
+
+        BusData = {Int01 0, Int02 0, Float03 0.0, Float04 0.0, Float05 0.0, Float06 0.0, Float07 0.0, Float08 0.0, Float09 0.0, Float10 0.0, Float11 0.0, Float12 0.0, Float13 0.0, Float14 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 137
+global deffct int bus_cmd137_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ03_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_sbyte_(BusOut.BusIoSt + 80, BusData.Byte03)
+        bus_sbyte_(BusOut.BusIoSt + 88, BusData.Byte04)
+        bus_sbyte_(BusOut.BusIoSt + 96, BusData.Byte05)
+        bus_sbyte_(BusOut.BusIoSt + 104, BusData.Byte06)
+        bus_sbyte_(BusOut.BusIoSt + 112, BusData.Byte07)
+        bus_sbyte_(BusOut.BusIoSt + 120, BusData.Byte08)
+        bus_sbyte_(BusOut.BusIoSt + 128, BusData.Byte09)
+        bus_sbyte_(BusOut.BusIoSt + 136, BusData.Byte10)
+        bus_sbyte_(BusOut.BusIoSt + 144, BusData.Byte11)
+        bus_sbyte_(BusOut.BusIoSt + 152, BusData.Byte12)
+        bus_sbyte_(BusOut.BusIoSt + 160, BusData.Byte13)
+        bus_sbyte_(BusOut.BusIoSt + 168, BusData.Byte14)
+        bus_sbyte_(BusOut.BusIoSt + 172, BusData.Byte15)
+        bus_sbyte_(BusOut.BusIoSt + 180, BusData.Byte16)
+        bus_sbyte_(BusOut.BusIoSt + 188, BusData.Byte17)
+        bus_sbyte_(BusOut.BusIoSt + 196, BusData.Byte18)
+        return(buscmd_wo__(137, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(137, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData.Byte01 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Byte03 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Byte04 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 88)
+            BusData.Byte05 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Byte06 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 104)
+            BusData.Byte07 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Byte08 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 120)
+            BusData.Byte09 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 128)
+            BusData.Byte10 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 136)
+            BusData.Byte11 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Byte12 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 152)
+            BusData.Byte13 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 160)
+            BusData.Byte14 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 168)
+            BusData.Byte15 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 172)
+            BusData.Byte16 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 180)
+            BusData.Byte17 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 188)
+            BusData.Byte18 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 196)
+            return(OK)
+        endif
+
+        BusData = {Byte01 0, Byte02 0, Byte03 0, Byte04 0, Byte05 0, Byte06 0, Byte07 0, Byte08 0, Byte09 0, Byte10 0, Byte11 0, Byte12 0, Byte13 0, Byte14 0, Byte15 0, Byte16 0, Byte17 0, Byte18 0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 145
+global deffct int bus_cmd145_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ01_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_ssint_(BusOut.BusIoSt + 80, BusData.Short03)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short04)
+        bus_sint_(BusOut.BusIoSt + 112, BusData.Int05)
+        bus_sint_(BusOut.BusIoSt + 144, BusData.Int06)
+        bus_sfloat2_(BusOut.BusIoSt + 176, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 208, BusData.Float08)
+        return(buscmd_wo__(145, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(145, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData.Byte01 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Short03 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Short04 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Int05 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Int06 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Float07 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 176)
+            BusData.Float08 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 208)
+            return(OK)
+        endif
+
+        BusData = {Byte01 0, Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 148
+global deffct int bus_cmd148_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ08_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_sbyte_(BusOut.BusIoSt + 80, BusData.Byte03)
+        bus_sbyte_(BusOut.BusIoSt + 88, BusData.Byte04)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short05)
+        bus_ssint_(BusOut.BusIoSt + 112, BusData.Short06)
+        bus_ssint_(BusOut.BusIoSt + 128, BusData.Short07)
+        bus_ssint_(BusOut.BusIoSt + 144, BusData.Short08)
+        bus_sint_(BusOut.BusIoSt + 160, BusData.Int09)
+        bus_sint_(BusOut.BusIoSt + 192, BusData.Int10)
+        bus_sint_(BusOut.BusIoSt + 224, BusData.Int11)
+        bus_sint_(BusOut.BusIoSt + 256, BusData.Int12)
+        bus_sfloat2_(BusOut.BusIoSt + 288, BusData.Float13)
+        bus_sfloat2_(BusOut.BusIoSt + 320, BusData.Float14)
+        bus_sfloat2_(BusOut.BusIoSt + 352, BusData.Float15)
+        bus_sfloat2_(BusOut.BusIoSt + 384, BusData.Float16)
+        return(buscmd_wo__(148, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(148, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData.Byte01 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Byte03 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Byte04 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 88)
+            BusData.Short05 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Short06 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Short07 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 128)
+            BusData.Short08 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Int09 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 160)
+            BusData.Int10 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 192)
+            BusData.Int11 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 224)
+            BusData.Int12 = bus_gint_(#IO_DIN, BusIn.BusIoSt + 256)
+            BusData.Float13 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 288)
+            BusData.Float14 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 320)
+            BusData.Float15 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 352)
+            BusData.Float16 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 384)
+            return(OK)
+        endif
+
+        BusData = {Byte01 0, Byte02 0, Byte03 0, Byte04 0, Short05 0, Short06 0, Short07 0, Short08 0, Int09 0, Int10 0, Int11 0, Int12 0, Float13 0.0, Float14 0.0, Float15 0.0, Float16 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 151
+global deffct int bus_cmd151_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ06_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_ssint_(BusOut.BusIoSt + 72, BusData.Short02)
+        bus_ssint_(BusOut.BusIoSt + 88, BusData.Short03)
+        bus_ssint_(BusOut.BusIoSt + 104, BusData.Short04)
+        bus_sfloat2_(BusOut.BusIoSt + 120, BusData.Float05)
+        bus_sfloat2_(BusOut.BusIoSt + 152, BusData.Float06)
+        return(buscmd_wo__(151, BusMstSel, BusIn, BusOut))
+    case #BUSCMD_READ
+
+        if buscmd_ro__(151, BusMstSel, BusIn, BusOut, Timeout) == 0 then
+
+            BusData.Byte01 = bus_gbyte_(#IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Short02 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Short03 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 88)
+            BusData.Short04 = bus_gsint_(#IO_DIN, BusIn.BusIoSt + 104)
+            BusData.Float05 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 120)
+            BusData.Float06 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 152)
+            return(OK)
+        endif
+
+        BusData = {Byte01 0, Short02 0, Short03 0, Short04 0, Float05 0.0, Float06 0.0}
+        return(NG)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 254
+global deffct int bus_cmd254_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ07_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sfloat2_(BusOut.BusIoSt + 64, BusData.Float01)
+        bus_sfloat2_(BusOut.BusIoSt + 96, BusData.Float02)
+        bus_sfloat2_(BusOut.BusIoSt + 128, BusData.Float03)
+        bus_sfloat2_(BusOut.BusIoSt + 160, BusData.Float04)
+        bus_sfloat2_(BusOut.BusIoSt + 192, BusData.Float05)
+        bus_sfloat2_(BusOut.BusIoSt + 224, BusData.Float06)
+        bus_sfloat2_(BusOut.BusIoSt + 256, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 288, BusData.Float08)
+        bus_sfloat2_(BusOut.BusIoSt + 320, BusData.Float09)
+        bus_sfloat2_(BusOut.BusIoSt + 352, BusData.Float10)
+        bus_sfloat2_(BusOut.BusIoSt + 384, BusData.Float11)
+        bus_sfloat2_(BusOut.BusIoSt + 416, BusData.Float12)
+        bus_sint_(BusOut.BusIoSt + 448, BusData.Int13)
+        bus_sint_(BusOut.BusIoSt + 480, BusData.Int14)
+
+        continue
+        GoRobMsgType = 254
+
+        continue
+        if (not DoMeasuerSt) and (not DoMeasuerEd) then 
+
+            continue
+            DoMeasuerSt = true
+
+            continue
+            DoMeasuerEd = false
+        else
+
+            continue
+            DoMeasuerSt = not (DoMeasuerSt)
+
+            continue
+            DoMeasuerEd = not (DoMeasuerEd)
+        endif
+
+        continue
+        if DoMeasuerSt then
+
+            continue
+            wait for (DiOnMeasure == true) and (DiMeasuerOver == false)
+        else
+
+            continue
+            wait for (DiOnMeasure == false) and (DiMeasuerOver == true)
+        endif
+        return(OK)
+
+    case #BUSCMD_READ
+        
+        continue
+        if (DoReserverd1) and (not DoReserverd2) then
+            
+            continue
+            wait for (DiResultOk == false) and (DiResultNG == true)
+        else
+            
+            continue
+            wait for (DiResultOk == true) and (DiResultNG == false)
+        endif
+
+        BusData.Float01 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 64)
+        BusData.Float02 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 96)
+        BusData.Float03 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 128)
+        BusData.Float04 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 160)
+        BusData.Float05 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 192)
+        BusData.Float06 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 224)
+        BusData.Float07 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 256)
+        BusData.Float08 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 288)
+        BusData.Float09 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 320)
+        BusData.Float10 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 352)
+        BusData.Float11 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 384)
+        BusData.Float12 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 416)
+        BusData.Int13   = bus_gint_(#IO_DIN, BusIn.BusIoSt + 448)
+        BusData.Int14   = bus_gint_(#IO_DIN, BusIn.BusIoSt + 480)
+
+        continue
+        DoReserverd1 = DiResultOk
+
+        continue
+        DoReserverd2 = DiResultNG
+
+        return(OK)
+    endswitch
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 255
+global deffct int bus_cmd255_(BusOperation : in, BusMstSel : in, BusIn : out, BusOut : out, BusData : out, Timeout : in)
+    decl CMD_RW_T BusOperation
+    decl CMD_SM_T BusMstSel
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl cmd_typ07_t BusData
+    decl int Timeout
+
+    switch (BusOperation)
+        
+    case #BUSCMD_WRITE
+        
+        bus_sfloat2_(BusOut.BusIoSt + 64, BusData.Float01)
+        bus_sfloat2_(BusOut.BusIoSt + 96, BusData.Float02)
+        bus_sfloat2_(BusOut.BusIoSt + 128, BusData.Float03)
+        bus_sfloat2_(BusOut.BusIoSt + 160, BusData.Float04)
+        bus_sfloat2_(BusOut.BusIoSt + 192, BusData.Float05)
+        bus_sfloat2_(BusOut.BusIoSt + 224, BusData.Float06)
+        bus_sfloat2_(BusOut.BusIoSt + 256, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 288, BusData.Float08)
+        bus_sfloat2_(BusOut.BusIoSt + 320, BusData.Float09)
+        bus_sfloat2_(BusOut.BusIoSt + 352, BusData.Float10)
+        bus_sfloat2_(BusOut.BusIoSt + 384, BusData.Float11)
+        bus_sfloat2_(BusOut.BusIoSt + 416, BusData.Float12)
+        bus_sint_(BusOut.BusIoSt + 448, BusData.Int13)
+        bus_sint_(BusOut.BusIoSt + 480, BusData.Int14)
+
+        continue
+        GoRobMsgType = 255
+
+        continue
+        if (not DoMeasuerSt) and (not DoMeasuerEd) then
+            
+            continue
+            DoMeasuerSt = true
+
+            continue
+            DoMeasuerEd = false
+        else
+
+            continue
+            DoMeasuerSt = not (DoMeasuerSt)
+
+            continue
+            DoMeasuerEd = not (DoMeasuerEd)
+        endif
+        return(OK)
+
+    case #BUSCMD_READ
+
+        BusData.Float01 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 64)
+        BusData.Float02 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 96)
+        BusData.Float03 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 128)
+        BusData.Float04 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 160)
+        BusData.Float05 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 192)
+        BusData.Float06 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 224)
+        BusData.Float07 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 256)
+        BusData.Float08 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 288)
+        BusData.Float09 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 320)
+        BusData.Float10 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 352)
+        BusData.Float11 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 384)
+        BusData.Float12 = bus_gfloat2_(#IO_DIN, BusIn.BusIoSt + 416)
+        BusData.Int13   = bus_gint_(#IO_DIN, BusIn.BusIoSt + 448)
+        BusData.Int14   = bus_gint_(#IO_DIN, BusIn.BusIoSt + 480)
+
+        return(OK)
+    endswitch
+endfct
+;ENDFOLD
+
+

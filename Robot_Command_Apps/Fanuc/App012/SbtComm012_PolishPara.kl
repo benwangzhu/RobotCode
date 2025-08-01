@@ -1,0 +1,52 @@
+program SbtPoliPara
+--***********************************************************
+--
+-- file Name: SbtPoliPara
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 05 - 06
+--
+-- Author: 
+--
+-- Version: 1.0
+%comment = 'SBT POLISH PARA 250507'
+%nolockgroup
+%nobusylamp
+%nopause = error + command + tpenable
+
+%include include/lib_logs_t
+%include include/lib_inst_t
+%include include/lib_socket_t
+%include include/lib_transform_t
+%include sbt_comm12_t
+%include sbt_comm12_global
+
+var
+    JobId                               : integer 
+    ProcNum                             : integer
+    GrindNum                            : integer 
+    GrindSpeed                          : real 
+    HeadRegNum                          : integer   
+    SpeedRegNum                         : integer 
+    Status                              : integer                 
+
+%include include/lib_inst_h
+%include include/lib_tp_if_h
+%include include/lib_string_h
+
+begin 
+    JobId           = get_iparm_(1)                 --获取任务编号
+    ProcNum         = get_iparm_(2)                 --获取路径编号
+    HeadRegNum      = get_iparm_(3)                 --获取打磨头编号写入的R寄存器编号
+    SpeedRegNum     = get_iparm_(4)                 --获取打磨头转速写入的R寄存器编号
+    
+    Status = f003_it01_(PolishSock, JobId, ProcNum, GrindNum, GrindSpeed)
+    if Status <> OK then  
+        post_err(CC_UALARM, '打磨工艺参数获取失败![Status:' + int_to_str_(Status) + ']', 0, CC_ABORT)
+    endif 
+
+    set_ireg_(HeadRegNum, GrindNum)
+    set_rreg_(SpeedRegNum, GrindSpeed)
+end SbtPoliPara

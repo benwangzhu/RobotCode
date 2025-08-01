@@ -1,0 +1,18 @@
+// InstParseVersion: V1.02
+Start:
+/*抓取点上方*/
+MovLOffset{RP=t_p.NewDataTablePickPos,TP=t_l.PickUpOffs01,T="COORD",Tool=t_g.StackTool,Coord=t_s.World}
+/*抓取点*/
+MovL{P=t_p.NewDataTablePickPos,B="FINE"}
+/*模式为垛上测量模式时请求垛上测量数据*/
+IF t_p.NewDataTableMode.value == 12 THEN
+    SbtComm010Skill{Mode="DATA2"}
+ENDIF
+/*吸盘开*/
+/*抓取点上方*/
+MovLOffset{RP=t_p.NewDataTablePickPos,TP=t_l.PickUpOffs02,T="COORD",Tool=t_g.StackTool,Coord=t_s.World}
+/*安全点*/
+MovJ{P=t_l.P0}
+/*反馈离开区域一*/
+SbtComm010Skill{Mode="AREA",AreaId=1}
+End;

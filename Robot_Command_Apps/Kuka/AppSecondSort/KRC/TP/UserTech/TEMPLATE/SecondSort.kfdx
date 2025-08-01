@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--For an example how to add menu entries for UserTech InlineForms see file C:\KRC\TP\UserTech\SmartHMI\SmartHMI.exe.UserTech.InlineForms.config-->
+<KukaTechDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	
+	<!-- ===================================================================================== -->
+	<!-- =============================== SecondSort ========================================== -->
+	<!-- ===================================================================================== -->
+	<Application Name="SecondSort" SOT="FALSE" SOC="TRUE">							
+		<!-- ================================ Global Data Type ========================================= -->
+		<Param Name="ConvId" ShortName="IN Conveyer Id: " ShortCut="" Unit="" Var="" Enable="">
+			<List SelectedItem="">
+               <Item Disp="LinConveyor1" Key="1" />
+               <Item Disp="LinConveyor2" Key="2" />
+               <Item Disp="LinConveyor3" Key="3" />
+               <Item Disp="LinConveyor4" Key="4" />
+			</List>
+		</Param>
+
+		<Param Name="Status" ShortName="OUT Status: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="Status" />
+		</Param>
+
+		<Param Name="ToolOffs" ShortName="IN ToolOffs: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="ToolOffs" />
+		</Param>
+
+		<Param Name="QueueData" ShortName="IN Queue Data: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="PartData" />
+		</Param>
+
+		<Param Name="x" ShortName="Vector X" ShortCut="" Unit="mm" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-1000000.0" Max="1000000.0" Step="100.0" Autolimit="TRUE" />
+		</Param>
+		<Param Name="y" ShortName="Vector Y" ShortCut="" Unit="mm" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-1000000.0" Max="1000000.0" Step="100.0" Autolimit="TRUE" />
+		</Param>
+		<Param Name="z" ShortName="Vector Z" ShortCut="" Unit="mm" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-1000000.0" Max="1000000.0" Step="100.0" Autolimit="TRUE" />
+		</Param>
+		
+		<!-- ================================ Global Script ========================================= -->
+
+		<Script Name="DeclStatus">
+			<Redecl Path="%MODULE/" Declaration= "DECL INT %Status/ = 0" />
+			<Message Text="Define Int %Status/ In %MODULE/" />
+		</Script>
+
+		<!-- ================================ ConvConfig ======================================== -->
+		<Param Name="SrPortIndex" ShortName="IN SrPortIndex: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="0" Max="8192" Step="1" Autolimit="" />
+		</Param>
+		<Param Name="WaitPosStream" ShortName="IN WaitPosStream: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0" Min="-1000000" Max="1000000" Step="100.0" Autolimit="" />
+		</Param>
+		<Param Name="UpStream" ShortName="IN UpStream: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0" Min="-1000000" Max="1000000" Step="100.0" Autolimit="" />
+		</Param>
+		<Param Name="DownStream" ShortName="IN DownStream: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0" Min="-1000000" Max="1000000" Step="100.0" Autolimit="" />
+		</Param>
+
+		<Param Name="PL_ManualZerOfs" ShortName="ManualZerOfs" ShortCut="" Unit="TOOL" Var="vector_t" Enable="">
+			<Value Type="FREE" Default="_" />
+		</Param>
+
+		<Param Name="ManualZerOfs" ShortName="IN ManualZerOfs: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="ManualZerOfs" />
+		</Param>
+		<PList Name="ManualZerOfs" Param="ManualZerOfs">
+			<Val>x</Val>
+			<Val>y</Val>
+			<Val>z</Val>
+		</PList>
+		
+		<Fold Name="ConvConfigFold">
+			<Line>IF CONV_BASE_INDEX[%ConvId/] > 0 THEN</Line>		
+			<Line>PkCvCfg[%ConvId/].ConvName[] = conv_get_name(%ConvId/)</Line>		
+			<Line>PkCvCfg[%ConvId/].SrPortIndex = %SrPortIndex/</Line>		
+			<Line>PkCvCfg[%ConvId/].SrTrigCount = 0</Line>		
+			<Line>PkCvCfg[%ConvId/].WaitPosStream = %WaitPosStream/</Line>		
+			<Line>PkCvCfg[%ConvId/].UpStream = %UpStream/</Line>		
+			<Line>PkCvCfg[%ConvId/].DownStream = %DownStream/</Line>		
+			<Line>PkCvCfg[%ConvId/].ManualZerOfs = %ManualZerOfs/</Line>		
+			<Line>ENDIF</Line>		
+		</Fold>
+		<InlineForm Name="ConvConfig" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="ConvConfigFold" />
+			<PRM Name="ConvId" />
+			<PRM Name="SrPortIndex" />
+			<PRM Name="WaitPosStream" />									
+			<PRM Name="UpStream" />									
+			<PRM Name="DownStream" />									
+			<PRM Name="ManualZerOfs" />									
+		</InlineForm>
+
+		<!-- ================================ PkPlConfig ======================================== -->
+		<Param Name="RobId" ShortName="IN Robot Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="100" Step="1" Autolimit="" />
+		</Param>
+		<Param Name="NumAxis" ShortName="IN Num Axis: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="6" Min="6" Max="13" Step="1" Autolimit="" />
+		</Param>
+		<Param Name="NumOfConv" ShortName="IN Num Conv: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="4" Step="1" Autolimit="" />
+		</Param>
+		<Param Name="NumOfBox" ShortName="IN Num Box: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="12" Step="1" Autolimit="" />
+		</Param>
+
+		<Fold Name="PkPlConfigFold">									
+			<Line>PkPlCfg.RobId = %RobId/</Line>		
+			<Line>PkPlCfg.NumAxis = %NumAxis/</Line>		
+			<Line>PkPlCfg.NumOfConv = %NumOfConv/</Line>		
+			<Line>PkPlCfg.NumOfBox = %NumOfBox/</Line>		
+			<Line>PkPlCfg.SrSens = 0</Line>		
+		</Fold>
+		<InlineForm Name="PkPlConfig" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="PkPlConfigFold" />
+			<PRM Name="RobId" />
+			<PRM Name="NumAxis" />
+			<PRM Name="NumOfConv" />									
+			<PRM Name="NumOfBox" />									
+		</InlineForm>
+		
+		<!-- ================================ FsConfig ======================================== -->
+		<Param Name="FsId" ShortName="IN Fs Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="12" Step="1" Autolimit="" />
+		</Param>
+		<Param Name="PlaceUpDst" ShortName="IN PlaceUpDst: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0" Min="-1000000" Max="1000000" Step="100.0" Autolimit="" />
+		</Param>
+		<Param Name="PlaceE7Pos" ShortName="IN PlaceE7Pos: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0" Min="-1000000" Max="1000000" Step="100.0" Autolimit="" />
+		</Param>
+
+		<Param Name="PL_LimUp" ShortName="LimUp" ShortCut="" Unit="TOOL" Var="vector_t" Enable="">
+			<Value Type="FREE" Default="_" />
+		</Param>
+		<Param Name="LimUp" ShortName="IN LimUp: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="LimUp" />
+		</Param>
+		<PList Name="LimUp" Param="LimUp">
+			<Val>x</Val>
+			<Val>y</Val>
+			<Val>z</Val>
+		</PList>
+
+		<Param Name="PL_LimDown" ShortName="LimDown" ShortCut="" Unit="TOOL" Var="vector_t" Enable="">
+			<Value Type="FREE" Default="_" />
+		</Param>
+		<Param Name="LimDown" ShortName="IN LimDown: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="LimDown" />
+		</Param>
+		<PList Name="LimDown" Param="LimDown">
+			<Val>x</Val>
+			<Val>y</Val>
+			<Val>z</Val>
+		</PList>
+		
+		<Fold Name="FsConfigFold">									
+			<Line>PlFsCfg[%FsId/].PlaceUpDst = %PlaceUpDst/</Line>		
+			<Line>PlFsCfg[%FsId/].PlaceE7Pos = %PlaceE7Pos/</Line>		
+			<Line>PlFsCfg[%FsId/].LimUp = %LimUp/</Line>		
+			<Line>PlFsCfg[%FsId/].LimDown = %LimDown/</Line>		
+		</Fold>
+		<InlineForm Name="FsConfig" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="FsConfigFold" />
+			<PRM Name="FsId" />
+			<PRM Name="PlaceUpDst" />
+			<PRM Name="PlaceE7Pos" />									
+			<PRM Name="LimUp" />									
+			<PRM Name="LimDown" />									
+		</InlineForm>
+
+		<!-- ================================ RunSensor ========================================= -->
+		<Fold Name="RunSensorFold">									
+			<Line>second_sr_inte()</Line>		
+		</Fold>
+		<InlineForm Name="RunSensor" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="RunSensorFold" />								
+		</InlineForm>
+
+		<!-- ================================ GetQueue ========================================= -->
+		<Param Name="SleepTime" ShortName="IN SleepTime: " ShortCut="" Unit="ms" Var="" Enable="">
+			<Value Type="NUMBER" Default="100" Min="0" Max="1000000" Step="100" Autolimit="" />
+		</Param>
+		
+		<Fold Name="GetQueueFold">									
+			<Line>second_getq(%ConvId/, %SleepTime/, %Status/)</Line>		
+		</Fold>
+		<InlineForm Name="GetQueue" IlfType="" Style="" Focus="" Spline="" OnAccept="DeclStatus" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="GetQueueFold" />	
+			<PRM Name="ConvId" />
+			<PRM Name="SleepTime" />									
+			<PRM Name="Status" />									
+		</InlineForm>
+
+		<!-- ================================ CalcWaitPos ========================================= -->
+		
+		<Param Name="Distance" ShortName="IN Distance: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="300" Min="0" Max="24000" Step="10" Autolimit="" />
+		</Param>
+
+		<Param Name="DirRefPoint" ShortName="IN Ref Point Dir: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="P1" />
+		</Param>
+
+		<Param Name="DirWaitPoint" ShortName="OUT Wait Point Dir: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="WP1" />
+		</Param>
+
+		<Param Name="PkcvDicision" ShortName="OUT Pkcv Dicision: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="PkcvDicision" />
+		</Param>
+		
+		<Script Name="DeclNullPoint">
+			<Redecl Path="%MODULE/" Declaration= "DECL E6POS X%DirWaitPoint/={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}" />
+			<Message Text="Point E6POS X%DirWaitPoint/ In %MODULE/" />
+		</Script>
+
+		<Script Name="DeclPkcvDicision">
+			<Redecl Path="%MODULE/" Declaration= "DECL pkcv_dcsn_t %PkcvDicision/ = #DCSN_SKIP " />
+			<Message Text="Define pkcv_dcsn_t %PkcvDicision/ In %MODULE/" />
+		</Script>
+
+		<Script Name="DeclWaitPosFold">
+			<Do Script="DeclNullPoint" />
+			<Do Script="DeclPkcvDicision" />
+		</Script>
+		
+		<Fold Name="CalcWaitPosFold">									
+			<Line>second_wpos(%ConvId/, X%DirRefPoint/, %Distance/, X%DirWaitPoint/ , %PkcvDicision/)</Line>		
+		</Fold>
+		<InlineForm Name="CalcWaitPos" IlfType="" Style="" Focus="" Spline="" OnAccept="DeclWaitPosFold" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="CalcWaitPosFold" />	
+			<PRM Name="ConvId" />
+			<PRM Name="DirRefPoint" />
+			<PRM Name="Distance" />									
+			<PRM Name="DirWaitPoint" />									
+			<PRM Name="PkcvDicision" />									
+		</InlineForm>
+
+		<!-- ================================ Feedback ========================================= -->
+		<Param Name="PickState" ShortName="IN Pick State: " ShortCut="" Unit="" Var="" Enable="">
+			<List SelectedItem="">
+               <Item Disp="Success" Key="#PICK_SUCC" />
+               <Item Disp="Fail" Key="#PICK_FAIL" />
+			</List>
+		</Param>
+		
+		<Fold Name="FeedbackFold">									
+			<Line>second_fdbk(%ConvId/, %PickState/)</Line>		
+		</Fold>
+		<InlineForm Name="Feedback" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="FeedbackFold" />								
+			<PRM Name="ConvId" />									
+			<PRM Name="PickState" />									
+		</InlineForm>
+	
+		<!-- ================================ MoveToWaitPos ========================================= -->
+		
+		<Param Name="PkcvDicision_" ShortName="IN Pkcv Dicision: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="PkcvDicision" />
+		</Param>
+		<Param Name="DirWaitPoint_" ShortName="IN Wait Point Dir: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="WP1" />
+		</Param>
+		<Param Name="LimXYList" ShortName="IN Limit: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="Limit" />
+		</Param>
+		
+		<Param Name="MaxX" ShortName="Max X" ShortCut="" Unit="mm" Var="" Enable="">
+			<Value Type="REAL" Default="5000.0" Min="-1000000.0" Max="1000000.0" Step="100.0" Autolimit="TRUE" />
+		</Param>
+		<Param Name="MinX" ShortName="Min X" ShortCut="" Unit="mm" Var="" Enable="">
+			<Value Type="REAL" Default="-5000.0" Min="-1000000.0" Max="1000000.0" Step="100.0" Autolimit="TRUE" />
+		</Param>
+		<Param Name="MaxY" ShortName="Max Y" ShortCut="" Unit="mm" Var="" Enable="">
+			<Value Type="REAL" Default="5000.0" Min="-1000000.0" Max="1000000.0" Step="100.0" Autolimit="TRUE" />
+		</Param>
+		<Param Name="MinY" ShortName="Min Y" ShortCut="" Unit="mm" Var="" Enable="">
+			<Value Type="REAL" Default="-5000.0" Min="-1000000.0" Max="1000000.0" Step="100.0" Autolimit="TRUE" />
+		</Param>
+		<Param Name="PL_LimXY" ShortName="Lim X - Y" ShortCut="" Unit="TOOL" Var="xy_lim_t" Enable="">
+			<Value Type="FREE" Default="_" />
+		</Param>
+
+		<PList Name="LimXY" Param="LimXYList">
+			<Val>MaxX</Val>
+			<Val>MinX</Val>
+			<Val>MaxY</Val>
+			<Val>MinY</Val>
+		</PList>
+
+		<Fold Name="MoveToWaitPosFold">									
+			<Line>second_mov_wpos(%ConvId/, %PkcvDicision_/, X%DirWaitPoint_/, %ToolOffs/, %LimXYList/, %Status/)</Line>		
+		</Fold>
+		<InlineForm Name="MoveToWaitPos" IlfType="" Style="" Focus="" Spline="" OnAccept="DeclStatus" OnTouchUp="" OnOpen="" >
+			<FLD Name="MoveToWaitPosFold" />
+			<PRM Name="ConvId" />
+			<PRM Name="PkcvDicision_" />									
+			<PRM Name="DirWaitPoint_" />									
+			<PRM Name="ToolOffs" />									
+			<PRM Name="LimXYList" />									
+			<PRM Name="Status" />									
+		</InlineForm>
+
+		<!-- ================================ SyncLin ========================================= -->
+	
+		<Param Name="SyncVel" ShortName="IN Sync Vel: " ShortCut="" Unit="m/s" Var="" Enable="">
+			<Value Type="REAL" Default="1.5" Min="0.001" Max="2.0" Step="0.01" Autolimit="TRUE" />
+		</Param>
+
+		<Param Name="SyncApo" ShortName="IN Sync Apo: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="100" Min="0" Max="500" Step="10.0" Autolimit="TRUE" />
+		</Param>
+
+		<Param Name="SyncPoint" ShortName="IN Sync Dir: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="P1" />
+		</Param>
+	
+		<Script Name="DeclSyncPoint">
+			<ShowVar Fullpath="$POS_ACT" Param="ActPos" />
+			<ShowVar Fullpath="$POS_ACT.x" Param="ActPosx" />
+			<ShowVar Fullpath="$POS_ACT.y" Param="ActPosy" />
+			<ShowVar Fullpath="$POS_ACT.z" Param="ActPosz" />
+			<ShowVar Fullpath="$POS_ACT.a" Param="ActPosa" />
+			<ShowVar Fullpath="%QueueData/.PkcvOfs.X" Param="Offsx" />
+			<ShowVar Fullpath="%QueueData/.PkcvOfs.Y" Param="Offsy" />
+			<ShowVar Fullpath="%QueueData/.PkcvOfs.Z" Param="Offsz" />
+			<ShowVar Fullpath="%QueueData/.PkcvOfs.A" Param="Offsa" />
+			<Redecl Path="%MODULE/" Declaration= "DECL E6POS X%SyncPoint/=%ActPos/" />
+			<SetVar Fullpath="X%SyncPoint/.x" Value="%ActPosx -(%Offsx) " />
+			<SetVar Fullpath="X%SyncPoint/.y" Value="%ActPosy -(%Offsy) " />
+			<SetVar Fullpath="X%SyncPoint/.z" Value="%ActPosz -(%Offsz) " />
+			<SetVar Fullpath="X%SyncPoint/.a" Value="%ActPosa -(%Offsa) " />
+			<Message Text="Point X%SyncPoint/ has been modified " />
+		</Script>
+
+		<Script Name="TouchSyncPoint">
+			<Switch Dialog="TRUE" Condition="RECORD THIS POINT?">
+				<Case Value="YES" Do="DeclSyncPoint" />
+				<Case Value="NO" Do="NOTHING" />
+			</Switch>
+		</Script>
+
+		<Script Name="ExistSyncPoint">
+			<Switch Dialog="FALSE" Condition="ISCHANGE">
+				<Case Value="FALSE" Do="DeclSyncPoint" />
+				<Case Value="TRUE" Do="NOTHING" />
+			</Switch>
+		</Script>
+
+		<Fold Name="SyncLinFold">									
+			<Line>move_l_(ufrm_offs_(X%SyncPoint/, %QueueData/.PkcvOfs.X, %QueueData/.PkcvOfs.Y, %QueueData/.PkcvOfs.Z) : %ToolOffs/, %SyncVel/ * 1000.0, %SyncApo/)</Line>		
+		</Fold>
+		<InlineForm Name="SyncLin" IlfType="" Style="" Focus="" Spline="" OnAccept="ExistSyncPoint" OnTouchUp="TouchSyncPoint" OnOpen="" > 		
+			<FLD Name="SyncLinFold" />	
+			<PRM Name="SyncPoint" />
+			<PRM Name="QueueData" />									
+			<PRM Name="ToolOffs" />									
+			<PRM Name="SyncVel" />									
+			<PRM Name="SyncApo" />									
+		</InlineForm>
+	
+		<!-- ================================ CalcSyncFrame ========================================= -->
+
+		<Param Name="FlowDist" ShortName="IN Flow Dist: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0" Min="-200000.0" Max="200000.0" Step="100" Autolimit="FALSE" />
+		</Param>
+
+		<Param Name="SaveBase" ShortName="IN Base Nr: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="5" Min="2" Max="25" Step="1" Autolimit="" />
+		</Param>
+		<Fold Name="CalcSyncFrameFold">									
+			<Line>second_frame(%ConvId/, %FlowDist/, %SaveBase/)</Line>		
+		</Fold>
+
+		<InlineForm Name="CalcSyncFrame" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="CalcSyncFrameFold" />	
+			<PRM Name="ConvId" />
+			<PRM Name="FlowDist" />									
+			<PRM Name="SaveBase" />									
+		</InlineForm>
+
+	</Application>
+</KukaTechDescription>
+<!--checksum 45498028524 -->

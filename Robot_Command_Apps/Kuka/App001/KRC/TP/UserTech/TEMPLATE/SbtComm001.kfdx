@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--For an example how to add menu entries for UserTech InlineForms see file C:\KRC\TP\UserTech\SmartHMI\SmartHMI.exe.UserTech.InlineForms.config-->
+<KukaTechDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	
+	<!-- ===================================================================================== -->
+	<!-- =============================== SbtComm001 ========================================== -->
+	<!-- ===================================================================================== -->
+	<Application Name="SbtComm001" SOT="FALSE" SOC="TRUE">							
+		<!-- ================================ Global Data Type ========================================= -->
+		
+		<Param Name="SleepTime" ShortName="IN Sleep Time: " ShortCut="" Unit="sec" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="0.0" Max="88888888.0" Step="0.5" Autolimit="True" />
+		</Param>
+
+
+		<Param Name="EventIntPrm1" ShortName="IN EI1: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="-10000000" Max="10000000" Step="1" Autolimit="" />
+		</Param>
+
+		<Param Name="EventIntPrm2" ShortName="IN EI2: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="-10000000" Max="10000000" Step="1" Autolimit="" />
+		</Param>
+
+		<Param Name="EventFloatPrm1" ShortName="IN EF1: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-10000000.0" Max="10000000.0" Step="1.0" Autolimit="" />
+		</Param>
+		<Param Name="EventFloatPrm2" ShortName="IN EF2: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-10000000.0" Max="10000000.0" Step="1.0" Autolimit="" />
+		</Param>
+		<Param Name="EventFloatPrm3" ShortName="IN EF3: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-10000000.0" Max="10000000.0" Step="1.0" Autolimit="" />
+		</Param>
+		<Param Name="EventFloatPrm4" ShortName="IN EF4: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-10000000.0" Max="10000000.0" Step="1.0" Autolimit="" />
+		</Param>
+		<Param Name="EventFloatPrm5" ShortName="IN EF5: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-10000000.0" Max="10000000.0" Step="1.0" Autolimit="" />
+		</Param>
+		<Param Name="EventFloatPrm6" ShortName="IN EF6: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-10000000.0" Max="10000000.0" Step="1.0" Autolimit="" />
+		</Param>
+
+		<Param Name="EventIntPrm1Name" ShortName="IN EI1: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="EventIntPrm1" />
+		</Param>
+		<Param Name="EventIntPrm2Name" ShortName="IN EI2: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="EventIntPrm2" />
+		</Param>
+		<Param Name="EventFloatPrm1Name" ShortName="IN EF1: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="EventFloatPrm1" />
+		</Param>
+		<Param Name="EventFloatPrm2Name" ShortName="IN EF2: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="EventFloatPrm2" />
+		</Param>
+		<Param Name="EventFloatPrm3Name" ShortName="IN EF3: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="EventFloatPrm3" />
+		</Param>
+		<Param Name="EventFloatPrm4Name" ShortName="IN EF4: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="EventFloatPrm4" />
+		</Param>
+		<Param Name="EventFloatPrm5Name" ShortName="IN EF5: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="EventFloatPrm5" />
+		</Param>
+		<Param Name="EventFloatPrm6Name" ShortName="IN EF6: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="EventFloatPrm6" />
+		</Param>
+
+		<Param Name="OutputPrm1" ShortName="OUT RI1: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="RI1" />
+		</Param>
+
+		<Param Name="OutputPrm2" ShortName="OUT RI2: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="RI2" />
+		</Param>
+
+		<Param Name="PointName1" ShortName="OUT RP1 Dir: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="P1" />
+		</Param>
+
+		<Param Name="PointName2" ShortName="OUT RP2 Dir: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="P2" />
+		</Param>
+
+		
+		<!-- ================================ Global Script ========================================= -->
+
+
+	
+		<!-- ================================ Event ========================================= -->
+		
+		<Fold Name="EventFold">	
+			<Line>wait sec %SleepTime/</Line>	
+			<Line>SbtComm001Event(%EventIntPrm1/, %EventIntPrm2/, %EventFloatPrm1/, %EventFloatPrm2/, %EventFloatPrm3/, %EventFloatPrm4/, %EventFloatPrm5/, %EventFloatPrm6/)</Line>		
+		</Fold>
+		<InlineForm Name="Event" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="EventFold" />
+			<PRM Name="SleepTime" />
+			<PRM Name="EventIntPrm1" />
+			<PRM Name="EventIntPrm2" />
+			<PRM Name="EventFloatPrm1" />
+			<PRM Name="EventFloatPrm2" />
+			<PRM Name="EventFloatPrm3" />
+			<PRM Name="EventFloatPrm4" />
+			<PRM Name="EventFloatPrm5" />
+			<PRM Name="EventFloatPrm6" />
+		</InlineForm>
+
+		<!-- ================================ Event2 ========================================= -->
+		
+		<Script Name="DeclEvent2">
+			<Redecl Path="%MODULE/" Declaration= "DECL INT %OutputPrm1/=0" />
+			<Redecl Path="%MODULE/" Declaration= "DECL INT %OutputPrm2/=0" />
+			<Redecl Path="%MODULE/" Declaration= "DECL E6POS X%PointName1/={X 0,Y 0,Z 0,A 0,B 0,C 0,S 0,T 0,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}" />
+			<Redecl Path="%MODULE/" Declaration= "DECL E6POS X%PointName2/={X 0,Y 0,Z 0,A 0,B 0,C 0,S 0,T 0,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}" /> 
+			<Message Text="Define %ReqPrm/ In %MODULE/" />
+			<Message Text="Define %OutputPrm1/ In %MODULE/" />
+			<Message Text="Define %OutputPrm2/ In %MODULE/" />
+			<Message Text="Define X%PointName1/ In %MODULE/" />
+			<Message Text="Define X%PointName2/ In %MODULE/" />
+		</Script>
+		
+		<Fold Name="Event2Fold">	
+			<Line>wait sec %SleepTime/</Line>	
+			<Line>SbtComm001Event2(%EventIntPrm1/, %EventIntPrm2/, %EventFloatPrm1/, %EventFloatPrm2/, %EventFloatPrm3/, %EventFloatPrm4/, %EventFloatPrm5/, %EventFloatPrm6/, %OutputPrm1/, %OutputPrm2/, X%PointName1/, X%PointName2/)</Line>		
+		</Fold>
+		<InlineForm Name="Event2" IlfType="" Style="" Focus="" Spline="" OnAccept="DeclEvent2" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="Event2Fold" />
+			<PRM Name="SleepTime" />
+			<PRM Name="EventIntPrm1" />
+			<PRM Name="EventIntPrm2" />
+			<PRM Name="EventFloatPrm1" />
+			<PRM Name="EventFloatPrm2" />
+			<PRM Name="EventFloatPrm3" />
+			<PRM Name="EventFloatPrm4" />
+			<PRM Name="EventFloatPrm5" />
+			<PRM Name="EventFloatPrm6" />
+			<PRM Name="OutputPrm1" />
+			<PRM Name="OutputPrm2" />
+			<PRM Name="PointName1" />
+			<PRM Name="PointName2" />
+		</InlineForm>
+
+		<!-- ================================ Event2ByName ========================================= -->
+		
+		<Script Name="DeclEvent2ByName">
+			<Redecl Path="%MODULE/" Declaration= "DECL INT %EventIntPrm1Name/=0" />
+			<Redecl Path="%MODULE/" Declaration= "DECL INT %EventIntPrm2Name/=0" />
+			<Redecl Path="%MODULE/" Declaration= "DECL REAL %EventFloatPrm2Name/=0.0" />
+			<Redecl Path="%MODULE/" Declaration= "DECL REAL %EventFloatPrm3Name/=0.0" />
+			<Redecl Path="%MODULE/" Declaration= "DECL REAL %EventFloatPrm4Name/=0.0" />
+			<Redecl Path="%MODULE/" Declaration= "DECL REAL %EventFloatPrm5Name/=0.0" />
+			<Redecl Path="%MODULE/" Declaration= "DECL REAL %EventFloatPrm6Name/=0.0" />
+			<Redecl Path="%MODULE/" Declaration= "DECL INT %OutputPrm1/=0" />
+			<Redecl Path="%MODULE/" Declaration= "DECL INT %OutputPrm2/=0" />
+			<Redecl Path="%MODULE/" Declaration= "DECL E6POS X%PointName1/={X 0,Y 0,Z 0,A 0,B 0,C 0,S 0,T 0,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}" />
+			<Redecl Path="%MODULE/" Declaration= "DECL E6POS X%PointName2/={X 0,Y 0,Z 0,A 0,B 0,C 0,S 0,T 0,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}" /> 
+			<Message Text="Define %EventIntPrm1Name/ In %MODULE/" />
+			<Message Text="Define %EventIntPrm2Name/ In %MODULE/" />
+			<Message Text="Define %EventFloatPrm1Name/ In %MODULE/" />
+			<Message Text="Define %EventFloatPrm2Name/ In %MODULE/" />
+			<Message Text="Define %EventFloatPrm3Name/ In %MODULE/" />
+			<Message Text="Define %EventFloatPrm4Name/ In %MODULE/" />
+			<Message Text="Define %EventFloatPrm5Name/ In %MODULE/" />
+			<Message Text="Define %EventFloatPrm6Name/ In %MODULE/" />
+			<Message Text="Define %ReqPrm/ In %MODULE/" />
+			<Message Text="Define %OutputPrm1/ In %MODULE/" />
+			<Message Text="Define %OutputPrm2/ In %MODULE/" />
+			<Message Text="Define X%PointName1/ In %MODULE/" />
+			<Message Text="Define X%PointName2/ In %MODULE/" />
+		</Script>
+		
+		<Fold Name="Event2ByNameFold">	
+			<Line>wait sec %SleepTime/</Line>	
+			<Line>SbtComm001Event2(%EventIntPrm1Name/, %EventIntPrm2Name/, %EventFloatPrm1Name/, %EventFloatPrm2Name/, %EventFloatPrm3Name/, %EventFloatPrm4Name/, %EventFloatPrm5Name/, %EventFloatPrm6Name/, %OutputPrm1/, %OutputPrm2/, X%PointName1/, X%PointName2/)</Line>		
+		</Fold>
+		<InlineForm Name="Event2ByName" IlfType="" Style="" Focus="" Spline="" OnAccept="DeclEvent2ByName" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="Event2ByNameFold" />
+			<PRM Name="SleepTime" />
+			<PRM Name="EventIntPrm1Name" />
+			<PRM Name="EventIntPrm2Name" />
+			<PRM Name="EventFloatPrm1Name" />
+			<PRM Name="EventFloatPrm2Name" />
+			<PRM Name="EventFloatPrm3Name" />
+			<PRM Name="EventFloatPrm4Name" />
+			<PRM Name="EventFloatPrm5Name" />
+			<PRM Name="EventFloatPrm6Name" />
+			<PRM Name="OutputPrm1" />
+			<PRM Name="OutputPrm2" />
+			<PRM Name="PointName1" />
+			<PRM Name="PointName2" />
+		</InlineForm>
+
+		<!-- ================================ Request ========================================= -->
+
+		<!-- <Param Name="BYTE01" ShortName="Byte01" ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="0" Max="254" Step="1" Autolimit="TRUE" />
+		</Param>
+		<Param Name="BYTE02" ShortName="Byte02" ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="0" Max="254" Step="1" Autolimit="TRUE" />
+		</Param>
+		<Param Name="SHORT03" ShortName="Short03" ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="-32768" Max="32767" Step="1" Autolimit="TRUE" />
+		</Param>
+		<Param Name="SHORT04" ShortName="Short04" ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="-32768" Max="32767" Step="1" Autolimit="TRUE" />
+		</Param>
+		<Param Name="INT05" ShortName="Int05" ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="-10000000" Max="10000000" Step="100" Autolimit="TRUE" />
+		</Param>
+		<Param Name="INT06" ShortName="Int06" ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="-10000000" Max="10000000" Step="100" Autolimit="TRUE" />
+		</Param>
+		<Param Name="FLOAT07" ShortName="Float07" ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-1000000.0" Max="1000000.0" Step="100.0" Autolimit="TRUE" />
+		</Param>
+		<Param Name="FLOAT08" ShortName="Float08" ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-1000000.0" Max="1000000.0" Step="100.0" Autolimit="TRUE" />
+		</Param>
+		<Param Name="PL_ReqPrm" ShortName="ReqPrm" ShortCut="" Unit="" Var="cmd_typ01_t" Enable="">
+			<Value Type="FREE" Default="_" />
+		</Param> -->
+		<Param Name="ReqPrm" ShortName="IN Params: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="Params" />
+		</Param>
+		<!-- <PList Name="ReqPrm" Param="ReqPrm">
+			<Val>BYTE01</Val>
+			<Val>BYTE02</Val>
+			<Val>SHORT03</Val>
+			<Val>SHORT04</Val>
+			<Val>INT05</Val>
+			<Val>INT06</Val>
+			<Val>FLOAT07</Val>
+			<Val>FLOAT08</Val>
+		</PList> -->
+
+		<Script Name="DeclRequest">
+			<Redecl Path="%MODULE/" Declaration= "DECL cmd_typ01_t %ReqPrm/={Byte01 0,Byte02 0,Short03 0,Short04 0,Int05 0,Int06 0,Float07 0.0,Float08 0.0}" />
+			<Redecl Path="%MODULE/" Declaration= "DECL INT %OutputPrm1/=0" />
+			<Redecl Path="%MODULE/" Declaration= "DECL INT %OutputPrm2/=0" />
+			<Redecl Path="%MODULE/" Declaration= "DECL E6POS X%PointName1/={X 0,Y 0,Z 0,A 0,B 0,C 0,S 0,T 0,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}" />
+			<Redecl Path="%MODULE/" Declaration= "DECL E6POS X%PointName2/={X 0,Y 0,Z 0,A 0,B 0,C 0,S 0,T 0,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}" /> 
+			<Message Text="Define %ReqPrm/ In %MODULE/" />
+			<Message Text="Define %OutputPrm1/ In %MODULE/" />
+			<Message Text="Define %OutputPrm2/ In %MODULE/" />
+			<Message Text="Define X%PointName1/ In %MODULE/" />
+			<Message Text="Define X%PointName2/ In %MODULE/" />
+		</Script>
+		
+		<Fold Name="RequestFold">	
+			<Line>SbtComm001Request(%ReqPrm/, %OutputPrm1/, %OutputPrm2/, X%PointName1/, X%PointName2/)</Line>	
+		</Fold>
+		<InlineForm Name="Request" IlfType="" Style="" Focus="" Spline="" OnAccept="DeclRequest" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="RequestFold" />	
+			<PRM Name="ReqPrm" />
+			<PRM Name="OutputPrm1" />
+			<PRM Name="OutputPrm2" />
+			<PRM Name="PointName1" />
+			<PRM Name="PointName2" />
+		</InlineForm>
+	</Application>
+</KukaTechDescription>
+<!--checksum 45498028524 -->

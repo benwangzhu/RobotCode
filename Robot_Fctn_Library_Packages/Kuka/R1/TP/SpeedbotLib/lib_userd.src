@@ -1,0 +1,128 @@
+&ACCESS RO
+&COMMENT Lib User Dial 240227
+def lib_userd()
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: lib_userd.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 11 - 22
+;   Modification Data    ==   2024 - 02 - 27
+;
+; Author: speedbot
+;
+; Version: 2.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+; 2021 - 11 - 22 ++ key_pressed_() ==> bool
+
+; 2021 - 11 - 22 ++ user_select_() ==> int
+
+end
+
+;FOLD KEY IS PRESSED 
+global deffct bool key_pressed_(KeyId : in)
+    decl int KeyId
+    return(is_key_pressed(KeyId))
+endfct
+;ENDFOLD
+
+;FOLD CONFIRMATION POPUP WINDOW
+global deffct int user_select_(Display[] : in, Key1[] : in, Key2[] : in, Key3[] : in, Key4[] : in, Key5[] : in, Key6[] : in)
+    decl krlmsg_t TpQuestion
+    decl krlmsgpar_t Parameter[3]
+    decl krlmsgdlgsk_t Softkey[6]
+    decl krlmsgopt_t Option
+    decl int Handle, Answer, K
+    decl char Display[], Key1[], Key2[], Key3[], Key4[], Key5[], Key6[]
+    TpQuestion.MODUL[] = "User Select"
+    TpQuestion.NR = 4
+    TpQuestion.MSG_TXT[] = Display[]
+    
+    Softkey[1].SK_TYPE = #VALUE
+    if varstate("Key1[]") == #initialized then
+
+        Softkey[1].sk_txt[] = Key1[]
+    else
+
+        Softkey[1].sk_txt[] = " "
+    endif
+    Softkey[2].SK_TYPE = #VALUE
+    if varstate("Key2[]") == #initialized then
+
+        Softkey[2].sk_txt[] = Key2[] 
+    else
+
+        Softkey[2].sk_txt[] = " "
+    endif
+    Softkey[3].SK_TYPE = #VALUE
+    if varstate("Key3[]") == #initialized then
+
+        Softkey[3].sk_txt[] = Key3[] 
+    else
+
+        Softkey[3].sk_txt[] = " "
+    endif
+    Softkey[4].SK_TYPE = #VALUE
+    if varstate("Key4[]") == #initialized then
+
+        Softkey[4].sk_txt[] = Key4[] 
+    else
+
+        Softkey[4].sk_txt[] = " "
+    endif
+    Softkey[5].SK_TYPE = #VALUE
+    if varstate("Key5[]") == #initialized then
+
+        Softkey[5].sk_txt[] = Key5[] 
+    else
+
+        Softkey[5].sk_txt[] = " "
+    endif
+    Softkey[6].SK_TYPE = #VALUE
+    if varstate("Key6[]") == #initialized then
+
+        Softkey[6].sk_txt[] = Key6[] 
+    else
+
+        Softkey[6].sk_txt[] = " "
+    endif
+
+    Handle = set_krldlg(TpQuestion, Parameter[], Softkey[], Option)
+     
+    wait for (exists_krldlg(Handle, Answer) == false)
+    
+    return(Answer)
+endfct
+;ENDFOLD

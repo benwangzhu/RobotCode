@@ -1,0 +1,5 @@
+TASKDIR	4	Tasks		eCLR	eCLR_Simulation
+TASK	5	任务		eCLR	eCLR_Simulation
+PROGRAM	6	AA	lib_busio		
+VAR_GLOBALS	4	Global_Variables	C\配置\R\资源\Global_Variables.VGR		
+IO/CONFIGURATION	4	IO_Configuration	C\配置\R\资源\IOCONFIG.CNF		

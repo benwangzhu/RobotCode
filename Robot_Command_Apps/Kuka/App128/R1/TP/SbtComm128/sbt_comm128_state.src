@@ -1,0 +1,165 @@
+&ACCESS RO3
+&COMMENT App128 State
+def sbt_comm128_state()
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; file Name: sbt_comm128_state.src
+;
+; Description:
+;   Language             ==   KRL for KUKA ROBOT
+;   Date                 ==   2022 - 02 - 26
+;   Modification Data    ==   2024 - 09 - 24
+;
+; Author: speedbot
+;
+; Version: 3.0
+;***********************************************************
+;
+;***********************************************************
+
+;FOLD SPEEDBOT COMM128 STATE
+
+    ; When in data collection mode, exit
+    if OnlyCollect then  
+        return
+    endif
+
+    ; Create a Timed Interrupt to Periodically Trigger Real-time Status Upload
+    global interrupt decl 16 when $timer[FLG_STATE_TIME_INDEX] > 0 do comm128_state_send_to_()   
+    interrupt on 16
+
+    ; This interrupt prevents the timer from failing during foreground-background switching
+    global interrupt decl 17 when $timer[FLG_STATE_TIME_INDEX] >= 500 do comm128_state_send_to_()   
+    interrupt on 17
+
+    $timer[FLG_STATE_TIME_INDEX] = -200
+    $timer_stop[FLG_STATE_TIME_INDEX] = false
+
+    wait sec 0.012
+;ENDFOLD
+end
+
+;FOLD COMM128 STATE COMM INIT
+global def comm128_state_comm_init_()
+
+    StatePackage.DrvHead.Head = PACK_HEADER
+    StatePackage.DrvHead.Length = 112
+    StatePackage.DrvHead.PacketCount = 1
+    StatePackage.DrvHead.Cmd = 255
+    StatePackage.DrvHead.Type_ = TYPE_KUKA
+    StatePackage.DrvHead.Seq = 0
+    StatePackage.DrvHead.VirtualRob = IsVirRobId
+    StatePackage.DrvTail.Tail = PACK_TAIL
+
+    StatePackage.State = 0
+    StatePackage.NumOfRobAxis = NumOfRobAxis
+    StatePackage.NumOfRoTAxis = NumOfRotAxis
+    StatePackage.Reserverd1 = 0
+    StatePackage.Moveid = 0
+
+    StatePackage.DinVal[1] = 0
+    StatePackage.DinVal[2] = 0
+    StatePackage.DinVal[3] = 0
+    StatePackage.DinVal[4] = 0
+    StatePackage.DinVal[5] = 0
+    StatePackage.DinVal[6] = 0
+    StatePackage.DinVal[7] = 0
+    StatePackage.DinVal[8] = 0
+
+    StatePackage.ProcessPrm01 = 0
+    StatePackage.ProcessPrm02 = 0
+    StatePackage.ProcessPrm03 = 0
+    StatePackage.ProcessPrm04 = 0
+    StatePackage.ProcessPrm05 = 0
+    StatePackage.ProcessPrm06 = 0
+
+    ; Create UDP Communication
+    Status = udp_create_(UdpSockCfg) 
+    
+end
+;ENDFOLD
+
+;FOLD COMM128 STATE SEND TO
+global def comm128_state_send_to_()
+
+    continue
+    if $flag[UdpSockCfg.ActFlagNo] then
+
+        StatePackage.State = 0
+
+        if not OnlyCollect then  
+
+            if is_running_() then  
+                StatePackage.State = StatePackage.State b_or 1
+            endif
+        endif
+
+        if is_fault_() then  
+
+            StatePackage.State = StatePackage.State b_or 4
+        endif
+        
+        if is_moving_() then  
+
+            StatePackage.State = StatePackage.State b_or 8
+        endif
+        
+        TempInt = StatePackage.DrvHead.Seq
+
+        TempInt = tern_int_(TempInt < 255, TempInt + 1, 1)
+
+        StatePackage.DrvHead.Seq = TempInt
+        StatePackage.Moveid = GlbMoveId
+
+        ; Get Current Joint Position
+        StatePackage.Joints = cur_jpos_()
+
+        ; Get IO Information
+        StatePackage.DinVal[1] = bus_gbyte_(#IO_DIN, InMapAddr[1])
+        StatePackage.DinVal[2] = bus_gbyte_(#IO_DIN, InMapAddr[2])
+        StatePackage.DinVal[3] = bus_gbyte_(#IO_DIN, InMapAddr[3])
+        StatePackage.DinVal[4] = bus_gbyte_(#IO_DIN, InMapAddr[4])
+        StatePackage.DinVal[5] = bus_gbyte_(#IO_DIN, InMapAddr[5])
+        StatePackage.DinVal[6] = bus_gbyte_(#IO_DIN, InMapAddr[6])
+        StatePackage.DinVal[7] = bus_gbyte_(#IO_DIN, InMapAddr[7])
+        StatePackage.DinVal[8] = bus_gbyte_(#IO_DIN, InMapAddr[8])
+
+        ; Pack Data
+        pack_head_(Packages[], StatePackage.DrvHead, Offset)
+        cast_to(Packages[], Offset, StatePackage.State, StatePackage.NumOfRobAxis, StatePackage.NumOfRotAxis, StatePackage.Reserverd1, StatePackage.MoveId)
+        cast_to(Packages[], Offset, StatePackage.DinVal[1], StatePackage.DinVal[2], StatePackage.DinVal[3], StatePackage.DinVal[4], StatePackage.DinVal[5], StatePackage.DinVal[6], StatePackage.DinVal[7], StatePackage.DinVal[8])
+        cast_to(Packages[], Offset, StatePackage.Joints, TempReal)
+        cast_to(Packages[], Offset, StatePackage.ProcessPrm01, StatePackage.ProcessPrm02, StatePackage.ProcessPrm03, StatePackage.ProcessPrm04, StatePackage.ProcessPrm05, StatePackage.ProcessPrm06)
+        pack_tail_(Packages[], StatePackage.DrvTail, Offset)
+
+        ; Send Data
+        Status = udp_sendto_(UdpSockCfg, Packages[], Offset)
+    endif
+    
+    ; Reset Timer to Ensure the Next Interrupt Triggers Properly
+    continue   
+    $timer[FLG_STATE_TIME_INDEX] = -abs(STATE_FREQ)
+
+end 
+;ENDFOLD
+
+
+global def comm128_submit_init_()
+
+    comm128_state_comm_init_()
+end
+
+global def comm128_submit_loop_()
+
+    if $flag[UdpSockCfg.ActFlagNo] == false then
+        ; Attempt Reconnection After Disconnection
+        comm128_state_comm_init_()
+    endif
+
+    if (not is_running_()) or (OnlyCollect == true) then
+        ; Execute Real-time Status Transmission When the Foreground Is Not Activated and the Driver Is Not Running
+        comm128_state_send_to_()
+    endif
+end

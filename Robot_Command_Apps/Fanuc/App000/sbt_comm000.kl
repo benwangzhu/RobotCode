@@ -1,0 +1,140 @@
+program sbt_comm000
+--***********************************************************
+--
+-- file Name: sbt_comm000.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2024 - 04 - 01
+--   Modification Data    ==   2024 - 04 - 01
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--
+--  Calibration By CommBus
+-- 
+%comment = 'CalibByBus-250618'
+%nolockgroup 
+%nopause = error + tpenable + command
+%include include\lib_busio_t
+%include include\lib_buscmd_t
+%include include\lib_math_t
+%include include\lib_logs_t
+%include include\lib_transform_t
+const
+
+    CALIB_START                         = 1
+    CALIB_PICT                          = 2
+    CALIB_END                           = 3
+
+var
+    --
+    -- 总线通讯接口
+    BusInput    in cmos     : busin_t               
+    BusOutput   in cmos     : busout_t
+
+    CommType01              : cmd_typ01_t
+
+    BusTimeout  in cmos     : integer
+
+    Count                   : integer
+
+    Status                  : integer
+
+%include include\lib_logs_h
+%include include\lib_math_h
+%include include\lib_motion_h
+%include include\lib_string_h
+%include include\lib_tp_if_h
+%include include\lib_busio_h
+%include include\lib_buscmd_h
+
+
+begin
+
+    select get_iparm_(1) of
+    case(CALIB_START):
+
+        --
+        -- 默认总线输入开始地址为 513 位
+        --
+        BusInput.BusIoSt = tern_int_(uninit(BusInput.BusIoSt), 513, BusInput.BusIoSt)
+        --
+        -- 默认总线输出开始地址为 513 位
+        --
+        BusOutput.BusIoSt = tern_int_(uninit(BusOutput.BusIoSt), 513, BusOutput.BusIoSt)
+
+
+        BusTimeout = tern_int_(uninit(BusTimeout), 4000, BusTimeout)
+
+
+        bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+
+        Count = 0
+
+        CommType01.Byte01 = 1
+        CommType01.Byte02 = get_iparm_(2)
+
+        CommType01.Short03 = 0
+        CommType01.Short04 = 0
+        
+        CommType01.Int05 = 0
+        CommType01.Int06 = 0
+
+        CommType01.Float07 = 0.0
+        CommType01.Float08 = 0.0
+
+        Status = bus_cmd002_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CommType01, 0)
+        Status = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, 5000)
+
+        if Status = 0 then 
+
+            --log_info_('I-->', 'Calibration Start !!!')
+        else
+
+            post_err(CC_UALARM, '100 CALIB_START Err !!!', 0, CC_PAUSE)
+        endif
+    case(CALIB_PICT):
+
+        Count = Count + 1
+
+        Status = bus_cmd003_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, c_mulgp_ps_(0, 0, 1), 0)
+        Status = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+    
+        if Status = 0 then 
+
+
+            --log_info_('I-->', 'Calibration [' + int_2str_(Count) + '] ... !!!')
+        else
+
+            post_err(CC_UALARM, '101 CALIB_PICT Err !!!', 0, CC_PAUSE)
+        endif
+    
+    case(CALIB_END):
+        CommType01.Byte01 = 2
+
+        Status = bus_cmd002_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CommType01, 0)
+        Status = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, 5000)
+
+        if Status = 0 then 
+
+            --log_info_('I-->', 'Calibration End !!!')
+        else
+
+            post_err(CC_UALARM, '102 CALIB_END Err !!!', 0, CC_PAUSE)
+        endif
+   
+    else:
+        
+        post_err(CC_UALARM, '999 Calib Param1 Err !!!', 0, CC_ABORT)
+        
+    endselect
+    
+    
+
+end sbt_comm000

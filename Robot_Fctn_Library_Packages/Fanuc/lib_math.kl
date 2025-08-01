@@ -1,0 +1,661 @@
+program lib_math
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_math
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2022 - 05 - 05
+--   Modification Data    ==   2022 - 05 - 06
+--
+-- Author: speedbot
+--
+-- Version: 1.1
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+
+-- 2023 - 04 - 06 ++ int_shr_() ==> integer
+
+-- 2023 - 04 - 06 ++ int_shl_() ==> integer
+
+-- 2022 - 05 - 05 ++ random_() ==> integer
+
+-- 2022 - 05 - 05 ++ deg_to_rad_() ==> real
+
+-- 2022 - 05 - 05 ++ rad_to_deg_() ==> real
+
+-- 2022 - 05 - 06 ++ sq_() ==> real
+
+-- 2022 - 05 - 06 ++ pow_() ==> real
+
+-- 2022 - 11 - 04 ++ x_pow_() ==> real
+
+-- 2022 - 05 - 06 ++ p_distance_() ==> real
+
+-- 2022 - 05 - 28 ++ int_to_bol_() ==> boolean
+
+-- 2022 - 05 - 28 ++ bol_to_int_() ==> integer
+
+-- 2022 - 11 - 04 ++ word_2str_() ==> string
+
+-- 2023 - 04 - 06 ++ str_2word_() ==> integer
+
+-- 2022 - 11 - 05 ++ bit_2int_() ==> integer 
+
+-- 2022 - 11 - 05 ++ int_2bit_() ==> bool32_t  
+
+-- 2022 - 11 - 05 ++ bit_2rel_() ==> real 
+
+-- 2022 - 11 - 05 ++ rel_2bit_() ==> bool32_t  
+
+-- 2022 - 12 - 21 ++ max_() ==> real 
+
+-- 2022 - 12 - 21 ++ min_() ==> real 
+
+-- 2023 - 03 - 17 ++ swap_int_() ==> integer 
+
+-- 2023 - 03 - 17 ++ swap_real_() ==> real
+
+-- 2023 - 03 - 17 ++ swap_short_() ==> short  
+
+-- 2023 - 03 - 17 ++ tern_int_() ==> integer  
+
+-- 2023 - 03 - 17 ++ tern_bool_() ==> boolean  
+
+-- 2023 - 03 - 17 ++ tern_real_() ==> real  
+
+-- 2023 - 03 - 17 ++ tern_str_() ==> string  
+
+-- 2023 - 03 - 17 ++ tern_cart_() ==> xyzwprext  
+
+-- 2023 - 03 - 17 ++ tern_jnt_() ==> jointpos  
+
+-- 2023 - 03 - 26 ++ tern_aryrel_() ==> array of real  
+
+-- 2023 - 03 - 26 ++ tern_aryint_() ==> array of integer  
+
+--
+%nolockgroup
+%nobusylamp
+%nopause = tpenable + command + error
+%comment = 'Math 231129'
+
+%include include/lib_transform_t
+
+
+%include include/lib_math_t
+%include include/lib_math_h
+%include include/lib_string_h
+%include include/lib_tp_if_h
+%include include/lib_motion_h
+
+
+begin
+
+end lib_math
+
+routine random_
+var
+    RtnNum          : integer
+begin
+    RtnNum = round(abs(((($fast_clock + 65536)  mod 65536) * $fast_clock + 25173) / 25173))
+    repeat
+        delay 1
+        RtnNum = round(abs(((25173 * (RtnNum + $fast_clock) + 13849) mod 65536) / 65535) * MaxNum)
+    until (RtnNum >= MinNum) and (RtnNum <= MaxNum)
+    return(RtnNum)
+end random_
+
+routine deg_to_rad_
+begin
+    return(Rdeg * DEG_2_RAD)
+end deg_to_rad_
+
+routine rad_to_deg_
+begin
+    return(Rrad * RAD_2_DEG)
+end rad_to_deg_
+
+routine sq_
+begin
+    return(Val * Val)
+end sq_
+
+routine pow_
+begin
+    return(Val * Val * Val)
+end pow_
+
+routine pow2_
+var 
+    I               : integer
+    RtnVal          : integer
+begin
+    RtnVal = PowInt
+    for I = 1 to PowInt do RtnVal = 2 * RtnVal; endfor
+    return(RtnVal)
+end pow2_
+
+routine x_pow_
+var 
+    I                   : integer
+    RtnVal              : real
+begin
+    if ExpVal = 0 then ; return(1); endif
+
+    RtnVal = Val
+    for I = 1 to (ExpVal - 1) do ; RtnVal = RtnVal * Val; endfor
+    return(RtnVal)
+end x_pow_
+
+routine p_distance_
+begin
+
+    return(sqrt(sq_(P1.x - P2.x) + sq_(P1.y - P2.y) + sq_(P1.z - P2.z)))
+end p_distance_
+
+routine int_to_bol_
+begin
+
+    return(Int > 0)
+end int_to_bol_
+
+routine bol_to_int_ 
+begin
+
+    if Bool then ; return(1) ; endif
+    return(0)
+end bol_to_int_
+
+routine word_2str_
+var
+    CnvWordVal          : integer
+begin
+    CnvWordVal = WordVal
+    
+    if CnvWordVal < 0 then ; CnvWordVal = CnvWordVal + 65536; endif
+
+    if (CnvWordVal < -32768) or (CnvWordVal > 65535) then ; post_err(38001, 'WordVal Must Be [-32768, 65535]', 0, CC_ABORT); endif
+
+    return(chr(CnvWordVal and 255) + chr(CnvWordVal div 256))
+end word_2str_ 
+
+routine str_2word_
+begin
+    return(ord(StrVal, 1) * 256 + ord(StrVal, 2))
+end str_2word_ 
+
+routine bit_2int_
+var
+    I, J            : integer
+    CnvBits         : bool32_t
+    BitVal          : integer
+    BitMask         : integer
+    IntVal          : integer
+    BinStr          : string[32]
+    GetStatus       : integer
+begin
+    
+    if (Len <= 0) or (Len > 32) then ; post_err(CC_UALARM, 'Port Len Must Be (0, 32]', 0, CC_ABORT); endif
+
+    if (Len = 32) and (not IsSign) then ; post_err(CC_UALARM, 'Len 32 Must Be Sign', 0, CC_ABORT); endif
+
+    if ((Len mod 8) = 0) and (not Reversed) then  
+
+        for I = 1 to (len div 8) do
+
+            for J = 1 to 8 do  
+
+                CnvBits[(I - 1) * 8 + J] = Bits[((len div 8) - I) * 8 + J]
+            endfor
+        
+        endfor
+    else
+
+        CnvBits = Bits
+    endif
+
+    BitMask = 1; IntVal = 0
+    for I = 1 to Len do 
+        
+        BitMask = BitMask + BitMask * bol_to_int_(I >= 2)
+
+        if (I = Len) and IsSign then ; BitMask = BitMask * (-1); endif
+
+        BitVal = bol_to_int_(CnvBits[I])
+
+        IntVal = IntVal + BitVal * BitMask
+    endfor
+
+    return(IntVal)
+
+end bit_2int_
+
+routine int_2bit_
+var
+    I, J            : integer
+    CnvIntVal       : integer
+    BinStr          : string[33]
+    RtnVal          : bool32_t
+    CnvBits         : bool32_t
+begin
+
+    if (Len <= 0) or (Len > 32) then ; post_err(CC_UALARM, 'Port Len Must Be (0, 32]', 0, CC_ABORT); endif
+
+    CnvIntVal = IntVal
+    if (CnvIntVal < 0) and (Len <= 30) then CnvIntVal = CnvIntVal + round(x_pow_(2, Len)) ; endif
+    if (CnvIntVal < 0) and (Len = 31) then ; CnvIntVal = CnvIntVal + MAXINT ; endif
+    if Len <= 30 then  
+        if (CnvIntVal < 0) or (CnvIntVal >= round(x_pow_(2, Len))) then ; post_err(CC_UALARM, 'IntVal & Len Unmatched', 0, CC_ABORT); endif
+    endif
+    if Len = 31 then  
+        if (CnvIntVal < 0) or (CnvIntVal >= MAXINT) then ; post_err(CC_UALARM, 'IntVal & Len Unmatched', 0, CC_ABORT); endif
+    endif
+
+    cnv_int_str(CnvIntVal, len, 2, BinStr)
+
+    for I = 1 to len do ; CnvBits[I] = (sub_str(BinStr, (str_len(BinStr) - I + 1), 1) = '1'); endfor
+
+    if ((Len mod 8) = 0) and (not Reversed) then  
+
+        for I = 1 to (len div 8) do
+
+            for J = 1 to 8 do  
+
+                RtnVal[((len div 8) - I) * 8 + J] = CnvBits[(I - 1) * 8 + J]
+            endfor
+        
+        endfor
+    else
+
+        RtnVal = CnvBits
+    endif
+
+    return(RtnVal)
+end int_2bit_
+
+routine bit_2rel_
+var 
+
+    CnvBits             : bool32_t
+    CnvRelBits          : array[4] of byte
+    I, J                : integer
+    RelVal              : real
+begin
+
+    for I = 1 to 4 do  
+
+        for J = 1 to 8 do    
+
+            if not Reversed then 
+                CnvBits[J] = Bits[(4 - I) * 8 + J]
+            else
+                CnvBits[J] = Bits[(I - 1) * 8 + J]
+            endif
+        endfor
+
+        CnvRelBits[I] = bit_2int_(CnvBits, 8, true, false)
+    endfor
+
+    if get_real_abt(RelVal, CnvRelBits, 1) <> CC_SUCCESS then ; post_err(CC_UALARM, 'Cnv Byte To Real Error', 0, CC_ABORT); endif 
+
+    return(RelVal)
+end bit_2rel_
+
+routine rel_2bit_
+var 
+
+    CnvBits             : bool32_t
+    CnvBits2            : bool32_t
+    CnvRelBits          : array[4] of byte
+    CnvRel2Bits         : array[4] of byte
+    I, J                : integer
+begin
+
+    if put_real_abt(RelVal, CnvRelBits, 1) <> CC_SUCCESS then ; post_err(CC_UALARM, 'Cnv Real To Byte Error', 0, CC_ABORT); endif 
+
+    for I = 1 to 4 do  
+
+        if not Reversed then 
+            
+            CnvRel2Bits[I] = CnvRelBits[4 - I + 1] 
+        else
+            CnvRel2Bits[I] = CnvRelBits[I]
+        endif
+
+        CnvBits = int_2bit_((CnvRel2Bits[I]), 8, true)
+
+        for J = 1 to 8 do    
+
+            CnvBits2[(I - 1) * 8 + J] = CnvBits[J]
+        endfor
+    endfor
+
+    return(CnvBits2)
+end rel_2bit_
+
+routine io_2byte_
+var
+    I ,J                    : integer
+    BitMask                 : integer
+begin
+
+    for I = 1 to (EndPt - StartPt + 1) div 8 do  
+
+        if array_len(ByteVal) < I then ; return ; endif 
+
+        ByteVal[I] = 0; BitMask = 1
+        for J = 1 to 8 do
+
+            BitMask = BitMask + BitMask * bol_to_int_(J >= 2)
+            ByteVal[I] = ByteVal[I] + get_io_(PortType, StartPt + ((I - 1) * 8 + J) - 1) * BitMask
+        endfor
+
+    endfor
+
+end io_2byte_
+
+routine io_2byt_
+var
+    I ,J                    : integer
+    BitMask                 : integer
+begin
+
+    for I = 1 to (EndPt - StartPt + 1) div 8 do  
+
+        if array_len(ByteVal) < I then ; return ; endif 
+
+        ByteVal[I] = 0; BitMask = 1
+        for J = 1 to 8 do
+
+            BitMask = BitMask + BitMask * bol_to_int_(J >= 2)
+            ByteVal[I] = ByteVal[I] + get_io_(PortType, StartPt + ((I - 1) * 8 + J) - 1) * BitMask
+        endfor
+
+    endfor
+
+end io_2byt_
+
+routine byte_2io_
+var
+    I ,J                    : integer
+    BitMask                 : integer
+begin
+
+    for I = 1 to array_len(ByteVal) do
+
+        BitMask = 1
+        for J = 1 to 8 do
+
+            BitMask = BitMask + BitMask * bol_to_int_(J >= 2)
+
+            if (((I - 1) * 8 + J) > (SetPt - StartPt)) and (((I - 1) * 8 + J) <= (EndPt - StartPt + 1)) then
+
+                dout[StartPt + (I - 1) * 8 + J - 1] = ((ByteVal[I] and BitMask) > 0)
+            endif
+        endfor
+
+    endfor
+
+end byte_2io_
+
+routine byt_2io_
+var
+    I ,J                    : integer
+    BitMask                 : integer
+begin
+
+    for I = 1 to array_len(ByteVal) do
+
+        BitMask = 1
+        for J = 1 to 8 do
+
+            BitMask = BitMask + BitMask * bol_to_int_(J >= 2)
+
+            if (((I - 1) * 8 + J) > (SetPt - StartPt)) and (((I - 1) * 8 + J) <= (EndPt - StartPt + 1)) then
+
+                dout[StartPt + (I - 1) * 8 + J - 1] = ((ByteVal[I] and BitMask) > 0)
+            endif
+        endfor
+
+    endfor
+
+end byt_2io_
+
+routine max_ 
+begin
+
+    if Val1 > Val2 then  
+
+        return(Val1)
+    endif
+
+    return(Val2)
+end max_
+
+routine min_ 
+begin
+
+    if Val1 > Val2 then  
+
+        return(Val2)
+    endif
+
+    return(Val1)
+end min_
+
+routine swap_int_
+var
+    CnvInt          : integer
+    CopyIntVal      : integer
+begin
+    CnvInt = 0
+    CopyIntVal = IntVal
+    swap_int(CopyIntVal, CnvInt)
+   -- write(uninit(CnvInt))
+    if uninit(CnvInt) then return(MAXINT); endif
+    --if CnvInt = MAXINT then return(MAXINT); endif
+   -- if CnvInt = MININT then return(MININT); endif
+    return(CnvInt)
+end swap_int_
+
+routine swap_real_
+var
+    CnvReal         : real
+    CopyRealVal     : real
+begin
+    CnvReal = 0.0
+    CopyRealVal = RealVal
+    swap_real(CopyRealVal, CnvReal)
+    return(CnvReal)
+end swap_real_
+
+routine swap_short_
+var
+    CnvShrVal       : integer
+    CopyShrVal      : integer
+    --Str1             : string[2]
+    --Str2             : string[2]
+begin
+    CopyShrVal = ShortVal
+    swap_short(CopyShrVal, CnvShrVal)
+    --Str1 = word_2str_(CopyRealVal)
+    --Str2 = sub_str(Str1, 2, 1) + sub_str(Str1, 1, 1)
+    return(CnvShrVal)
+end swap_short_
+
+routine tern_int_
+begin
+    if Exprsn then return(Val1); endif
+    return(Val2)
+end tern_int_
+
+routine tern_bool_
+begin
+    if Exprsn then return(Val1); endif
+    return(Val2)
+end tern_bool_
+
+routine tern_real_
+begin
+    if Exprsn then return(Val1); endif
+    return(Val2)
+end tern_real_
+
+routine tern_str_
+begin
+    if Exprsn then return(Val1); endif
+    return(Val2)
+end tern_str_
+
+routine tern_cart_
+begin
+    if Exprsn then return(Val1); endif
+    return(Val2)
+end tern_cart_
+
+routine tern_jnt_
+begin
+    if Exprsn then return(Val1); endif
+    return(Val2)
+end tern_jnt_
+
+routine tern_aryrel_
+begin
+    if Exprsn then return(Val1); endif
+    return(Val2)
+end tern_aryrel_
+
+routine tern_aryint_
+begin
+    if Exprsn then return(Val1); endif
+    return(Val2)
+end tern_aryint_
+
+routine gg_frame_
+var
+    RefUfmDt            : xyzwpr
+    NewUfmDt            : xyzwpr
+begin
+
+    -- 根据参数读取需要转换的基准用户坐标系
+    if OrgFrameNo = 0 then 
+
+        -- 0 号用户坐标系要这么取，直接读取 $mnuframe[GrpNo, 0] 会报错数组维度错误
+        RefUfmDt = null_pos_ 
+    else 
+
+        RefUfmDt = $mnuframe[GrpNo, OrgFrameNo] 
+    endif
+
+    -- 根据偏移值计算新的用户坐标系
+    NewUfmDt = RefUfmDt : OfsPosn
+    NewUfmDt.Config_Data = RefUfmDt.Config_Data
+    
+    -- 用户坐标系赋值
+    $mnuframe[GrpNo, OfsFrameNo] =  NewUfmDt
+end gg_frame_
+
+
+routine ts_frame_
+var
+    RefUfmDt            : xyzwpr
+    NewUfmDt            : xyzwpr
+    NewOffs             : xyzwprext
+begin
+
+    -- 根据参数读取需要转换的基准用户坐标系
+    if OfsFrameNo = 0 then 
+
+        -- 0 号用户坐标系要这么取，直接读取 $mnuframe[GrpNo, 0] 会报错数组维度错误
+        RefUfmDt = null_pos_ 
+    else 
+
+        RefUfmDt = $mnuframe[GrpNo, OfsFrameNo] 
+    endif
+
+    -- 根据参数读取需要转换的基准用户坐标系
+    if NewFrameNo = 0 then 
+
+        -- 0 号用户坐标系要这么取，直接读取 $mnuframe[GrpNo, 0] 会报错数组维度错误
+        NewUfmDt = null_pos_ 
+    else 
+
+        NewUfmDt = $mnuframe[GrpNo, NewFrameNo] 
+    endif
+
+    NewOffs = (inv((NewUfmDt)) : RefUfmDt) : OfsPosn : inv((inv((NewUfmDt)) : RefUfmDt))
+
+    return(NewOffs)
+end ts_frame_
+
+routine rob_2cd_
+var
+    CdPosn      : xyzwprext
+    CopyCdPosn  : xyzwprext
+begin
+
+    CdPosn = inv((DynPosn)) : (inv((CdFrame)) : RobPosn)
+    CopyCdPosn = RobPosn
+    CopyCdPosn.x = CdPosn.x
+    CopyCdPosn.y = CdPosn.y
+    CopyCdPosn.z = CdPosn.z
+    CopyCdPosn.w = CdPosn.w
+    CopyCdPosn.p = CdPosn.p
+    CopyCdPosn.r = CdPosn.r
+
+    return(CopyCdPosn)
+end rob_2cd_
+
+routine cd_2rob_
+var
+    RobPosn     : xyzwprext
+    CopyRobPosn : xyzwprext
+begin
+
+    RobPosn = CdFrame : DynPosn : CdPosn
+    CopyRobPosn = CdPosn
+    CopyRobPosn.x = RobPosn.x
+    CopyRobPosn.y = RobPosn.y
+    CopyRobPosn.z = RobPosn.z
+    CopyRobPosn.w = RobPosn.w
+    CopyRobPosn.p = RobPosn.p
+    CopyRobPosn.r = RobPosn.r
+
+    return(CopyRobPosn)
+end cd_2rob_
+
+
+
+
+

@@ -1,0 +1,146 @@
+--***********************************************************
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- file Name: sbt_comm128_t.kl
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2022 - 05 - 13
+--   Modification Data    ==   2022 - 05 - 28
+--
+-- Author: speedbot
+--
+-- Version: 3.0
+--***********************************************************
+--
+
+%include include/lib_packages_t
+
+const                        
+
+    STATE_FREQ                                  = 25.0          -- State 任务的通讯频率，单位是 HZ
+    SHAKE_TIME                                  = 3000          
+    TRY_CONN_TM                                 = 1000
+
+
+    CMD_CTRL                                    = 1             -- 运动命令
+    CMD_IO                                      = 2             -- IO 命令
+    CMD_PARAM                                   = 100           -- 参数控制命令
+    CMD_STOP                                    = 200           -- 停止命令
+    CMD_PAUSE                                   = 201           -- 暂停命令
+    CMD_CONTINUE                                = 202           -- 继续命令
+
+    ERR_SUCCESS                                 = 0             -- 无错误
+    ERR_MOVTYPE                                 = 10001         -- MoveType 错误
+    ERR_ACC                                     = 10002         -- 加速度错误
+    ERR_SMOOT                                   = 10003         -- 逼近参数错误
+    ERR_VELOCITY                                = 10004         -- 速度错误
+    ERR_MOVEID                                  = 10005         -- 运动 ID 错误
+
+    ERR_CFG_IO1                                 = 20001         -- 第一组 IO 未配置
+    ERR_CFG_IO2                                 = 20002         -- 第二组 IO 未配置
+    ERR_CFG_IO3                                 = 20003         -- 第三组 IO 未配置
+    ERR_CFG_IO4                                 = 20004         -- 第四组 IO 未配置
+    ERR_CFG_IO5                                 = 20005         -- 第五组 IO 未配置
+    ERR_CFG_IO6                                 = 20006         -- 第六组 IO 未配置
+    ERR_CFG_IO7                                 = 20007         -- 第七组 IO 未配置
+    ERR_CFG_IO8                                 = 20008         -- 第八组 IO 未配置
+
+
+    REG_MOV_ID                                  = 10            -- R[10]    存储 MOVE ID
+
+    TPE_MOV_FLG                                 = 1
+    TPE_MAX_FLG                                 = 5
+
+
+    PAUSE_FLAG                                  = 11
+    CONT_FLAG                                   = 12
+
+
+    TPE_CTRL_NM                                = 'comm128_traje'        -- 前台 TPE 控制程序
+
+    -- 工艺定义
+
+    PRC_ARC_ST                                  = 101                       -- 焊接开始
+    PRC_ARC_ED                                  = 102                       -- 焊接结束
+
+    PRC_LSR_RD                                  = 110                       -- 激光切割穿孔
+    PRC_LSR_ON                                  = 111                       -- 激光切割开始
+
+    -- Code added on 2025.04.25
+    PRC_LSR_OF                                  = 112                       -- 激光切割关闭
+    --
+
+    
+    TYPE_FANUC                                  = 1
+type
+
+    drv_io_t from sbt_comm128 = structure
+        InAddr1         : integer
+        InAddr2         : integer
+        InAddr3         : integer
+        InAddr4         : integer
+        InAddr5         : integer
+        InAddr6         : integer
+        InAddr7         : integer
+        InAddr8         : integer
+        OutAddr1        : integer
+        OutAddr2        : integer
+        OutAddr3        : integer
+        OutAddr4        : integer
+        OutAddr5        : integer
+        OutAddr6        : integer
+        OutAddr7        : integer
+        OutAddr8        : integer
+    endstructure
+
+    drv_stat_t from sbt_comm128 = structure
+        DrvHead         : pack_head_t
+        State           : byte
+        NumOfRobAxis    : byte
+        NumOfRotAxis    : byte
+        Reserverd1      : byte
+        MoveId          : integer
+        DinVal          : array[8] of byte
+        Joints          : array[13] of real
+        ProcessPrm01    : real
+        ProcessPrm02    : real
+        ProcessPrm03    : real
+        ProcessPrm04    : real
+        ProcessPrm05    : real
+        ProcessPrm06    : real
+        DrvTail         : pack_tail_t
+    endstructure
+
+    drv_pnt_t from sbt_comm128 = structure
+        MoveId          : integer               -- 点位编号
+        MovType         : byte                  -- 运动类型
+        ProcessType     : byte                  -- 坐标类型
+        Acc             : byte                  -- 加速度
+        Smoot           : byte                  -- 拐弯半径
+        Velocity        : real                  -- 速度
+        PrcoParm1       : integer               -- 工艺参数一
+        PrcoParm2       : integer               -- 工艺参数一
+        PrcoParm3       : real                  -- 工艺参数三
+        Point           : array[13] of real     -- 坐标
+    endstructure
+
+    drv_prm_t from sbt_comm128 = structure
+        ParamType       : integer
+        Params          : array[13] of real 
+    endstructure
+
+    drv_pack_t from sbt_comm128 = structure
+        DrvHead         : pack_head_t
+        Point           : drv_pnt_t
+        Io              : array[8] of byte
+        Params          : drv_prm_t
+        DrvTail         : pack_tail_t
+    endstructure
+
+    drv_ack_t from sbt_comm128 = structure
+        DrvHead         : pack_head_t
+        Ack             : integer
+        DrvTail         : pack_tail_t
+    endstructure

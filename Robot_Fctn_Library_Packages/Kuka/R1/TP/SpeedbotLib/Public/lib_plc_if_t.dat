@@ -1,0 +1,348 @@
+&access RP
+&comment Lib Plc Iface-h 221122
+defdat  lib_plc_if_t public
+;***********************************************************
+;
+; Copyright 2018 - 2023 speedbot All Rights reserved.
+;
+; File Name: lib_plc_if_t.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 05 - 05
+;   Modification Data    ==   2022 - 08 - 09
+;
+; Author: speedbot
+;
+; Version: 2.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+
+; Output
+global signal Go001ProgNo           $out[2011] to $out[2018]
+global signal Go002PathSegment      $out[2033] to $out[2040]
+global signal Go003InfoEho01        $out[2097] to $out[2104]
+global signal Go004InfoEho02        $out[2105] to $out[2112]
+global signal Go005InfoEho03        $out[2113] to $out[2120]
+global signal Go006InfoEho04        $out[2121] to $out[2128]
+global signal Go007Channel01        $out[2129] to $out[2136]
+global signal Go008Channel02        $out[2137] to $out[2144]
+global signal Go009Channel03        $out[2145] to $out[2152]
+global signal Go010Channel04        $out[2153] to $out[2160]
+global signal Go011AxisPos01        $out[2161] to $out[2176]
+
+global signal Do021ReqZone01        $out[2021]
+global signal Do022ReqZone02        $out[2022]
+global signal Do023ReqZone03        $out[2023]
+global signal Do024ReqZone04        $out[2024]
+global signal Do025ReqZone05        $out[2025]
+global signal Do026ReqZone06        $out[2026]
+global signal Do027ReqZone07        $out[2027]
+global signal Do028ReqZone08        $out[2028]
+global signal Do029ReqZone09        $out[2029]
+global signal Do030ReqZone10        $out[2030]
+global signal Do031ReqZone11        $out[2031]
+global signal Do032ReqZone12        $out[2032]
+
+global signal Do041EndOfSeg         $out[2041]
+global signal Do042Reserved         $out[2042]
+global signal Do043Reserved         $out[2043]
+global signal Do044Reserved         $out[2044]
+
+global signal Do045ToolCtrl01       $out[2045]
+global signal Do046ToolCtrl02       $out[2046]
+global signal Do047ToolCtrl03       $out[2047]
+global signal Do048ToolCtrl04       $out[2048]
+global signal Do049ToolCtrl05       $out[2049]
+global signal Do050ToolCtrl06       $out[2050]
+global signal Do051ToolCtrl07       $out[2051]
+global signal Do052ToolCtrl08       $out[2052]
+global signal Do053ToolCtrl09       $out[2053]
+global signal Do054ToolCtrl10       $out[2054]
+global signal Do055ToolCtrl11       $out[2055]
+global signal Do056ToolCtrl12       $out[2056]
+
+global signal Do057ExAxsCtrl01      $out[2057]
+global signal Do058ExAxsCtrl02      $out[2058]
+global signal Do059ExAxsCtrl03      $out[2059]
+
+global signal Do060Reserved         $out[2060]
+global signal Do061Reserved         $out[2061]
+global signal Do062Reserved         $out[2062]
+global signal Do063Reserved         $out[2063]
+global signal Do064Reserved         $out[2064]
+global signal Do065Reserved         $out[2065]
+global signal Do066Reserved         $out[2066]
+global signal Do067Reserved         $out[2067]
+
+global signal Do068TakPict01        $out[2068]
+global signal Do069TakPict02        $out[2069]
+global signal Do070TakPict03        $out[2070]
+global signal Do071LaserOn01        $out[2071]
+global signal Do072LaserOn02        $out[2072]
+
+global signal Do073ExDevCtrl01      $out[2073]
+global signal Do074ExDevCtrl02      $out[2074]
+global signal Do075ExDevCtrl03      $out[2075]
+global signal Do076ExDevCtrl04      $out[2076]
+global signal Do077ExDevCtrl05      $out[2077]
+global signal Do078ExDevCtrl06      $out[2078]
+global signal Do079ExDevCtrl07      $out[2079]
+global signal Do080ExDevCtrl08      $out[2080]
+global signal Do081ExDevCtrl09      $out[2081]
+global signal Do082ExDevCtrl10      $out[2082]
+global signal Do083ExDevCtrl11      $out[2083]
+global signal Do084ExDevCtrl12      $out[2084]
+
+global signal Do085Reserved         $out[2085]
+global signal Do086Reserved         $out[2086]
+global signal Do087Reserved         $out[2087]
+global signal Do088Reserved         $out[2088]
+global signal Do089Reserved         $out[2089]
+global signal Do090Reserved         $out[2090]
+global signal Do091Reserved         $out[2091]
+global signal Do092Reserved         $out[2092]
+global signal Do093Reserved         $out[2093]
+global signal Do094Reserved         $out[2094]
+global signal Do095Reserved         $out[2095]
+global signal Do096Reserved         $out[2096]
+
+global signal Do241InZone01         $out[3241]
+global signal Do242InZone02         $out[3242]
+global signal Do243InZone03         $out[3243]
+global signal Do244InZone04         $out[3244]
+global signal Do245InZone05         $out[3245]
+global signal Do246InZone06         $out[3246]
+global signal Do247InZone07         $out[3247]
+global signal Do248InZone08         $out[3248]
+global signal Do249InZone09         $out[3249]
+global signal Do250InZone10         $out[3250]
+global signal Do251InZone11         $out[3251]
+global signal Do252InZone12         $out[3252]
+
+; input
+global signal Gi001ProgNo              $in[2009] to $in[2016]
+global signal Gi002DicisionCode        $in[2033] to $in[2040]
+global signal Gi003InfoEcho01          $in[2097] to $in[2112]
+global signal Gi004InfoEcho02          $in[2113] to $in[2120]
+global signal Gi005InfoEcho03          $in[2121] to $in[2128]
+global signal Gi006InfoEcho04          $in[2129] to $in[2136]
+global signal Gi007AxisPos01           $in[2161] to $in[2176]
+
+global signal Di021ZoneReady01      $in[2021]
+global signal Di022ZoneReady02      $in[2022]
+global signal Di023ZoneReady03      $in[2023]
+global signal Di024ZoneReady04      $in[2024]
+global signal Di025ZoneReady05      $in[2025]
+global signal Di026ZoneReady06      $in[2026]
+global signal Di027ZoneReady07      $in[2027]
+global signal Di028ZoneReady08      $in[2028]
+global signal Di029ZoneReady09      $in[2029]
+global signal Di030ZoneReady10      $in[2030]
+global signal Di031ZoneReady11      $in[2031]
+global signal Di032ZoneReady12      $in[2032]
+
+global signal Di041EndOfSeg         $in[2041]
+global signal Di042Reserved         $in[2042]
+global signal Di043Reserved         $in[2043]
+global signal Di044Reserved         $in[2044]
+
+global signal Di045ToolEcho01       $in[2045]
+global signal Di046ToolEcho02       $in[2046]
+global signal Di047ToolEcho03       $in[2047]
+global signal Di048ToolEcho04       $in[2048]
+global signal Di049ToolEcho05       $in[2049]
+global signal Di050ToolEcho06       $in[2050]
+global signal Di051ToolEcho07       $in[2051]
+global signal Di052ToolEcho08       $in[2052]
+global signal Di053ToolEcho09       $in[2053]
+global signal Di054ToolEcho10       $in[2054]
+global signal Di055ToolEcho11       $in[2055]
+global signal Di056ToolEcho12       $in[2056]
+
+global signal Di057ExAxsEcho01      $in[2057]
+global signal Di058ExAxsEcho02      $in[2058]
+global signal Di059ExAxsEcho03      $in[2059]
+
+global signal Di060Reserved         $in[2060]
+global signal Di061Reserved         $in[2061]
+global signal Di062Reserved         $in[2062]
+global signal Di063Reserved         $in[2063]
+global signal Di064Reserved         $in[2064]
+global signal Di065Reserved         $in[2065]
+global signal Di066Reserved         $in[2066]
+global signal Di067Reserved         $in[2067]
+
+global signal Di068PictEcho01       $in[2068]
+global signal Di069PictEcho02       $in[2069]
+global signal Di070PictEcho03       $in[2070]
+global signal Di071Reserved         $in[2071]
+global signal Di072Reserved         $in[2072]
+
+global signal Di073ExDevEcho01      $in[2073]
+global signal Di074ExDevEcho02      $in[2074]
+global signal Di075ExDevEcho03      $in[2075]
+global signal Di076ExDevEcho04      $in[2076]
+global signal Di077ExDevEcho05      $in[2077]
+global signal Di078ExDevEcho06      $in[2078]
+global signal Di079ExDevEcho07      $in[2079]
+global signal Di080ExDevEcho08      $in[2080]
+global signal Di081ExDevEcho09      $in[2081]
+global signal Di082ExDevEcho10      $in[2082]
+global signal Di083ExDevEcho11      $in[2083]
+global signal Di084ExDevEcho12      $in[2084]
+
+global signal Di085Reserved         $in[2085]
+global signal Di086Reserved         $in[2086]
+global signal Di087Reserved         $in[2087]
+global signal Di088Reserved         $in[2088]
+global signal Di089Reserved         $in[2089]
+global signal Di090Reserved         $in[2090]
+global signal Di091Reserved         $in[2091]
+global signal Di092Reserved         $in[2092]
+global signal Di093Reserved         $in[2093]
+global signal Di094Reserved         $in[2094]
+global signal Di095Reserved         $in[2095]
+global signal Di096Reserved         $in[2096]
+
+global char ContDicitionCode = 0
+global char CurPathSegment = 0
+
+global enum tool_ctrl_mode_ ON, OFF, WON, WOFF, SIM
+
+global enum servo_ctrl_mode_ MOVING, WAITING
+
+global enum zone_mode_t I_ENTER, I_EXIT
+
+;***********************************************************
+; func echo_channel_()
+;***********************************************************
+;     in : Channel1      * char *	        * Channel 1 *
+;     in : Channel2      * char *	        * Channel 2 *
+;     in : Channel3      * char *	        * Channel 3 *
+;     in : Channel4      * char *          * Channel 4 *
+;***********************************************************
+; Echo the specified channels
+;***********************************************************
+ext echo_channel_(char : in, char : in, char : in, char : in)
+
+;***********************************************************
+; func echo_job_info_()
+;***********************************************************
+;     in : Info1      * char *	        * Information 1 *
+;     in : Info2      * char *	        * Information 2 *
+;     in : Info3      * char *	        * Information 3 *
+;     in : Info4      * char *          * Information 4 *
+;***********************************************************
+; Echo the specified job information
+;***********************************************************
+ext echo_job_info_(char : in, char : in, char : in, char : in)
+
+;***********************************************************
+; func servo01_ctrl_()
+;***********************************************************
+;     in : CtrlMode   		* servo_ctrl_mode_ *	* Control mode *
+;     in : Dist   		    * int *	            * Position *
+;***********************************************************
+; Control servo 01 with the specified mode and position
+;***********************************************************
+ext servo01_ctrl_(servo_ctrl_mode_ : in, int : in)
+
+;***********************************************************
+; func mag_tool_ctrl_()
+;***********************************************************
+;     in : CtrlMode   		* tool_ctrl_mode_ *	* Control mode *
+;     in : Timeout   		* int *	        * Timeout *
+;     in : SleepTime   		* int *	        * Sleep time *
+;     out : Success   		* bool *	    * Whether timed out *
+;***********************************************************
+; Control tool part length operation
+;***********************************************************
+ext mag_tool_ctrl_(tool_ctrl_mode_ : in, int : in, int : in, bool : out)
+
+;***********************************************************
+; func mag_tool_forc_ctrl_()
+;***********************************************************
+;     in : CtrlMode   		* tool_ctrl_mode_ *	* Control mode *
+;     in : SleepTime   		* int *	        * Sleep time *
+;***********************************************************
+; Control magnetic tool pipeline with a sleep delay
+;***********************************************************
+ext mag_tool_forc_ctrl_(tool_ctrl_mode_ : in, int : in)
+
+;***********************************************************
+; func zone_ctrl_()
+;***********************************************************
+;     in : CtrlMode   		* zone_mode_t *	* Control mode *
+;     in : ZoneNo   		* int *	        * Zone number *
+;***********************************************************
+; Control the specified zone with the given mode
+;***********************************************************
+ext zone_ctrl_(zone_mode_t : in, int : in)
+
+;***********************************************************
+; func home_io_()
+;***********************************************************
+; Initialize signals when the robot is at HOME position
+;***********************************************************
+ext home01_io_()
+
+;***********************************************************
+; func path_segment_()
+;***********************************************************
+;     in : Segment   		* char *	* Path number *
+;***********************************************************
+; Notify the current path number for the robot
+;***********************************************************
+ext path_segment_(char : in)
+
+;***********************************************************
+; func req_to_continue_()
+;***********************************************************
+; Request the robot to continue to the next action
+;***********************************************************
+ext req_to_continue_()
+
+;***********************************************************
+; func check_home01_()
+;***********************************************************
+; Check if the robot is at XHOME position, error if not
+;***********************************************************
+ext check_home01_()
+
+;***********************************************************
+; func mov_to_home01_()
+;***********************************************************
+; Move to XHOME position and then execute HOME IO
+;***********************************************************
+ext mov_to_home01_()
+
+enddat

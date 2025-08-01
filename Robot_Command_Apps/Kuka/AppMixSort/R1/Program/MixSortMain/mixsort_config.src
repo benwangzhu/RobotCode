@@ -1,0 +1,142 @@
+&ACCESS RVP
+&REL 36
+&COMMENT MixSort Config
+&PARAM EDITMASK = *
+&PARAM DISKPATH = KRC:\R1\Program\MixSortMain
+DEF mixsort_config( )
+;***********************************************************
+;
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+;
+; File Name: mixsort_config.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 27
+;   Modification Data    ==   2025 - 02 - 10
+;
+; Author: speedbot
+;
+; Version: 1.1
+;***********************************************************
+
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+;FOLD Basic.SetBusCommTimeout IN Timeout: 60000 ms ;%{PE}
+BusTimeout = 60000
+;ENDFOLD
+;FOLD MixSort.MixSortConfig IN Robot Id: 1, IN Num Axis: 6, IN Num PlacePoint: 1, IN Eye In Hand: EyeInHand, IN Box Or Conv: Box ;%{PE}
+MixPkCfg.RobotId = 1
+MixPkCfg.NumAxis = 6
+MixPkCfg.NumPlPoint = 1
+MixPkCfg.EyeInHand = True
+MixPkCfg.BoxOrConv = True
+;ENDFOLD
+;FOLD MixSort.ExtAxisConfig IN Coordinate Mode: +X ;%{PE}
+MixPkCfg.ExtCfg.E7Coordinate = 1 
+MixPkCfg.ExtCfg.E7UpLim = $SOFTP_END[7] - 20 
+MixPkCfg.ExtCfg.E7DwLim = $SOFTN_END[7] + 20 
+;ENDFOLD
+;FOLD MixSort.PictureConfig OUT Ref Dir: RefPoint, IN PtMinDist: 1400, IN Max: Max10, IN Min: Min10 ;%{PE}
+MixPkCfg.PictCfg.RefPictPos = XRefPoint 
+MixPkCfg.PictCfg.PtRlE7Pos = ($SOFTP_END[7] - $SOFTN_END[7]) / 2.0 
+MixPkCfg.PictCfg.PtMinDist = 1400 
+MixPkCfg.PictCfg.PtMaxData = Max10 
+MixPkCfg.PictCfg.PtMinData = Min10 
+;ENDFOLD
+;FOLD MixSort.PickConfig IN Max: Max2, IN Min: Min2 ;%{PE}
+MixPkCfg.PickCfg.PickToolNo = 1 
+MixPkCfg.PickCfg.PkMaxData = Max2 
+MixPkCfg.PickCfg.PkMinData = Min2 
+;ENDFOLD
+;FOLD MixSort.DropConfig IN Drop Id: 1, IN Ort Mode: +X, IN PlMaxOfsOrt: 200, IN PlMinOfsOrt: -200 ;%{PE}
+ConvCfg[1].PlOrtMode = 1
+ConvCfg[1].PlMaxOfsOrt = 200
+ConvCfg[1].PlMinOfsOrt = -200
+;ENDFOLD
+;FOLD MixSort.DropConfig IN Drop Id: 2, IN Ort Mode: +X, IN PlMaxOfsOrt: 200, IN PlMinOfsOrt: -200 ;%{PE}
+ConvCfg[2].PlOrtMode = 1
+ConvCfg[2].PlMaxOfsOrt = 200
+ConvCfg[2].PlMinOfsOrt = -200
+;ENDFOLD
+;FOLD MixSort.DropConfig IN Drop Id: 3, IN Ort Mode: +X, IN PlMaxOfsOrt: 200, IN PlMinOfsOrt: -200 ;%{PE}
+ConvCfg[3].PlOrtMode = 1
+ConvCfg[3].PlMaxOfsOrt = 200
+ConvCfg[3].PlMinOfsOrt = -200
+;ENDFOLD
+;FOLD MixSort.DropConfig IN Drop Id: 4, IN Ort Mode: +X, IN PlMaxOfsOrt: 200, IN PlMinOfsOrt: -200 ;%{PE}
+ConvCfg[4].PlOrtMode = 1
+ConvCfg[4].PlMaxOfsOrt = 200
+ConvCfg[4].PlMinOfsOrt = -200
+;ENDFOLD
+;FOLD MixSort.PlaceConfig IN Place Id: 1, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN Max: Max3, IN Min: Min3 ;%{PE}
+BoxCfg[1].PlaceToolNo = 1
+BoxCfg[1].PlaceUpDst = 0
+BoxCfg[1].PlaceE7Pos = 0
+BoxCfg[1].PlMaxData = Max3
+BoxCfg[1].PlMinData = Min3
+;ENDFOLD
+;FOLD MixSort.PlaceConfig IN Place Id: 2, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN Max: Max4, IN Min: Min4 ;%{PE}
+BoxCfg[2].PlaceToolNo = 1
+BoxCfg[2].PlaceUpDst = 0
+BoxCfg[2].PlaceE7Pos = 0
+BoxCfg[2].PlMaxData = Max4
+BoxCfg[2].PlMinData = Min4
+;ENDFOLD
+;FOLD MixSort.PlaceConfig IN Place Id: 3, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN Max: Max5, IN Min: Min5 ;%{PE}
+BoxCfg[3].PlaceToolNo = 1
+BoxCfg[3].PlaceUpDst = 0
+BoxCfg[3].PlaceE7Pos = 0
+BoxCfg[3].PlMaxData = Max5
+BoxCfg[3].PlMinData = Min5
+;ENDFOLD
+;FOLD MixSort.PlaceConfig IN Place Id: 4, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN Max: Max6, IN Min: Min6 ;%{PE}
+BoxCfg[4].PlaceToolNo = 1
+BoxCfg[4].PlaceUpDst = 0
+BoxCfg[4].PlaceE7Pos = 0
+BoxCfg[4].PlMaxData = Max6
+BoxCfg[4].PlMinData = Min6
+;ENDFOLD
+;FOLD MixSort.PlaceConfig IN Place Id: 5, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN Max: Max7, IN Min: Min7 ;%{PE}
+BoxCfg[5].PlaceToolNo = 1
+BoxCfg[5].PlaceUpDst = 0
+BoxCfg[5].PlaceE7Pos = 0
+BoxCfg[5].PlMaxData = Max7
+BoxCfg[5].PlMinData = Min7
+;ENDFOLD
+;FOLD MixSort.PlaceConfig IN Place Id: 6, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN Max: Max8, IN Min: Min8 ;%{PE}
+BoxCfg[6].PlaceToolNo = 1
+BoxCfg[6].PlaceUpDst = 0
+BoxCfg[6].PlaceE7Pos = 0
+BoxCfg[6].PlMaxData = Max8
+BoxCfg[6].PlMinData = Min8
+;ENDFOLD
+;FOLD MixSort.PlaceConfig IN Place Id: 7, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN Max: Max9, IN Min: Min9 ;%{PE}
+BoxCfg[7].PlaceToolNo = 1
+BoxCfg[7].PlaceUpDst = 0
+BoxCfg[7].PlaceE7Pos = 0
+BoxCfg[7].PlMaxData = Max9
+BoxCfg[7].PlMinData = Min9
+;ENDFOLD
+;FOLD MixSort.PlaceConfig IN Place Id: 8, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN Max: Max10, IN Min: Min10 ;%{PE}
+BoxCfg[8].PlaceToolNo = 1
+BoxCfg[8].PlaceUpDst = 0
+BoxCfg[8].PlaceE7Pos = 0
+BoxCfg[8].PlMaxData = Max10
+BoxCfg[8].PlMinData = Min10
+;ENDFOLD
+
+
+
+
+
+END

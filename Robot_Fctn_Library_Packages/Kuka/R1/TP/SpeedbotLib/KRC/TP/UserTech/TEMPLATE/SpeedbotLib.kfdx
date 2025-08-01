@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--For an example how to add menu entries for UserTech InlineForms see file C:\KRC\TP\UserTech\SmartHMI\SmartHMI.exe.UserTech.InlineForms.config-->
+<KukaTechDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	
+	<!-- ===================================================================================== -->
+	<!-- =============================== Basic ========================================== -->
+	<!-- ===================================================================================== -->
+	<Application Name="Basic" SOT="False" SOC="True">							
+		<!-- ================================ Global Data Type ========================================= -->
+	
+		<Param Name="X_" ShortName="IN x: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-1000000.0" Max="1000000.0" Step="1.0" Autolimit="False" />
+		</Param>
+		<Param Name="Y_" ShortName="IN y: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-1000000.0" Max="1000000.0" Step="1.0" Autolimit="False" />
+		</Param>
+		<Param Name="Z_" ShortName="IN z: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-1000000.0" Max="1000000.0" Step="1.0" Autolimit="False" />
+		</Param>
+		<Param Name="A_" ShortName="IN a: " ShortCut="" Unit="deg" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-180.0" Max="180.0" Step="0.1" Autolimit="False" />
+		</Param>
+		<Param Name="B_" ShortName="IN b: " ShortCut="" Unit="deg" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-180.0" Max="180.0" Step="0.1" Autolimit="False" />
+		</Param>
+		<Param Name="C_" ShortName="IN c: " ShortCut="" Unit="deg" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-180.0" Max="180.0" Step="0.1" Autolimit="False" />
+		</Param>
+
+		<Param Name="FailAction" ShortName="IN OnFail: " ShortCut="" Unit="" Var="" Enable="">
+			<List SelectedItem="">
+               <Item Disp="NOTIFY" Key="1" />
+               <Item Disp="STATE" Key="2" />
+               <Item Disp="QUIT" Key="3" />
+			</List>
+		</Param>
+
+		<!-- ================================ OVERRIDE ========================================= -->
+		<Param Name="OverrideSpeed" ShortName="IN Override: " ShortCut="" Unit="%" Var="" Enable="">
+			<Value Type="NUMBER" Default="30" Min="1" Max="100" Step="5" Autolimit="True" />
+		</Param>
+
+		<Fold Name="OverrideFold">									
+			<Line>override_(%OverrideSpeed/)</Line>		
+		</Fold>
+		<InlineForm Name="Override" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="OverrideFold" />								
+			<PRM Name="OverrideSpeed" />									
+		</InlineForm>
+
+		<!-- ================================ FRAME ========================================= -->
+
+		<Param Name="FrameName" ShortName="OUT Frame Dir: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="Frame1" />
+		</Param>
+
+		<Script Name="DeclNullFrame">
+			<Redecl Path="%MODULE/" Declaration= "DECL FRAME %FrameName/={X 0, Y 0, Z 0, A 0, B 0, C 0}" />
+			<Message Text="Define %FrameName/ In %MODULE/" />
+		</Script>
+		
+		<Fold Name="FrameFold">
+			<Line>%FrameName/ = set_frame_(%X_/, %Y_/, %Z_/, %A_/, %B_/, %C_/)</Line>
+		</Fold>	
+		<InlineForm Name="Frame" IlfType="" Style="" Focus="" Spline="" OnAccept="DeclNullFrame" OnTouchUp="" OnOpen="" >
+			<FLD Name="FrameFold" />
+			<PRM Name="FrameName" />
+			<PRM Name="X_" />
+			<PRM Name="Y_" />
+			<PRM Name="Z_" />
+			<PRM Name="A_" />
+			<PRM Name="B_" />
+			<PRM Name="C_" />
+		</InlineForm>
+
+		<!-- ================================ SetBusCommTimeout ========================================= -->
+
+		<Param Name="Timeout" ShortName="IN Timeout: " ShortCut="" Unit="ms" Var="" Enable="">
+			<Value Type="NUMBER" Default="-1" Min="-1" Max="888888888" Step="1000" Autolimit="True" />
+		</Param>
+		
+		<Fold Name="SetBusCommTimeoutFold">
+			<Line>BusTimeout = %Timeout/</Line>
+		</Fold>	
+		<InlineForm Name="SetBusCommTimeout" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" >
+			<FLD Name="SetBusCommTimeoutFold" />
+			<PRM Name="Timeout" />
+		</InlineForm>
+
+		<!-- ================================ SetBusCommInitialize ========================================= -->
+
+		<Param Name="RobId" ShortName="IN Robot Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="255" Step="1" Autolimit="" />
+		</Param>
+		<Param Name="ProtId" ShortName="IN Protocol Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="64" Min="1" Max="255" Step="1" Autolimit="" />
+		</Param>
+		
+		<Fold Name="SetBusCommInitializeFold">
+			<Line>bus_init_(BusInput, BusOutput, %RobId/, %ProtId/)</Line>
+		</Fold>	
+		<InlineForm Name="SetBusCommInitialize" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" >
+			<FLD Name="SetBusCommInitializeFold" />
+			<PRM Name="RobId" />
+			<PRM Name="ProtId" />
+		</InlineForm>
+
+		<!-- ================================ GgFrame ========================================= -->
+
+		<Param Name="CorrFrameName" ShortName="IN Corr Frame Dir: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="CorrFrame" />
+		</Param>
+		
+		<Param Name="OldFrameNum" ShortName="IN Old Base Nr: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="0" Max="32" Step="1" Autolimit="True" />
+		</Param>
+		
+		<Param Name="NewFrameNum" ShortName="IN New Base Nr: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="32" Min="0" Max="32" Step="1" Autolimit="True" />
+		</Param>
+		
+		<Fold Name="GgFrameFold">
+			<Line>gg_frame_(%CorrFrameName/, %OldFrameNum/, %NewFrameNum/) </Line>
+		</Fold>	
+		<InlineForm Name="GgFrame" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" >
+			<FLD Name="GgFrameFold" />
+			<PRM Name="CorrFrameName" />
+			<PRM Name="OldFrameNum" />
+			<PRM Name="NewFrameNum" />
+		</InlineForm>
+
+		<!-- ================================ ChkXYZABC ========================================= -->
+
+		<Param Name="ChkPosName" ShortName="IN Chk Pos Dir: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="XP1" />
+		</Param>
+
+		<Param Name="CorrBaseNum" ShortName="IN Corr Base Nr: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="0" Max="32" Step="1" Autolimit="True" />
+		</Param>
+
+		<Param Name="ChkBaseNum" ShortName="IN Chk Base Nr: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="0" Max="32" Step="1" Autolimit="True" />
+		</Param>
+
+		<Param Name="LimitMax" ShortName="IN Lim Max Dir: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="Frame1" />
+		</Param>
+
+		<Param Name="LimitMin" ShortName="IN Lim Min Dir: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="Frame2" />
+		</Param>
+
+		<Param Name="ChkStatus" ShortName="OUT Chk Status: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="ChkStatus1" />
+		</Param>
+
+		<Script Name="DeclBool">
+			<Redecl Path="%MODULE/" Declaration= "DECL BOOL %ChkStatus/ = FALSE" />
+			<Message Text="Define %ChkStatus/ In %MODULE/" />
+		</Script>
+
+		<Fold Name="ChkXYZABCFold">
+			<Line>chk_pos_xyzabc_(%ChkPosName/, %CorrBaseNum/, %ChkBaseNum/, %LimitMax/, %LimitMin/, %ChkStatus/, %FailAction/) </Line>
+		</Fold>	
+
+		<InlineForm Name="ChkXYZABC" IlfType="" Style="" Focus="" Spline="" OnAccept="DeclBool" OnTouchUp="" OnOpen="" >
+			<FLD Name="ChkXYZABCFold" />
+			<PRM Name="ChkPosName" />
+			<PRM Name="CorrBaseNum" />
+			<PRM Name="ChkBaseNum" />
+			<PRM Name="LimitMax" />
+			<PRM Name="LimitMin" />
+			<PRM Name="ChkStatus" />
+			<PRM Name="FailAction" />
+		</InlineForm>
+
+		<!-- ================================ BaseOffset & ToolOffset ========================================= -->
+
+		<Param Name="SourceName" ShortName="IN Source Point Dir: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="P1" />
+		</Param>
+		
+		<Param Name="OffsFrame" ShortName="IN Offs Dir: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="Frame1" />
+		</Param>
+		
+		<Param Name="OffsetName" ShortName="OUT Offset Point Dir: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="P1" />
+		</Param>
+
+		<Script Name="DeclPoint">
+			<Redecl Path="%MODULE/" Declaration= "DECL E6POS X%OffsetName/={X 0,Y 0,Z 0,A 0,B 0,C 0,S 0,T 0,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}" />
+			<Message Text="Define X%OffsetName/ In %MODULE/" />
+		</Script>
+		
+		<Fold Name="BaseOffsetFold">
+			<Line>X%OffsetName/ = ufrm_offs_byframe_(X%SourceName/, %OffsFrame/) </Line>
+		</Fold>	
+		<InlineForm Name="BaseOffset" IlfType="" Style="" Focus="" Spline="" OnAccept="DeclPoint" OnTouchUp="" OnOpen="" >
+			<FLD Name="BaseOffsetFold" />
+			<PRM Name="SourceName" />
+			<PRM Name="OffsFrame" />
+			<PRM Name="OffsetName" />
+		</InlineForm>
+
+		<Fold Name="ToolOffsetFold">
+			<Line>X%OffsetName/ = tool_offs_byframe_(X%SourceName/, %OffsFrame/) </Line>
+		</Fold>	
+		<InlineForm Name="ToolOffset" IlfType="" Style="" Focus="" Spline="" OnAccept="DeclPoint" OnTouchUp="" OnOpen="" >
+			<FLD Name="ToolOffsetFold" />
+			<PRM Name="SourceName" />
+			<PRM Name="OffsFrame" />
+			<PRM Name="OffsetName" />
+		</InlineForm>
+
+
+	</Application>
+</KukaTechDescription>
+<!--checksum 8933965324 -->

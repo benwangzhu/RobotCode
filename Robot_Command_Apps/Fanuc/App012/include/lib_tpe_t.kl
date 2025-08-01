@@ -1,0 +1,275 @@
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_tpe_t
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2023 - 03 - 11
+--   Modification Data    ==   2023 - 03 - 11
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+
+const
+
+    -- TPE_P_P                     = 0
+    -- TPE_P_PR                    = 1
+
+    -- TPE_SPD_PER                 = 0
+    -- TPE_SPD_S                   = 1
+    -- TPE_SPD_MS                  = 2
+    -- TPE_SPD_MM                  = 3
+    -- TPE_SPD_CM                  = 4
+    -- TPE_SPD_INCH                = 5
+    -- TPE_SPD_DEG                 = 6
+
+    TPE_ALL_LINE                = 0
+
+
+    -- TPE_WV_SINE                 = 1
+    -- TPE_WV_FIG8                 = 2
+    -- TPE_WV_CIRC                 = 3
+    -- TPE_WV_SINE2                = 4
+    -- TPE_WV_L                    = 5
+
+    TPE_MAX_PNO                     = 32766
+
+    TPE_MAX_PERS                    = 100
+    TPE_MIN_PERS                    = 1
+
+    TPE_MAX_MMMS                    = 2000
+    TPE_MIN_MMMS                    = 1
+
+    TPE_MAX_CMNS                    = 12000
+    TPE_MIN_CMNS                    = 1
+
+    TPE_MAX_INCS                    = 4724.410
+    TPE_MIN_INCS                    = 0.1
+
+    TPE_MAX_DGSS                    = 180
+    TPE_MIN_DGSS                    = 1
+
+    TPE_MAX_SECS                    = 3200.0
+    TPE_MIN_SECS                    = 0.1
+
+
+    TPE_MAX_CNT                     = 100
+    TPE_MIN_CNT                     = -1
+
+    TPE_TRM_FINE                    = -1
+
+    TPE_MAX_UF                      = 9
+    TPE_MIN_UF                      = 0
+
+    TPE_MAX_UT                      = 10
+    TPE_MIN_UT                      = 0
+
+
+
+    TPE_WV_SINE                     = 1
+    TPE_WV_FIG8                     = 2
+    TPE_WV_CIRC                     = 3
+    TPE_WV_END1                     = 0
+    TPE_WV_SINE2                    = 7
+    TPE_WV_L                        = 9
+    TPE_WV_END2                     = 11
+
+
+
+    LM_FLG                          = 41
+    LM_UO                           = 39
+    LM_WO                           = 18
+
+
+
+    TPE_MAX_WV                      = 10
+    TPE_MIN_WV                      = 1
+
+    TPE_ARC_ST                      = 1
+    TPE_ARC_END                     = 129
+    TPE_ARC_ST2                     = 2
+    TPE_ARC_END2                    = 130
+    TPE_WLD_ST                      = 3
+    TPE_WLD_END                     = 131
+    TPE_WLD_ST2                     = 4
+    TPE_WLD_END2                    = 132
+
+    TPE_MAX_WELD                    = 32
+    TPE_MIN_WELD                    = 1
+
+    TPE_WELD_SPD                    = 198
+
+
+    TPE_TOOL_OFS                    = 219
+
+    TPE_PTH_CRD                     = 445               -- PTH & COORD
+    TPE_PTH                         = 244               -- PTH
+    TPE_PTH_OFS                     = 449               -- PTH & USER OFFSET
+
+    -- Ñ°Î»Ö¸Áî FUNC Âë 
+    TCH_SR_ST                       = 1                 
+    TCH_ST_ED                       = 2
+    TCH_OFFS_ST                     = 4
+    TCH_OFFS_ED                     = 5
+
+    TPE_DPM_ON                      = 1
+    TPE_DPM_OFF                     = 2
+
+type
+
+    inst_move_t from lib_tpe    = structure
+        MovType     : integer
+        PointTyp    : integer
+        PointNo     : integer
+        SpeedTyp    : integer
+        Speed       : real
+        Cnt         : integer
+        ExtraInst1  : integer
+        ExtraInst2  : integer
+        ExtraInst3  : integer
+        ExtraInst4  : integer
+        ExtraInst5  : integer
+        ExtraInst6  : integer
+    endstructure
+
+    inst_frm_t from lib_tpe    = structure
+        FrmType     : integer
+        FrmNo       : integer
+        ExtraInst1  : integer
+        ExtraInst2  : integer
+        ExtraInst3  : integer
+        ExtraInst4  : integer
+        ExtraInst5  : integer
+        ExtraInst6  : integer
+    endstructure
+
+    inst_wv_t from lib_tpe    = structure
+        WvType      : integer
+        WeaveNo     : integer
+        ExtraInst1  : integer
+        ExtraInst2  : integer
+        ExtraInst3  : integer
+        ExtraInst4  : integer
+        ExtraInst5  : integer
+        ExtraInst6  : integer
+    endstructure
+
+    inst_wd_t from lib_tpe    = structure
+        WdType      : integer
+        WeldNo      : integer
+        ExtraInst1  : integer
+        ExtraInst2  : integer
+        ExtraInst3  : integer
+        ExtraInst4  : integer
+        ExtraInst5  : integer
+        ExtraInst6  : integer
+    endstructure
+
+    inst_io_t from lib_tpe    = structure
+        IoType      : integer
+        IoNo        : integer
+        IoStat      : boolean
+        ExtraInst1  : integer
+        ExtraInst2  : integer
+        ExtraInst3  : integer
+        ExtraInst4  : integer
+        ExtraInst5  : integer
+        ExtraInst6  : integer
+    endstructure
+
+    inst_reg_t from lib_tpe    = structure
+        RegType     : integer
+        RegNo       : integer
+        Val         : real
+        ExtraInst1  : integer
+        ExtraInst2  : integer
+        ExtraInst3  : integer
+        ExtraInst4  : integer
+        ExtraInst5  : integer
+        ExtraInst6  : integer
+        ExtraInst7  : real
+        ExtraInst8  : real
+        ExtraInst9  : real
+    endstructure
+
+    inst_tw_t from lib_tpe      = integer
+
+    inst_sw_t from lib_tpe      = structure
+        IoType      : integer
+        IoNo        : integer
+        IoStat      : boolean
+        ExtraInst1  : integer
+        ExtraInst2  : integer
+        ExtraInst3  : integer
+        ExtraInst4  : integer
+        ExtraInst5  : integer
+        ExtraInst6  : integer
+    endstructure
+
+    inst_tst_t from lib_tpe     = integer
+
+    inst_call_t from lib_tpe    = structure
+        Name        : string[24]
+        ExtraInst1  : integer
+        ExtraInst2  : integer
+        ExtraInst3  : integer
+        ExtraInst4  : integer
+        ExtraInst5  : integer
+        ExtraInst6  : integer
+    endstructure
+
+    inst_srch_t from lib_tpe    = structure
+        Func        : integer
+        SearchIndex : integer
+        PrIndex     : integer
+        ExtraInst1  : integer
+        ExtraInst2  : integer
+        ExtraInst3  : integer
+        ExtraInst4  : integer
+        ExtraInst5  : integer
+        ExtraInst6  : integer
+    endstructure
+
+    inst_dpm_t from lib_tpe    = structure
+        Func        : integer
+        DpmSch      : integer
+        ExtraInst1  : integer
+        ExtraInst2  : integer
+        ExtraInst3  : integer
+        ExtraInst4  : integer
+        ExtraInst5  : integer
+        ExtraInst6  : integer
+    endstructure

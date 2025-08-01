@@ -1,0 +1,8 @@
+(*
+NPOU: 5
+*)
+PG	modbusTcp_data
+FB	sim_di_map
+FB	sim_do_map
+FB	remote_uop
+PG	lib_modbustcpV2

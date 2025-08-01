@@ -1,0 +1,94 @@
+&access RP
+&comment Lib Tcp I/O 250618
+defdat  lib_tcpcmd_t public
+;***********************************************************
+;
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+;
+; File Name: lib_tcpcmd_t.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2023 - 07 - 04
+;   Modification Data    ==   2025 - 06 - 18
+;
+; Author: speedbot
+;
+; Version: 1.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+
+
+decl global pack_head_t CmdSendHead = {Head 232425, Length 0, PacketCount 0, Cmd "'H00'" , Type_ "'H00'", Seq "'H00'", VirtualRob "'H00'"}
+decl global pack_head_t CmdReadHead = {Head 232425, Length 0, PacketCount 0, Cmd "'H00'" , Type_ "'H00'", Seq "'H00'", VirtualRob "'H00'"}
+decl global busout_t CmdSendBody = {RobotId 0, JobId 0, ProtocolId 0, RobMsgType 0}
+decl global busin_t CmdReadBody = {DeviceId 0, JobId 0, ErrorId 0, MsgType 0}
+decl global pack_tail_t CmdSendTail = {Tail 485868}
+decl global pack_tail_t CmdReadTail = {Tail 485868}
+
+decl global char CmdSendPackages[470],  CmdReadPackages[470]
+
+decl global sock_cfg_t CmdSockCfg = {Connected false, SockXmlName[] " ", ActFlagNo 0, RecvFlagNo 0, NByte 0, RecvTimeout 0}
+
+ext tcp_init_(busin_t : out, busout_t : out, sock_cfg_t : in)
+extfct int tcp_cmd001_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, int : in)
+extfct int tcp_cmd002_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ01_t : out, int : in)
+extfct int tcp_cmd003_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, pos : out, int : in)
+extfct int tcp_cmd009_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, pos : out, int : in)
+extfct int tcp_cmd010_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, pos : out, int : in)
+extfct int tcp_cmd011_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, pos : out, int : in)
+extfct int tcp_cmd012_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ01_t : out, int : in)
+extfct int tcp_cmd013_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ01_t : out, int : in)
+extfct int tcp_cmd014_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ01_t : out, int : in)
+extfct int tcp_cmd017_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ07_t : out, int : in)
+extfct int tcp_cmd018_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ07_t : out, int : in)
+extfct int tcp_cmd020_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, pos : out, int : in)
+extfct int tcp_cmd021_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ01_t : out, int : in)
+extfct int tcp_cmd022_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ01_t : out, int : in)
+extfct int tcp_cmd026_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ01_t : out, int : in)
+extfct int tcp_cmd027_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ08_t : out, int : in)
+extfct int tcp_cmd129_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, pos : out, int : in)
+extfct int tcp_cmd130_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, axis : out, int : in)
+extfct int tcp_cmd131_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ02_t : out, int : in)
+extfct int tcp_cmd132_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ07_t : out, int : in)
+extfct int tcp_cmd133_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ07_t : out, int : in)
+extfct int tcp_cmd134_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ09_t : out, int : in)
+extfct int tcp_cmd137_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ03_t : out, int : in)
+extfct int tcp_cmd145_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ01_t : out, int : in)
+extfct int tcp_cmd148_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ08_t : out, int : in)
+extfct int tcp_cmd151_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ06_t : out, int : in)
+; extfct int tcp_cmd254_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ07_t : out, int : in)
+; extfct int tcp_cmd255_(PACKCMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ07_t : out, int : in)
+
+
+
+
+enddat

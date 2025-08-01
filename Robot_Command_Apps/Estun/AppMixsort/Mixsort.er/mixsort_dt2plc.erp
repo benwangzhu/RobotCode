@@ -1,0 +1,13 @@
+// InstParseVersion: V1.02
+Start:
+/**********************************/
+/*给PLC反馈信息程序*/
+/**********************************/
+t_l.Val.value = floor ( t_p.CopyPartLen.value )
+t_l.m.value = t_l.Val.value % 256
+t_l.n.value = t_l.Val.value / 256
+EchoJobInfo{Info1=t_l.m,Info2=t_l.n,Info3=0,Info4=0}
+EchoChannel{Channecll=t_p.CopyMagPip01,Channecl2=t_p.CopyMagPip02,Channecl3=t_p.CopyMagPip03,Channecl4=t_p.CopyMagPip04}
+t_l.Val.value = floor ( t_p.CopyGripDist1.value )
+Servo01Ctrl{CtrlMode="MOVING",Dist=t_l.Val}
+End;

@@ -1,0 +1,132 @@
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_socket_t
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 08 - 16
+--   Modification Data    ==   2021 - 09 - 17
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+const
+	-- Decode string
+	JSON_POS_TYP                 	= 'xyzabc'
+	JSON_INT_TYP                 	= 'int'
+	JSON_FLT_TYP                	= 'float'
+	JSON_STR_TYP                 	= 'str'
+	JSON_DEC_EL1                	= '{'
+	JSON_DEC_EL2                	= '}'
+	JSON_DEC_EL3                	= ':'
+	JSON_DEC_EL4               	    = ';'
+	JSON_DEC_EL5                	= ','
+	JSON_DEC_KEY                	= 'key'
+	JSON_DEC_VAL                	= 'value'
+	JSON_DEC_NUL					= ' '
+	
+	-- 
+    JSON_MAX_DAT					= 30 -- JSON_MAX_DAT = JSON_MAX_INT + JSON_MAX_POS + JSON_MAX_FLT + JSON_MAX_STR
+   -- JSON_MAX_INT	    			= 10
+   -- JSON_MAX_POS	    			= 10
+   -- JSON_MAX_FLT	    			= 10
+   -- JSON_MAX_STR	    			= 10
+	
+	--
+	JSON_MAX_AXS					= 6
+	
+	-- Error Code
+	SOCK_NUM_DAT               	 	= 800001
+	SOCK_TYP_DAT                  	= 800002
+	SOCK_HED_NAM                  	= 800003
+	SOCK_HED_DAT                  	= 800004
+	
+	--
+	
+	
+	
+	
+	
+type	
+	sock_cfg_t from lib_socket = structure
+		Connected        	: boolean
+		Host			 	: string[127]
+		PortTag          	: string[3]
+		ServerPort       	: integer
+		NByte			 	: integer
+		AtrTimeout		 	: integer
+		AtrBinary  			: boolean
+		AtrIntAct			: boolean
+		AtrProbably			: boolean
+	endstructure
+
+    udp_cfg_t from lib_socket = structure
+		Host			 	: string[127]
+		PortTag          	: string[3]
+		Port       	        : integer
+		NByte			 	: integer
+		AtrTimeout		 	: integer
+		AtrBinary  			: boolean
+		AtrIntAct			: boolean
+		AtrProbably			: boolean
+	endstructure
+	
+    user_data_t from lib_socket = structure
+        Data1               : integer
+        Data2               : integer
+        Data3               : integer
+        Data4               : real
+        Data5               : real
+        Data6               : real
+        Data7               : real
+        Data8               : real
+        Data9               : real
+        Data10              : real
+        Data11              : real
+        Data12              : real
+    endstructure
+
+    user_str_t from lib_socket = structure
+        UserStr1            : string[254]
+        UserStr2            : string[254]
+    endstructure
+
+    user_path_t from lib_socket = path nodedata = user_data_t
+
+    string_t from lib_socket = path nodedata = user_str_t
+    
+	des_coord_t from lib_socket = array[JSON_MAX_AXS] of real
+
+

@@ -1,0 +1,10 @@
+Library List, V40
+USER;C:\Users\Public\Documents\MULTIPROG ACONTIS EtherCAT\Libraries\ER_CNT2PLC_Status;LIST;0
+USER;C:\Users\Public\Documents\MULTIPROG ACONTIS EtherCAT\Libraries\ER_DataTypes;LIST;0
+USER;C:\Users\Public\Documents\MULTIPROG ACONTIS EtherCAT\Libraries\ER_IO_LIB;LIST;0
+USER;C:\Users\Public\Documents\MULTIPROG ACONTIS EtherCAT\Libraries\ER_PLC2CNT_Command;LIST;0
+USER;C:\Users\Public\Documents\MULTIPROG ACONTIS EtherCAT\Libraries\ER_ModbusTcp;LIST;0
+FW;C:\ProgramData\PHOENIX CONTACT Software\MULTIPROG Express\5_50_10228\plc\FW_LIB\TCP_IP_Lib;TCP_IP_lib;3
+FW;C:\ProgramData\PHOENIX CONTACT Software\MULTIPROG Express\5_50_10228\plc\FW_LIB\ModbusTCP_Lib;ModbusTCP_Lib;3
+FW;D:\MutliProg\PLC\eCLR;eCLR;0
+FW;D:\MutliProg\PLC;IEC;3

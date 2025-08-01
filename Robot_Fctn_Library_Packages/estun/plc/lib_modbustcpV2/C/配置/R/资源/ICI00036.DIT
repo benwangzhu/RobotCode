@@ -1,0 +1,28 @@
+(*
+T: PROGRAM modbusTcp_data
+FW: NO
+CI#: 36
+QSL: 3
+QVE: 3
+QVPC: 3
+QPar: 0
+QFBI: 1
+*)
+@V 1 6 0
+ModbusData	1	VAR_EXTERNAL	@TYP:1157
+@RV 15		     
+
+;
+
+@V 1 11 0
+i	2	VAR	@TYP:3
+		     
+
+;
+
+@V 1 12 0
+ReadModbusReg01	3	VAR	@FB:37
+		     
+
+;
+

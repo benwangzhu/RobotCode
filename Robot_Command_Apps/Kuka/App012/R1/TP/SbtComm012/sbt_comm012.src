@@ -1,0 +1,1243 @@
+&access RP
+&comment Sbt Comm012
+def sbt_comm012()
+;***********************************************************
+;
+; file Name: sbt_comm012.src
+;
+; Copyright 2025 - 2025 speedbot All Rights reserved.
+;
+;
+; Description:
+;   Language             ==   KRL for KUKA ROBOT
+;   Date                 ==   2025 - 05 - 08
+;   Modification Data    ==   2025 - 07 - 19
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+; This is a polishing instruction program
+;***********************************************************
+
+; 
+end
+
+;FOLD ----------------------------------------------- SubMit ----------------------------------------------
+
+; These two programs are always running in the background of the [SPS].
+
+global def Comm012SubMitInit()
+
+    GrindHeartbeatTimer = $rob_timer
+    SEComm012Key = 0
+
+    on_error_proceed
+    $out[GrindHeadTool[1].DoutputAddr + O_ADR_HEARTBEAT] = false
+    on_error_proceed
+    $out[GrindHeadTool[2].DoutputAddr + O_ADR_HEARTBEAT] = false
+    on_error_proceed
+    $out[GrindHeadTool[3].DoutputAddr + O_ADR_HEARTBEAT] = false
+    on_error_proceed
+    $out[GrindHeadTool[4].DoutputAddr + O_ADR_HEARTBEAT] = false
+end 
+
+global def Comm012SubMitLoop()
+    decl int j
+    if SEComm012Key > 0 then
+        switch (SEComm012Key)
+        case 1
+            ; The grinding head start button was activated in the SbtComm012Keys script.
+            KeyHeadStarting()
+        case 2
+            ; The grinding head stop button was activated in the SbtComm012Keys script.
+            KeyHeadStopping()
+        case 3
+            ; The grinding head release button was activated in the SbtComm012Keys script.
+            KeyHeadRelease()
+        case 4
+            ; The grinding head clamp button was activated in the SbtComm012Keys script.
+            KeyHeadClamp()
+        case 5
+            ; The grinding head switch button was activated in the SbtComm012Keys script.
+            KeySelectHeadId()
+        case 6
+            ; The grinding head door open button was activated in the SbtComm012Keys script.
+            KeyDoorOpen()
+        case 7
+            ; The grinding head door close button was activated in the SbtComm012Keys script.
+            KeyDoorClose()
+        case 8
+            cwrite($cmd, State, mode, "CANCEL 1")
+            cwrite($cmd, State, mode, "RUN/R1/DEMO_SERVICE()")
+            log_info_("Call DEMO_SERVICE!")
+        case 9
+            cwrite($cmd, State, mode, "CANCEL 1")
+            cwrite($cmd, State, mode, "RUN/R1/MOVE_TO_HOME()")
+            log_info_("Call MOVE_TO_HOME!")
+        case 10
+            cwrite($cmd, State, mode, "CANCEL 1")
+            cwrite($cmd, State, mode, "RUN/R1/CELL()")
+            log_info_("Call Cell!")
+        default
+        endswitch
+
+        SEComm012Key = 0
+    endif
+
+    for j = 1 to 4
+        
+        ; The robot enable signal is output to the grinding head.
+        on_error_proceed
+        $out[GrindHeadTool[j].DoutputAddr + O_ADR_ENABLE] = (not $stopmess and GrindHeadTool[j].Enable)
+        ; The grinding head will stop when a stop, reset, or end condition occurs.
+        on_error_proceed
+        if (($stopmess) or ($pro_state1 == #P_RESET) or ($pro_state1 == #P_END) or ($pro_state1 == #P_STOP)) and ($out[GrindHeadTool[j].DoutputAddr + O_ADR_HEAD_START]) then
+            on_error_proceed
+            $out[GrindHeadTool[j].DoutputAddr + O_ADR_HEAD_START] = false
+        endif
+    endfor
+
+    if abs($rob_timer - GrindHeartbeatTimer) > 1000 then
+        GrindHeartbeatTimer = $rob_timer
+        on_error_proceed
+        $out[GrindHeadTool[1].DoutputAddr + O_ADR_HEARTBEAT] = not $out[GrindHeadTool[1].DoutputAddr + O_ADR_HEARTBEAT]
+        on_error_proceed
+        $out[GrindHeadTool[2].DoutputAddr + O_ADR_HEARTBEAT] = not $out[GrindHeadTool[2].DoutputAddr + O_ADR_HEARTBEAT]
+        on_error_proceed
+        $out[GrindHeadTool[3].DoutputAddr + O_ADR_HEARTBEAT] = not $out[GrindHeadTool[3].DoutputAddr + O_ADR_HEARTBEAT]
+        on_error_proceed
+        $out[GrindHeadTool[4].DoutputAddr + O_ADR_HEARTBEAT] = not $out[GrindHeadTool[4].DoutputAddr + O_ADR_HEARTBEAT]
+    endif
+    
+end 
+
+;ENDFOLD
+
+;FOLD ----------------------------------------------- Global grinding PC Function ----------------------------------------------
+
+global def Comm012PolishInit()
+    decl int j
+
+    for j = 1 to 512
+        ApprPointData[j] = $nullframe
+        ApprSpeedData[j] = 0
+    endfor
+
+    for j = 1 to 512
+        ExitPointData[j] = $nullframe
+        ExitSpeedData[j] = 0
+    endfor
+    
+    for j = 1 to 2048
+        PoliPointData[j] = $nullframe
+        PoliSpeedData[j] = 0
+    endfor
+
+    NumOfApprPoint = 0
+    NumOfPoliPoint = 0
+    NumOfExitPoint = 0
+
+    ; Connect to the grinding software.
+    Status = f000_it00_(PolishSock)
+    
+    if Status <> OK then 
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Polishing initialization failed.[Status:%d]", Status)
+        log_error_(Msg[])
+    endif 
+    
+    ; ; Define an event interrupt that displays an error and stops the grinding head when the ready signal is lost.
+    ; global interrupt decl INTR_ALARM when $in[GrindHeadTool[CurrentActiveGrindId].DinputAddr + I_ADR_READY] == false  do IntrGrindAlarm()
+    
+    ; ; Define an event interrupt that starts the grinding head when the program resumes execution.
+    ; global interrupt decl INTR_RESUME when $pro_state1 == #P_ACTIVE do IntrGrindResume()
+
+end 
+
+global def Comm012PolishTrig(CameraId : in, CaptureId : in)
+    decl int CameraId, CaptureId
+    decl e6pos PhotoPint
+
+    if DEBUG then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Trigger camera to take photos.[Camera ID:%d, Capture ID:%d]", CameraId, CaptureId)
+        log_info_(Msg[])
+    endif
+
+    PhotoPint = cur_pos_(0, 0)
+
+    Status = f001_it01_(PolishSock, PhotoPint, CameraId, CaptureId)
+    if Status <> OK then 
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Polishing camera failed to take photos.[Status:%d]", Status)
+        log_error_(Msg[])
+    endif 
+
+end 
+
+global def Comm012PolishPlan(JobId : in, PlanningId : in, NumOfPath : out)
+    decl int JobId, PlanningId, NumOfPath
+
+    if DEBUG then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Polishing path planning parameters.[Job ID:%d, Planning ID:%d]", JobId, PlanningId)
+        log_info_(Msg[])
+    endif
+
+    Status = f002_it01_(PolishSock, JobId, PlanningId, NumOfPath)
+    if Status <> OK then 
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Polishing path planning failed.[Status:%d]", Status)
+        log_error_(Msg[])
+    endif 
+
+    if DEBUG then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Number of polish trajectories.[NumOfPath:%d]", NumOfPath)
+        log_info_(Msg[])
+    endif
+
+end 
+
+global def Comm012PolishGetPara(JobId : in, PathId : in, GrindHeadId : out, GrindSpeed : out)
+    decl int JobId, PathId, GrindHeadId
+    decl real GrindSpeed
+
+    if DEBUG then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Obtain the process para of the polish head.[Job ID:%d, Path ID:%d]", JobId, PathId)
+        log_info_(Msg[])
+    endif
+
+    GrindHeadId = 0
+    GrindSpeed = 0
+
+    Status = f003_it01_(PolishSock, JobId, PathId, GrindHeadId, GrindSpeed)
+    if Status <> OK then 
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Failed to obtain polish process parameters.[Status:%d]", Status)
+        log_error_(Msg[])
+    endif 
+
+    if DEBUG then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Polishing head process parameters.[Head ID:%d, GrindSpeed:%.1f]", GrindHeadId, GrindSpeed)
+        log_info_(Msg[])
+    endif
+
+    CheckGrindHeadId(GrindHeadId)
+
+    if GrindSpeed < 0 then 
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Grinding Head Speed Error.[GrindSpeed:%.f]", GrindSpeed)
+        log_error_(Msg[])
+    endif 
+end 
+
+global def Comm012PolishGetPath(JobId : in, PathId : in, StepDistance : in)
+    decl int JobId, PathId, j
+    decl real StepDistance
+
+    if DEBUG then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Get Polish traje.[JobId:%d, PathId:%d, StepDistance:%.1f]", JobId, PathId, StepDistance)
+        log_info_(Msg[])
+    endif
+
+    for j = 1 to 512
+        ApprPointData[j] = $nullframe
+        ApprSpeedData[j] = 0
+    endfor
+
+    for j = 1 to 512
+        ExitPointData[j] = $nullframe
+        ExitSpeedData[j] = 0
+    endfor
+    
+    for j = 1 to 2048
+        PoliPointData[j] = $nullframe
+        PoliSpeedData[j] = 0
+    endfor
+
+    NumOfApprPoint = 0
+    NumOfPoliPoint = 0
+    NumOfExitPoint = 0
+
+
+    Status = f004_it01_(PolishSock, JobId, 1, PathId, StepDistance, ApprPointData[],  ApprSpeedData[], NumOfApprPoint)
+    if Status <> OK then 
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Get Appr trajectory acquisition failed.[Status:%d]", Status)
+        log_error_(Msg[])
+    endif 
+    if DEBUG then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Get Appr traje Successful.[NumOfApprPoint:%d]", NumOfApprPoint)
+        log_info_(Msg[])
+    endif
+
+    Status = f004_it01_(PolishSock, JobId, 2, PathId, StepDistance, PoliPointData[], PoliSpeedData[], NumOfPoliPoint)
+    if Status <> OK then 
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Get Grinding trajectory acquisition failed.[Status:%d]", Status)
+        log_error_(Msg[])
+    endif 
+    if DEBUG then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Get Gringing traje Successful.[NumOfPoliPoint:%d]", NumOfPoliPoint)
+        log_info_(Msg[])
+    endif
+
+    Status = f004_it01_(PolishSock, JobId, 3, PathId, StepDistance, ExitPointData[], ExitSpeedData[], NumOfExitPoint)
+    if Status <> OK then 
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Get Exit trajectory acquisition failed.[Status:%d]", Status)
+        log_error_(Msg[])
+    endif 
+
+    if DEBUG then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Get Exit traje Successful.[NumOfExitPoint:%d]", NumOfExitPoint)
+        log_info_(Msg[])
+    endif
+
+end 
+
+global def Comm012PolishMoveAppr(GrindHeadId : in, MoveSpeed : in)
+    decl int j
+    decl real MoveSpeed
+    decl int GrindHeadId
+    decl real Smoot
+
+    CheckGrindHeadId(GrindHeadId)
+    
+    if NumOfApprPoint < 0 then
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Appr Point Num < 0.[NumOfApprPoint:%d]", NumOfApprPoint)
+        log_error_(Msg[])
+    endif
+
+    if NumOfApprPoint == 0 then
+
+        return
+    endif
+
+    if (varstate("MoveSpeed") == #initialized) then
+
+        for j = 1 to NumOfApprPoint 
+
+            ApprSpeedData[j] = MoveSpeed
+        endfor
+    endif
+    
+    Smoot = 100
+
+    for j = 1 to NumOfApprPoint
+
+        if j == NumOfApprPoint then  
+
+            Smoot = 0
+        endif
+        move_j_(ApprPointData[j], (ApprSpeedData[J] / 6.0) / (DEF_VEL_CP * 10), Smoot,  , GrindHeadTool[GrindHeadId].BindToolNum)
+    endfor
+
+end 
+
+global def Comm012PolishMoveGrind(GrindHeadId : in, MoveSpeed : in, OrtType : in)
+    decl int j
+    decl real MoveSpeed
+    decl int GrindHeadId
+    decl real Smoot
+    decl ORI_TYPE OrtType
+
+    CheckGrindHeadId(GrindHeadId)
+    
+    if NumOfExitPoint <= 0 then
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Grinding Point Num <= 0.[NumOfPoliPoint:%d]", NumOfPoliPoint)
+        log_error_(Msg[])
+    endif
+
+    if (varstate("MoveSpeed") == #initialized) then
+
+        for j = 1 to NumOfPoliPoint 
+
+            PoliSpeedData[j] = MoveSpeed
+        endfor
+    endif
+    
+    Smoot = 100
+
+    ; interrupt decl INTR_RESUME when $rob_stopped == true do IntrGrindResume()
+    ; interrupt on INTR_RESUME
+
+    for j = 1 to NumOfPoliPoint
+
+        if j == NumOfPoliPoint then  
+
+            Smoot = 0
+        endif
+        move_l_(PoliPointData[j], PoliSpeedData[j] / 6.0, Smoot,  ,GrindHeadTool[GrindHeadId].BindToolNum, 100, OrtType)
+    endfor
+
+    ; interrupt off INTR_RESUME
+
+end 
+
+global def Comm012PolishMoveExit(GrindHeadId : in, MoveSpeed : in)
+    decl int j
+    decl real MoveSpeed
+    decl int GrindHeadId
+    decl real Smoot
+
+    CheckGrindHeadId(GrindHeadId)
+    
+    if NumOfExitPoint < 0 then
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Exit Point Num < 0.[NumOfExitPoint:%d]", NumOfExitPoint)
+        log_error_(Msg[])
+    endif
+
+    if NumOfExitPoint == 0 then
+
+        return
+    endif
+
+    if (varstate("MoveSpeed") == #initialized) then
+
+        for j = 1 to NumOfExitPoint 
+
+            ExitSpeedData[j] = MoveSpeed
+        endfor
+    endif
+    
+    Smoot = 100
+
+    for j = 1 to NumOfExitPoint
+
+        if j == NumOfExitPoint then  
+
+            Smoot = 0
+        endif
+        move_j_(ExitPointData[j], (ExitSpeedData[j] / 6.0) / (DEF_VEL_CP * 10), Smoot,  , GrindHeadTool[GrindHeadId].BindToolNum)
+    endfor
+
+end 
+
+;ENDFOLD
+
+;FOLD ----------------------------------------------- Global grinding PLC Function ----------------------------------------------
+
+
+global def Comm012HeadStatus(GrindHeadId : in)
+    decl int TimerIndex, GrindHeadId
+
+    ; Skip the grinding head status check when the grinding head is not enabled.
+    if not GrindHeadTool[GrindHeadId].Enable then
+
+        return
+    endif
+
+    if ((GrindHeadId <= 0) or (GrindHeadId > 4)) then
+        swrite(Msg[], State, Offset, "Invalid Grinding Head ID.[Head ID:%d]", GrindHeadId)
+        log_error_(Msg[])
+    endif
+
+    if (GrindHeadTool[GrindHeadId].DoutputAddr <= 0) or (GrindHeadTool[GrindHeadId].DoutputAddr >= $NUM_OUT) then
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Invalid output signal address.[GrindHeadId:%d, Addr:%d]", GrindHeadId, GrindHeadTool[GrindHeadId].DoutputAddr)
+        log_error_(Msg[])
+    endif
+
+    if (GrindHeadTool[GrindHeadId].DinputAddr <= 0) or (GrindHeadTool[GrindHeadId].DinputAddr >= $NUM_IN) then
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Invalid output signal address.[GrindHeadId:%d, Addr:%d]", GrindHeadId, GrindHeadTool[GrindHeadId].DoutputAddr)
+        log_error_(Msg[])
+    endif
+    
+    ; Check if the grinding head is bound to a TOOL_DATA.
+    CheckGrindHeadId(GrindHeadId)
+
+    ; Check if the grinding head is ready or if there is an error.
+    GrindHeadCheckAlarm(GrindHeadId)
+
+    ; Set the enable signal
+    continue
+    $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_ENABLE] = true
+
+    ; Wait for the grinding head to be enabled
+    continue
+    if not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_READY] then
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Grinding Head Not Ready.[Head ID:%d]", GrindHeadId)
+        log_warn_(Msg[])
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Waiting for Grinding Head to be Ready.[Head ID:%d]", GrindHeadId)
+        log_warn_(Msg[])
+            
+        continue
+        wait for $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_READY]
+    endif
+
+end 
+
+global def Comm012HeadCtrl(CtrlType : in, GrindHeadId : in, Speed : in, Timeout : in)
+    decl polish_action_t CtrlType
+    decl real Speed
+    decl int Timeout
+    decl int TimerIndex, GrindHeadId
+    
+    switch (CtrlType)
+    case #HEAD_STARTING
+        HeadStarting(GrindHeadId, Speed, Timeout)
+        if CurrentActiveGrindId > 0 then
+            ; Define an event interrupt that displays an error and stops the grinding head when the ready signal is lost.
+            global interrupt decl INTR_ALARM when $in[GrindHeadTool[CurrentActiveGrindId].DinputAddr + I_ADR_READY] == false  do IntrGrindAlarm()
+            ; Define an event interrupt that starts the grinding head when the program resumes execution.
+            global interrupt decl INTR_RESUME when $pro_state1 == #P_ACTIVE do IntrGrindResume()
+
+            ; Enable the restart interrupt
+            interrupt on INTR_RESUME
+            ; Enable the grinding head alarm interrupt
+            interrupt on INTR_ALARM
+
+            ; Wait for 0.012 seconds, which is the minimum response cycle of the robot.
+            continue
+            wait sec 0.012
+        endif     
+    case #HEAD_STOPPED
+        HeadStoping(GrindHeadId)
+        if CurrentActiveGrindId > 0 then
+        
+            ; Disable the restart interrupt
+            interrupt off INTR_RESUME
+            ; Disable the grinding head alarm interrupt
+            interrupt Off INTR_ALARM
+
+            ; Wait for 0.012 seconds, which is the minimum response cycle of the robot.
+            continue
+            wait sec 0.012
+        endif
+    case #HEAD_RELEASE
+        HeadRelease(GrindHeadId, Timeout)
+    case #HEAD_CLAMP
+        HeadClamp(GrindHeadId, Timeout)
+    case #DOOR_OPEN
+        HeadClamp(GrindHeadId, Timeout)
+    case #DOOR_CLOSE
+        HeadClamp(GrindHeadId, Timeout)
+    endswitch
+end
+;ENDFOLD
+
+;FOLD ----------------------------------------------- Local Function ----------------------------------------------
+
+global def HeadStarting(GrindHeadId : in, Speed : in, Timeout : in)
+    decl real Speed
+    decl int Timeout
+    decl int TimerIndex, GrindHeadId
+
+    ; Skip the grinding head Start when the grinding head is not enabled.
+    if not GrindHeadTool[GrindHeadId].Enable then
+
+        CurrentActiveGrindId = 0
+        return
+    endif
+
+    ; Check the grinding head status
+    Comm012HeadStatus(GrindHeadId)
+
+    if varstate("Timeout") <> #initialized then 
+        Timeout = 0
+    endif 
+    
+    if varstate("Speed") == #initialized then
+        SetGoGrindSpeed(GrindHeadId, round_(Speed * 10))
+    endif
+
+    ; Do not restart the grinding head once it has already been started.
+    continue
+    if $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_START] then
+        return
+    endif
+
+    continue
+    wait sec 0.012
+    continue
+    $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_START] = true
+    continue
+    wait sec 0.1
+
+    ; Wait for the grinding head speed to reach the target
+    repeat
+
+        continue
+        TimerIndex = $rob_timer
+        
+        if Timeout > 0 then
+            continue
+            wait for ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START]) or (($rob_timer - TimerIndex) > Timeout)
+        else
+            continue
+            wait for ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START])
+        endif
+
+        continue
+        if not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START] then
+
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Failed to Start Grinding Head (Timeout).[GrindHeadId:%d]", GrindHeadId)
+            error_write_(12101, Msg[])
+        endif
+    
+        continue
+    until ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START])
+
+
+    ; Save the current enabled grinding head number
+    CurrentActiveGrindId = GrindHeadId
+    
+    ; global interrupt decl INTR_ALARM when $in[GrindHeadTool[CurrentActiveGrindId].DinputAddr + I_ADR_READY] == false  do IntrGrindAlarm()
+    ; global interrupt decl INTR_RESUME when $pro_state1 == #P_ACTIVE do IntrGrindResume()
+    ; global interrupt decl INTR_RESUME when $pro_act == false do IntrGrindResume()
+
+    ; ; Enable the restart interrupt
+    ; interrupt on INTR_RESUME
+
+    ; ; Enable the grinding head alarm interrupt
+    ; interrupt on INTR_ALARM
+
+    ; ; Wait for 0.012 seconds, which is the minimum response cycle of the robot.
+    ; continue
+    ; wait sec 0.012
+end 
+
+global def HeadStoping(GrindHeadId : in)
+    decl int GrindHeadId
+    
+    ; Skip the grinding head stop when the grinding head is not enabled.
+    if not GrindHeadTool[GrindHeadId].Enable then
+
+        return
+    endif
+    
+    ; ; Disable the restart interrupt
+    ; interrupt off INTR_RESUME
+
+    ; ; Disable the grinding head alarm interrupt
+    ; interrupt Off INTR_ALARM
+    ; continue
+    ; wait sec 0.012
+    ; continue
+
+    ; Turn off the start signal
+    continue
+    $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_START] = false
+
+    ; Set the frequency to 0
+    SetGoGrindSpeed(GrindHeadId, 0)    
+end 
+
+global def HeadRelease(GrindHeadId : in, Timeout : in)
+    decl int Timeout
+    decl int TimerIndex, GrindHeadId
+    
+    if varstate("Timeout") <> #initialized then 
+        Timeout = 0
+    endif 
+    
+    continue
+    $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_RELEASE] = true
+    continue
+    $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_CLAMP] = false
+
+    repeat
+
+        continue
+        TimerIndex = $rob_timer
+        
+        if Timeout > 0 then
+            continue
+            wait for (($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_RELEASE]) and (not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_CLAMP])) or (($rob_timer - TimerIndex) > Timeout)
+        else
+            continue
+            wait for (($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_RELEASE]) and (not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_CLAMP]))
+        endif
+
+        continue
+        if not ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_RELEASE] and not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_CLAMP]) then
+
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Failed to Release Grinding Head (Timeout).[GrindHeadId:%d]", GrindHeadId)
+            error_write_(12102, Msg[])
+        endif
+        
+        continue
+    until ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_RELEASE] and not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_CLAMP])
+        
+end 
+
+global def HeadClamp(GrindHeadId : in, Timeout : in)
+    decl int Timeout
+    decl int TimerIndex, GrindHeadId
+
+    if not GrindHeadTool[GrindHeadId].Enable then
+
+        return
+    endif
+    
+    if varstate("Timeout") <> #initialized then 
+        Timeout = 0
+    endif 
+    
+    continue
+    $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_RELEASE] = false
+    continue
+    $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_CLAMP] = true
+
+    repeat
+
+        continue
+        TimerIndex = $rob_timer
+        
+        if Timeout > 0 then
+            continue
+            wait for ((not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_RELEASE]) and ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_CLAMP])) or (($rob_timer - TimerIndex) > Timeout)
+        else
+            continue
+            wait for ((not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_RELEASE]) and ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_CLAMP]))
+        endif
+
+        if not (not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_RELEASE] and $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_CLAMP]) then
+
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Failed to Clamp Grinding Head (Timeout).[GrindHeadId:%d]", GrindHeadId)
+            error_write_(12103, Msg[])
+        endif
+        
+    until (not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_RELEASE] and $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_CLAMP])
+    
+end 
+
+global def DoorOpen(GrindHeadId : in, Timeout : in)
+    decl int Timeout
+    decl int TimerIndex, GrindHeadId
+
+    if varstate("Timeout") <> #initialized then 
+        Timeout = 0
+    endif 
+    
+    continue
+    $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_DOOR_CLOSE] = false
+    continue
+    $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_DOOR_OPEN] = true
+
+    repeat
+
+        continue
+        TimerIndex = $rob_timer
+        
+        if Timeout > 0 then
+            continue
+            wait for ((not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_DOOR_CLOSE]) and ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_DOOR_OPEN])) or (($rob_timer - TimerIndex) > Timeout)
+        else
+            continue
+            wait for ((not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_DOOR_CLOSE]) and ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_DOOR_OPEN]))
+        endif
+
+        if not (not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_DOOR_CLOSE] and $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_DOOR_OPEN]) then
+
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Failed to Clamp Grinding Head (Timeout).[GrindHeadId:%d]", GrindHeadId)
+            error_write_(12103, Msg[])
+        endif
+        
+    until (not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_DOOR_CLOSE] and $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_DOOR_OPEN])
+    
+end 
+
+global def DoorClose(GrindHeadId : in, Timeout : in)
+    decl int Timeout
+    decl int TimerIndex, GrindHeadId
+
+    if varstate("Timeout") <> #initialized then 
+        Timeout = 0
+    endif 
+    
+    continue
+    $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_DOOR_CLOSE] = true
+    continue
+    $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_DOOR_OPEN] = false
+
+    repeat
+
+        continue
+        TimerIndex = $rob_timer
+        
+        if Timeout > 0 then
+            continue
+            wait for (($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_DOOR_CLOSE]) and (not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_DOOR_OPEN])) or (($rob_timer - TimerIndex) > Timeout)
+        else
+            continue
+            wait for (($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_DOOR_CLOSE]) and (not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_DOOR_OPEN]))
+        endif
+
+        if not ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_DOOR_CLOSE] and not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_DOOR_OPEN]) then
+
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Failed to Clamp Grinding Head (Timeout).[GrindHeadId:%d]", GrindHeadId)
+            error_write_(12103, Msg[])
+        endif
+        
+    until ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_DOOR_CLOSE] and not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_DOOR_OPEN])
+    
+end 
+
+def CheckGrindHeadId(GrindHeadId : in)
+    decl int I
+    decl int GrindHeadId
+
+    if ((GrindHeadId <= 0) or (GrindHeadId > 4)) then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Invalid Grinding Head ID.[Head ID:%d]", GrindHeadId)
+        log_error_(Msg[])
+    endif
+
+    if (GrindHeadTool[GrindHeadId].BindToolNum <= 0) or (GrindHeadTool[GrindHeadId].BindToolNum > MAX_TOOL) then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Invalid Grinding Tool ID.[Head ID:%d, ToolId:%d]", GrindHeadId, GrindHeadTool[GrindHeadId].BindToolNum)
+        log_error_(Msg[])
+    endif
+
+    Offset = 0
+    str_clear_(Msg[])
+    swrite(Msg[], State, Offset, "Identify the Tool ID for the Head.[Head ID:%d, ToolId:%d]", GrindHeadId, GrindHeadTool[GrindHeadId].BindToolNum)
+    log_info_(Msg[])
+end 
+
+def SetGoGrindSpeed(GrindHeadId : in, Speed : in)
+    decl int GrindHeadId
+    decl int Speed
+    
+    if ((GrindHeadId <= 0) or (GrindHeadId > 4)) then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Invalid Grinding Head ID.[Head ID:%d]", GrindHeadId)
+        log_error_(Msg[])
+    endif
+    
+    bus_susint_(GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_SPEED, Speed)
+
+    CurGrindingSpeed = Speed / 10.0
+
+end
+
+deffct int GetGoGrindSpeed(GrindHeadId : in)
+    decl int GrindHeadId
+
+    if ((GrindHeadId <= 0) or (GrindHeadId > 4)) then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Invalid Grinding Head ID.[Head ID:%d]", GrindHeadId)
+        log_error_(Msg[])
+    endif
+    
+    CurGrindingSpeed = bus_gusint_(#IO_DOUT, GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_SPEED) / 10.0
+    return(CurGrindingSpeed * 10.0)    
+endfct
+
+deffct int GetGiGrindError(GrindHeadId : in)
+    decl int GrindHeadId
+
+    if ((GrindHeadId <= 0) or (GrindHeadId > 4)) then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Invalid Grinding Head ID.[Head ID:%d]", GrindHeadId)
+        log_error_(Msg[])
+    endif
+    
+    return(bus_gusint_(#IO_DIN, GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_ERR_E01))    
+endfct
+
+def GrindHeadCheckAlarm(GrindHeadId : in)
+    decl int GrindHeadId
+    if ((GrindHeadId <= 0) or (GrindHeadId > 4)) then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Invalid Grinding Head ID.[Head ID:%d]", GrindHeadId)
+        log_error_(Msg[])
+    endif
+
+    if not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_READY] then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Grinding Head Not Ready.[Head ID:%d]", GrindHeadId)
+        log_warn_(Msg[])
+    endif
+
+    repeat
+        GrindHeadTool[GrindHeadId].ErrorId = GetGiGrindError(GrindHeadId)
+        ; if GrindHeadTool[GrindHeadId].ErrorId == 0 then  
+        ;     return
+        ; endif
+
+        if $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_ERR_E01] then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, E_BIT01_MSG[], GrindHeadId)
+            error_write_(13101, Msg[])
+        endif
+        if $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_ERR_E02] then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, E_BIT02_MSG[], GrindHeadId)
+            error_write_(13102, Msg[])
+        endif
+        if $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_ERR_E03] then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, E_BIT03_MSG[], GrindHeadId)
+            error_write_(13103, Msg[])
+        endif
+        if $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_ERR_E04] then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, E_BIT04_MSG[], GrindHeadId)
+            error_write_(13104, Msg[])
+        endif
+        if $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_ERR_E05] then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, E_BIT05_MSG[], GrindHeadId)
+            error_write_(13105, Msg[])
+        endif
+        if $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_ERR_E06] then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, E_BIT06_MSG[], GrindHeadId)
+            error_write_(13106, Msg[])
+        endif
+        if $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_ERR_E07] then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, E_BIT07_MSG[], GrindHeadId)
+            error_write_(13107, Msg[])
+        endif
+        if $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_ERR_E08] then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, E_BIT08_MSG[], GrindHeadId)
+            error_write_(13108, Msg[])
+        endif
+        if $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_ERR_E09] then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, E_BIT09_MSG[], GrindHeadId)
+            error_write_(13109, Msg[])
+        endif
+        if $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_ERR_E10] then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, E_BIT10_MSG[], GrindHeadId)
+            error_write_(13110, Msg[])
+        endif
+        if $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_ERR_E11] then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, E_BIT11_MSG[], GrindHeadId)
+            error_write_(13111, Msg[])
+        endif
+        if $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_ERR_E12] then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, E_BIT12_MSG[], GrindHeadId)
+            error_write_(13112, Msg[])
+        endif
+        if $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_ERR_E13] then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, E_BIT13_MSG[], GrindHeadId)
+            error_write_(13113, Msg[])
+        endif
+        if $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_ERR_E14] then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, E_BIT14_MSG[], GrindHeadId)
+            error_write_(13114, Msg[])
+        endif
+        if $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_ERR_E15] then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, E_BIT15_MSG[], GrindHeadId)
+            error_write_(13115, Msg[])
+        endif
+        if $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_ERR_E16] then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, E_BIT16_MSG[], GrindHeadId)
+            error_write_(13116, Msg[])
+        endif
+
+        continue
+        wait sec 0.024
+    until ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_READY])
+end
+
+;ENDFOLD
+
+;FOLD ----------------------------------------------- Key Function ----------------------------------------------
+
+def KeyHeadStarting()
+
+    if (GrindHeadTool[ManualGrindId].DoutputAddr <= 0) or (GrindHeadTool[ManualGrindId].DoutputAddr >= $NUM_OUT) then
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Invalid output signal address.[GrindHeadId:%d, Addr:%d]", ManualGrindId, GrindHeadTool[ManualGrindId].DoutputAddr)
+        log_info_(Msg[])
+        return
+    endif
+    
+    on_error_proceed
+    continue
+    if $in[GrindHeadTool[ManualGrindId].DinputAddr + I_ADR_READY] then
+
+        continue
+        if not $out[GrindHeadTool[ManualGrindId].DoutputAddr + O_ADR_HEAD_START] then
+            SetGoGrindSpeed(ManualGrindId, round_(ManualGrindingSpeed[ManualGrindId] * 10))
+            on_error_proceed
+            continue
+            $out[GrindHeadTool[ManualGrindId].DoutputAddr + O_ADR_HEAD_START] = true
+
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "grinding Head[%d] Starting!.", ManualGrindId)
+            log_info_(Msg[])
+        else
+
+            if (GetGoGrindSpeed(ManualGrindId) / 10.0 + 50) >= GrindHeadTool[ManualGrindId].MaxGrindingSpeed then
+                SetGoGrindSpeed(ManualGrindId, round_(GrindHeadTool[ManualGrindId].MaxGrindingSpeed * 10))
+            else
+                SetGoGrindSpeed(ManualGrindId, round_((GetGoGrindSpeed(ManualGrindId) / 10.0 + 50) * 10))
+            endif
+        endif
+    else
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Grinding Head[%d] Not Ready!", ManualGrindId)
+        log_info_(Msg[])
+    endif
+end 
+
+def KeyHeadStopping()
+
+    if (GrindHeadTool[ManualGrindId].DoutputAddr <= 0) or (GrindHeadTool[ManualGrindId].DoutputAddr >= $NUM_OUT) then
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Invalid output signal address.[GrindHeadId:%d, Addr:%d]", ManualGrindId, GrindHeadTool[ManualGrindId].DoutputAddr)
+        log_info_(Msg[])
+        return
+    endif
+
+    on_error_proceed
+    continue
+    $out[GrindHeadTool[ManualGrindId].DoutputAddr + O_ADR_HEAD_START] = false
+    SetGoGrindSpeed(ManualGrindId, 0)
+    Offset = 0
+    str_clear_(Msg[])
+    swrite(Msg[], State, Offset, "grinding Head[%d] Stopping!.", ManualGrindId)
+    log_info_(Msg[])
+end 
+
+def KeyHeadRelease()
+
+    if (GrindHeadTool[ManualGrindId].DoutputAddr <= 0) or (GrindHeadTool[ManualGrindId].DoutputAddr >= $NUM_OUT) then
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Invalid output signal address.[GrindHeadId:%d, Addr:%d]", ManualGrindId, GrindHeadTool[ManualGrindId].DoutputAddr)
+        log_info_(Msg[])
+        return
+    endif
+
+    on_error_proceed
+    continue
+    if $in[GrindHeadTool[ManualGrindId].DinputAddr + I_ADR_READY] then
+    
+        on_error_proceed
+        continue
+        $out[GrindHeadTool[ManualGrindId].DoutputAddr + O_ADR_HEAD_RELEASE] = true
+        on_error_proceed
+        continue
+        $out[GrindHeadTool[ManualGrindId].DoutputAddr + O_ADR_HEAD_CLAMP] = false
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "grinding Head[%d] Release!.", ManualGrindId)
+        log_info_(Msg[])
+    else
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Grinding Head[%d] Not Ready!", ManualGrindId)
+        log_info_(Msg[])
+    endif
+        
+end 
+
+def KeyHeadClamp()
+
+    if (GrindHeadTool[ManualGrindId].DoutputAddr <= 0) or (GrindHeadTool[ManualGrindId].DoutputAddr >= $NUM_OUT) then
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Invalid output signal address.[GrindHeadId:%d, Addr:%d]", ManualGrindId, GrindHeadTool[ManualGrindId].DoutputAddr)
+        log_info_(Msg[])
+        return
+    endif
+
+    on_error_proceed
+    continue
+    if $in[GrindHeadTool[ManualGrindId].DinputAddr + I_ADR_READY] then
+    
+        on_error_proceed
+        continue
+        $out[GrindHeadTool[ManualGrindId].DoutputAddr + O_ADR_HEAD_RELEASE] = false
+        on_error_proceed
+        continue
+        $out[GrindHeadTool[ManualGrindId].DoutputAddr + O_ADR_HEAD_CLAMP] = true
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "grinding Head[%d] Clamp!.", ManualGrindId)
+        log_info_(Msg[])
+    else
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Grinding Head[%d] Not Ready!", ManualGrindId)
+        log_info_(Msg[])
+    endif
+end 
+
+def KeyDoorOpen()
+
+    if (GrindHeadTool[ManualGrindId].DoutputAddr <= 0) or (GrindHeadTool[ManualGrindId].DoutputAddr >= $NUM_OUT) then
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Invalid output signal address.[GrindHeadId:%d, Addr:%d]", ManualGrindId, GrindHeadTool[ManualGrindId].DoutputAddr)
+        log_info_(Msg[])
+        return
+    endif
+
+    on_error_proceed
+    continue
+    $out[GrindHeadTool[ManualGrindId].DoutputAddr + O_ADR_DOOR_CLOSE] = false
+    on_error_proceed
+    continue
+    $out[GrindHeadTool[ManualGrindId].DoutputAddr + O_ADR_DOOR_OPEN] = true
+    Offset = 0
+    str_clear_(Msg[])
+    swrite(Msg[], State, Offset, "grinding Door[%d] Open!.", ManualGrindId)
+    log_info_(Msg[])
+end 
+
+def KeyDoorClose()
+
+    if (GrindHeadTool[ManualGrindId].DoutputAddr <= 0) or (GrindHeadTool[ManualGrindId].DoutputAddr >= $NUM_OUT) then
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Invalid output signal address.[GrindHeadId:%d, Addr:%d]", ManualGrindId, GrindHeadTool[ManualGrindId].DoutputAddr)
+        log_info_(Msg[])
+        return
+    endif
+
+    on_error_proceed
+    continue
+    $out[GrindHeadTool[ManualGrindId].DoutputAddr + O_ADR_DOOR_CLOSE] = true
+    on_error_proceed
+    continue
+    $out[GrindHeadTool[ManualGrindId].DoutputAddr + O_ADR_DOOR_OPEN] = false
+    Offset = 0
+    str_clear_(Msg[])
+    swrite(Msg[], State, Offset, "grinding Door[%d] Close!.", ManualGrindId)
+    log_info_(Msg[])
+end 
+
+def KeySelectHeadId()
+
+    if ManualGrindId == 4 then  
+        ManualGrindId = 1
+    else
+        ManualGrindId = ManualGrindId  + 1
+    endif
+
+    Offset = 0
+    str_clear_(Msg[])
+    swrite(Msg[], State, Offset, "Modify the Manual grinding Head(%d).", ManualGrindId)
+    log_info_(Msg[])
+end 
+
+;ENDFOLD
+
+;FOLD ----------------------------------------------- INTERRUPT Function ----------------------------------------------
+
+def IntrGrindResume()
+
+    brake
+    wait sec 0.5
+    if GrindHeadTool[CurrentActiveGrindId].Enable then
+
+        HeadStarting(CurrentActiveGrindId, ,5000)
+    endif
+end
+
+def IntrGrindAlarm()
+
+    $out[GrindHeadTool[CurrentActiveGrindId].DoutputAddr + O_ADR_HEAD_START] = false
+    brake f
+    wait sec 0.5
+    GrindHeadCheckAlarm(CurrentActiveGrindId)
+    HeadStarting(CurrentActiveGrindId, ,5000)
+    ; halt
+end
+
+;ENDFOLD

@@ -1,0 +1,893 @@
+module lib_socket(sysmodule, noview)
+!***********************************************************
+!
+! Copyright 2018 - 2024 speedbot All Rights reserved.
+!
+! File Name: lib_socket
+!
+! Description:
+!   Language             ==   Rapid for ABB ROBOT
+!   Date                 ==   2021 - 08 - 16
+!   Modification Data    ==   2022 - 08 - 15
+!
+! Author: speedbot
+!
+! Version: 2.1
+!*********************************************************************************************************!
+!                                                                                                         !
+!                                                      .^^^                                               !
+!                                               .,~<c+{{{{{{t,                                            ! 
+!                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          !
+!                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        !
+!                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       !
+!                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    !
+!                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  !
+!                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                !
+!                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              !
+!                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             !
+!                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             !
+!                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             !
+!                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              !
+!                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              !
+!                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               !
+!                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               !
+!                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                !
+!                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                !
+!                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 !
+!                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 !
+!                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  !
+!                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  !
+!                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    !                         
+!                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         !
+!                                         ^!{{{{{{{{t!",^`                                                !
+!                                                                                                         !
+!*********************************************************************************************************!
+!
+
+! 2021 - 08 - 16 ++ sock_accept_ () ==> errnum
+
+! 2021 - 08 - 16 ++ csock_conn_() ==> errnum
+
+! 2021 - 08 - 16 ++ sock_dconn_()
+
+! 2022 - 04 - 18 ++ udp_create_ () ==> errnum
+
+! 2022 - 04 - 18 ++ udp_close_()
+
+! 2022 - 08 - 15 ++ udp_bits_() ==> num
+
+! 2022 - 08 - 15 ++ udp_sendto_() ==> errnum
+
+! 2022 - 08 - 15 ++ udp_recvfm_() ==> errnum
+
+! 2022 - 04 - 18 ++ udp_sraw_ () ==> errnum
+
+! 2022 - 04 - 28 ++ udp_rraw_ () ==> errnum
+
+! 2022 - 04 - 18 ++ udp_get_pack_() ==> errnum
+
+! 2021 - 08 - 16 ++ sock_write_() ==> errnum
+
+! 2023 - 03 - 14 ++ sock_send_() ==> errnum
+
+! 2022 - 08 - 15 ++ sock_recv_() ==> errnum
+
+! 2021 - 08 - 16 ++ get_bits_()  ==> num
+
+! 2022 - 04 - 28 ++ sock_sraw_ () ==> errnum
+
+! 2023 - 03 - 14 ++ sock_sraw2_ () ==> errnum
+
+! 2022 - 04 - 28 ++ sock_rraw_ () ==> errnum
+
+! 2021 - 08 - 16 ++ sock_rjson_() ==> errnum
+
+record sock_cfg_t
+    bool Connected;  
+    string Host;
+    num ServerPort;
+    num NByte;
+    num RecvTimeout;
+endrecord
+
+record udp_cfg_t 
+    string InternalHost;
+    num InternalPort;
+    string ExternalHost;
+    num ExternalPort;
+    num NByte;
+    num RecvTimeout;
+endrecord
+
+record data_packet_t
+    num Data1;
+    num Data2;
+    num Data3;
+    num Data4;
+    num Data5;
+    num Data6;
+    num Data7;
+    num Data8;
+    num Data9;
+    num Data10;
+    num Data11;
+    num Data12;
+endrecord    
+
+! Decode string
+local const string JSON_POS_TYP   := "xyzabc";
+local const string JSON_INT_TYP   := "int";
+local const string JSON_FLT_TYP   := "float";
+local const string JSON_STR_TYP   := "str";
+local const string JSON_DEC_EL1   := "{";
+local const string JSON_DEC_EL2   := "}";
+local const string JSON_DEC_EL3   := ":";
+local const string JSON_DEC_EL4   := ";";
+local const string JSON_DEC_EL5   := ",";
+local const string JSON_DEC_KEY   := "key";
+local const string JSON_DEC_VAL   := "value";
+local const string JSON_DEC_NUL   := " ";
+
+!
+local const num JSON_MAX_DATA	    := 30;
+!const num JSON_MAX_INT	    := 10;
+!const num JSON_MAX_POS	    := 10;
+!const num JSON_MAX_FLT	    := 10;
+!const num JSON_MAX_STR	    := 10;
+
+!
+local const num JSON_MAX_AXS		:= 6;
+
+! error Code
+local const errnum SOCK_SUCCESS   := 0;
+local const errnum SOCK_NUM_DAT   := 800001;
+local const errnum SOCK_TYP_DAT   := 800002;
+local const errnum SOCK_HED_NAM   := 800003;
+local const errnum SOCK_HED_DAT   := 800004;
+local const errnum SOCK_INV_POS   := 800005;
+local const errnum SOCK_INV_INT   := 800006;
+local const errnum SOCK_INV_FLT   := 800007;
+local const errnum SOCK_DISCONN   := 800008;
+
+local var errnum SockErrNo := -1;
+
+!***********************************************************
+! func sock_accept_()           TCP
+!***********************************************************
+!	  in : SSockVar 		* socketdev *	* SOCKET 通道变量 *
+!	  in : CSockVar 		* socketdev *	* SOCKET 通道变量 *
+!  inout : ThisSock			* sock_cfg_t *	* TCP SOCKET 接口参数 *
+! return : 					* errnum *		* 返回不为 0 则代表监听失败 *
+!***********************************************************
+! 创建一个 TCP SOCKET 服务端监听
+! 在后续的读写操作中使用 CSockVar 通道进行，在断开链接时，SSockVar 通道也要一并断开
+! 在 sock_cfg_t 参数中
+! Connected     为 TRUE 代表已经被成功连接
+! Host          为需要 BIND 的 IP 地址
+! ServerPort    为需要 BIND 的 端口号
+! NByte         为通道中还未读取的缓存字节数量，需要调用 get_bit_ 函数才有
+! RecvTimeout   读取超时时间, 设置 <= 0 时，代表永久堵塞，直到收到数据或者出现异常
+!***********************************************************
+func errnum sock_accept_ (var socketdev SSockVar, var socketdev CSockVar, inout sock_cfg_t ThisSock)
+    var string ClientIp;
+    if (socketgetstatus(SSockVar) = SOCKET_CLOSED) socketcreate SSockVar;
+    if (socketgetstatus(SSockVar) = SOCKET_CREATED) socketbind SSockVar, 
+                                                               ThisSock.Host, 
+                                                               ThisSock.ServerPort; !GetSysInfo(\LanIp)
+
+    if (socketgetstatus(SSockVar) = SOCKET_BOUND) socketlisten SSockVar;
+    if (socketgetstatus(CSockVar) <> SOCKET_CLOSED) socketclose CSockVar;
+    waituntil (socketgetstatus(CSockVar) = SOCKET_CLOSED);
+    SocketAccept SSockVar, 
+                 CSockVar, 
+                 \ClientAddress     := ClientIp, 
+                 \Time              := WAIT_MAX;
+
+    ThisSock.Connected := (socketgetstatus(CSockVar)= SOCKET_CONNECTED);
+    return(SOCK_SUCCESS);
+    !error
+    error
+    ThisSock.Connected := (socketgetstatus(CSockVar)= SOCKET_CONNECTED);
+    return(-abs(errno));
+endfunc
+
+!***********************************************************
+! func csock_conn_()            TCP
+!***********************************************************
+!	  in : CSockVar 		* socketdev *	* SOCKET 通道变量 *
+!  inout : ThisSock			* sock_cfg_t *	* TCP SOCKET 接口参数 *
+! return : 					* errnum *		* 返回不为 0 则代表监听失败 *
+!***********************************************************
+! 以客户端的形式连接到服务器
+! 在 sock_cfg_t 参数中
+! Connected     为 TRUE 代表已经成功连接
+! Host          为需要连接的服务端 IP 地址
+! ServerPort    为需要连接的服务端 端口号
+! NByte         为通道中还未读取的缓存字节数量，需要调用 get_bit_ 函数才有
+! RecvTimeout   读取超时时间, 设置 <= 0 时，代表永久堵塞，直到收到数据或者出现异常
+!***********************************************************
+func errnum csock_conn_(var socketdev CSockVar, inout sock_cfg_t ThisSock)
+    var num ConnTimeout := 0.5;
+    var num RetryCount := 0;
+    if (socketgetstatus(CSockVar) <> SOCKET_CLOSED) socketclose CSockVar;
+    waituntil (socketgetstatus(CSockVar) = SOCKET_CLOSED);
+    socketcreate CSockVar;
+    socketconnect CSockVar, 
+                  ThisSock.Host, 
+                  ThisSock.ServerPort, 
+                  \Time := ConnTimeout;
+
+    ThisSock.Connected := (socketgetstatus(CSockVar)= SOCKET_CONNECTED);
+    return(SOCK_SUCCESS);
+    !error
+    error
+    ThisSock.Connected := (socketgetstatus(CSockVar)= SOCKET_CONNECTED);
+    if RetryCount < 3 then
+        incr RetryCount;
+        skipwarn;
+        retry;
+    endif
+    return(-abs(errno));
+endfunc
+
+!***********************************************************
+! func sock_dconn_()            TCP
+!***********************************************************
+!     in : \SSockVar        * socketdev *   * SOCKET 通道变量，当作为服务端时，需要指定此参数 *
+!	  in : CSockVar 		* socketdev *	* SOCKET 通道变量 *
+!  inout : ThisSock			* sock_cfg_t *	* TCP SOCKET 接口参数 *
+!***********************************************************
+! 断开客户端或者服务端的通讯连接
+!***********************************************************
+proc sock_dconn_(\var socketdev SSockVar, var socketdev CSockVar, inout sock_cfg_t ThisSock)
+    if present(SSockVar) socketclose SSockVar;
+    socketclose CSockVar;  
+    ThisSock.Connected := (socketgetstatus(CSockVar)= SOCKET_CONNECTED);
+	!error
+	error
+    if present(SSockVar) socketclose SSockVar;
+    socketclose CSockVar;
+    ThisSock.Connected := (socketgetstatus(CSockVar)= SOCKET_CONNECTED);
+endproc
+
+!***********************************************************
+! func udp_create_()            UDP
+!***********************************************************
+!	  in : UdpSocket 		* socketdev *	    * SOCKET 通道变量 *
+!  inout : ThisUdpSock 		* udp_cfg_t *	    * UDP SOCKET 接口参数 *
+! return : 					* errnum *		    * 返回不为 0 则代表创建失败 *
+!***********************************************************
+! 创建一个 UDP 通讯
+! 在 udp_cfg_t 参数中
+! InternalHost      创建 UDP 通讯时 BIND 的 IP 地址，也就是机器人自身的 IP 地址
+! InternalPort      创建 UDP 通讯时 BIND 的 端口号
+! ExternalHost      需要进行通讯方的 IP 地址，当创建为 UDP 服务端时可以不填
+! ExternalPort      需要进行通讯方的 端口号，当创建为 UDP 服务端时可以不填
+! NByte             为通道中还未读取的缓存字节数量，需要调用 udp_bit_ 函数才有
+! RecvTimeout       读取超时时间, 设置 <= 0 时，代表永久堵塞，直到收到数据或者出现异常
+!***********************************************************
+func errnum udp_create_(var socketdev UdpSocket, inout udp_cfg_t ThisUdpSock, \switch SERVER)
+    if (socketgetstatus(UdpSocket) = SOCKET_CLOSED) socketcreate UdpSocket \udp;
+
+    if present(SERVER) then
+        if (socketgetstatus(UdpSocket) = SOCKET_CREATED) socketbind UdpSocket, 
+                                                                    ThisUdpSock.InternalHost, 
+                                                                    ThisUdpSock.InternalPort;
+    endif
+    return(SOCK_SUCCESS);
+	!error
+    error
+    return(-abs(errno));
+endfunc
+
+!***********************************************************
+! func udp_close_()             UDP
+!***********************************************************
+!	  in : UdpSocket 		* socketdev *	    * SOCKET 通道变量 *
+!  inout : ThisUdpSock 		* udp_cfg_t *	    * UDP SOCKET 接口参数 *
+!***********************************************************
+! 断开 UDP 通讯通道
+!***********************************************************
+proc udp_close_(var socketdev UdpSocket, inout udp_cfg_t ThisUdpSock)
+    socketclose UdpSocket;
+	!error
+    error
+    socketclose UdpSocket;
+endproc
+
+!***********************************************************
+! func udp_bits_()             UDP
+!***********************************************************
+!	  in : UdpSocket 		* socketdev *	    * SOCKET 通道变量 *
+!  inout : ThisUdpSock 		* udp_cfg_t *	    * UDP SOCKET 接口参数 *
+! return :                  * num *             * 返回可以读取的字节数量，当发生错误时返回一个 < 0 的数 *
+!***********************************************************
+! 检查 UDP 通道中还未读取的字节数量
+! 慎用，当 UDP 对方关闭通讯时，这个函数会返回一个错误，但是其实任然可以正常通讯
+!***********************************************************
+func num udp_bits_(var socketdev UdpSocket, inout udp_cfg_t ThisUdpSock)
+    ThisUdpSock.NByte := socketpeek(UdpSocket);
+	return(ThisUdpSock.NByte);
+    !error
+    error
+    ThisUdpSock.NByte := -abs(errno);
+	return(ThisUdpSock.NByte);
+endfunc
+
+!***********************************************************
+! func udp_sendto_()            TCP
+!***********************************************************
+!	  in : UdpSocket 		* socketdev *	    * SOCKET 通道变量 *
+!  inout : ThisUdpSock 		* udp_cfg_t *	    * UDP SOCKET 接口参数 *
+!	  in : Msg 				* string *		    * 字符串消息数组 *
+! return : 					* errnum *		    * 返回不为 0 时代表发送失败 *
+!***********************************************************
+! 以 UDP 通讯发送一段报文
+! 最大 1024 个字节，一个字符串只能存储 80 个字符，需要发送更长的报文，可将报文存在数组的多位
+!***********************************************************
+func errnum udp_sendto_(var socketdev UdpSocket, inout udp_cfg_t ThisUdpSock, string Msg{*}, \num Len)
+    var rawbytes MsgPack;
+    var num I;
+    for I from 1 to dim(Msg, 1) do packrawbytes Msg{I}, MsgPack, rawbyteslen(MsgPack) + 1, \ASCII; endfor
+
+    return(udp_sraw_(UdpSocket, ThisUdpSock, MsgPack \Len ? Len));  
+endfunc
+
+!***********************************************************
+! func udp_recvfm_()            TCP
+!***********************************************************
+!	  in : UdpSocket 		* socketdev *	    * SOCKET 通道变量 *
+!  inout : ThisUdpSock 		* udp_cfg_t *	    * UDP SOCKET 接口参数 *
+!	 out : Msg 				* string *		    * 字符串消息数组 *
+! return : 					* errnum *		    * 返回 <= 0 时代表发送失败 *
+!***********************************************************
+! 以 UDP 通讯发送接收报文
+! 最大 1024 个字节，一个字符串只能存储 80 个字符，报文会根据不同的长度存储在数组的多位
+! 声明的字符串数组的维度必须足够
+!***********************************************************
+func errnum udp_recvfm_(var socketdev UdpSocket, inout udp_cfg_t ThisUdpSock, inout string Msg{*})
+    var rawbytes MsgPack;
+    var num RecvStat;
+    var num ByteLen;
+    var num MsgAryLen   := 1;
+    var num StartIndex  := 1;
+    var num EncodeLen   := 0;
+    var num I;
+
+    for I from 1 to dim(Msg, 1) do Msg{I} := ""; endfor
+    RecvStat := udp_rraw_(UdpSocket, ThisUdpSock, MsgPack);
+    if RecvStat > 0 then  
+        
+        ByteLen := RecvStat;
+        while (ByteLen > 0) and (dim(Msg, 1) >= MsgAryLen) do              
+            StartIndex := StartIndex + EncodeLen; 
+            if ByteLen > 60 then EncodeLen := 60; else EncodeLen := ByteLen; endif 
+            ByteLen := ByteLen - EncodeLen;
+            unpackrawbytes MsgPack, StartIndex, Msg{MsgAryLen}, \ASCII := EncodeLen;
+            incr MsgAryLen;
+        endwhile
+    endif
+
+    return(RecvStat);
+endfunc
+
+!***********************************************************
+! func udp_sraw_()              UDP
+!***********************************************************
+!	  in : UdpSocket 		* socketdev *	    * SOCKET 通道变量 *
+!  inout : ThisUdpSock 		* udp_cfg_t *	    * UDP SOCKET 接口参数 *
+!	  in : MsgPack 		    * rawbytes *	    * 数据包 *
+!     in : \Len             * num *             * 指定要发送的字节数量，忽略此参数代表发送数据包的实际字节大小 *
+! return : 					* errnum *		    * 返回不为 0 时代表发送失败 *
+!***********************************************************
+! 将一个数据包以 UDP 通讯的方式发送出去
+! 需要提前将数据使用 packrawbytes 函数进行打包
+! 打包的类容可以时字符串形似，也可以时二进制
+!***********************************************************
+func errnum udp_sraw_(var socketdev UdpSocket, inout udp_cfg_t ThisUdpSock, var rawbytes MsgPack, \num Len)
+    var num SendLen;
+
+    if present(Len) then SendLen := Len; else SendLen := rawbyteslen(MsgPack); endif
+    socketsendto UdpSocket, 
+                 ThisUdpSock.ExternalHost, 
+                 ThisUdpSock.ExternalPort, 
+                 \RawData       := MsgPack,
+                 \NoOfBytes     := SendLen;
+
+    return(SOCK_SUCCESS);
+	!error
+    error
+    return(-abs(errno));
+endfunc
+
+!***********************************************************
+! func udp_rraw_()              UDP
+!***********************************************************
+!	  in : UdpSocket 		* socketdev *	    * SOCKET 通道变量 *
+!  inout : ThisUdpSock 		* udp_cfg_t *	    * UDP SOCKET 接口参数 *
+!	 out : ThisRaw 		    * rawbytes *	    * 数据包 *
+! return : 					* errnum *		    * 返回 <= 0 时代表发送失败 *
+!***********************************************************
+! 以 UDP 通讯的方式接收一个数据包
+! 接收后的包可以用 unpackrawbytes 形式进行解包
+!***********************************************************
+func errnum udp_rraw_(var socketdev UdpSocket, inout udp_cfg_t ThisUdpSock, var rawbytes ThisRaw)
+    var num RecvTimeout;
+    var num RecvdLen;
+
+    if ThisUdpSock.RecvTimeout <= 0 then RecvTimeout := WAIT_MAX; else RecvTimeout := ThisUdpSock.RecvTimeout; endif
+    SocketReceiveFrom UdpSocket, 
+                      \RawData      := ThisRaw, 
+                      \NoRecBytes   := RecvdLen, 
+                      ThisUdpSock.ExternalHost, 
+                      ThisUdpSock.ExternalPort,
+                      \Time         := RecvTimeout;
+
+    return(RecvdLen);
+    !error
+    error
+    return(-abs(errno));
+endfunc
+
+!***********************************************************
+! func udp_get_pack_()          UDP
+!***********************************************************
+!	  in : UdpSocket 		* socketdev *	    * SOCKET 通道变量 *
+!  inout : ThisUdpSock 		* udp_cfg_t *	    * UDP SOCKET 接口参数 *
+!    out : DataPack         * data_packet_t *	* data_packet_t 格式的数据 *
+! return : 					* errnum *		    * 返回不为 0 时代表发送失败 * 
+!***********************************************************
+! udp通讯方式以一种指定格式来接收并解析数据包
+! 此标准格式在 lib_socket_t 文件中已经声明
+!***********************************************************
+func errnum udp_get_pack_(var socketdev UdpSocket, inout udp_cfg_t ThisUdpSock, inout data_packet_t DataPack)
+    var rawbytes Raw;
+    var errnum State;
+
+    State := udp_rraw_(UdpSocket, ThisUdpSock, Raw);
+    if State = 48 then
+        UnpackRawBytes Raw, 1,  DataPack.Data1\IntX := DINT;
+        UnpackRawBytes Raw, 5,  DataPack.Data2\IntX := DINT;
+        UnpackRawBytes Raw, 9,  DataPack.Data3\IntX := DINT;
+        UnpackRawBytes Raw, 13, DataPack.Data4\Float4;
+        UnpackRawBytes Raw, 17, DataPack.Data5\Float4;
+        UnpackRawBytes Raw, 21, DataPack.Data6\Float4;
+        UnpackRawBytes Raw, 25, DataPack.Data7\Float4;
+        UnpackRawBytes Raw, 29, DataPack.Data8\Float4;
+        UnpackRawBytes Raw, 33, DataPack.Data9\Float4;
+        UnpackRawBytes Raw, 37, DataPack.Data10\Float4;
+        UnpackRawBytes Raw, 41, DataPack.Data11\Float4;
+        UnpackRawBytes Raw, 45, DataPack.Data12\Float4;
+    endif
+    return(SOCK_SUCCESS);
+	!error
+    error
+    return(-abs(State));
+endfunc
+
+!***********************************************************
+! func sock_write_()            TCP
+!***********************************************************
+!	  in : CSockVar 		* socketdev *	* SOCKET 通道变量 *
+!	  in : Msg 				* string *		* 需要发送的字符串消息 *
+! return : 					* errnum *		* 返回不为 0 时代表发送失败 *
+!***********************************************************
+! 以 TCP 通讯的方式发送一段消息
+! 最大 1024 个字节，一个字符串只能存储 80 个字符，需要发送更长的报文，可将报文存在数组的多位
+!***********************************************************
+func errnum sock_write_(var socketdev CSockVar, string Msg{*} \num Len)
+    var rawbytes MsgPack;
+    var num I;
+    
+    clearrawbytes MsgPack;
+    
+    for I from 1 to dim(Msg, 1) do 
+        
+        if (strlen(Msg{I}) > 0) packrawbytes Msg{I}, MsgPack, rawbyteslen(MsgPack) + 1, \ASCII; 
+    endfor
+
+    return(sock_sraw_(CSockVar, MsgPack, \len ? Len));  
+endfunc
+
+!***********************************************************
+! func sock_send_()            TCP
+!***********************************************************
+!	  in : CSockVar 		* socketdev *	* SOCKET 通道变量 *
+!  inout : ThisSock         * sock_cfg_t *  * TCP SOCKET 接口参数 *
+!	  in : Msg 				* string *		* 需要发送的字符串消息 *
+! return : 					* errnum *		* 返回不为 0 时代表发送失败 *
+!***********************************************************
+! 以 TCP 通讯的方式发送一段消息
+! 最大 1024 个字节，一个字符串只能存储 80 个字符，需要发送更长的报文，可将报文存在数组的多位
+!***********************************************************
+func errnum sock_send_(var socketdev CSockVar, inout sock_cfg_t ThisSock, string Msg{*} \num Len)
+    var rawbytes MsgPack;
+    var num I;
+    var errnum ErrCode := SOCK_SUCCESS;
+    
+    clearrawbytes MsgPack;
+    
+    for I from 1 to dim(Msg, 1) do 
+        
+        if (strlen(Msg{I}) > 0) packrawbytes Msg{I}, MsgPack, rawbyteslen(MsgPack) + 1, \ASCII; 
+    endfor
+
+    return(sock_sraw2_(CSockVar, ThisSock, MsgPack, \len ? Len));  
+endfunc
+
+
+
+!***********************************************************
+! func sock_recv_()            TCP
+!***********************************************************
+!	  in : UdpSocket 		* socketdev *	    * SOCKET 通道变量 *
+!  inout : ThisUdpSock 		* udp_cfg_t *	    * TCP SOCKET 接口参数 *
+!	 out : Msg 				* string *		    * 字符串消息数组 *
+!     in : \ReadNoOfBytes   * num *             * 指定此参数时，代表此次需要接收的字节数量，忽略此参数接收最大字节数量 *
+! return : 					* errnum *		    * 返回 <= 0 时代表接收失败 *
+!***********************************************************
+! 以 TCP 通讯发送接收报文
+! 可以在 LEN 参数中指定需要接收的字节大小
+! 最大 1024 个字节，一个字符串只能存储 80 个字符，报文会根据不同的长度存储在数组的多位
+! 声明的字符串数组的维度必须足够
+!***********************************************************
+func errnum sock_recv_(var socketdev CSockVar, inout sock_cfg_t ThisSock, inout string Msg{*}, \num ReadNoOfBytes)
+    var rawbytes MsgPack;
+    var num RecvStat;
+    var num ByteLen;
+    var num MsgAryLen   := 1;
+    var num StartIndex  := 1;
+    var num EncodeLen   := 0;
+    var num I;
+
+    for I from 1 to dim(Msg, 1) do Msg{I} := ""; endfor
+    RecvStat := sock_rraw_(CSockVar, ThisSock, MsgPack \ReadNoOfBytes ? ReadNoOfBytes);
+    if RecvStat > 0 then  
+        
+        ByteLen := RecvStat;
+        while (ByteLen > 0) and (dim(Msg, 1) >= MsgAryLen) do              
+            StartIndex := StartIndex + EncodeLen; 
+            if ByteLen > 60 then EncodeLen := 60; else EncodeLen := ByteLen; endif 
+            ByteLen := ByteLen - EncodeLen;
+            unpackrawbytes MsgPack, StartIndex, Msg{MsgAryLen}, \ASCII := EncodeLen;
+            incr MsgAryLen;
+        endwhile
+    endif
+
+    return(RecvStat);
+endfunc
+
+!***********************************************************
+! func get_bits_()              TCP
+!***********************************************************
+!	  in : UdpSocket 		* socketdev *	    * SOCKET 通道变量 *
+!  inout : ThisSock 		* sock_cfg_t *	    * TCP SOCKET 接口参数 *
+! return : 					* num *			    * 返回可以读取的字节数量，当发生错误时返回一个 < 0 的数 *  
+!***********************************************************
+! 检查 TCP 通道还未读取的缓存字节数量
+!***********************************************************
+func num get_bits_(var socketdev CSockVar, inout sock_cfg_t ThisSock)
+    ThisSock.NByte := socketpeek(CSockVar);
+	return(ThisSock.NByte);
+    !error
+    error
+    ThisSock.Connected := (socketgetstatus(CSockVar)= SOCKET_CONNECTED);
+    ThisSock.NByte := -abs(errno);
+	return(ThisSock.NByte);
+endfunc
+
+!***********************************************************
+! func sock_sraw_()             TCP
+!***********************************************************
+!	  in : CSockVar 		* socketdev *	    * SOCKET 通道变量 *
+!	 out : ThisRaw 		    * rawbytes *	    * 数据包 *
+!     in : \Len             * num *             * 指定要发送的字节数量，忽略此参数代表发送数据包的实际字节大小 *
+! return : 					* errnum *		    * 返回不为 0 时代表发送失败 *
+!***********************************************************
+! 将一个数据包以 TCP 通讯的方式发送出去
+! 需要提前将数据使用 packrawbytes 函数进行打包
+! 打包的类容可以时字符串形似，也可以时二进制
+!***********************************************************
+func errnum sock_sraw_(var socketdev CSockVar, var rawbytes ThisRaw, \num Len)
+    var num SendLen;
+    var errnum SrawErrNo := SOCK_SUCCESS;
+
+    bookerrno SockErrNo;
+    if present(len) then SendLen := Len; else SendLen := rawbyteslen(ThisRaw); endif
+
+    if socketgetstatus(CSockVar) <> SOCKET_CONNECTED then  
+        SrawErrNo := SOCK_DISCONN;
+        raise SockErrNo;  
+    endif
+
+    socketsend CSockVar,
+               \RawData     := ThisRaw,
+               \NoOfBytes   := SendLen;  
+    return(SOCK_SUCCESS);
+    !error
+    error
+    if (SrawErrNo <> SOCK_SUCCESS) return(-abs(SrawErrNo));
+    return(-abs(errno));
+endfunc
+
+!***********************************************************
+! func sock_sraw_()             TCP
+!***********************************************************
+!	  in : CSockVar 		* socketdev *	    * SOCKET 通道变量 *
+!  inout : ThisSock 		* sock_cfg_t *	    * TCP SOCKET 接口参数 *
+!	 out : ThisRaw 		    * rawbytes *	    * 数据包 *
+!     in : \Len             * num *             * 指定要发送的字节数量，忽略此参数代表发送数据包的实际字节大小 *
+! return : 					* errnum *		    * 返回不为 0 时代表发送失败 *
+!***********************************************************
+! 将一个数据包以 TCP 通讯的方式发送出去
+! 需要提前将数据使用 packrawbytes 函数进行打包
+! 打包的类容可以时字符串形似，也可以时二进制
+!***********************************************************
+func errnum sock_sraw2_(var socketdev CSockVar, inout sock_cfg_t ThisSock, var rawbytes ThisRaw, \num Len)
+    var num SendLen;
+    var errnum SrawErrNo := SOCK_SUCCESS;
+
+    bookerrno SockErrNo;
+    if present(len) then SendLen := Len; else SendLen := rawbyteslen(ThisRaw); endif
+
+    if socketgetstatus(CSockVar) <> SOCKET_CONNECTED then  
+        SrawErrNo := SOCK_DISCONN;
+        raise SockErrNo;  
+    endif
+
+    socketsend CSockVar,
+               \RawData     := ThisRaw,
+               \NoOfBytes   := SendLen;  
+    return(SOCK_SUCCESS);
+    !error
+    error
+    ThisSock.Connected := (socketgetstatus(CSockVar)= SOCKET_CONNECTED);
+    if (SrawErrNo <> SOCK_SUCCESS) return(-abs(SrawErrNo));
+    return(-abs(errno));
+endfunc
+
+!***********************************************************
+! func sock_rraw_()             TCP
+!***********************************************************
+!	  in : CSockVar 		* socketdev *	    * SOCKET 通道变量 *
+!  inout : ThisSock 		* sock_cfg_t *	    * TCP SOCKET 接口参数 *
+!	 out : ThisRaw 		    * rawbytes *	    * 数据包 *
+!     in : \ReadNoOfBytes   * num *             * 指定要接收的字节数量，忽略此参数代表接收最大 1024 字节 *
+! return : 					* errnum *		    * 返回 <= 0 时代表接收失败 * 
+!***********************************************************
+! Gets Pack Raws
+!***********************************************************
+func errnum sock_rraw_(var socketdev CSockVar, inout sock_cfg_t ThisSock, var rawbytes ThisRaw, \num ReadNoOfBytes)
+    var num RecvTimeout;
+    var num RecvdLen;
+    var errnum RrawErrNo := SOCK_SUCCESS;
+
+    bookerrno SockErrNo;
+    if ThisSock.RecvTimeout <= 0 then RecvTimeout := WAIT_MAX; else RecvTimeout := ThisSock.RecvTimeout; endif
+
+    if socketgetstatus(CSockVar) <> SOCKET_CONNECTED then  
+        RrawErrNo := SOCK_DISCONN;
+        raise SockErrNo;  
+    endif
+    
+    socketreceive CSockVar,
+                  \RawData          := ThisRaw,
+                  \ReadNoOfBytes ? ReadNoOfBytes,
+                  \NoRecBytes       := RecvdLen,
+                  \Time             := RecvTimeout;   
+    return(RecvdLen);
+    !error
+    error
+    ThisSock.Connected := (socketgetstatus(CSockVar)= SOCKET_CONNECTED);
+    if (RrawErrNo <> SOCK_SUCCESS) return(-abs(RrawErrNo));
+    return(-abs(errno));
+endfunc
+
+!***********************************************************
+! func sock_rjson_()            TCP
+!***********************************************************
+!	  in : CSockVar 		* socketdev *	    * SOCKET 通道变量 *
+!  inout : ThisSock 		* sock_cfg_t *	    * TCP SOCKET 接口参数 *
+!    out : IntData{*}       * num *			    * 存储解析出的整型数据组 *
+!    out : FloatData{*}     * num *			    * 存储解析出的浮点型数据组 *
+!    out : StringData{*}    * string *		    * 存储解析出的字符串型数据组 *
+!    out : PosData{*, *}    * num *			    * 存储解析出的直角坐标型数据组 *
+! return : 					* errnum *		    * 返回不为 0 时代表发送失败 *
+!***********************************************************
+! 以 JSON 格式从 TCP 通道中读取数据并解析
+! 最大数据数量不能超过 30 个
+!***********************************************************
+func errnum sock_rjson_(var socketdev CSockVar, 
+                        inout sock_cfg_t ThisSock, 
+                        \inout num IntData{*}, 
+                        \inout num FloatData{*}, 
+                        \inout string StringData{*}, 
+                        \inout num PosData{*, *})
+
+    var string Str1 := "";
+    var string Str2 := "";
+    var string TmpStr := "";
+    var bool Comp := false;
+    var string JsonName{JSON_MAX_DATA};
+    var string JsonType{JSON_MAX_DATA};
+    var num NumOfKey := 0;
+    var num NumOfValue := 0; 
+    var num NumOfInt := 0;
+    var num NumOfRel := 0; 
+    var num NumOfStr := 0;
+    var num NumOfPos := 0; 
+    var num I;
+    var num J;
+    var errnum JsonErrNo := SOCK_SUCCESS;
+    var num RecvTimeout;
+    
+    bookerrno SockErrNo;
+
+    if ThisSock.RecvTimeout <= 0 then RecvTimeout := WAIT_MAX; else RecvTimeout := ThisSock.RecvTimeout; endif
+
+    if socketgetstatus(CSockVar) <> SOCKET_CONNECTED then  
+        JsonErrNo := SOCK_DISCONN;
+        raise SockErrNo;  
+    endif
+
+    !Reading 'key{********************}'
+    !
+    while Str1 <> JSON_DEC_EL1 do  
+        if (Str1 <> JSON_DEC_NUL) Str2 := Str2 + Str1;
+        socketreceive CSockVar,
+                      \Str              := Str1, 
+                      \ReadNoOfBytes    := 1,
+                      \Time             := RecvTimeout;  
+    endwhile
+    
+    if Str2 <> JSON_DEC_KEY then 
+        JsonErrNo := SOCK_HED_NAM;
+        raise SockErrNo;  
+    endif
+    
+    while Str1 <> JSON_DEC_EL2 do  
+        Str1 := ""; Str2 := "";
+        incr NumOfKey;
+        if NumOfKey > JSON_MAX_DATA then
+            JsonErrNo := SOCK_NUM_DAT;
+            raise SockErrNo;  
+        endif
+        Comp := false;
+        while not Comp do
+            Str2:=Str2 + Str1;
+            socketreceive CSockVar, 
+                          \Str              := Str1,
+                          \ReadNoOfBytes    := 1,
+                          \Time             := RecvTimeout;  
+
+            if (Str1 = JSON_DEC_EL2) or (Str1 = JSON_DEC_EL4) then
+                Comp := true;  
+            endif
+        endwhile
+        JsonName{NumOfKey} := strpart(Str2, 
+                                      1, 
+                                      strmatch(Str2, 1, JSON_DEC_EL3) - 1);
+        JsonType{NumOfKey} := strpart(Str2, 
+                                      strmatch(Str2, 1, JSON_DEC_EL3) + 1, 
+                                      strlen(Str2) - strmatch(Str2, 1, JSON_DEC_EL3));
+    endwhile
+    
+    !Reading 'value{********************}'
+    ! 
+    Str1 := ""; Str2 := "";
+    while Str1 <> JSON_DEC_EL1 do
+        Str2:=Str2 + Str1;
+        socketreceive CSockVar, 
+                      \Str              := Str1,
+                      \ReadNoOfBytes    := 1,
+                      \Time             := RecvTimeout;  
+    endwhile
+    
+    if Str2 <> JSON_DEC_VAL then  
+        JsonErrNo := SOCK_HED_DAT;
+        raise SockErrNo;  
+    endif
+    
+    while Str1 <> JSON_DEC_EL2 do
+        Str1 := ""; Str2 := "";
+        incr NumOfValue;
+        if NumOfValue > NumOfKey then
+            JsonErrNo := SOCK_NUM_DAT;
+            raise SockErrNo;  
+        endif
+        Comp := false;
+        while not Comp do
+            Str2:=Str2 + Str1;
+            socketreceive CSockVar, 
+                          \Str              := Str1,
+                          \ReadNoOfBytes    := 1,
+                          \Time             := RecvTimeout;  
+            if (Str1 = JSON_DEC_EL2) or (Str1 = JSON_DEC_EL4) then
+                Comp := true;
+            endif
+        endwhile
+        for I from 1 to NumOfKey do
+            if strpart(Str2, 1, strmatch(Str2, 1, JSON_DEC_EL3)-1) = JsonName{I} then
+                if JsonType{I} = JSON_INT_TYP then
+                    incr NumOfInt; 
+                    if present(IntData) then  
+                        if NumOfInt > dim(IntData, 1) then
+                            JsonErrNo := SOCK_NUM_DAT;
+                            raise SockErrNo;  
+                        endif
+                        if not strtoval(strpart(Str2, 
+                                                strmatch(Str2, 1, JSON_DEC_EL3) + 1, 
+                                                strlen(Str2) - strmatch(Str2, 1, JSON_DEC_EL3)), 
+                                                IntData{NumOfInt}) then
+
+                            JsonErrNo := SOCK_INV_INT;
+                            raise SockErrNo;  
+                        endif
+                    endif
+                elseif JsonType{I} = JSON_FLT_TYP then
+                    incr NumOfRel;
+                    if present(FloatData) then
+                        if NumOfRel > dim(FloatData, 1) then
+                            JsonErrNo := SOCK_NUM_DAT;
+                            raise SockErrNo;  
+                        endif
+                        if not strtoval(strpart(Str2, 
+                                                strmatch(Str2, 1, JSON_DEC_EL3) + 1, 
+                                                strlen(Str2) - strmatch(Str2, 1, JSON_DEC_EL3)), 
+                                                FloatData{NumOfRel}) then
+
+                            JsonErrNo := SOCK_INV_FLT;
+                            raise SockErrNo;  
+                        endif
+                    endif
+                elseif JsonType{I} = JSON_STR_TYP then  
+                    incr NumOfStr;
+                    if present(StringData) then  
+                        if NumOfStr > dim(StringData, 1) then
+                            JsonErrNo := SOCK_NUM_DAT;
+                            raise SockErrNo;  
+                        endif
+                        StringData{NumOfstr} := strpart(Str2, 
+                                                        strmatch(Str2, 1, JSON_DEC_EL3) + 1, 
+                                                        strlen(Str2) - strmatch(Str2, 1, JSON_DEC_EL3));
+                    endif
+                elseif JsonType{I} = JSON_POS_TYP then  
+                    incr NumOfPos;
+                    if present(PosData) then  
+                        if NumOfPos > dim(PosData, 1) then
+                            JsonErrNo := SOCK_NUM_DAT;
+                            raise SockErrNo;  
+                        endif
+                        TmpStr := strpart(Str2, 
+                                          strmatch(Str2, 1, JSON_DEC_EL3) + 1, 
+                                          strlen(Str2) - strmatch(Str2, 1, JSON_DEC_EL3)) + JSON_DEC_EL5;
+                                          
+                        for J from 1 to JSON_MAX_AXS do
+                            if not StrToVal(strpart(TmpStr, 
+                                                    1, 
+                                                    strmatch(TmpStr, 1, JSON_DEC_EL5) - 1), PosData{NumOfPos, J}) then
+
+                                JsonErrNo := SOCK_INV_POS;
+                                raise SockErrNo;  
+                            endif
+                            TmpStr := strpart(TmpStr, 
+                                              strmatch(TmpStr, 1, JSON_DEC_EL5) + 1, 
+                                              strlen(TmpStr) - strmatch(TmpStr, 1, JSON_DEC_EL5));
+                        endfor
+                    endif
+                else
+                    JsonErrNo := SOCK_TYP_DAT;
+                    raise SockErrNo;  
+                endif
+            endif
+        endfor
+    endwhile
+    return(SOCK_SUCCESS);
+	!error
+	error
+    ThisSock.Connected := (socketgetstatus(CSockVar)= SOCKET_CONNECTED);
+    if (JsonErrNo <> SOCK_SUCCESS) return(-abs(JsonErrNo)); 
+    return(-abs(errno));
+endfunc
+
+endmodule

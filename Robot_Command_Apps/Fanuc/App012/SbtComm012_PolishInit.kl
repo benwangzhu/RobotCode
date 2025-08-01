@@ -1,0 +1,39 @@
+program SbtPoliInit
+--***********************************************************
+--
+-- file Name: SbtPoliInit
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 05 - 06
+--
+-- Author: 
+--
+-- Version: 1.0
+%comment = 'SBT POLISH INIT 250507'
+%nolockgroup
+%nobusylamp
+%nopause = error + command + tpenable
+
+%include include/lib_socket_t
+%include include/lib_transform_t
+%include include/lib_logs_t
+%include sbt_comm12_t
+%include sbt_comm12_global
+
+var 
+    Status                              : integer 
+
+%include include/lib_inst_h
+%include include/lib_string_h
+
+begin 
+    if uninit(PolishSock.Host) then PolishSock.Host = '127.0.0.1'; endif         -- 如果 CtrlIpAddr 未初始化，则设置为本地地址
+    if uninit(PolishSock.PortTag) then PolishSock.PortTag = POLISH_TAG; endif    -- 如果 CtrlSock.PortTag 未初始化，则设置为 'C6:'
+
+    Status = f000_it00_(PolishSock)
+    if Status <> OK then  
+        post_err(CC_UALARM, '打磨初始化失败![Status:' + int_to_str_(Status) + ']', 0, CC_ABORT)
+    endif 
+end SbtPoliInit

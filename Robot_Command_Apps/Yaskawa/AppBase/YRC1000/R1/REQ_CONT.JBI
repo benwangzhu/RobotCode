@@ -1,0 +1,25 @@
+/JOB
+//NAME REQ_CONT
+///FOLDERNAME SPEEDBOT
+//POS
+///NPOS 0,0,0,0,0,0
+//INST
+///DATE 2000/01/01 17:13
+///ATTR SC,RW,MC
+///GROUP1 RB1
+NOP
+'***********************
+'***宏程序：路径段请求***
+'**请求进入下一个路径段*
+'***********************
+'复位路径段请求信号
+DOUT OT#(41) OFF
+'等待plc请求信号置位
+WAIT IN#(41)=OFF
+'请求进入下一个路径段
+DOUT OT#(41) ON
+'等待请求通过
+WAIT IN#(41)=ON
+'把路径段选择号存储到B000
+DIN B000 IG#(5)
+END

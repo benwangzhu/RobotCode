@@ -1,0 +1,1201 @@
+&access RP
+&comment Lib Socket 240227
+def lib_packages()
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: lib_packages.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2021 - 08 - 17
+;   Modification Data    ==   2024 - 02 - 27
+;
+; Author: speedbot
+;
+; Version: 1.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+; 2024 - 09 - 24 ++ pack_head_()
+
+; 2025 - 05 - 08 ++ pack_body_()
+
+; 2024 - 09 - 24 ++ pack_tail_()
+
+; 2024 - 09 - 24 ++ unpack_head_() ==> int
+
+; 2025 - 05 - 08 ++ unpack_body_()
+
+; 2025 - 05 - 08 ++ unpack_tail_() ==> int
+
+; 2025 - 05 - 08 ++ pack_cmd002_()
+
+; 2025 - 05 - 08 ++ pack_cmd003_()
+
+; 2025 - 05 - 08 ++ pack_cmd009_()
+
+; 2025 - 05 - 08 ++ pack_cmd010_()
+
+; 2025 - 05 - 08 ++ pack_cmd011_()
+
+; 2025 - 05 - 08 ++ pack_cmd012_()
+
+; 2025 - 05 - 08 ++ pack_cmd013_()
+
+; 2025 - 05 - 08 ++ pack_cmd014_()
+
+; 2025 - 05 - 08 ++ pack_cmd017_()
+
+; 2025 - 05 - 08 ++ pack_cmd018_()
+
+; 2025 - 05 - 08 ++ pack_cmd020_()
+
+; 2025 - 05 - 08 ++ pack_cmd021_()
+
+; 2025 - 05 - 08 ++ pack_cmd022_()
+
+; 2025 - 05 - 08 ++ pack_cmd026_()
+
+; 2025 - 05 - 08 ++ pack_cmd027_()
+
+; 2025 - 05 - 08 ++ pack_cmd129_()
+
+; 2025 - 05 - 08 ++ pack_cmd130_()
+
+; 2025 - 05 - 08 ++ pack_cmd131_()
+
+; 2025 - 05 - 08 ++ pack_cmd132_()
+
+; 2025 - 05 - 08 ++ pack_cmd133_()
+
+; 2025 - 05 - 08 ++ pack_cmd137_()
+
+; 2025 - 05 - 08 ++ pack_cmd145_()
+
+; 2025 - 05 - 08 ++ pack_cmd148_()
+
+; 2025 - 05 - 08 ++ pack_cmd151_()
+
+; 2025 - 05 - 08 ++ pack_cmd254_()
+
+; 2025 - 05 - 08 ++ pack_cmd255_()
+
+end
+
+;FOLD PACKAGE HEADER
+global def pack_head_(Packages[] : out, Header : in, Offset : out)
+    decl char Packages[]
+    decl pack_head_t Header
+    decl int Offset
+
+    Offset = 0
+    Packages[Offset + 1] = (trunc_((Header.Head b_and 255)           / 1))           b_and 255
+    Packages[Offset + 2] = (trunc_((Header.Head b_and (65280))       / 256))         b_and 255
+    Packages[Offset + 3] = (trunc_((Header.Head b_and (16711680))    / 65535))       b_and 255
+    Packages[Offset + 4] = (trunc_((Header.Head b_and (-16777216))   / 16777216))    b_and 255
+    Packages[Offset + 5] = (trunc_((Header.Length b_and 255)           / 1))           b_and 255
+    Packages[Offset + 6] = (trunc_((Header.Length b_and (65280))       / 256))         b_and 255
+    Packages[Offset + 7] = (trunc_((Header.Length b_and (16711680))    / 65535))       b_and 255
+    Packages[Offset + 8] = (trunc_((Header.Length b_and (-16777216))   / 16777216))    b_and 255
+    Packages[Offset + 9] = (trunc_((Header.PacketCount b_and 255)           / 1))           b_and 255
+    Packages[Offset + 10] = (trunc_((Header.PacketCount b_and (65280))       / 256))         b_and 255
+    Packages[Offset + 11] = (trunc_((Header.PacketCount b_and (16711680))    / 65535))       b_and 255
+    Packages[Offset + 12] = (trunc_((Header.PacketCount b_and (-16777216))   / 16777216))    b_and 255
+    Packages[Offset + 13] = Header.Cmd
+    Packages[Offset + 14] = Header.Type_
+    Packages[Offset + 15] = Header.Seq
+    Packages[Offset + 16] = Header.VirtualRob
+    
+    Offset = 16
+end
+;ENDFOLD
+
+;FOLD PACKAGE BODY
+global def pack_body_(PackAges[] : out, Bodyer : in, Offset : out)
+    decl char PackAges[]
+    decl busout_t Bodyer
+    decl int Offset
+    decl state_t Sta
+
+    if (varstate("Bodyer.RobotId") <> #initialized) then 
+        Bodyer.RobotId = 0
+    endif 
+
+    PackAges[Offset + 1] = Bodyer.RobotId
+    PackAges[Offset + 2] = Bodyer.JobId
+    PackAges[Offset + 3] = Bodyer.ProtocolId
+    PackAges[Offset + 4] = Bodyer.RobMsgType
+    
+    Offset = Offset + 4
+end
+;ENDFOLD
+
+;FOLD PACKAGE TAILER
+global def pack_tail_(Packages[] : out, Tailer : in, Offset : out)
+    decl char Packages[]
+    decl pack_tail_t Tailer
+    decl int Offset
+
+    Packages[Offset + 1] = (trunc_((Tailer.Tail b_and 255)           / 1))           b_and 255
+    Packages[Offset + 2] = (trunc_((Tailer.Tail b_and (65280))       / 256))         b_and 255
+    Packages[Offset + 3] = (trunc_((Tailer.Tail b_and (16711680))    / 65535))       b_and 255
+    Packages[Offset + 4] = (trunc_((Tailer.Tail b_and (-16777216))   / 16777216))    b_and 255
+
+    Offset = Offset + 4
+end
+;ENDFOLD
+
+;FOLD UNPACKAGE HEADER
+global deffct int unpack_head_(Packages[] : in, Header : out, Offset : out)
+    decl char Packages[]
+    decl pack_head_t Header
+    decl int Offset
+
+    Offset = 0
+
+    Header.Head = 0             + (((Packages[Offset + 1] b_and 255) * 1)          b_and 255) 
+    Header.Head = Header.Head   + (((Packages[Offset + 2] b_and 255) * 256)        b_and 65280) 
+    Header.Head = Header.Head   + (((Packages[Offset + 3] b_and 255) * 65536)      b_and 16711680) 
+    Header.Head = Header.Head   + (((Packages[Offset + 4] b_and 255) * 16777216)   b_and (-16777216))
+
+    Header.Length = 0               + (((Packages[Offset + 5] b_and 255) * 1)          b_and 255) 
+    Header.Length = Header.Length   + (((Packages[Offset + 6] b_and 255) * 256)        b_and 65280) 
+    Header.Length = Header.Length   + (((Packages[Offset + 7] b_and 255) * 65536)      b_and 16711680) 
+    Header.Length = Header.Length   + (((Packages[Offset + 8] b_and 255) * 16777216)   b_and (-16777216))
+
+    Header.PacketCount = 0                  + (((Packages[Offset + 9] b_and 255) * 1)          b_and 255) 
+    Header.PacketCount = Header.PacketCount + (((Packages[Offset + 10] b_and 255) * 256)        b_and 65280) 
+    Header.PacketCount = Header.PacketCount + (((Packages[Offset + 11] b_and 255) * 65536)      b_and 16711680) 
+    Header.PacketCount = Header.PacketCount + (((Packages[Offset + 12] b_and 255) * 16777216)   b_and (-16777216))
+
+    Header.Cmd = Packages[Offset + 13]
+    Header.Type_ = Packages[Offset + 14]
+    Header.Seq = Packages[Offset + 15]
+    Header.VirtualRob = Packages[Offset + 16]
+
+    Offset = 16
+
+    if Header.Head <> PACK_HEADER then 
+
+        error_write_(1, "Packet Header Check Error")
+        return(NG)
+    endif
+    
+    return(OK)
+endfct
+;ENDFOLD
+
+;FOLD UNPACKAGE BODY
+global def unpack_body_(PackAges[] : in, Bodyer : out, Offset : out)
+    decl char PackAges[]
+    decl busin_t Bodyer 
+    decl int Offset
+    decl state_t Sta
+
+    Bodyer.DeviceId = PackAges[Offset + 1] 
+    Bodyer.JobId    = PackAges[Offset + 2]
+    Bodyer.ErrorId  = PackAges[Offset + 3]
+    Bodyer.MsgType  = PackAges[Offset + 4]
+
+    Offset = Offset + 4
+end
+;ENDFOLD
+
+;FOLD UNPACKAGE TAILER
+global deffct int unpack_tail_(Packages[] : in, Tailer : out, Offset : out)
+    decl char Packages[]
+    decl pack_tail_t Tailer
+    decl int Offset
+
+    Tailer.Tail = 0             + (((Packages[Offset + 1] b_and 255) * 1)          b_and 255) 
+    Tailer.Tail = Tailer.Tail   + (((Packages[Offset + 2] b_and 255) * 256)        b_and 65280) 
+    Tailer.Tail = Tailer.Tail   + (((Packages[Offset + 3] b_and 255) * 65536)      b_and 16711680) 
+    Tailer.Tail = Tailer.Tail   + (((Packages[Offset + 4] b_and 255) * 16777216)   b_and (-16777216))
+    
+    Offset = Offset + 4 
+
+    if Tailer.Tail <> PACK_TAIL then 
+
+        error_write_(1, "Packet Trailer Check Error")
+        return(NG)
+    endif
+    
+    return(OK)
+endfct
+;ENDFOLD
+
+;FOLD COMMAND 002
+global def pack_cmd002_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ01_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        PackData.Byte01 = PackAges[Offset + 1]
+        PackData.Byte02 = PackAges[Offset + 2]
+        Offset = Offset + 2
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short03, PackData.Short04, PackData.Int05, PackData.Int06, PackData.Float07, PackData.Float08)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        PackAges[Offset + 1] = PackData.Byte01
+        PackAges[Offset + 2] = PackData.Byte02
+        Offset = Offset + 2
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short03, PackData.Short04, PackData.Int05, PackData.Int06, PackData.Float07, PackData.Float08)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd002_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 003
+global def pack_cmd003_(PackAges[] : out, PackMsSel : in, PackData : Out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl pos PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.X, PackData.Y, PackData.Z, PackData.A, PackData.B, PackData.C)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.X, PackData.Y, PackData.Z, PackData.A, PackData.B, PackData.C)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd003_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 009
+global def pack_cmd009_(PackAges[] : out, PackMsSel : in, PackData : Out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl pos PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.X, PackData.Y, PackData.Z, PackData.A, PackData.B, PackData.C)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.X, PackData.Y, PackData.Z, PackData.A, PackData.B, PackData.C)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd009_ param1 err")
+    endswitch  
+end
+;ENDFOLD
+
+;FOLD COMMAND 010
+global def pack_cmd010_(PackAges[] : out, PackMsSel : in, PackData : Out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl pos PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r",  PackData.X, PackData.Y, PackData.Z, PackData.A, PackData.B, PackData.C)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.X, PackData.Y, PackData.Z, PackData.A, PackData.B, PackData.C)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd010_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 011
+global def pack_cmd011_(PackAges[] : out, PackMsSel : in, PackData : Out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl pos PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.X, PackData.Y, PackData.Z, PackData.A, PackData.B, PackData.C)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.X, PackData.Y, PackData.Z, PackData.A, PackData.B, PackData.C)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd011_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 012
+global def pack_cmd012_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ01_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        PackData.Byte01 = PackAges[Offset + 1]
+        PackData.Byte02 = PackAges[Offset + 2]
+        Offset = Offset + 2
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short03, PackData.Short04, PackData.Int05, PackData.Int06, PackData.Float07, PackData.Float08)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        PackAges[Offset + 1] = PackData.Byte01
+        PackAges[Offset + 2] = PackData.Byte02
+        Offset = Offset + 2
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short03, PackData.Short04, PackData.Int05, PackData.Int06, PackData.Float07, PackData.Float08)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd012_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 013
+global def pack_cmd013_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ01_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        PackData.Byte01 = PackAges[Offset + 1]
+        PackData.Byte02 = PackAges[Offset + 2]
+        Offset = Offset + 2
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short03, PackData.Short04, PackData.Int05, PackData.Int06, PackData.Float07, PackData.Float08)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        PackAges[Offset + 1] = PackData.Byte01
+        PackAges[Offset + 2] = PackData.Byte02
+        Offset = Offset + 2
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short03, PackData.Short04, PackData.Int05, PackData.Int06, PackData.Float07, PackData.Float08)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd013_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 014
+global def pack_cmd014_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ01_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        PackData.Byte01 = PackAges[Offset + 1]
+        PackData.Byte02 = PackAges[Offset + 2]
+        Offset = Offset + 2
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short03, PackData.Short04, PackData.Int05, PackData.Int06, PackData.Float07, PackData.Float08)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        PackAges[Offset + 1] = PackData.Byte01
+        PackAges[Offset + 2] = PackData.Byte02
+        Offset = Offset + 2
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short03, PackData.Short04, PackData.Int05, PackData.Int06, PackData.Float07, PackData.Float08)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd014_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 017
+global def pack_cmd017_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ07_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+    
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float01, PackData.Float02, PackData.Float03, PackData.Float04, PackData.Float05, PackData.Float06, PackData.Float07)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float08, PackData.Float09, PackData.Float10, PackData.Float11, PackData.Float12, PackData.Int13, PackData.Int14)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float01, PackData.Float02, PackData.Float03, PackData.Float04, PackData.Float05, PackData.Float06, PackData.Float07)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float08, PackData.Float09, PackData.Float10, PackData.Float11, PackData.Float12, PackData.Int13, PackData.Int14)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd017_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 018
+global def pack_cmd018_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ07_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+        case #PACKCMD_READ
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float01, PackData.Float02, PackData.Float03, PackData.Float04, PackData.Float05, PackData.Float06, PackData.Float07)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float08, PackData.Float09, PackData.Float10, PackData.Float11, PackData.Float12, PackData.Int13, PackData.Int14)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float01, PackData.Float02, PackData.Float03, PackData.Float04, PackData.Float05, PackData.Float06, PackData.Float07)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float08, PackData.Float09, PackData.Float10, PackData.Float11, PackData.Float12, PackData.Int13, PackData.Int14)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd018_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 020
+global def pack_cmd020_(PackAges[] : out, PackMsSel : in, PackData : Out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl pos PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.X, PackData.Y, PackData.Z, PackData.A, PackData.B, PackData.C)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.X, PackData.Y, PackData.Z, PackData.A, PackData.B, PackData.C)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd020_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 021
+global def pack_cmd021_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ01_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+        case #PACKCMD_READ
+
+        PackData.Byte01 = PackAges[Offset + 1]
+        PackData.Byte02 = PackAges[Offset + 2]
+        Offset = Offset + 2
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short03, PackData.Short04, PackData.Int05, PackData.Int06, PackData.Float07, PackData.Float08) 
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        PackAges[Offset + 1] = PackData.Byte01
+        PackAges[Offset + 2] = PackData.Byte02
+        Offset = Offset + 2
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short03, PackData.Short04, PackData.Int05, PackData.Int06, PackData.Float07, PackData.Float08)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd021_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 022
+global def pack_cmd022_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ01_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        PackData.Byte01 = PackAges[Offset + 1]
+        PackData.Byte02 = PackAges[Offset + 2]
+        Offset = Offset + 2
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short03, PackData.Short04, PackData.Int05, PackData.Int06, PackData.Float07, PackData.Float08)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        PackAges[Offset + 1] = PackData.Byte01
+        PackAges[Offset + 2] = PackData.Byte02
+        Offset = Offset + 2
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short03, PackData.Short04, PackData.Int05, PackData.Int06, PackData.Float07, PackData.Float08) 
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd022_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 026
+global def pack_cmd026_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ01_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        PackData.Byte01 = PackAges[Offset + 1]
+        PackData.Byte02 = PackAges[Offset + 2]
+        Offset = Offset + 2
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short03, PackData.Short04, PackData.Int05, PackData.Int06, PackData.Float07, PackData.Float08) 
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        PackAges[Offset + 1] = PackData.Byte01
+        PackAges[Offset + 2] = PackData.Byte02
+        Offset = Offset + 2
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short03, PackData.Short04, PackData.Int05, PackData.Int06, PackData.Float07, PackData.Float08)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd026_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 027
+global def pack_cmd027_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ08_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        PackData.Byte01 = PackAges[Offset + 1]
+        PackData.Byte02 = PackAges[Offset + 2]
+        PackData.Byte03 = PackAges[Offset + 3]
+        PackData.Byte04 = PackAges[Offset + 4]
+        Offset = Offset + 4
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short05, PackData.Short06, PackData.Short07, PackData.Short08, PackData.Int09, PackData.Int10)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Int11, PackData.Int12, PackData.Float13, PackData.Float14, PackData.Float15, PackData.Float16)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        PackAges[Offset + 1] = PackData.Byte01
+        PackAges[Offset + 2] = PackData.Byte02
+        PackAges[Offset + 3] = PackData.Byte03
+        PackAges[Offset + 4] = PackData.Byte04
+        Offset = Offset + 4
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short05, PackData.Short06, PackData.Short07, PackData.Short08, PackData.Int09, PackData.Int10)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Int11, PackData.Int12, PackData.Float13, PackData.Float14, PackData.Float15, PackData.Float16)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd027_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 129
+global def pack_cmd129_(PackAges[] : out, PackMsSel : in, PackData : Out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl pos PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.X, PackData.Y, PackData.Z, PackData.A, PackData.B, PackData.C)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.X, PackData.Y, PackData.Z, PackData.A, PackData.B, PackData.C)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd129_ param1 err")
+    endswitch  
+end
+;ENDFOLD
+
+;FOLD COMMAND 130
+global def pack_cmd130_(PackAges[] : out, PackMsSel : in, PackData : Out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl axis PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.A1, PackData.A2, PackData.A3, PackData.A4, PackData.A5, PackData.A6)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.A1, PackData.A2, PackData.A3, PackData.A4, PackData.A5, PackData.A6)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd130_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 131
+global def pack_cmd131_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ02_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Float01, PackData.Float02, PackData.Float03, PackData.Float04, PackData.Float05, PackData.Float06)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Float01, PackData.Float02, PackData.Float03, PackData.Float04, PackData.Float05, PackData.Float06)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd131_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 132
+global def pack_cmd132_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ07_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float01, PackData.Float02, PackData.Float03, PackData.Float04, PackData.Float05, PackData.Float06, PackData.Float07)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float08, PackData.Float09, PackData.Float10, PackData.Float11, PackData.Float12, PackData.Int13, PackData.Int14)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float01, PackData.Float02, PackData.Float03, PackData.Float04, PackData.Float05, PackData.Float06, PackData.Float07)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float08, PackData.Float09, PackData.Float10, PackData.Float11, PackData.Float12, PackData.Int13, PackData.Int14)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd132_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 133
+global def pack_cmd133_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ07_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+        case #PACKCMD_READ
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float01, PackData.Float02, PackData.Float03, PackData.Float04, PackData.Float05, PackData.Float06, PackData.Float07)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float08, PackData.Float09, PackData.Float10, PackData.Float11, PackData.Float12, PackData.Int13, PackData.Int14)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float01, PackData.Float02, PackData.Float03, PackData.Float04, PackData.Float05, PackData.Float06, PackData.Float07)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float08, PackData.Float09, PackData.Float10, PackData.Float11, PackData.Float12, PackData.Int13, PackData.Int14)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd133_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 134
+global def pack_cmd134_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ09_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+        case #PACKCMD_READ
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Int01, PackData.Int02, PackData.Float03, PackData.Float04, PackData.Float05, PackData.Float06, PackData.Float07)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float08, PackData.Float09, PackData.Float10, PackData.Float11, PackData.Float12, PackData.Float13, PackData.Float14)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Int01, PackData.Int02, PackData.Float03, PackData.Float04, PackData.Float05, PackData.Float06, PackData.Float07)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float08, PackData.Float09, PackData.Float10, PackData.Float11, PackData.Float12, PackData.Float13, PackData.Float14)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd133_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 137
+global def pack_cmd137_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ03_t PackData
+    decl int Offset
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        PackData.Byte01         =   PackAges[Offset + 1]
+        PackData.Byte02         =   PackAges[Offset + 2]
+        PackData.Byte03         =   PackAges[Offset + 3]
+        PackData.Byte04         =   PackAges[Offset + 4]
+        PackData.Byte05         =   PackAges[Offset + 5]
+        PackData.Byte06         =   PackAges[Offset + 6]
+        PackData.Byte07         =   PackAges[Offset + 7]
+        PackData.Byte08         =   PackAges[Offset + 8]
+        PackData.Byte09         =   PackAges[Offset + 9]
+        PackData.Byte10         =   PackAges[Offset + 10]
+        PackData.Byte11         =   PackAges[Offset + 11]
+        PackData.Byte12         =   PackAges[Offset + 12]
+        PackData.Byte13         =   PackAges[Offset + 13]
+        PackData.Byte14         =   PackAges[Offset + 14]
+        PackData.Byte15         =   PackAges[Offset + 15]
+        PackData.Byte16         =   PackAges[Offset + 16]
+        PackData.Byte17         =   PackAges[Offset + 17]
+        PackData.Byte18         =   PackAges[Offset + 18]
+    case #PACKCMD_WRITE
+
+        PackAges[Offset + 1]    =   PackData.Byte01
+        PackAges[Offset + 2]    =   PackData.Byte02
+        PackAges[Offset + 3]    =   PackData.Byte03
+        PackAges[Offset + 4]    =   PackData.Byte04
+        PackAges[Offset + 5]    =   PackData.Byte05
+        PackAges[Offset + 6]    =   PackData.Byte06
+        PackAges[Offset + 7]    =   PackData.Byte07
+        PackAges[Offset + 8]    =   PackData.Byte08
+        PackAges[Offset + 9]    =   PackData.Byte09
+        PackAges[Offset + 10]   =   PackData.Byte10
+        PackAges[Offset + 11]   =   PackData.Byte11
+        PackAges[Offset + 12]   =   PackData.Byte12
+        PackAges[Offset + 13]   =   PackData.Byte13
+        PackAges[Offset + 14]   =   PackData.Byte14
+        PackAges[Offset + 15]   =   PackData.Byte15
+        PackAges[Offset + 16]   =   PackData.Byte16
+        PackAges[Offset + 17]   =   PackData.Byte17
+        PackAges[Offset + 18]   =   PackData.Byte18
+    default
+
+        error_write_(1, "pack_cmd137_ param1 err")
+    endswitch
+
+    Offset = Offset + 18 
+end
+;ENDFOLD
+
+;FOLD COMMAND 145
+global def pack_cmd145_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ01_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        PackData.Byte01 = PackAges[Offset + 1]
+        PackData.Byte02 = PackAges[Offset + 2]
+        Offset = Offset + 2
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short03, PackData.Short04, PackData.Int05, PackData.Int06, PackData.Float07, PackData.Float08)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        PackAges[Offset + 1] = PackData.Byte01
+        PackAges[Offset + 2] = PackData.Byte02
+        Offset = Offset + 2
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short03, PackData.Short04, PackData.Int05, PackData.Int06, PackData.Float07, PackData.Float08) 
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd145_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 148
+global def pack_cmd148_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ08_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        PackData.Byte01 = PackAges[Offset + 1]
+        PackData.Byte02 = PackAges[Offset + 2]
+        PackData.Byte03 = PackAges[Offset + 3]
+        PackData.Byte04 = PackAges[Offset + 4]
+        Offset = Offset + 4
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short05, PackData.Short06, PackData.Short07, PackData.Short08, PackData.Int09, PackData.Int10)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Int11, PackData.Int12, PackData.Float13, PackData.Float14, PackData.Float15, PackData.Float16)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        PackAges[Offset + 1] = PackData.Byte01
+        PackAges[Offset + 2] = PackData.Byte02
+        PackAges[Offset + 3] = PackData.Byte03
+        PackAges[Offset + 4] = PackData.Byte04
+        Offset = Offset + 4
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Short05, PackData.Short06, PackData.Short07, PackData.Short08, PackData.Int09, PackData.Int10)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r", PackData.Int11, PackData.Int12, PackData.Float13, PackData.Float14, PackData.Float15, PackData.Float16)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd148_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 151
+global def pack_cmd151_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ06_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        PackData.Byte01         =   PackAges[Offset + 1]
+        Offset = Offset + 1
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r", PackData.Short02, PackData.Short03, PackData.Short04, PackData.Float05, PackData.Float06)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        PackAges[Offset + 1] = PackData.Byte01
+        Offset = Offset + 1
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r", PackData.Short02, PackData.Short03, PackData.Short04, PackData.Float05, PackData.Float06)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd151_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 254
+global def pack_cmd254_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ07_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float01, PackData.Float02, PackData.Float03, PackData.Float04, PackData.Float05, PackData.Float06, PackData.Float07)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float08, PackData.Float09, PackData.Float10, PackData.Float11, PackData.Float12, PackData.Int13, PackData.Int14)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float01, PackData.Float02, PackData.Float03, PackData.Float04, PackData.Float05, PackData.Float06, PackData.Float07)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float08, PackData.Float09, PackData.Float10, PackData.Float11, PackData.Float12, PackData.Int13, PackData.Int14)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd254_ param1 err")
+    endswitch 
+end
+;ENDFOLD
+
+;FOLD COMMAND 255
+global def pack_cmd255_(PackAges[] : out, PackMsSel : in, PackData : out, Offset : out)
+    decl char PackAges[]
+    decl PACKCMD_RW_T PackMsSel
+    decl cmd_typ07_t PackData
+    decl int Offset
+    decl state_t Sta
+
+    switch (PackMsSel)
+    case #PACKCMD_READ
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float01, PackData.Float02, PackData.Float03, PackData.Float04, PackData.Float05, PackData.Float06, PackData.Float07)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+
+        sread(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float08, PackData.Float09, PackData.Float10, PackData.Float11, PackData.Float12, PackData.Int13, PackData.Int14)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing read failed")
+        endif 
+    case #PACKCMD_WRITE
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float01, PackData.Float02, PackData.Float03, PackData.Float04, PackData.Float05, PackData.Float06, PackData.Float07)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+
+        swrite(PackAges[], Sta, Offset, "%r%r%r%r%r%r%r", PackData.Float08, PackData.Float09, PackData.Float10, PackData.Float11, PackData.Float12, PackData.Int13, PackData.Int14)
+        if (Sta.MSG_NO <> OK) then 
+            error_write_("0", "Data parsing and writing failed")
+        endif 
+    default
+
+        error_write_(1, "pack_cmd255_ param1 err")
+    endswitch 
+end
+;ENDFOLD

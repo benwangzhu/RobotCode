@@ -1,0 +1,292 @@
+&access RP
+&comment Lib Logs-h 221122
+defdat  lib_logs_t public
+;***********************************************************
+;
+; Copyright 2018 - 2023 speedbot All Rights reserved.
+;
+; File Name: lib_logs_t.dat
+;
+; Description:
+;   Language             ==   Krl for Kuka Robot
+;   Date                 ==   2021 - 10 - 20
+;   Modification Data    ==   2022 - 08 - 09
+;
+; Author: speedbot
+;
+; Version: 2.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+global enum open_mode_t STR_READ, STR_RW, STR_AP, BIN_READ, BIN_RW, BIN_AP
+
+global const int LOGS_MAX_SIZE = 1024000
+
+global const int OK = 0
+global const int NG = -1
+
+ext err_write_(char[] : in, char[] : in, bool : in)
+
+;***********************************************************
+; func signal_in_msg_()
+;***********************************************************
+;     
+;     in : Msg[]      * char *  * Prompt message *
+;     in : InSignal   * int    * * Input signal  *
+;***********************************************************
+; Display the function of the input signal
+;***********************************************************
+ext signal_in_msg_(char[] : in, int : in)
+
+;***********************************************************
+; func log_info_()
+;***********************************************************
+;     in : Msg[]      * char *  * String to display *
+;***********************************************************
+; Log an informational message
+;***********************************************************
+ext log_info_(char[] : in)
+
+;***********************************************************
+; func log_warn_()
+;***********************************************************
+;     in : Msg[]      * char *  * String to display *
+;***********************************************************
+; Log a warning message
+;***********************************************************
+ext log_warn_(char[] : in)
+
+;***********************************************************
+; func log_error_()
+;***********************************************************
+;     in : Msg[]      * char *  * String to display *
+;***********************************************************
+; Log an error message
+;***********************************************************
+ext log_error_(char[] : in)
+
+;***********************************************************
+; func error_write_()
+;***********************************************************
+;     in : code       * int     * Error code *
+;     in : Msg[]      * char *  * String to display *
+;***********************************************************
+; Write an error message with an error code
+;***********************************************************
+ext error_write_(int : in, char[] : in)
+
+;***********************************************************
+; func warn_write_()
+;***********************************************************
+;     in : code       * int     * Status code *
+;     in : Msg[]      * char *  * String to display *
+; return:              * int    * Returns a status code *
+;***********************************************************
+; Write a warning message with a status code
+;***********************************************************
+ext warn_write_(int : in, char[] : in)
+
+;***********************************************************
+; func info_write_()
+;***********************************************************
+;     in : code       * int     * Status code *
+;     in : Msg[]      * char *  * String to display *
+; return:              * int    * Returns a status code *
+;***********************************************************
+; Write an informational message with a status code
+;***********************************************************
+ext info_write_(int : in, char[] : in)
+
+;***********************************************************
+; func open_file_()
+;***********************************************************
+;     in : FileName[]      * char *      * File name with extension to open or create *
+;     in : OpenMode        * open_mode_t * Mode for opening the file *
+; return:                 * int         * Returns a handle > 0 on successful open *
+;***********************************************************
+; Open or create a file. On successful open, returns a handle greater than 0 for subsequent read/write and close operations.
+; Created files are placed in the KRC\ROBOTER\UserFiles directory.
+; OpenMode values:
+; #STR_READ     - Open in ASCII mode for reading only, can be opened from multiple locations.
+; #STR_RW       - Open in ASCII mode for reading and writing, existing content is deleted upon opening; creates the file if it does not exist.
+; #STR_AP       - Open in ASCII mode for reading and writing, appends to the end of the file; creates the file if it does not exist.
+; #BIN_READ     - Open in binary mode for reading only, can be opened from multiple locations.
+; #BIN_RW       - Open in binary mode for reading and writing, existing content is deleted upon opening; creates the file if it does not exist.
+; #BIN_AP       - Open in binary mode for reading and writing, appends to the end of the file; creates the file if it does not exist.
+;***********************************************************
+extfct int open_file_(char[] : in, open_mode_t : in)
+
+;***********************************************************
+; func file_writeln_()
+;***********************************************************
+;     in : FileHandle      * int    * File handle *
+;     in : NumOfLn         * int    * Number of new lines to insert *
+;***********************************************************
+; Insert newline(s) into the file
+; If NumOfLn is ignored, defaults to 1
+;***********************************************************
+ext file_writeln_(int : in, int : in)
+
+;***********************************************************
+; func file_puts_()
+;***********************************************************
+;     in : FileHandle      * int    * File handle *
+;     in : Msg[]           * char * * String to write to the file *
+;     in : Ln              * bool   * Whether to insert a newline after writing, true for inserting a newline *
+;***********************************************************
+; Write a string to the file
+; If Ln is ignored, it defaults to inserting a newline
+;***********************************************************
+ext file_puts_(int : in, char[] : in, bool : in)
+
+;***********************************************************
+; func file_getc_()
+;***********************************************************
+;     in : FileHandle      * int    * File handle *
+;    out : Msg             * char   * Character read from the file *
+; return:                  * int    * Returns 1 on successful read *
+;***********************************************************
+; Read a single character from the file
+;***********************************************************
+extfct int file_getc_(int : in, char : out)
+
+;***********************************************************
+; func file_gets_()
+;***********************************************************
+;     in  : FileHandle      * int    * File handle *
+;    out : Msg[]            * char * * String read from the file *
+;     in  : Len             * int    * Maximum read length *
+;     in  : EolChar         * char   * Specified end-of-line character *
+; return:                   * int    * Returns > 0 on successful read *
+;***********************************************************
+; Read a string from the file
+; If Len is ignored, the maximum storage is the actual declared length of Msg
+; If EolChar is specified, reading stops at the specified end character, including it
+;***********************************************************
+extfct int file_gets_(int : in, char[] : out, int : in, char : in)
+
+;***********************************************************
+; func file_seek_()
+;***********************************************************
+;     in : FileHandle      * int        * File handle *
+;     in : SeekMode        * seek_mode_t * Pointer setting mode *
+;     in : Offset          * int        * Offset relative to the current position *
+;***********************************************************
+; Set the pointer position within the file
+; SeekMode --   #SEEK_BEGIN       Set the file pointer to the beginning of the file
+;               #SEEK_END         Set the file pointer to the end of the file
+;               #SEEK_CUR         Set the pointer relative to the current position
+; Offset is only used when SeekMode = #SEEK_CUR. The offset is specified in bytes and can be positive or negative.
+;***********************************************************
+ext file_seek_(int : in, seek_mode_t : in, int : in)
+
+;***********************************************************
+; func file_eof_()
+;***********************************************************
+;     in : FileHandle      * int    * File handle *
+; return:                  * bool   * Returns TRUE if the end of the file is reached *
+;***********************************************************
+; Check if the end of the file has been reached
+;***********************************************************
+extfct bool file_eof_(int : in)
+
+;***********************************************************
+; func close_file_()
+;***********************************************************
+;     in : FileHandle      * int    * File handle *
+;***********************************************************
+; Close the file associated with the given file handle
+;***********************************************************
+ext close_file_(int : in)
+
+;***********************************************************
+; func delete_file_()
+;***********************************************************
+;     in : FileName[]      * char *  * File name with extension to be deleted *
+;***********************************************************
+; Delete the specified file
+;***********************************************************
+ext delete_file_(char[] : in)
+
+;***********************************************************
+; func get_file_size_()
+;***********************************************************
+;     in : FileName[]      * char *  * File name with extension *
+; return:                  * int     * Size in bytes *
+;***********************************************************
+; Get the size of the specified file in bytes
+; If a negative number is returned, it may indicate that the file was not found
+;***********************************************************
+extfct int get_file_size_(char[] : in)
+
+;***********************************************************
+; func file_created_()
+;***********************************************************
+;     in : FileName[]      * char *  * File name with extension *
+; return:                  * bool    * Returns whether the file has been created *
+;***********************************************************
+; Check if a file already exists
+; Returns TRUE if it exists, otherwise FALSE
+;***********************************************************
+extfct bool file_created_(char[] : in)
+
+;***********************************************************
+; func rename_file_()
+;***********************************************************
+;     in : FileName[]      * char *  * File name with extension to be renamed *
+;     in : NewFileName[]   * char *  * New file name with extension *
+;***********************************************************
+; Rename a file
+; If a file with the new name already exists, it will be deleted before renaming
+;***********************************************************
+ext rename_file_(char[] : in, char[] : in)
+
+;***********************************************************
+; func logs_()
+;***********************************************************
+;     in : FileName[]      * char *  * Log file name *
+;     in : Msg[]           * char *  * Message to log *
+;***********************************************************
+; Log a message to the specified file
+; If the file size (in bytes) exceeds LOGS_MAX_SIZE, the original log file is renamed to _old before logging continues
+;***********************************************************
+ext logs_(char[] : in, char[] : in)
+
+;***********************************************************
+; func path_2jnt_file_()
+;***********************************************************
+;     in : FromFileName[]      * char *  * DAT trajectory file to be converted *
+;     in : ToFileName[]        * char *  * Resulting JOINT coordinate file *
+;***********************************************************
+; Convert a specified DAT trajectory file from the KRC\ROBOTER\UserFiles folder to a JOINT coordinate file
+;***********************************************************
+ext pth_2jntfile_(char[] : in, char[] : in)
+
+enddat

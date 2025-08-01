@@ -1,0 +1,58 @@
+&ACCESS RV1
+&REL 1
+&COMMENT MixSort Picture
+&PARAM EDITMASK = *
+&PARAM DISKPATH = KRC:\R1\Program\MixSortMain
+DEF mixsort_picture( )
+;***********************************************************
+;
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+;
+; File Name: mixsort_picture.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 27
+;   Modification Data    ==   2025 - 02 - 10
+;
+; Author: speedbot
+;
+; Version: 1.1
+;***********************************************************
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+    continue
+    if $MOVE_BCO == FALSE Then
+      ; BCO
+      ptp cur_jpos_()
+    endif
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+  
+;FOLD Copy Data
+CopyPictData = AgentData.PictData
+XPicturePos = AgentData.PictData.PictPos
+;ENDFOLD
+
+;FOLD SLIN PicturePos Vel=1.5 m/s CPDAT1 Tool[0] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=PicturePos; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT1; Kuka.VelocityPath=1.5; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SLIN
+;ENDFOLD
+SLIN XPicturePos WITH $VEL = SVEL_CP(1.5, , LCPDAT1), $TOOL = STOOL2(FPicturePos), $BASE = SBASE(FPicturePos.BASE_NO), $IPO_MODE = SIPO_MODE(FPicturePos.IPO_FRAME), $LOAD = SLOAD(FPicturePos.TOOL_NO), $ACC = SACC_CP(LCPDAT1), $ORI_TYPE = SORI_TYP(LCPDAT1), $APO = SAPO(LCPDAT1), $JERK = SJERK(LCPDAT1), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0)
+;ENDFOLD
+;FOLD WAIT Time= 0.5 sec ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.logics.wait; Time=0.5
+;ENDFOLD
+WAIT SEC 0.5
+;ENDFOLD
+;FOLD MixSort.GetData ;%{PE}
+mixsort_get_data()
+;ENDFOLD
+END

@@ -1,0 +1,140 @@
+program sbt_comm001
+--***********************************************************
+--
+-- file Name: sbt_command.kl
+--
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2024 - 04 - 01
+--   Modification Data    ==   2025 - 03 - 04
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--
+%comment = 'GeneralCmd'
+%nolockgroup 
+%nopause = error + tpenable + command
+%include include\lib_busio_t
+%include include\lib_buscmd_t
+%include include\lib_math_t
+%include include\lib_logs_t
+%include include\lib_transform_t
+const
+
+    CMD_VPARM                           = 1                 -- 初始化
+    CMD_PICT							= 2 				-- 请求1拍照点、2抓取点、3放置点、4打螺丝点
+    CMD_GETPOS							= 3					-- 获取1拍照点、2抓取点、3放置点、4打螺丝点
+
+
+var
+    --
+    -- 总线通讯接口
+    BusInput    in cmos from sbt_comm001    : busin_t               
+    BusOutput   in cmos from sbt_comm001    : busout_t
+
+    CommType07                              : cmd_typ07_t
+    CommType01								: cmd_typ01_t
+
+    BusTimeout  in cmos from sbt_comm001    : integer
+
+    Pose           		                    : xyzwprext
+
+    Status                                  : integer
+
+
+%include include\lib_logs_h
+%INCLUDE include\lib_math_h
+%include include\lib_motion_h
+%include include\lib_string_h
+%include include\lib_tp_if_h
+%include include\lib_busio_h
+%include include\lib_buscmd_h
+
+
+begin
+	select get_iparm_(1) of
+	case(CMD_VPARM):
+
+		--
+		-- 默认总线输入开始地址为 513 位
+		--
+		BusInput.BusIoSt = tern_int_(UNINIT(BusInput.BusIoSt), 513, BusInput.BusIoSt)
+		--
+		-- 默认总线输出开始地址为 513 位
+		--
+		BusOutput.BusIoSt = tern_int_(UNINIT(BusOutput.BusIoSt), 513, BusOutput.BusIoSt)
+		BusTimeout = tern_int_(uninit(BusTimeout), 20000, BusTimeout)
+		bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+		--
+		-- 反馈车型
+		--			
+		CommType07.Float01 = 0.0
+		CommType07.Float02 = 0.0
+		CommType07.Float03 = 0.0
+		CommType07.Float04 = 0.0
+		CommType07.Float05 = 0.0
+		CommType07.Float06 = 0.0
+		CommType07.Float07 = 0.0
+		CommType07.Float08 = 0.0
+		CommType07.Float09 = 0.0
+		CommType07.Float10 = 0.0
+		CommType07.Float11 = 0.0
+		CommType07.Float12 = 0.0
+		CommType07.Int13 = get_iparm_(2)
+		CommType07.Int14 = get_iparm_(3)
+		Status = bus_cmd132_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CommType07, BusTimeout)
+		Status = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput,  BusTimeout)
+		
+	case(CMD_GETPOS):
+		CommType01.Byte01 = get_iparm_(2)
+		Status = bus_cmd145_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CommType01,BusTimeout)
+		Status = bus_cmd132_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, CommType07, BusTimeout)
+		if Status = 0 then 
+			Pose = null_pos_
+			Pose = c_mulgp_ps_(0, 0, 1)
+			Pose.x = CommType07.Float01
+			Pose.y = CommType07.Float02
+			Pose.z = CommType07.Float03
+			Pose.w = CommType07.Float04
+			Pose.p = CommType07.Float05
+			Pose.r = CommType07.Float06
+			set_ireg_(get_iparm_(3), CommType07.Int13)
+			set_preg_(get_iparm_(4), Pose)
+			set_ireg_(get_iparm_(5), CommType07.Int14)
+			return
+		else
+			post_err(38000, 'Sbt Vsn Get Pos Err !!!', 0, CC_PAUSE)
+		endif
+		
+	case(CMD_PICT):
+		Pose = c_mulgp_ps_(0, 0, 1)
+		CommType07.Float01 = Pose.x
+		CommType07.Float02 = Pose.y
+		CommType07.Float03 = Pose.z
+		CommType07.Float04 = Pose.w
+		CommType07.Float05 = Pose.p
+		CommType07.Float06 = Pose.r
+		CommType07.Float07 = 0.0
+		CommType07.Float08 = 0.0
+		CommType07.Float09 = 0.0
+		CommType07.Float10 = 0.0
+		CommType07.Float11 = 0.0
+		CommType07.Float12 = 0.0
+		CommType07.Int13 = get_iparm_(2)
+		CommType07.Int14 = get_iparm_(3)
+		Status = bus_cmd132_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CommType07, BusTimeout)
+		Status = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput,  BusTimeout)
+		if Status = 0 then 
+			return
+		else
+			post_err(38000, 'Sbt Vsn Pict Err !!!', 0, CC_PAUSE)
+		endif
+		
+	endselect
+
+end sbt_comm001

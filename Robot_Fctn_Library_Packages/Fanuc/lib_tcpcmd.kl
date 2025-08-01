@@ -1,0 +1,2047 @@
+program lib_tcpcmd
+--***********************************************************
+--
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
+-- file Name: lib_tcpcmd
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2023 - 09 - 25
+--   Modification Data    ==   2025 - 06 - 18
+--
+-- Author: speedbot
+--
+-- Version: 1.1
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+-- 2025 - 06 - 18 ++ tcp_cmd001_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd002_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd003_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd004_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd005_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd006_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd007_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd008_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd009_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd010_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd011_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd012_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd013_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd014_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd015_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd016_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd017_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd018_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd019_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd020_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd021_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd022_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd023_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd024_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd025_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd026_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd027_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd028_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd029_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd030_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd031_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd032_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd033_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd034_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd035_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd036_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd037_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd038_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd039_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd040_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd041_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd042_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd043_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd044_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd045_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd046_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd047_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd048_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd049_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd050_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd051_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd052_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd053_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd054_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd055_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd056_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd057_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd058_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd059_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd060_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd061_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd062_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd063_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd064_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd065_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd066_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd067_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd068_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd069_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd070_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd071_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd072_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd073_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd074_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd075_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd076_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd077_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd078_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd079_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd080_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd081_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd082_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd083_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd084_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd085_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd086_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd087_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd088_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd089_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd090_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd091_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd092_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd093_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd094_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd095_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd096_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd097_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd098_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd099_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd100_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd101_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd102_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd103_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd104_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd105_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd106_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd107_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd108_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd109_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd110_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd111_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd112_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd113_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd114_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd115_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd116_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd117_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd118_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd119_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd120_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd121_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd122_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd123_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd124_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd125_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd126_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd127_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd128_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd129_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd130_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd131_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd132_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd133_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd134_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd135_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd136_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd137_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd138_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd139_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd140_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd141_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd142_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd143_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd144_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd145_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd146_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd147_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd148_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd149_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd150_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd151_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd152_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd153_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd154_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd155_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd156_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd157_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd158_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd159_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd160_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd161_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd162_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd163_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd164_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd165_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd166_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd167_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd168_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd169_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd170_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd171_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd172_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd173_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd174_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd175_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd176_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd177_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd178_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd179_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd180_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd181_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd182_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd183_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd184_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd185_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd186_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd187_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd188_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd189_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd190_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd191_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd192_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd193_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd194_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd195_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd196_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd197_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd198_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd199_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd200_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd201_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd202_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd203_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd204_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd205_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd206_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd207_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd208_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd209_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd210_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd211_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd212_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd213_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd214_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd215_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd216_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd217_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd218_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd219_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd220_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd221_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd222_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd223_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd224_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd225_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd226_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd227_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd228_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd229_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd230_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd231_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd232_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd233_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd234_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd235_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd236_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd237_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd238_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd239_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd240_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd241_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd242_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd243_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd244_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd245_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd246_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd247_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd248_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd249_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd250_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd251_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd252_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd253_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd254_() ==> integer 
+--
+-- 2025 - 06 - 18 ++ tcp_cmd255_() ==> integer 
+--
+%nolockgroup
+%nobusylamp
+%nopause = tpenable + command + error
+%comment = 'Tcp Cmd 250617'
+
+%include kliotyps
+%include include/lib_transform_t
+%include include/lib_socket_t
+%include include/lib_busio_t
+%include include/lib_inst_t
+%include include/lib_buscmd_t
+%include include/lib_packages_t
+%include include/lib_logs_t
+%include include/lib_math_t
+
+var  
+
+    FileVar                 : file 
+    SockCfg     in cmos     : sock_cfg_t
+    SendHead    in cmos     : pack_head_t
+    ReadHead    in cmos     : pack_head_t
+    SendTail    in cmos     : pack_tail_t
+    ReadTail    in cmos     : pack_tail_t
+
+
+%include include/lib_tcpcmd_h
+%include include/lib_packages_h
+%include include/lib_string_h
+%include include/lib_motion_h
+%include include/lib_logs_h
+%include include/lib_socket_h
+%include include/lib_math_h
+%include include/lib_tp_if_h
+
+
+begin
+
+end lib_tcpcmd
+
+routine tcp_init_
+var
+    Ack             : integer 
+    Status          : integer
+begin  
+
+    if uninit(BusOut.RobotId) then
+        BusOut.RobotId = 0
+    endif
+    if uninit(BusOut.JobId) then
+        BusOut.JobId = 0
+    endif
+    if uninit(BusOut.ProtocolId) then
+        BusOut.ProtocolId = 0
+    endif
+    if uninit(BusOut.RobMsgType) then
+        BusOut.RobMsgType = 0
+    endif
+
+    BusIn.DeviceId = 0
+    BusIn.JobId    = 0
+    BusIn.ErrorId  = 0
+    BusIn.MsgType  = 0
+
+    Ack                         = 0
+    SendHead.Head               = PACK_HEADER
+    SendHead.Length             = 24
+    SendHead.PacketCount        = 1
+    SendHead.Cmd                = 252
+    SendHead.Type_              = TYPE_FANUC
+    SendHead.Seq                = 0 
+    SendHead.VirtualRob         = bol_to_int_(is_vir_rob_)      --????????????????????0???????1       
+    SendTail                    = PACK_TAIL
+
+    SockCfg.Connected           = false                 -- ?? CtrlSock ????? false
+    SockCfg.ServerPort          = INST_PORT             -- ?? CtrlSock ???????
+    SockCfg.NByte               = 0                     -- ?? CtrlSock ????
+    SockCfg.AtrTimeout          = 3000                  -- ?? CtrlSock ?????
+    SockCfg.AtrBinary           = true                  -- ?? CtrlSock ????????
+    SockCfg.AtrIntAct           = false                 -- ?? CtrlSock ???????
+
+
+    SockCfg.Host = Host
+    SockCfg.PortTag = Tag
+
+    repeat                          
+        tcp_close_(SockCfg, FileVar)            
+        Status = tcp_connect_(SockCfg, FileVar)    
+        if Status <> OK then
+            post_err(CC_UALARM, 'Tcp Comm Err![IP:' + SockCfg.Host +']', 0, CC_PAUSE)
+            delay(100)
+        endif
+    until(Status = OK)
+
+    Status = spack_head_(SockCfg, FileVar, SendHead)
+    write FileVar(Ack)
+    Status = spack_tail_(SockCfg, FileVar, SendTail)
+    Status = rpack_head_(SockCfg, FileVar, ReadHead)
+    read FileVar(Ack)
+    Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+    file_cfd_(FileVar)
+end tcp_init_
+
+routine tcp_cmd001_
+var
+    Status            : integer
+begin
+
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD001   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)   
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD001; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD001; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD001; endif      
+        if (not (BusIn.MsgType = BUS_CMD001)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD001) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD001::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD001) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+    
+end tcp_cmd001_
+
+routine tcp_cmd002_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 26 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD002   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd002_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        SockCfg.AtrTimeout = BusTimeout
+        Status = file_ofd_(FileVar, SockCfg)  
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD002; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD002; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD002; endif      
+        if (not (BusIn.MsgType = BUS_CMD002)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD002) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd002_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD002; endif      
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD002::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD002) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd002_
+
+routine tcp_cmd003_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 24 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD003   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd003_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        SockCfg.AtrTimeout = BusTimeout
+        Status = file_ofd_(FileVar, SockCfg) 
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD003; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD003; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD003; endif      
+        if (not (BusIn.MsgType = BUS_CMD003)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD003) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd003_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD003; endif      
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD003::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD003) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd003_
+
+routine tcp_cmd009_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 24 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD009
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd009_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        SockCfg.AtrTimeout = BusTimeout
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD009; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD009; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD009; endif      
+        if (not (BusIn.MsgType = BUS_CMD009)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD009) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd009_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD009; endif      
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD009::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD009) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd009_
+
+routine tcp_cmd010_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 24 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD010  
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd010_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD010; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD010; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD010; endif      
+        if (not (BusIn.MsgType = BUS_CMD010)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD010) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd010_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD010; endif      
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD010::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD010) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd010_
+
+routine tcp_cmd011_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 24 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD011
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd011_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD011; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD011; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD011; endif      
+        if (not (BusIn.MsgType = BUS_CMD011)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD011) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd011_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD011; endif      
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD011::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD011) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd011_
+
+routine tcp_cmd012_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 26 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD012 
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd012_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD012; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD012; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD012; endif      
+        if (not (BusIn.MsgType = BUS_CMD012)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD012) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd012_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD012; endif      
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD012::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD012) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd012_
+
+routine tcp_cmd013_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 26 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD013   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd013_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD013; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD013; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD013; endif      
+        if (not (BusIn.MsgType = BUS_CMD013)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD013) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd013_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD013; endif      
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD013::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD013) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd013_
+
+routine tcp_cmd014_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 26 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD014   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd014_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD014; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD014; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD014; endif      
+        if (not (BusIn.MsgType = BUS_CMD014)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD014) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd014_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD014; endif      
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD014::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD014) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd014_
+
+routine tcp_cmd017_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 56 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD017   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd017_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD017; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD017; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD017; endif      
+        if (not (BusIn.MsgType = BUS_CMD017)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD017) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd017_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD017; endif      
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD017::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD017) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd017_
+
+routine tcp_cmd018_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 56 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD018   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd018_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD018; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD018; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD018; endif      
+        if (not (BusIn.MsgType = BUS_CMD018)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD018) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd018_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD018; endif      
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+        file_cfd_(FileVar)
+
+ENDCMD018::
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD018) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd018_
+
+routine tcp_cmd020_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 24 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD020   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd020_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD020; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD020; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD020; endif   
+        if (not (BusIn.MsgType = BUS_CMD020)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD020) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd020_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD020; endif   
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD020::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD020) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd020_
+
+routine tcp_cmd021_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 26 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD021   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd021_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD021; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD021; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD021; endif   
+        if (not (BusIn.MsgType = BUS_CMD021)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD021) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd021_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD021; endif   
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD021::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD021) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd021_
+
+routine tcp_cmd022_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 26 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD022   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd022_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD022; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD022; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD022; endif   
+        if (not (BusIn.MsgType = BUS_CMD022)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD022) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd022_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD022; endif   
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD022::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD022) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd022_
+
+routine tcp_cmd026_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 26 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD026   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd026_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD026; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD026; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD026; endif   
+        if (not (BusIn.MsgType = BUS_CMD026)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD026) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd026_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD026; endif   
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD026::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD026) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd026_
+
+routine tcp_cmd027_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 52 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD027   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd027_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD027; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD027; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD027; endif   
+        if (not (BusIn.MsgType = BUS_CMD027)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD027) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd027_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD027; endif   
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD027::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD027) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd027_
+
+routine tcp_cmd129_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 24 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD129   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd129_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD129; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD129; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD129; endif   
+        if (not (BusIn.MsgType = BUS_CMD129)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD129) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd129_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD129; endif   
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD129::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD129) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd129_
+
+routine tcp_cmd130_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 24 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD130   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd130_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD130; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD130; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD130; endif   
+        if (not (BusIn.MsgType = BUS_CMD130)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD130) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd130_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD130; endif   
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD130::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD130) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd130_
+
+routine tcp_cmd131_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 24 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD131   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd131_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD131; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD131; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD131; endif   
+        if (not (BusIn.MsgType = BUS_CMD131)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD131) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd131_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD131; endif   
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD131::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD131) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd131_
+
+routine tcp_cmd132_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 52 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD132   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd132_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD132; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD132; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD132; endif   
+        if (not (BusIn.MsgType = BUS_CMD132)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD132) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd132_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD132; endif   
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD132::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD132) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd132_
+
+routine tcp_cmd133_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 52 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD133   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd133_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD133; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD133; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD133; endif   
+        if (not (BusIn.MsgType = BUS_CMD133)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD133) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd133_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD133; endif   
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD133::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD133) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd133_
+
+routine tcp_cmd134_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 52 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD134  
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd134_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD134; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD134; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD134; endif   
+        if (not (BusIn.MsgType = BUS_CMD134)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD134) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd134_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD134; endif   
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD134::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD134) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd134_
+
+routine tcp_cmd137_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 18 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD137   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd137_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD137; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD137; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD137; endif   
+        if (not (BusIn.MsgType = BUS_CMD137)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD137) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd137_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD137; endif   
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD137::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD137) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd137_
+
+routine tcp_cmd145_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 26 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD145   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd145_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD145; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD145; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD145; endif   
+        if (not (BusIn.MsgType = BUS_CMD145)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD145) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd145_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD145; endif   
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD145::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD145) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd145_
+
+routine tcp_cmd148_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 52 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD148   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd148_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)    
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD148; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD148; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD148; endif   
+        if (not (BusIn.MsgType = BUS_CMD148)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD148) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd148_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD148; endif      
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD148::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD148) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd148_
+
+routine tcp_cmd151_
+var
+    Status            : integer
+begin
+    SockCfg.AtrTimeout = BusTimeout
+    file_init_(FileVar, SockCfg)
+    select BusOperation of
+    case(PACKCMD_WRIT): 
+        Status = file_ofd_(FileVar, SockCfg)
+        if (Status <> OK) or (SockCfg.Connected = false) then
+            tcp_init_(BusIn, BusOut, SockCfg.Host, SockCfg.PortTag)
+        endif
+        SendHead.Seq = SendHead.Seq + 1
+        if SendHead.Seq > 255 then 
+            SendHead.Seq = 1
+        endif
+        SendHead.Length = 16 + 4 + 21 + 4
+        SendHead.Cmd = 64
+        SendHead.Type_ = 1
+        BusOut.RobMsgType = BUS_CMD151   
+        Status = spack_head_(SockCfg, FileVar, SendHead)
+        Status = spack_body_(SockCfg, FileVar, BusOut)
+        Status = pack_cmd151_(SockCfg, FileVar, PACKCMD_WRIT, BusData)
+        Status = spack_tail_(SockCfg, FileVar, SendTail)
+        file_cfd_(FileVar)
+        return(Status)
+    case(PACKCMD_READ):  
+        Status = file_ofd_(FileVar, SockCfg)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD151; endif      
+        Status = rpack_head_(SockCfg, FileVar, ReadHead)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD151; endif      
+        Status = rpack_body_(SockCfg, FileVar, BusIn)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD151; endif   
+        if (not (BusIn.MsgType = BUS_CMD151)) then 
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BUS_CMD151) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+        Status = pack_cmd151_(SockCfg, FileVar, PACKCMD_READ, BusData)
+        if (not (Status = CC_SUCCESS)) then go to ENDCMD151; endif      
+        Status = rpack_tail_(SockCfg, FileVar, ReadTail)
+
+ENDCMD151::
+        file_cfd_(FileVar)
+        if (not (Status = CC_SUCCESS)) then 
+            log_error_('MST', 'Read CMD[' + int_2str_(BUS_CMD151) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        return(BusIn.ErrorId)
+    else:
+        post_err(CC_UALARM, 'tcp cmd param1 err', 0, CC_ABORT)
+    endselect
+end tcp_cmd151_
+
+
+
+
+
+
+

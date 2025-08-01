@@ -1,0 +1,713 @@
+module lib_math(sysmodule, noview)
+!***********************************************************
+!
+! Copyright 2018 - 2024 speedbot All Rights reserved.
+!
+! File Name: lib_logs
+!
+! Description:
+!   Language             ==   Rapid for ABB ROBOT
+!   Date                 ==   2021 - 10 - 14
+!   Modification Data    ==   2022 - 04 - 29
+!
+! Author: speedbot
+!
+! Version: 2.0
+!*********************************************************************************************************!
+!                                                                                                         !
+!                                                      .^^^                                               !
+!                                               .,~<c+{{{{{{t,                                            ! 
+!                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          !
+!                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        !
+!                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       !
+!                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    !
+!                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  !
+!                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                !
+!                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              !
+!                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             !
+!                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             !
+!                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             !
+!                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              !
+!                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              !
+!                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               !
+!                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               !
+!                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                !
+!                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                !
+!                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 !
+!                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 !
+!                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  !
+!                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  !
+!                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    !                         
+!                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         !
+!                                         ^!{{{{{{{{t!",^`                                                !
+!                                                                                                         !
+!*********************************************************************************************************!
+!
+
+! 2022 - 05 - 05 ++ random_() ==> num
+
+! 2022 - 05 - 05 ++ deg_to_rad_() ==> num
+
+! 2022 - 05 - 05 ++ rad_to_deg_() ==> num
+
+! 2022 - 11 - 08 ++ sq_() ==> num
+
+! 2022 - 11 - 08 ++ pow_() ==> num
+
+! 2022 - 11 - 08 ++ x_pow_() ==> num
+
+! 2023 - 01 - 08 ++ dnum_sq_() ==> dnum
+
+! 2023 - 01 - 08 ++ dnum_pow_() ==> dnum
+
+! 2023 - 01 - 08 ++ dnum_xpow_() ==> dnum
+
+! 2022 - 05 - 29 ++ num_to_bol_() ==> bool
+
+! 2022 - 05 - 29 ++ bol_to_num_() ==> num
+
+! 2022 - 11 - 08 ++ dnum_2bits_()
+
+! 2022 - 11 - 08 ++ bits_dnum_()
+
+! 2022 - 11 - 11 ++ io_2byte_()
+
+! 2022 - 11 - 11 ++ byte_2io_()
+
+! 2022 - 12 - 31 ++ max_() ==> num
+
+! 2022 - 12 - 31 ++ min_() ==> num
+
+! 2023 - 03 - 17 ++ tern_num_() ==> num
+
+! 2023 - 03 - 17 ++ tern_bool_() ==> bool
+
+! 2023 - 03 - 17 ++ tern_str_() ==> string
+
+! 2023 - 03 - 17 ++ tern_robtarget_() ==> robtarget
+
+! 2023 - 03 - 17 ++ tern_jnttarget_() ==> jointtarget
+
+! 2023 - 03 - 17 ++ tern_speed_() ==> speeddata
+
+! 2023 - 03 - 17 ++ tern_zone_() ==> zonedata
+
+record vector_t
+    num     X;
+    num     Y;
+    num     Z;
+endrecord
+
+const num MIN_LINT	            :=  -4503599627370496;
+const num MAX_LINT	            :=  4503599627370496;
+
+const num MIN_DINT	            :=  -2147483648;
+const num MAX_DINT	            :=  2147483647;
+
+const num MIN_INT	            :=  -32768;
+const num MAX_INT	            :=  32767;
+
+const num MIN_SINT	            :=  -128;
+const num MAX_SINT	            :=  127;
+
+
+const num MIN_ULINT	            :=  0;
+const num MAX_ULINT	            :=  4503599627370496;
+
+const num MIN_UDINT	            :=  0;
+const num MAX_UDINT	            :=  4294967295;
+
+const num MIN_UINT	            :=  0;
+const num MAX_UINT	            :=  65535;
+
+const num MIN_USINT	            :=  0;
+const num MAX_USINT	            :=  255;
+
+local const num MASK8{8}              := [1, 2, 4, 8, 16, 32, 64, -128];
+
+local const num UMASK8{8}             := [1, 2, 4, 8, 16, 32, 64, 128];
+
+local const num MASK16{16}            := [1, 2, 4, 8, 16, 32, 64, 128,
+                                    256, 512, 1024, 2048, 4096, 8192, 16384, -32768];
+
+local const num UMASK16{16}           := [1, 2, 4, 8, 16, 32, 64, 128,
+                                    256, 512, 1024, 2048, 4096, 8192, 16384, 32768];
+
+const num DEG_2_RAD             := 0.01745;
+
+const num RAD_2_DEG             := 57.29578;
+
+const num SIZE_OF_BYTE			:= 1;
+const num SIZE_OF_INT			:= 4;
+const num SIZE_OF_FLOAT			:= 4;
+
+!***********************************************************
+! func deg_to_rad_()
+!***********************************************************
+!     in : Rdeg          * num *	* 角度 *
+! return :				 * num *	* 返回弧度值 *
+!***********************************************************	
+! 将角度值计算成弧度值
+!***********************************************************
+func num deg_to_rad_(num Rdeg) return(Rdeg * pi / 180); endfunc
+
+!***********************************************************
+! func rad_to_deg_()
+!***********************************************************
+!     in : Rrad          * num *	* 弧度 *
+! return :				 * num *	* 返回角度值 *
+!***********************************************************	
+! 将弧度值计算成角度值
+!***********************************************************
+func num rad_to_deg_(num Rrad) return(Rrad * 180 / pi); endfunc
+
+!***********************************************************
+! func sq_()
+!***********************************************************
+!     in : NumVal          	* num *		* 输入数 *
+! return :				 	* num *		* 返回值 *
+!***********************************************************	
+! 计算一个数的平方
+!***********************************************************
+func num sq_(num NumVal) return(pow(NumVal, 2)); endfunc
+
+!***********************************************************
+! func pow_()
+!***********************************************************
+!     in : NumVal          	* num *		* 输入数 *
+! return :				 	* num *		* 返回值 *
+!***********************************************************	
+! 计算一个数的幂
+!***********************************************************
+func num pow_(num NumVal) return(pow(NumVal, 3)); endfunc
+
+!***********************************************************
+! func x_pow_()
+!***********************************************************
+!     in : NumVal          	* num *		* 输入数 *
+!     in : ExpVal           * num *    	* 幂的次数 *
+! return :				 	* num *		* 返回值 *
+!***********************************************************	
+! 计算一个数的多次幂
+!***********************************************************
+func num x_pow_(num NumVal, num ExpVal) return(pow(NumVal, ExpVal)); endfunc
+
+!***********************************************************
+! func dnum_sq_()
+!***********************************************************
+!     in : DNumVal          * dnum *	* 输入数 *
+! return :				 	* dnum *	* 返回值 *
+!***********************************************************	
+! 计算一个数的平方
+!***********************************************************
+func dnum dnum_sq_(dnum DNumVal) return(powdnum(DNumVal, 2)); endfunc
+
+!***********************************************************
+! func dnum_pow_()
+!***********************************************************
+!     in : DNumVal          * dnum *	* 输入数 *
+! return :				 	* dnum *	* 返回值 *
+!***********************************************************	
+! 计算一个数的幂
+!***********************************************************
+func dnum dnum_pow_(dnum DNumVal) return(powdnum(DNumVal, 3)); endfunc
+
+!***********************************************************
+! func dnum_xpow_()
+!***********************************************************
+!     in : DNumVal          * dnum *	* 输入数 *
+!     in : ExpVal           * num *    	* 幂的次数 *
+! return :				 	* dnum *	* 返回值 *
+!***********************************************************	
+! 计算一个数的多次幂
+!***********************************************************
+func dnum dnum_xpow_(dnum DNumVal, num ExpVal) return(powdnum(DNumVal, ExpVal)); endfunc
+
+!***********************************************************
+! func num_to_bol_()
+!***********************************************************
+!     in : Int           * num *	* 实数 *
+! return :				 * bool *	* 返回布尔型 *
+!***********************************************************	
+! 将实数型转化为布尔型
+! Num > 0 	返回 true
+! Num <= 0	返回 false
+!***********************************************************
+func bool num_to_bol_(num Int) return(Int > 0); endfunc
+
+!***********************************************************
+! func bol_to_num_()
+!***********************************************************
+!     in : bool          * bool *	* 布尔型 *
+! return :				 * num *	* 返回实数型 *
+!***********************************************************
+! 将布尔型转化为实数型
+! true 	返回 1
+! false 返回 0
+!***********************************************************
+func num bol_to_num_(bool Boolean) if Boolean return(1); return(0); endfunc
+
+!***********************************************************
+! func dnum_2bits_()
+!***********************************************************
+!     in : \IN_FLOAT     				* 指定输入数据为浮点数 ，不指定此可选参数默认为此类型*
+!		   \IN_SINT     				* 指定输入数据为有符号1字节整数  [-128, 127] *
+!		   \IN_INT     					* 指定输入数据为有符号2字节整数  [-32768, 32767] *
+!		   \IN_DINT     				* 指定输入数据为有符号4字节整数  [-2147483648, 2147483647] *
+!		   \IN_LINT     				* 指定输入数据为有符号8字节整数  [-4503599627370496, 4503599627370496] *
+!		   \IN_USINT     				* 指定输入数据为无符号1字节整数  [0, 255] *
+!		   \IN_UINT     				* 指定输入数据为无符号2字节整数  [0, 65535] *
+!		   \IN_UDINT     				* 指定输入数据为无符号4字节整数  [0, 4294967295] *
+!		   \IN_ULINT     				* 指定输入数据为无符号8字节整数  [0, 4503599627370496] *
+! 	 in : InNumVal 			* dnum *    * 需要转化的实数 *
+! 	 in : \Reversed			    		* 不指定为小端存储，指定为大端存储 *
+! inout : \BoolAry{*}		* bool *    * 指定转化后存储为 BOOL 型 *
+! inout : \ByteAry{*}		* byte *    * 指定转化后存储为 BYTE 型 *
+! inout : \OutNumVal		* dnum *    * 指定转化后存储为 DNUM 型 *
+!***********************************************************
+! 将指定的实数转化为 多位布尔型 或者 多位 BYTE 型 或者强制转化为整型
+! 数据的实际类型必须和第一个参数匹配
+!***********************************************************
+proc dnum_2bits_(\switch IN_FLOAT | switch IN_SINT | switch IN_INT | switch IN_DINT | switch IN_LINT |
+				  switch IN_USINT | switch IN_UINT | switch IN_UDINT | switch IN_ULINT, 
+				  dnum InNumVal, \switch Reversed, 
+				 \inout bool BoolAry{*}, \inout byte ByteAry{*}, \inout dnum OutNumVal)
+
+	var dnum CnvNumVal;
+	var rawbytes Raw;
+	var num I;
+	var num J;
+	var num Size;
+
+	clearrawbytes Raw;
+	if (not present(IN_FLOAT)) then CnvNumVal := rounddnum(InNumVal); else CnvNumVal := InNumVal; endif
+
+	if present(IN_SINT) then  
+
+		Size := 1;
+		if (present(Reversed)) 		packrawbytes CnvNumVal, Raw, \Network, 	1, \IntX := SINT;
+		if (not present(Reversed)) 	packrawbytes CnvNumVal, Raw, 			1, \IntX := SINT;
+	elseif present(IN_INT) then  
+
+		Size := 2;
+		if (present(Reversed)) 		packrawbytes CnvNumVal, Raw, \Network, 	1, \IntX := INT;
+		if (not present(Reversed)) 	packrawbytes CnvNumVal, Raw, 			1, \IntX := INT;
+	elseif present(IN_DINT) then  
+
+		Size := 4;
+		if (present(Reversed)) 		packrawbytes CnvNumVal, Raw, \Network, 	1, \IntX := DINT;
+		if (not present(Reversed)) 	packrawbytes CnvNumVal, Raw, 			1, \IntX := DINT;
+	elseif present(IN_LINT) then  
+
+		Size := 8;
+		if (present(Reversed)) 		packrawbytes CnvNumVal, Raw, \Network, 	1, \IntX := LINT;
+		if (not present(Reversed)) 	packrawbytes CnvNumVal, Raw, 			1, \IntX := LINT;
+	elseif present(IN_USINT) then  
+
+		Size := 1;
+		if (present(Reversed)) 		packrawbytes CnvNumVal, Raw, \Network, 	1, \IntX := USINT;
+		if (not present(Reversed)) 	packrawbytes CnvNumVal, Raw, 			1, \IntX := USINT;
+	elseif present(IN_UINT) then  
+
+		Size := 2;
+		if (present(Reversed)) 		packrawbytes CnvNumVal, Raw, \Network, 	1, \IntX := UINT;
+		if (not present(Reversed)) 	packrawbytes CnvNumVal, Raw, 			1, \IntX := UINT;
+	elseif present(IN_UDINT) then  
+
+		Size := 4;
+		if (present(Reversed)) 		packrawbytes CnvNumVal, Raw, \Network, 	1, \IntX := UDINT;
+		if (not present(Reversed)) 	packrawbytes CnvNumVal, Raw, 			1, \IntX := UDINT;
+	elseif present(IN_ULINT) then  
+
+		Size := 8;
+		if (present(Reversed)) 		packrawbytes CnvNumVal, Raw, \Network, 	1, \IntX := ULINT;
+		if (not present(Reversed)) 	packrawbytes CnvNumVal, Raw, 			1, \IntX := ULINT;
+	else
+
+		Size := 4;
+		if (present(Reversed)) 		packrawbytes dnumtonum(CnvNumVal), Raw, \Network, 	1, \FLOAT4;
+		if (not present(Reversed)) 	packrawbytes dnumtonum(CnvNumVal), Raw, 		   	1, \FLOAT4;
+	endif
+
+	if present(OutNumVal) then
+		
+		OutNumVal := 0;
+		unpackrawbytes Raw, 1, OutNumVal, \IntX := ULINT;
+	endif
+
+	if present(ByteAry) then
+		
+		for I from 1 to dim(ByteAry, 1) do ByteAry{I} := 0; endfor
+
+		J := min(dim(ByteAry, 1), Size);
+
+		for I from 1 to J do 
+			unpackrawbytes Raw, I, CnvNumVal, \IntX := USINT; 
+			ByteAry{I} := dnumtonum(CnvNumVal);
+		endfor
+	endif
+
+	if present(BoolAry) then
+		
+		for I from 1 to dim(BoolAry, 1) do BoolAry{I} := false; endfor
+
+		for I from 1 to Size do 
+			unpackrawbytes Raw, I, CnvNumVal, \IntX := USINT; 
+
+			for J from 1 to 8 do
+
+				if dim(BoolAry, 1) >= ((I - 1) * 8 + J) BoolAry{(I - 1) * 8 + J} := (bitand(dnumtonum(CnvNumVal), UMASK8{J}) > 0); 
+			endfor
+		endfor
+	endif
+
+endproc
+
+!***********************************************************
+! func bits_dnum_()
+!***********************************************************
+!     in : \IN_FLOAT     				* 指定输出数据为浮点数 ，不指定此可选参数默认为此类型*
+!		   \IN_SINT     				* 指定输出数据为有符号1字节整数  [-128, 127] *
+!		   \IN_INT     					* 指定输出数据为有符号2字节整数  [-32768, 32767] *
+!		   \IN_DINT     				* 指定输出数据为有符号4字节整数  [-2147483648, 2147483647] *
+!		   \IN_LINT     				* 指定输出数据为有符号8字节整数  [-4503599627370496, 4503599627370496] *
+!		   \IN_USINT     				* 指定输出数据为无符号1字节整数  [0, 255] *
+!		   \IN_UINT     				* 指定输出数据为无符号2字节整数  [0, 65535] *
+!		   \IN_UDINT     				* 指定输出数据为无符号4字节整数  [0, 4294967295] *
+!		   \IN_ULINT     				* 指定输出数据为无符号8字节整数  [0, 4503599627370496] *
+! 	 in : \Reversed			    		* 不指定为小端存储，指定为大端存储 *
+!    in : \BoolAry{*}		* bool *    * 指定转需要转化的 BOOL 型数据 *
+!    in : \ByteAry{*}		* byte *    * 指定转需要转化的 BYTE 型数据 *
+!    in : \InNumVal			* dnum *    * 指定转需要转化的 DNUM 型数据 *
+! inout : OutNumVal 		* dnum *    * 转化后的实数 *
+!***********************************************************
+! 将指定的实数转化为 多位布尔型 或者 多位 BYTE 型 或者强制转化为整型
+! 数据的实际类型必须和第一个参数匹配
+!***********************************************************
+proc bits_dnum_(\switch IN_FLOAT | switch IN_SINT | switch IN_INT | switch IN_DINT | switch IN_LINT |
+				 switch IN_USINT | switch IN_UINT | switch IN_UDINT | switch IN_ULINT, 
+				\bool BoolAry{*}, \byte ByteAry{*}, \dnum InNumVal, \switch Reversed, inout dnum OutNumVal)
+
+	var dnum CnvNumVal;
+	var num CnvByte;
+	var num CnvFloat;
+	var rawbytes Raw;
+	var num I;
+	var num J;
+
+	clearrawbytes Raw;
+	if present(BoolAry) then  
+
+		for I from 1 to round(dim(BoolAry, 1) / 8) do
+
+			CnvByte := 0;
+			for J from 1 to 8 do  
+
+				if dim(BoolAry, 1) >= ((I - 1) * 8 + J) CnvByte := CnvByte + UMASK8{J} * bol_to_num_(BoolAry{(I - 1) * 8 + J});  
+			endfor
+
+			packrawbytes CnvByte, Raw, rawbyteslen(Raw) + 1, \IntX := USINT;
+		endfor
+	elseif present(ByteAry) then  
+
+		for I from 1 to dim(ByteAry, 1) do 
+
+			CnvByte := ByteAry{I};
+			packrawbytes CnvByte, Raw, rawbyteslen(Raw) + 1, \IntX := USINT;
+		endfor
+	elseif present(InNumVal) then  
+
+			packrawbytes InNumVal, Raw, rawbyteslen(Raw) + 1, \IntX := ULINT;
+	endif
+
+	if present(IN_SINT) then  
+
+		if (present(Reversed)) 		unpackrawbytes Raw, \Network, 	1, OutNumVal, \IntX := SINT;
+		if (not present(Reversed)) 	unpackrawbytes Raw,  			1, OutNumVal, \IntX := SINT;
+	elseif present(IN_INT) then  
+
+		if (present(Reversed)) 		unpackrawbytes Raw, \Network, 	1, OutNumVal, \IntX := INT;
+		if (not present(Reversed)) 	unpackrawbytes Raw,  			1, OutNumVal, \IntX := INT;
+	elseif present(IN_DINT) then  
+
+		if (present(Reversed)) 		unpackrawbytes Raw, \Network, 	1, OutNumVal, \IntX := DINT;
+		if (not present(Reversed)) 	unpackrawbytes Raw,  			1, OutNumVal, \IntX := DINT;
+	elseif present(IN_LINT) then  
+
+		if (present(Reversed)) 		unpackrawbytes Raw, \Network, 	1, OutNumVal, \IntX := LINT;
+		if (not present(Reversed)) 	unpackrawbytes Raw,  			1, OutNumVal, \IntX := LINT;
+	elseif present(IN_USINT) then  
+
+		if (present(Reversed)) 		unpackrawbytes Raw, \Network, 	1, OutNumVal, \IntX := USINT;
+		if (not present(Reversed)) 	unpackrawbytes Raw,  			1, OutNumVal, \IntX := USINT;
+	elseif present(IN_UINT) then  
+
+		if (present(Reversed)) 		unpackrawbytes Raw, \Network, 	1, OutNumVal, \IntX := UINT;
+		if (not present(Reversed)) 	unpackrawbytes Raw,  			1, OutNumVal, \IntX := UINT;
+	elseif present(IN_UDINT) then  
+
+		if (present(Reversed)) 		unpackrawbytes Raw, \Network, 	1, OutNumVal, \IntX := UDINT;
+		if (not present(Reversed)) 	unpackrawbytes Raw,  			1, OutNumVal, \IntX := UDINT;
+	elseif present(IN_ULINT) then  
+
+		if (present(Reversed)) 		unpackrawbytes Raw, \Network, 	1, OutNumVal, \IntX := ULINT;
+		if (not present(Reversed)) 	unpackrawbytes Raw,  			1, OutNumVal, \IntX := ULINT;
+	else
+
+		if (present(Reversed)) 		unpackrawbytes Raw, \Network, 	1, CnvFloat, \FLOAT4;
+		if (not present(Reversed)) 	unpackrawbytes Raw,  			1, CnvFloat, \FLOAT4;
+	
+		OutNumVal := numtodnum(CnvFloat);
+	endif
+endproc
+
+!***********************************************************
+! func io_2byte_()
+!***********************************************************
+! 	 in : \IoNameAry{*}			    	* io信号点名称 *
+!    in : \DIN							* 指定为 DI 信号 *
+!     	  \DOUT							* 指定为 DO 信号 *
+!    in : \Len				* num *     * 指定转化的信号长度 *
+! inout : \ByteAry{*}		* byte *    * 存储转化出来的 BYTE 数组 *
+! inout : \ByteVal			* byte *    * 当只有一组信号时，可以指定存储在单个 BYTE *
+!***********************************************************
+! 将一组 IO 信号转化为 BYTE 类型
+! 
+!***********************************************************
+proc io_2byte_(string IoNameAry{*}, \switch DIN | switch DOUT, \num Len, \inout byte ByteAry{*}, \inout byte ByteVal)
+	var num I;
+	var num J;
+	var num Lens;
+	var num CnvByte;
+	var signaldi AliasDi;
+	var signaldo AliasDo;
+
+	if present(ByteAry) then  
+
+		for I from 1 to dim(ByteAry, 1) do ByteAry{I} := 0; endfor
+	endif
+
+	if present(ByteVal) ByteVal := 0;
+
+	if present(Len) then Lens := Len; else Lens := dim(IoNameAry, 1); endif
+
+	for I from 1 to (Lens div 8)  do
+
+		CnvByte := 0;
+		for J from 1 to 8 do  
+
+			if present(DIN) then
+
+				aliasio IoNameAry{(I - 1) * 8 + J}, AliasDi;
+				CnvByte := CnvByte + UMASK8{J} * dinput(AliasDi);  
+				aliasioreset AliasDi;
+			else
+
+				aliasio IoNameAry{(I - 1) * 8 + J}, AliasDo;
+				CnvByte := CnvByte + UMASK8{J} * doutput(AliasDo);  
+				aliasioreset AliasDo;
+			endif
+		endfor
+
+		if present(ByteAry) then  
+			if (dim(ByteAry, 1) >= I) ByteAry{I} := CnvByte;
+		endif
+
+		if present(ByteVal) ByteVal := CnvByte;
+
+	endfor
+
+endproc
+
+!***********************************************************
+! proc byte_2io_
+!***********************************************************
+!     输入参数 : \byte ByteAry{*} * 可选字节数组 * * 字节数组 *
+!     输入参数 : \byte ByteVal     * 可选字节 *     * 单个字节值 *
+!     输入参数 : \num StartIndex   * 可选数字 *     * 起始索引 *
+!     输入参数 : \num EndIndex     * 可选数字 *     * 结束索引 *
+!     输入参数 : string IoNameAry{*}* IO 名称数组 * * IO 名称列表 *
+!***********************************************************
+! 功能 : 将字节数组或单个字节的二进制位设置到指定的 IO 信号上。
+!        如果提供了字节数组，则遍历每个字节并将位设置到 IO 信号上。
+!        如果提供了单个字节，则将其位设置到 IO 信号上。
+!        可以指定起始和结束索引以控制影响的 IO 信号范围。
+!***********************************************************
+proc byte_2io_(\byte ByteAry{*}, \byte ByteVal,\num StartIndex \num EndIndex, string IoNameAry{*})
+	var num I;
+	var num J;
+	var num Starts;
+	var num Lens;
+	var signaldo AliasDo;
+
+	if present(StartIndex) 	then Starts := StartIndex; 	else Starts := 1; 				endif
+	if present(EndIndex) 	then Lens := EndIndex; 		else Lens := dim(IoNameAry, 1); endif
+
+	if present(ByteAry) then  
+		for I from 1 to dim(ByteAry, 1) do 
+
+			for J from 1 to 8 do
+
+				if (Lens >= ((I - 1) * 8 + J)) and ((((I - 1) * 8 + J)) >= Starts) then 
+
+					aliasio IoNameAry{(I - 1) * 8 + J}, AliasDo;
+					setdo AliasDo, bol_to_num_(bitand(ByteAry{I}, UMASK8{J}) > 0); 
+					aliasioreset AliasDo;
+				endif
+			endfor
+		endfor
+	elseif present(ByteVal) then  
+
+		for J from 1 to 8 do
+
+			if (Lens >= J) and (J >= Starts) then 
+				aliasio IoNameAry{J}, AliasDo;
+				setdo AliasDo, bol_to_num_(bitand(ByteAry{I}, UMASK8{J}) > 0); 
+				aliasioreset AliasDo;
+			endif 
+		endfor
+	endif
+endproc
+
+!***********************************************************
+! func max_
+!***********************************************************
+!     输入参数 : Val1           * 数字 *      * 第一个比较值 *
+!     输入参数 : Val2           * 数字 *      * 第二个比较值 *
+!     输入参数 : \num Val3      * 可选数字 *   * 第三个比较值 *
+! 返回 :                     * 数字 *      * 最大值 *
+!***********************************************************
+! 功能 : 返回两个或三个数字中的最大值。
+!        如果提供了第三个值，则返回三个值中的最大值。
+!        否则，仅返回两个值中的最大值。
+!***********************************************************
+func num max_(num Val1, num Val2, \num Val3)
+	var num Num1;
+	var num Num2;
+
+	if present(Val3) then  
+
+		Num1 := max(Val1, Val3);
+		Num2 := max(Val2, Val3);
+		
+		return(max(Num1, Num2));
+	endif
+
+	return(max(Val1, Val2));
+endfunc 
+
+!***********************************************************
+! func min_()
+!***********************************************************
+!    in : Val1				* num *    		* 值1 *
+!    in : Val2				* num *    		* 值2 *
+!    in : \Val3				* num *    		* 值3 *
+!return : 					* num * 		* 返回最小值 *
+!***********************************************************
+! 返回 Val1 和 Val2 中的最小值, 存在 Val3 则返回三个数中的最小值
+! 
+!***********************************************************
+func num min_(num Val1, num Val2, \num Val3)
+	var num Num1;
+	var num Num2;
+
+	if present(Val3) then  
+
+		Num1 := min(Val1, Val3);
+		Num2 := min(Val2, Val3);
+		
+		return(min(Num1, Num2));
+	endif
+	
+	return(min(Val1, Val2));
+endfunc 
+
+!***********************************************************
+! func tern_num_
+!***********************************************************
+!     输入参数 : Exprsn         * 布尔值 *     * 判断条件 *
+!     输入参数 : Val1           * 数字 *      * 条件为真时返回的值 *
+!     输入参数 : Val2           * 数字 *      * 条件为假时返回的值 *
+! 返回 :                     * 数字 *      * 根据条件返回的值 *
+!***********************************************************
+! 功能 : 实现三元运算的功能。
+!        如果 Exprsn 为真，则返回 Val1；否则返回 Val2。
+!***********************************************************
+func num tern_num_(bool Exprsn, num Val1, num Val2) if Exprsn return(Val1); return(Val2); endfunc
+
+!***********************************************************
+! func tern_bool_
+!***********************************************************
+!     输入参数 : Exprsn         * 布尔值 *     * 判断条件 *
+!     输入参数 : Val1           * 布尔值 *     * 条件为真时返回的值 *
+!     输入参数 : Val2           * 布尔值 *     * 条件为假时返回的值 *
+! 返回 :                     * 布尔值 *     * 根据条件返回的值 *
+!***********************************************************
+! 功能 : 实现三元运算的功能。
+!        如果 Exprsn 为真，则返回 Val1；否则返回 Val2。
+!***********************************************************
+func bool tern_bool_(bool Exprsn, bool Val1, bool Val2) if Exprsn return(Val1); return(Val2); endfunc
+
+!***********************************************************
+! func tern_str_
+!***********************************************************
+!     输入参数 : Exprsn         * 布尔值 *     * 判断条件 *
+!     输入参数 : Val1           * 字符串 *     * 条件为真时返回的值 *
+!     输入参数 : Val2           * 字符串 *     * 条件为假时返回的值 *
+! 返回 :                     * 字符串 *     * 根据条件返回的值 *
+!***********************************************************
+! 功能 : 实现三元运算的功能。
+!        如果 Exprsn 为真，则返回 Val1；否则返回 Val2。
+!***********************************************************
+func string tern_str_(bool Exprsn, string Val1, string Val2) if Exprsn return(Val1); return(Val2); endfunc
+
+!***********************************************************
+! func tern_robtarget_
+!***********************************************************
+!     输入参数 : Exprsn         * 布尔值 *     * 判断条件 *
+!     输入参数 : Val1           * 机器人目标 *   * 条件为真时返回的值 *
+!     输入参数 : Val2           * 机器人目标 *   * 条件为假时返回的值 *
+! 返回 :                     * 机器人目标 *   * 根据条件返回的值 *
+!***********************************************************
+! 功能 : 实现三元运算的功能。
+!        如果 Exprsn 为真，则返回 Val1；否则返回 Val2。
+!***********************************************************
+func robtarget tern_robtarget_(bool Exprsn, robtarget Val1, robtarget Val2) if Exprsn return(Val1); return(Val2); endfunc
+
+!***********************************************************
+! func tern_jnttarget_()
+!***********************************************************
+!    in : Exprsn			* bool *    	* 表达式 *
+!    in : Val1				* num *    		* 值2 *
+!    in : Val2				* num *    		* 值3 *
+!return : 					* num * 		* Exprsn == true 返回 Val1 ；Exprsn == false 返回 Val2 *
+!***********************************************************
+! 关节坐标形三元表达式
+!***********************************************************
+func jointtarget tern_jnttarget_(bool Exprsn, jointtarget Val1, jointtarget Val2) if Exprsn return(Val1); return(Val2); endfunc
+
+!***********************************************************
+! func tern_speed_()
+!***********************************************************
+!    in : Exprsn			* bool *    	* 表达式 *
+!    in : Val1				* num *    		* 值2 *
+!    in : Val2				* num *    		* 值3 *
+!return : 					* num * 		* Exprsn == true 返回 Val1 ；Exprsn == false 返回 Val2 *
+!***********************************************************
+! 速度参数形三元表达式
+!***********************************************************
+func speeddata tern_speed_(bool Exprsn, speeddata Val1, speeddata Val2) if Exprsn return(Val1); return(Val2); endfunc
+
+!***********************************************************
+! func tern_zone_()
+!***********************************************************
+!    in : Exprsn			* bool *    	* 表达式 *
+!    in : Val1				* num *    		* 值2 *
+!    in : Val2				* num *    		* 值3 *
+!return : 					* num * 		* Exprsn == true 返回 Val1 ；Exprsn == false 返回 Val2 *
+!***********************************************************
+! 圆滑区域参数形三元表达式
+!***********************************************************
+func zonedata tern_zone_(bool Exprsn, zonedata Val1, zonedata Val2) if Exprsn return(Val1); return(Val2); endfunc
+
+endmodule

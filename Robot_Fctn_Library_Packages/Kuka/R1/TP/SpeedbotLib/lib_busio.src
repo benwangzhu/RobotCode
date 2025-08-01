@@ -1,0 +1,884 @@
+&access RP
+&comment Lib Bus I/O 240227
+def lib_busio()
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: lib_busio.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2023 - 07 - 04
+;   Modification Data    ==   2023 - 07 - 04
+;
+; Author: speedbot
+;
+; Version: 1.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+
+
+end
+
+;FOLD BUS SET BYTE
+global def bus_sbyte_(StAddr : in, Val : in)
+    decl int StAddr
+    decl char Val
+    decl char CopyVal
+
+    if StAddr <= 0 then  
+        return
+    endif
+    if (varstate("Val") <> #initialized) then
+        Val = 0
+    endif
+    continue
+    $out[StAddr + 0] = (Val b_and 1) > 0
+    continue
+    $out[StAddr + 1] = (Val b_and 2) > 0
+    continue
+    $out[StAddr + 2] = (Val b_and 4) > 0
+    continue
+    $out[StAddr + 3] = (Val b_and 8) > 0
+    continue
+    $out[StAddr + 4] = (Val b_and 16) > 0
+    continue
+    $out[StAddr + 5] = (Val b_and 32) > 0
+    continue
+    $out[StAddr + 6] = (Val b_and 64) > 0
+    continue
+    $out[StAddr + 7] = (Val b_and 128) > 0
+end
+;ENDFOLD
+
+;FOLD BUS SET INT16
+global def bus_ssint_(StAddr : in, Val : in)
+    decl int StAddr
+    decl int Val
+    decl char ByteVal[2]
+
+    if (varstate("Val") <> #initialized) then
+        Val = 0
+    endif
+    ByteVal[1] = (trunc_((Val b_and 255)       / 1))   b_and 255
+    ByteVal[2] = (trunc_((Val b_and (-256))    / 256)) b_and 255
+    bus_sbyte_(StAddr + 0, ByteVal[1])
+    bus_sbyte_(StAddr + 8, ByteVal[2])
+end
+;ENDFOLD
+
+;FOLD BUS SET UINT16
+global def bus_susint_(StAddr : in, Val : in)
+    decl int StAddr
+    decl int Val
+    decl char ByteVal[2]
+
+    if (varstate("Val") <> #initialized) then
+        Val = 0
+    endif
+    ByteVal[1] = (trunc_((Val b_and 255)       / 1))   b_and 255
+    ByteVal[2] = (trunc_((Val b_and (65280))   / 256)) b_and 255
+    bus_sbyte_(StAddr + 0, ByteVal[1])
+    bus_sbyte_(StAddr + 8, ByteVal[2])
+end
+;ENDFOLD
+
+;FOLD BUS SET INT32
+global def bus_sint_(StAddr : in, Val : in)
+    decl int StAddr
+    decl int Val
+    decl char ByteVal[4]
+
+    if (varstate("Val") <> #initialized) then
+        Val = 0
+    endif
+    ByteVal[1] = (trunc_((Val b_and 255)           / 1))           b_and 255
+    ByteVal[2] = (trunc_((Val b_and (65280))       / 256))         b_and 255
+    ByteVal[3] = (trunc_((Val b_and (16711680))    / 65535))       b_and 255
+    ByteVal[4] = (trunc_((Val b_and (-16777216))   / 16777216))    b_and 255
+    bus_sbyte_(StAddr + 0, ByteVal[1])
+    bus_sbyte_(StAddr + 8, ByteVal[2])
+    bus_sbyte_(StAddr + 16, ByteVal[3])
+    bus_sbyte_(StAddr + 24, ByteVal[4])
+end
+;ENDFOLD
+
+;FOLD BUS SET FLOAT
+global def bus_sfloat_(StAddr : in, Val : in)
+    decl int StAddr
+    decl int Offset
+    decl real Val
+    decl char ByteVal[4]
+
+    if (varstate("Val") <> #initialized) then
+        Val = 0.0
+    endif
+    Offset = 0
+    cast_to(ByteVal[], Offset, Val)
+    bus_sbyte_(StAddr + 0, ByteVal[1])
+    bus_sbyte_(StAddr + 8, ByteVal[2])
+    bus_sbyte_(StAddr + 16, ByteVal[3])
+    bus_sbyte_(StAddr + 24, ByteVal[4])
+end
+;ENDFOLD
+
+;FOLD BUS SET FLOAT2
+global def bus_sfloat2_(StAddr : in, Val : in)
+    decl int StAddr
+    decl int IntVal
+    decl int DecVal
+    decl real Val
+    decl char ByteVal[4]
+
+    if (varstate("Val") <> #initialized) then
+        Val = 0.0
+    endif
+    IntVal = trunc_(Val)
+    DecVal = (Val - IntVal) * 10000.0
+    bus_ssint_(StAddr + 0, IntVal)
+    bus_ssint_(StAddr + 16, DecVal)
+end
+;ENDFOLD
+
+;FOLD BUS SET JOINTS
+global def bus_sjoint_(StAddr : in, Val : in, NumOfAxis : in)
+    decl int StAddr
+    decl e6axis Val
+    decl int NumOfAxis
+
+    if (varstate("NumOfAxis") <> #initialized) then
+        NumOfAxis = 6
+    endif
+    if NumOfAxis >= 1 then  
+        bus_sfloat2_(StAddr + 0, Val.A1)
+    endif
+    if NumOfAxis >= 2 then  
+        bus_sfloat2_(StAddr + 32, Val.A2)
+    endif
+    if NumOfAxis >= 3 then  
+        bus_sfloat2_(StAddr + 64, Val.A3)
+    endif
+    if NumOfAxis >= 4 then  
+        bus_sfloat2_(StAddr + 96, Val.A4)
+    endif
+    if NumOfAxis >= 5 then  
+        bus_sfloat2_(StAddr + 128, Val.A5)
+    endif
+    if NumOfAxis >= 6 then  
+        bus_sfloat2_(StAddr + 160, Val.A6)
+    endif
+    if NumOfAxis >= 7 then  
+        bus_sfloat2_(StAddr + 192, Val.E1)
+    endif
+    if NumOfAxis >= 8 then  
+        bus_sfloat2_(StAddr + 224, Val.E2)
+    endif
+    if NumOfAxis >= 9 then  
+        bus_sfloat2_(StAddr + 256, Val.E3)
+    endif
+end
+;ENDFOLD
+
+;FOLD BUS SET CARTPOS
+global def bus_scartp_(StAddr : in, Val : in, NumOfAxis : in)
+    decl int StAddr
+    decl e6pos Val
+    decl int NumOfAxis
+
+    if (varstate("NumOfAxis") <> #initialized) then
+        NumOfAxis = 6
+    endif
+    if NumOfAxis >= 1 then  
+        bus_sfloat2_(StAddr + 0, Val.X)
+    endif
+    if NumOfAxis >= 2 then  
+        bus_sfloat2_(StAddr + 32, Val.Y)
+    endif
+    if NumOfAxis >= 3 then  
+        bus_sfloat2_(StAddr + 64, Val.Z)
+    endif
+    if NumOfAxis >= 4 then  
+        bus_sfloat2_(StAddr + 96, Val.A)
+    endif
+    if NumOfAxis >= 5 then  
+        bus_sfloat2_(StAddr + 128, Val.B)
+    endif
+    if NumOfAxis >= 6 then  
+        bus_sfloat2_(StAddr + 160, Val.C)
+    endif
+    if NumOfAxis >= 7 then  
+        bus_sfloat2_(StAddr + 192, Val.E1)
+    endif
+    if NumOfAxis >= 8 then  
+        bus_sfloat2_(StAddr + 224, Val.E2)
+    endif
+    if NumOfAxis >= 9 then  
+        bus_sfloat2_(StAddr + 256, Val.E3)
+    endif
+end
+;ENDFOLD
+
+;FOLD BUS GET BYTE
+global deffct char bus_gbyte_(PortType : in, StAddr : in)
+    decl port_type_t PortType
+    decl int StAddr
+    decl char ByteVal
+
+    if StAddr <= 0 then 
+        return(0)
+    endif
+    ByteVal = 0
+    if PortType == #IO_DOUT then  
+        continue
+        if $out[StAddr + 0] then  
+            ByteVal = ByteVal b_or 1
+        endif
+        continue
+        if $out[StAddr + 1] then  
+            ByteVal = ByteVal b_or 2
+        endif
+        continue
+        if $out[StAddr + 2] then  
+            ByteVal = ByteVal b_or 4
+        endif
+        continue
+        if $out[StAddr + 3] then  
+            ByteVal = ByteVal b_or 8
+        endif
+        continue
+        if $out[StAddr + 4] then  
+            ByteVal = ByteVal b_or 16
+        endif
+        continue
+        if $out[StAddr + 5] then  
+            ByteVal = ByteVal b_or 32
+        endif
+        continue
+        if $out[StAddr + 6] then  
+            ByteVal = ByteVal b_or 64
+        endif
+        continue
+        if $out[StAddr + 7] then  
+            ByteVal = ByteVal b_or 128
+        endif
+    endif
+    if PortType == #IO_DIN then  
+        continue
+        if $in[StAddr + 0] then  
+            ByteVal = ByteVal b_or 1
+        endif
+        continue
+        if $in[StAddr + 1] then  
+            ByteVal = ByteVal b_or 2
+        endif
+        continue
+        if $in[StAddr + 2] then  
+            ByteVal = ByteVal b_or 4
+        endif
+        continue
+        if $in[StAddr + 3] then  
+            ByteVal = ByteVal b_or 8
+        endif
+        continue
+        if $in[StAddr + 4] then  
+            ByteVal = ByteVal b_or 16
+        endif
+        continue
+        if $in[StAddr + 5] then  
+            ByteVal = ByteVal b_or 32
+        endif
+        continue
+        if $in[StAddr + 6] then  
+            ByteVal = ByteVal b_or 64
+        endif
+        continue
+        if $in[StAddr + 7] then  
+            ByteVal = ByteVal b_or 128
+        endif
+    endif
+
+    return(ByteVal)
+endfct
+;ENDFOLD
+
+;FOLD BUS GET INT16
+global deffct int bus_gsint_(PortType : in, StAddr : in)
+    decl port_type_t PortType
+    decl int StAddr
+    decl char ByteVal[2]
+    decl int ShortVal
+
+    ByteVal[1] = bus_gbyte_(PortType, StAddr + 0)
+    ByteVal[2] = bus_gbyte_(PortType, StAddr + 8)
+    ShortVal = 0        + (((ByteVal[1] b_and 255) * 1)      b_and 255) 
+    ShortVal = ShortVal + (((ByteVal[2] b_and 255) * 256)    b_and 65280) 
+    if ShortVal > 32767 then  
+        ShortVal = ShortVal - 65536
+    endif
+    return(ShortVal)
+endfct
+;ENDFOLD
+
+;FOLD BUS GET UINT16
+global deffct int bus_gusint_(PortType : in, StAddr : in)
+    decl port_type_t PortType
+    decl int StAddr
+    decl char ByteVal[2]
+    decl int ShortVal
+
+    ByteVal[1] = bus_gbyte_(PortType, StAddr + 0)
+    ByteVal[2] = bus_gbyte_(PortType, StAddr + 8)
+    ShortVal = 0        + (((ByteVal[1] b_and 255) * 1)      b_and 255) 
+    ShortVal = ShortVal + (((ByteVal[2] b_and 255) * 256)    b_and 65280) 
+    return(ShortVal)
+endfct
+;ENDFOLD
+
+;FOLD BUS GET INT32
+global deffct int bus_gint_(PortType : in, StAddr : in)
+    decl port_type_t PortType
+    decl int StAddr
+    decl char ByteVal[4]
+    decl int IntVal
+
+    ByteVal[1] = bus_gbyte_(PortType, StAddr + 0)
+    ByteVal[2] = bus_gbyte_(PortType, StAddr + 8)
+    ByteVal[3] = bus_gbyte_(PortType, StAddr + 16)
+    ByteVal[4] = bus_gbyte_(PortType, StAddr + 24)
+    IntVal = 0      + (((ByteVal[1] b_and 255) * 1)          b_and 255) 
+    IntVal = IntVal + (((ByteVal[2] b_and 255) * 256)        b_and 65280) 
+    IntVal = IntVal + (((ByteVal[3] b_and 255) * 65536)      b_and 16711680) 
+    IntVal = IntVal + (((ByteVal[4] b_and 255) * 16777216)   b_and (-16777216))
+    return(IntVal)
+endfct
+;ENDFOLD
+
+;FOLD BUS GET FLOAT
+global deffct real bus_gfloat_(PortType : in, StAddr : in)
+    decl port_type_t PortType
+    decl int StAddr
+    decl char ByteVal[4]
+    decl real RealVal
+    decl int Offset
+
+    Offset = 0
+    ByteVal[1] = bus_gbyte_(PortType, StAddr + 0)
+    ByteVal[2] = bus_gbyte_(PortType, StAddr + 8)
+    ByteVal[3] = bus_gbyte_(PortType, StAddr + 16)
+    ByteVal[4] = bus_gbyte_(PortType, StAddr + 24)
+    cast_from(ByteVal[], Offset, RealVal)
+    return(RealVal)
+endfct
+;ENDFOLD
+
+;FOLD BUS GET FLOAT2
+global deffct real bus_gfloat2_(PortType : in, StAddr : in)
+    decl port_type_t PortType
+    decl int StAddr
+    decl char ByteVal[4]
+    decl int IntVal
+    decl int DecVal
+
+    IntVal = bus_gsint_(PortType, StAddr + 0)
+    DecVal = bus_gsint_(PortType, StAddr + 16)
+    return(IntVal + DecVal / 10000.0)
+endfct
+;ENDFOLD
+
+;FOLD BUS GET JOINT
+global deffct e6axis bus_gjoint_(PortType : in, StAddr : in, NumOfAxis : in)
+    decl port_type_t PortType
+    decl int StAddr
+    decl char ByteVal[4]
+    decl int NumOfAxis
+    decl e6axis JointVal
+
+    JointVal = {A1 0.0, A2 0.0, A3 0.0, A4 0.0, A5 0.0, A6 0.0, E1 0.0, E2 0.0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+    if (varstate("NumOfAxis") <> #initialized) then
+        NumOfAxis = 6
+    endif
+    if NumOfAxis >= 1 then  
+        JointVal.A1 = bus_gfloat2_(PortType, StAddr + 0)
+    endif
+    if NumOfAxis >= 2 then  
+        JointVal.A2 = bus_gfloat2_(PortType, StAddr + 32)
+    endif
+    if NumOfAxis >= 3 then  
+        JointVal.A3 = bus_gfloat2_(PortType, StAddr + 64)
+    endif
+    if NumOfAxis >= 4 then  
+        JointVal.A4 = bus_gfloat2_(PortType, StAddr + 96)
+    endif
+    if NumOfAxis >= 5 then  
+        JointVal.A5 = bus_gfloat2_(PortType, StAddr + 128)
+    endif
+    if NumOfAxis >= 6 then  
+        JointVal.A6 = bus_gfloat2_(PortType, StAddr + 160)
+    endif
+    if NumOfAxis >= 7 then  
+        JointVal.E1 = bus_gfloat2_(PortType, StAddr + 192)
+    endif
+    if NumOfAxis >= 8 then  
+        JointVal.E2 = bus_gfloat2_(PortType, StAddr + 224)
+    endif
+    if NumOfAxis >= 9 then  
+        JointVal.E3 = bus_gfloat2_(PortType, StAddr + 256)
+    endif
+    
+    return(JointVal)
+endfct
+;ENDFOLD
+
+;FOLD BUS GET CARTPOS
+global deffct e6pos bus_gcartp_(PortType : in, StAddr : in, NumOfAxis : in)
+    decl port_type_t PortType
+    decl int StAddr
+    decl char ByteVal[4]
+    decl int NumOfAxis
+    decl e6pos PosVal
+
+    PosVal = {X 0.0, Y 0.0, Z 0.0, A 0.0, B 0.0, C 0.0, E1 0.0, E2 0.0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+    if (varstate("NumOfAxis") <> #initialized) then
+        NumOfAxis = 6
+    endif
+    if NumOfAxis >= 1 then  
+        PosVal.X = bus_gfloat2_(PortType, StAddr + 0)
+    endif
+    if NumOfAxis >= 2 then  
+        PosVal.Y = bus_gfloat2_(PortType, StAddr + 32)
+    endif
+    if NumOfAxis >= 3 then  
+        PosVal.Z = bus_gfloat2_(PortType, StAddr + 64)
+    endif
+    if NumOfAxis >= 4 then  
+        PosVal.A = bus_gfloat2_(PortType, StAddr + 96)
+    endif
+    if NumOfAxis >= 5 then  
+        PosVal.B = bus_gfloat2_(PortType, StAddr + 128)
+    endif
+    if NumOfAxis >= 6 then  
+        PosVal.C = bus_gfloat2_(PortType, StAddr + 160)
+    endif
+    if NumOfAxis >= 7 then  
+        PosVal.E1 = bus_gfloat2_(PortType, StAddr + 192)
+    endif
+    if NumOfAxis >= 8 then  
+        PosVal.E2 = bus_gfloat2_(PortType, StAddr + 224)
+    endif
+    if NumOfAxis >= 9 then  
+        PosVal.E3 = bus_gfloat2_(PortType, StAddr + 256)
+    endif
+    
+    return(PosVal)
+endfct
+;ENDFOLD
+
+;FOLD BUS INPUT
+global def bus_uptin_(BusIn : out)
+    decl busin_t BusIn
+
+    continue
+    BusIn.SysReady      = DiSysReady
+    continue
+    BusIn.SysInited     = DiSysInited
+    continue
+    BusIn.StopMov       = DiStopMov
+    continue
+    BusIn.OnMeasure     = DiOnMeasure
+    continue
+    BusIn.MeasuerOver   = DiMeasuerOver
+    continue
+    BusIn.ResultOk      = DiResultOk
+    continue
+    BusIn.ResultNG      = DiResultNG
+    continue
+    BusIn.Finished      = DiFinished
+    continue
+    BusIn.DeviceId      = GiDeviceId
+    continue
+    BusIn.JobId         = GiJobId
+    continue
+    BusIn.ErrorId       = GiErrorId
+    continue
+    BusIn.AgentTellId   = GiAgentTellId
+    continue
+    BusIn.AgentMsgType  = GiAgentMsgType
+    continue
+    BusIn.TellId        = GiTellId
+    continue
+    BusIn.MsgType       = GiMsgType
+end
+;ENDFOLD
+
+;FOLD BUS OUT
+global def bus_uptout_(BusOut : out)
+    decl busout_t BusOut
+
+    continue
+    DoSysEnable         = BusOut.SysEnable
+    continue
+    DoSysInit           = BusOut.SysInit
+    continue
+    DoRobMoving         = BusOut.RobMoving
+    continue
+    DoMeasuerSt         = BusOut.MeasuerSt
+    continue
+    DoMeasuerEd         = BusOut.MeasuerEd
+    continue
+    DoReserverd1        = BusOut.Reserverd1
+    continue
+    DoReserverd2        = BusOut.Reserverd2
+    continue
+    DoCycleEnd          = BusOut.CycleEnd
+    continue
+    GoRobotId           = BusOut.RobotId
+    continue
+    GoJobId             = BusOut.JobId
+    continue
+    GoProtocolId        = BusOut.ProtocolId
+    continue
+    GoTellId            = BusOut.TellId
+    continue
+    GoMsgType           = BusOut.MsgType
+    continue
+    GoRobTellId         = BusOut.RobTellId
+    continue
+    GoRobMsgType        = BusOut.RobMsgType
+end
+;ENDFOLD
+
+;FOLD BUS INIT
+global def bus_init_(BusIn : out, BusOut : out, RobId : in, ProtId : in)
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int RobId
+    decl int ProtId 
+
+    if (varstate("RobId") <> #initialized) then
+        RobId = 0
+    endif
+    if (varstate("ProtId") <> #initialized) then
+        ProtId = 0
+    endif
+
+    continue
+    if DoSysInit then  
+        
+        continue
+        DoSysInit = false
+
+        wait sec 0.2
+    endif
+
+    BusOut.SysEnable        = true
+    BusOut.SysInit          = true
+    BusOut.RobMoving        = false
+    BusOut.MeasuerSt        = false
+    BusOut.MeasuerEd        = false
+    BusOut.Reserverd1       = false
+    BusOut.Reserverd2       = false
+    BusOut.CycleEnd         = false
+    BusOut.RobotId          = RobId
+    BusOut.JobId            = 0
+    BusOut.ProtocolId       = ProtId
+    BusOut.TellId           = 0
+    BusOut.MsgType          = 0
+    BusOut.RobTellId        = 0
+
+    ; Code Modified on 2025.04.28
+    ; 不初始化 RobMsgType, 以免 lib_buscmd 函数传参受到影响 
+    ; BusOut.RobMsgType       = 0
+    ;
+
+    bus_uptout_(BusOut)
+
+    ; DoSysEnable = true
+    ; DoSysInit = true
+    ; GoRobotId = RobId
+    ; GoProtocolId = ProtId
+    
+    wait sec 0.2
+
+    ; if not (BusOut.ProtocolId == PTC_LN_PL) or (BusOut.ProtocolId == PTC_ST_PK) then
+        wait for (GiTellId == 0) and (DiSysInited == true)
+    ; endif
+
+    bus_uptin_(BusIn)
+
+    BusOut.TellId           = BusIn.AgentTellId
+    BusOut.MsgType          = BusIn.AgentMsgType
+
+    BusOut.SysInit          = false
+
+    bus_uptout_(BusOut)
+end
+;ENDFOLD
+
+;FOLD BUS WAIT TELL   
+global deffct int bus_wtell_(BusIn : out, BusOut : out, Timeout : in)
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl int ClockVar1
+
+    if (varstate("Timeout") <> #initialized) then
+        Timeout = 0
+    endif
+    continue
+    ClockVar1 = $rob_timer
+
+    if (Timeout >= 0) then
+        
+        continue
+        wait for ((($rob_timer - ClockVar1) > Timeout) or ((GiAgentTellId <> GoTellId) and (GiAgentTellId <> 0)) or (not DiSysReady) or (not DoSysEnable) or DoSysInit)
+    else
+
+        continue
+        wait for (((GiAgentTellId <> GoTellId) and (GiAgentTellId <> 0)) or (not DiSysReady) or (not DoSysEnable) or DoSysInit)
+    endif
+
+    continue
+    BusOut.TellId           = GoTellId
+    continue
+    BusOut.SysEnable        = DoSysEnable
+    continue
+    BusOut.SysInit          = DoSysInit
+    continue
+    BusOut.TellId           = GoTellId
+    continue
+    BusIn.SysReady          = DiSysReady
+    continue
+    BusIn.AgentTellId       = GiAgentTellId
+    continue
+    BusIn.AgentTellId       = GiAgentMsgType
+    continue
+    BusIn.JobId             = GiJobId
+    continue
+    BusIn.ErrorId           = GiErrorId
+    
+    if (not BusIn.SysReady) or (not BusOut.SysEnable) or (BusOut.SysInit) then 
+        return(-2)
+    endif
+    
+    if ((BusIn.AgentTellId <> BusOut.TellId) and (BusIn.AgentTellId <> 0)) then 
+
+        return(BusIn.ErrorId)
+    endif
+
+    return(-1)
+endfct
+;ENDFOLD
+
+;FOLD BUS FEED TELL
+global def bus_ftell_(BusIn : out, BusOut : out)
+    decl busin_t BusIn
+    decl busout_t BusOut
+
+    continue
+    BusIn.AgentTellId   = GiAgentTellId
+    continue
+    BusIn.AgentMsgType  = GiAgentMsgType
+    BusOut.TellId       = BusIn.AgentTellId
+    BusOut.MsgType      = BusIn.AgentMsgType
+    continue
+    GoTellId            = BusOut.TellId
+    continue
+    GoMsgType           = BusOut.MsgType
+end
+;ENDFOLD
+
+;FOLD BUS NEW TELL   
+global deffct int bus_ntell_(BusIn : out, BusOut : out, Timeout : in)
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl int ClockVar1
+
+    if (varstate("Timeout") <> #initialized) then
+        Timeout = 0
+    endif
+
+    continue
+    ClockVar1 = $rob_timer
+    continue
+    BusIn.TellId        = GiTellId
+    BusOut.RobTellId    = BusIn.TellId + 1
+    if BusOut.RobTellId > 255 then 
+        BusOut.RobTellId = 1
+    endif
+
+    continue
+    GoRobotId       = BusOut.RobotId
+    continue
+    GoJobId         = BusOut.JobId
+    continue
+    GoRobMsgType    = BusOut.RobMsgType   
+    continue
+    GoRobTellId     = BusOut.RobTellId
+
+
+    if (Timeout >= 0) then
+        
+        continue
+        wait for ((($rob_timer - ClockVar1) > Timeout) or (GoRobTellId == GiTellId) or (not DiSysReady) or (not DoSysEnable) or DoSysInit)
+    else
+
+        continue
+        wait for ((GoRobTellId == GiTellId) or (not DiSysReady) or (not DoSysEnable) or DoSysInit)
+    endif
+    
+    continue
+    BusOut.SysEnable        = DoSysEnable
+    continue
+    BusOut.SysInit          = DoSysInit
+    continue
+    BusOut.TellId           = GoTellId
+    continue
+    BusIn.SysReady          = DiSysReady
+    continue
+    BusIn.TellId            = GiTellId
+    continue
+    BusIn.MsgType           = GiMsgType
+    continue
+    BusIn.JobId             = GiJobId
+    continue
+    BusIn.ErrorId           = GiErrorId
+    
+    if (not BusIn.SysReady) or (not BusOut.SysEnable) or (BusOut.SysInit) then 
+        return(-2)
+    endif
+    
+    if (BusOut.RobTellId == BusIn.TellId) then 
+
+        return(BusIn.ErrorId)
+    endif
+
+    return(-1)
+endfct
+;ENDFOLD
+
+;FOLD BUS SET TELL 
+global def bus_stell_(BusIn : out, BusOut : out)
+    decl busin_t BusIn
+    decl busout_t BusOut
+
+    continue
+    BusIn.TellId        = GiTellId
+    continue
+    BusOut.RobTellId    = GoRobTellId
+    continue
+    BusOut.SysEnable    = DoSysEnable
+
+    ; Code Modified on 2025.05.16
+    ; 修复当机器人没有使能 SysEnable 信号时，重新进行初始化
+    if (BusIn.TellId <> BusOut.RobTellId) or (BusOut.SysEnable == false) then  
+        
+        BusOut.ProtocolId = PTC_GEN_CMD
+        bus_init_(BusIn, BusOut, BusOut.RobotId, BusOut.ProtocolId)
+    endif
+    ;
+
+    BusOut.RobTellId    = BusIn.TellId + 1
+    if BusOut.RobTellId > 255 then 
+        BusOut.RobTellId = 1
+    endif
+
+    continue
+    GoRobotId       = BusOut.RobotId
+    continue
+    GoJobId         = BusOut.JobId
+    continue
+    GoRobMsgType    = BusOut.RobMsgType   
+    continue
+    GoRobTellId     = BusOut.RobTellId
+end
+;ENDFOLD
+
+;FOLD BUS READ TELL   
+global deffct int bus_rtell_(BusIn : out, BusOut : out, Timeout : in)
+    decl busin_t BusIn
+    decl busout_t BusOut
+    decl int Timeout
+    decl int ClockVar1
+
+    if (varstate("Timeout") <> #initialized) then
+        Timeout = 0
+    endif
+
+    continue
+    ClockVar1 = $rob_timer
+
+    if (Timeout >= 0) then
+        
+        continue
+        wait for ((($rob_timer - ClockVar1) > Timeout) or (GoRobTellId == GiTellId) or (not DiSysReady) or (not DoSysEnable) or DoSysInit)
+    else
+
+        continue
+        wait for ((GoRobTellId == GiTellId) or (not DiSysReady) or (not DoSysEnable) or DoSysInit)
+    endif
+    
+    continue
+    BusOut.SysEnable        = DoSysEnable
+    continue
+    BusOut.SysInit          = DoSysInit
+    continue
+    BusOut.TellId           = GoTellId
+    continue
+    BusIn.SysReady          = DiSysReady
+    continue
+    BusIn.TellId            = GiTellId
+    continue
+    BusIn.MsgType           = GiMsgType
+    continue
+    BusIn.JobId             = GiJobId
+    continue
+    BusIn.ErrorId           = GiErrorId
+    
+    if (not BusIn.SysReady) or (not BusOut.SysEnable) or (BusOut.SysInit) then 
+        return(-2)
+    endif
+    
+    if (BusOut.RobTellId == BusIn.TellId) then 
+
+        return(BusIn.ErrorId)
+    endif
+
+    return(-1)
+endfct
+;ENDFOLD
+
+
+
+
+
+

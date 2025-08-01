@@ -1,0 +1,85 @@
+/JOB
+//NAME ENTER_IZ
+///FOLDERNAME SPEEDBOT
+//POS
+///NPOS 0,0,0,0,0,0
+//INST
+///DATE 2024/08/16 10:18
+///COMM V0.1
+///ATTR SC,RW,MC
+///GROUP1 RB1
+///LVARS 0,1,0,0,0,0,0,0
+NOP
+'***********************
+'***宏程序：进入干涉区***
+'***********************
+'
+'Enter Zone
+GETARG LI000 IARG#(1)
+SWITCH LI000
+	'Zone1
+CASE 1
+	 DOUT OT#(21) OFF
+	 WAIT IN#(21)=ON
+	 DOUT OT#(241) ON
+	'Zone2
+CASE 2
+	 DOUT OT#(22) OFF
+	 WAIT IN#(22)=ON
+	 DOUT OT#(242) ON
+	'Zone3
+CASE 3
+	 DOUT OT#(23) OFF
+	 WAIT IN#(23)=ON
+	 DOUT OT#(243) ON
+	'Zone4
+CASE 4
+	 DOUT OT#(24) OFF
+	 WAIT IN#(24)=ON
+	 DOUT OT#(244) ON
+	'Zone5
+CASE 5
+	 DOUT OT#(25) OFF
+	 WAIT IN#(25)=ON
+	 DOUT OT#(245) ON
+	'Zone6
+CASE 6
+	 DOUT OT#(26) OFF
+	 WAIT IN#(26)=ON
+	 DOUT OT#(246) ON
+	'Zone7
+CASE 7
+	 DOUT OT#(27) OFF
+	 WAIT IN#(27)=ON
+	 DOUT OT#(247) ON
+	'Zone8
+CASE 8
+	 DOUT OT#(28) OFF
+	 WAIT IN#(28)=ON
+	 DOUT OT#(248) ON
+	'Zone9
+CASE 9
+	 DOUT OT#(29) OFF
+	 WAIT IN#(29)=ON
+	 DOUT OT#(249) ON
+	'Zone10
+CASE 10
+	 DOUT OT#(30) OFF
+	 WAIT IN#(30)=ON
+	 DOUT OT#(250) ON
+	'Zone11
+CASE 11
+	 DOUT OT#(31) OFF
+	 WAIT IN#(31)=ON
+	 DOUT OT#(251) ON
+	'Zone12
+CASE 12
+	 DOUT OT#(32) OFF
+	 WAIT IN#(32)=ON
+	 DOUT OT#(252) ON
+	'Error
+DEFAULT
+	 SETUALM 8000 "干涉区编号错误" 0
+	 ABORT
+ENDSWITCH
+END

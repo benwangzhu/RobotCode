@@ -1,0 +1,122 @@
+&ACCESS RVO1
+&REL 51
+&COMMENT Box02 Station
+&PARAM EDITMASK = *
+&PARAM DISKPATH = KRC:\R1\Program\MixSortMain
+DEF mixsort_pick05( )
+;***********************************************************
+;
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+;
+; File Name: mixsort_pick02.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 27
+;   Modification Data    ==   2025 - 02 - 10
+;
+; Author: speedbot
+;
+; Version: 1.1
+;***********************************************************
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+    continue
+    if $MOVE_BCO == FALSE Then
+      ; BCO
+      ptp cur_jpos_()
+    endif
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+;FOLD Copy Data
+CopyPartData = AgentData.PartData
+XPickPos = AgentData.PartData.PkPos
+;ENDFOLD
+;FOLD Data To Plc
+echo_job_info_(mod_(CopyPartData.PartLen, 256), CopyPartData.PartLen / 256, 0, 0)
+echo_channel_(CopyPartData.MagPip[1], CopyPartData.MagPip[2], CopyPartData.MagPip[3], CopyPartData.MagPip[4])
+servo01_ctrl_(#MOVING, CopyPartData.GripDist1)
+;ENDFOLD
+;FOLD Basic.Frame OUT Frame Dir: OffsUp, IN x: 0, IN y: 0, IN z: 150, IN a: 0 deg, IN b: 0 deg, IN c: 0 deg ;%{PE}
+OffsUp = set_frame_(0, 0, 150, 0, 0, 0)
+;ENDFOLD
+;FOLD Basic.Frame OUT Frame Dir: OffsRUp, IN x: 0, IN y: 0, IN z: 200, IN a: 0 deg, IN b: 0 deg, IN c: 0 deg ;%{PE}
+OffsRUp = set_frame_(0, 0, 200, 0, 0, 0)
+;ENDFOLD
+;FOLD Basic.BaseOffset IN Source Point Dir: PickPos, IN Offs Dir: OffsUp, OUT Offset Point Dir: PickPosUp ;%{PE}
+XPickPosUp = ufrm_offs_byframe_(XPickPos, OffsUp) 
+;ENDFOLD
+;FOLD Basic.BaseOffset IN Source Point Dir: PickPos, IN Offs Dir: OffsRUp, OUT Offset Point Dir: PickPosRUp ;%{PE}
+XPickPosRUp = ufrm_offs_byframe_(XPickPos, OffsRUp) 
+;ENDFOLD
+;FOLD Basic.Frame OUT Frame Dir: LimitUp, IN x: 3000, IN y: 3000, IN z: 3000, IN a: 0 deg, IN b: 0 deg, IN c: 0 deg ;%{PE}
+LimitUp = set_frame_(3000, 3000, 3000, 0, 0, 0)
+;ENDFOLD
+;FOLD Basic.Frame OUT Frame Dir: LimitDown, IN x: -3000, IN y: -3000, IN z: -3000, IN a: 0 deg, IN b: 0 deg, IN c: 0 deg ;%{PE}
+LimitDown = set_frame_(-3000, -3000, -3000, 0, 0, 0)
+;ENDFOLD
+;FOLD Basic.ChkXYZABC IN Chk Pos Dir: XPickPos, IN Corr Base Nr: 0, IN Chk Base Nr: 0, IN Lim Max Dir: LimitUp, IN Lim Min Dir: LimitDown, OUT Chk Status: ChkStatus1, IN OnFail: QUIT ;%{PE}
+chk_pos_xyzabc_(XPickPos, 0, 0, LimitUp, LimitDown, ChkStatus1, 3) 
+;ENDFOLD
+;FOLD PLC.RequestToContinue ;%{PE}
+req_to_continue_()
+;ENDFOLD
+;FOLD PLC.PathSegment IN Segment Nr: 36 ;%{PE}
+path_segment_(36)
+;ENDFOLD
+;FOLD SPTP P1 CONT Vel=100 % PDAT2 Tool[1] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=P1; Kuka.BlendingEnabled=True; Kuka.MoveDataPtpName=PDAT2; Kuka.VelocityPtp=100; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP XP1 WITH $VEL_AXIS[1] = SVEL_JOINT(100.0), $TOOL = STOOL2(FP1), $BASE = SBASE(FP1.BASE_NO), $IPO_MODE = SIPO_MODE(FP1.IPO_FRAME), $LOAD = SLOAD(FP1.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PPDAT2), $APO = SAPO_PTP(PPDAT2), $GEAR_JERK[1] = SGEAR_JERK(PPDAT2), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0) C_Spl
+;ENDFOLD
+;FOLD SLIN PickPosUp CONT Vel=1.5 m/s CPDAT3 Tool[1] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=PickPosUp; Kuka.BlendingEnabled=True; Kuka.MoveDataName=CPDAT3; Kuka.VelocityPath=1.5; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SLIN
+;ENDFOLD
+SLIN XPickPosUp WITH $VEL = SVEL_CP(1.5, , LCPDAT3), $TOOL = STOOL2(FPickPosUp), $BASE = SBASE(FPickPosUp.BASE_NO), $IPO_MODE = SIPO_MODE(FPickPosUp.IPO_FRAME), $LOAD = SLOAD(FPickPosUp.TOOL_NO), $ACC = SACC_CP(LCPDAT3), $ORI_TYPE = SORI_TYP(LCPDAT3), $APO = SAPO(LCPDAT3), $JERK = SJERK(LCPDAT3), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0) C_Spl
+;ENDFOLD
+servo01_ctrl_(#WAITING)
+;Move To Pick Pos
+;FOLD SLIN PickPos Vel=0.6 m/s CPDAT2 Tool[1] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=PickPos; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT2; Kuka.VelocityPath=0.6; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SLIN
+;ENDFOLD
+SLIN XPickPos WITH $VEL = SVEL_CP(0.6, , LCPDAT2), $TOOL = STOOL2(FPickPos), $BASE = SBASE(FPickPos.BASE_NO), $IPO_MODE = SIPO_MODE(FPickPos.IPO_FRAME), $LOAD = SLOAD(FPickPos.TOOL_NO), $ACC = SACC_CP(LCPDAT2), $ORI_TYPE = SORI_TYP(LCPDAT2), $APO = SAPO(LCPDAT2), $JERK = SJERK(LCPDAT2), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0)
+;ENDFOLD
+;Mag Ctrl On
+mag_tool_ctrl_(#ON,,500)
+;FOLD PLC.RequestToContinue ;%{PE}
+req_to_continue_()
+;ENDFOLD
+;FOLD PLC.PathSegment IN Segment Nr: 37 ;%{PE}
+path_segment_(37)
+;ENDFOLD
+;FOLD SLIN PickPosRUp CONT Vel=0.8 m/s CPDAT4 Tool[1] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=PickPosRUp; Kuka.BlendingEnabled=True; Kuka.MoveDataName=CPDAT4; Kuka.VelocityPath=0.8; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SLIN
+;ENDFOLD
+SLIN XPickPosRUp WITH $VEL = SVEL_CP(0.8, , LCPDAT4), $TOOL = STOOL2(FPickPosRUp), $BASE = SBASE(FPickPosRUp.BASE_NO), $IPO_MODE = SIPO_MODE(FPickPosRUp.IPO_FRAME), $LOAD = SLOAD(FPickPosRUp.TOOL_NO), $ACC = SACC_CP(LCPDAT4), $ORI_TYPE = SORI_TYP(LCPDAT4), $APO = SAPO(LCPDAT4), $JERK = SJERK(LCPDAT4), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0) C_Spl
+;ENDFOLD
+;FOLD PLC.RequestToContinue ;%{PE}
+req_to_continue_()
+;ENDFOLD
+;FOLD PLC.PathSegment IN Segment Nr: 38 ;%{PE}
+path_segment_(38)
+;ENDFOLD
+;FOLD SPTP P2 CONT Vel=100 % PDAT3 Tool[1] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=P2; Kuka.BlendingEnabled=True; Kuka.MoveDataPtpName=PDAT3; Kuka.VelocityPtp=100; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP XP2 WITH $VEL_AXIS[1] = SVEL_JOINT(100.0), $TOOL = STOOL2(FP2), $BASE = SBASE(FP2.BASE_NO), $IPO_MODE = SIPO_MODE(FP2.IPO_FRAME), $LOAD = SLOAD(FP2.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PPDAT3), $APO = SAPO_PTP(PPDAT3), $GEAR_JERK[1] = SGEAR_JERK(PPDAT3), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0) C_Spl
+;ENDFOLD
+;FOLD PLC.PathSegment IN Segment Nr: 39 ;%{PE}
+path_segment_(39)
+;ENDFOLD
+END

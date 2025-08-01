@@ -1,0 +1,57 @@
+&ACCESS RO2
+&COMMENT App128 Motion
+DEFDAT  SBT_COMM128_MOTION
+;***********************************************************
+; 
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+; 
+; file Name: sbt_comm128_motion.dat
+; 
+; Description:
+;   Language             ==   KRL for KUKA ROBOT
+;   Date                 ==   2022 - 02 - 26
+;   Modification Data    ==   2022 - 02 - 26
+; 
+; Author: speedbot
+; 
+; Version: 1.0
+;***********************************************************
+
+STRUC drv_pnt_t INT MoveId,CHAR MovType,ProcessType,Acc,Smoot,REAL Velocity,INT PrcoParm1,PrcoParm2,REAL PrcoParm3,E6AXIS Point
+
+STRUC drv_pack_t pack_head_t DrvHead,drv_pnt_t Point,CHAR Io[8],pack_tail_t DrvTail
+
+STRUC drv_ack_t pack_head_t DrvHead,INT Ack,pack_tail_t DrvTail
+
+DECL INT Status=0
+DECL INT Offset=24
+
+DECL drv_pack_t CtrlPackData
+DECL drv_ack_t CtrlAckData
+
+DECL INT PackErrorId=20001
+
+DECL CHAR SendPackages[1025]
+DECL CHAR RecvPackages[1025]
+
+DECL INT TempInt=100
+DECL REAL TempReal=0.0
+
+DECL INT ParamType=2
+DECL REAL Params[13]
+Params[1]=0.0
+Params[2]=0.0
+Params[3]=0.0
+Params[4]=0.0
+Params[5]=0.0
+Params[6]=0.0
+Params[7]=0.0
+Params[8]=0.0
+Params[9]=0.0
+Params[10]=0.0
+Params[11]=0.0
+Params[12]=0.0
+Params[13]=0.0
+
+
+ENDDAT

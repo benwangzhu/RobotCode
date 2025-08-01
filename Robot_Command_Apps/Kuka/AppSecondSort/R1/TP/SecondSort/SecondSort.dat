@@ -1,0 +1,52 @@
+&access RP
+&comment SecondSort 250227
+defdat SecondSort 
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: SecondSort.dat
+; 
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 28
+;   Modification Data    ==   2022 - 06 - 28
+; 
+; Author: speedbot
+; 
+; Version: 1.0
+;***********************************************************
+; second get queue
+decl int CopyConv = 0
+decl int CopyState = 0
+decl part_dat_t PartData
+
+; second wpos
+
+DECL BOOL PartPresent[4]
+PartPresent[1] = false
+PartPresent[2] = false
+PartPresent[3] = false
+PartPresent[4] = false
+
+decl frame PartFrame
+decl e6pos CurWaitPos
+
+; second sr
+decl state_t State
+DECL modus_t mode
+decl int Offset = 0
+decl int j, k
+decl char Msg[128]
+decl bool PartFind = false
+decl char SndErrNo = 0
+decl part_dat_t SensorPack
+
+decl bool Res
+
+const bool DEBUG = TRUE
+
+enddat
+
+
+

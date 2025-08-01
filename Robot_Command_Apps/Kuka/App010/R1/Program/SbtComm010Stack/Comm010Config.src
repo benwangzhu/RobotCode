@@ -1,0 +1,55 @@
+&ACCESS RVO1
+&COMMENT Comm010 Config
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\SbtComm010Stack
+DEF Comm010Config( )
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+;FOLD Basic.SetBusCommTimeout IN Timeout: -1 ms ;%{PE}
+BusTimeout = -1
+;ENDFOLD
+;FOLD SbtComm010.FsConfig IN Fs Id: 1, IN Max: Max1, IN Min: Min1 ;%{PE}
+Comm010LimUp[1] = Max1
+Comm010LimDown[1] = Min1
+;ENDFOLD
+;FOLD SbtComm010.FsConfig IN Fs Id: 2, IN Max: Max2, IN Min: Min2 ;%{PE}
+Comm010LimUp[2] = Max2
+Comm010LimDown[2] = Min2
+;ENDFOLD
+;FOLD SbtComm010.FsConfig IN Fs Id: 3, IN Max: Max3, IN Min: Min3 ;%{PE}
+Comm010LimUp[3] = Max3
+Comm010LimDown[3] = Min3
+;ENDFOLD
+;FOLD SbtComm010.FsConfig IN Fs Id: 4, IN Max: Max4, IN Min: Min4 ;%{PE}
+Comm010LimUp[4] = Max4
+Comm010LimDown[4] = Min4
+;ENDFOLD
+;FOLD SbtComm010.FsConfig IN Fs Id: 5, IN Max: Max5, IN Min: Min5 ;%{PE}
+Comm010LimUp[5] = Max5
+Comm010LimDown[5] = Min5
+;ENDFOLD
+;FOLD SbtComm010.FsConfig IN Fs Id: 6, IN Max: Max6, IN Min: Min6 ;%{PE}
+Comm010LimUp[6] = Max6
+Comm010LimDown[6] = Min6
+;ENDFOLD
+;FOLD SbtComm010.FsConfig IN Fs Id: 7, IN Max: Max7, IN Min: Min7 ;%{PE}
+Comm010LimUp[7] = Max7
+Comm010LimDown[7] = Min7
+;ENDFOLD
+;FOLD SbtComm010.FsConfig IN Fs Id: 8, IN Max: Max8, IN Min: Min8 ;%{PE}
+Comm010LimUp[8] = Max8
+Comm010LimDown[8] = Min8
+;ENDFOLD
+
+
+END

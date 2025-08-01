@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--For an example how to add menu entries for UserTech InlineForms see file C:\KRC\TP\UserTech\SmartHMI\SmartHMI.exe.UserTech.InlineForms.config-->
+<KukaTechDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	
+	<!-- ===================================================================================== -->
+	<!-- =============================== MixSort ========================================== -->
+	<!-- ===================================================================================== -->
+	<Application Name="MixSort" SOT="FALSE" SOC="TRUE">							
+		<!-- ================================ Global Data Type ========================================= -->
+				
+		<Param Name="x" ShortName="Vector X" ShortCut="" Unit="mm" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-1000000.0" Max="1000000.0" Step="100.0" Autolimit="TRUE" />
+		</Param>
+		<Param Name="y" ShortName="Vector Y" ShortCut="" Unit="mm" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-1000000.0" Max="1000000.0" Step="100.0" Autolimit="TRUE" />
+		</Param>
+		<Param Name="z" ShortName="Vector Z" ShortCut="" Unit="mm" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="-1000000.0" Max="1000000.0" Step="100.0" Autolimit="TRUE" />
+		</Param>
+
+		<Param Name="PL_Max" ShortName="Max" ShortCut="" Unit="TOOL" Var="vector_t" Enable="">
+			<Value Type="FREE" Default="_" />
+		</Param>
+		<Param Name="Max" ShortName="IN Max: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="Max" />
+		</Param>
+		<PList Name="Max" Param="Max">
+			<Val>x</Val>
+			<Val>y</Val>
+			<Val>z</Val>
+		</PList>
+
+		<Param Name="PL_Min" ShortName="Min" ShortCut="" Unit="TOOL" Var="vector_t" Enable="">
+			<Value Type="FREE" Default="_" />
+		</Param>
+		<Param Name="Min" ShortName="IN Min: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="Min" />
+		</Param>
+		<PList Name="Min" Param="Min">
+			<Val>x</Val>
+			<Val>y</Val>
+			<Val>z</Val>
+		</PList>
+
+
+		<!-- ================================ Global Script ========================================= -->
+
+		<!-- ================================ MixSortConfig ========================================= -->
+		<Param Name="RobId" ShortName="IN Robot Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="100" Step="1" Autolimit="" />
+		</Param>
+		<Param Name="NumAxis" ShortName="IN Num Axis: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="6" Min="6" Max="13" Step="1" Autolimit="" />
+		</Param>
+		<Param Name="NumPlPoint" ShortName="IN Num PlacePoint: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="12" Step="1" Autolimit="" />
+		</Param>
+		<Param Name="EyeInHand" ShortName="IN Eye In Hand: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="BOOL" Default="TRUE">
+				<False Disp="EyeToHand" />
+				<True Disp="EyeInHand" />
+			</Value>
+		</Param>
+		<Param Name="BoxOrConv" ShortName="IN Box Or Conv: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="BOOL" Default="TRUE">
+				<False Disp="Conv" />
+				<True Disp="Box" />
+			</Value>
+		</Param>
+
+		<Fold Name="MixSortConfigFold">									
+			<Line>MixPkCfg.RobotId = %RobId/</Line>		
+			<Line>MixPkCfg.NumAxis = %NumAxis/</Line>		
+			<Line>MixPkCfg.NumPlPoint = %NumPlPoint/</Line>		
+			<Line>MixPkCfg.EyeInHand = %EyeInHand/</Line>		
+			<Line>MixPkCfg.BoxOrConv = %BoxOrConv/</Line>		
+		</Fold>
+		<InlineForm Name="MixSortConfig" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="MixSortConfigFold" />	
+			<PRM Name="RobId" />
+			<PRM Name="NumAxis" />
+			<PRM Name="NumPlPoint" />									
+			<PRM Name="EyeInHand" />									
+			<PRM Name="BoxOrConv" />									
+		</InlineForm>
+
+		<!-- ================================ PlaceConfig ========================================= -->
+		<Param Name="PlaceId" ShortName="IN Place Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="12" Step="1" Autolimit="" />
+		</Param>
+		<Param Name="PlaceUpDst" ShortName="IN PlaceUpDst: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0" Min="-1000000" Max="1000000" Step="100.0" Autolimit="" />
+		</Param>
+		<Param Name="PlaceE7Pos" ShortName="IN PlaceE7Pos: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="0" Min="-1000000" Max="1000000" Step="100.0" Autolimit="" />
+		</Param>
+		
+		<Fold Name="PlaceConfigFold">		
+			<Line>BoxCfg[%PlaceId/].PlaceToolNo = 1</Line>		
+			<Line>BoxCfg[%PlaceId/].PlaceUpDst = %PlaceUpDst/</Line>		
+			<Line>BoxCfg[%PlaceId/].PlaceE7Pos = %PlaceE7Pos/</Line>		
+			<Line>BoxCfg[%PlaceId/].PlMaxData = %Max/</Line>		
+			<Line>BoxCfg[%PlaceId/].PlMinData = %Min/</Line>		
+		</Fold>
+		<InlineForm Name="PlaceConfig" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="PlaceConfigFold" />
+			<PRM Name="PlaceId" />
+			<PRM Name="PlaceUpDst" />
+			<PRM Name="PlaceE7Pos" />									
+			<PRM Name="Max" />									
+			<PRM Name="Min" />									
+		</InlineForm>
+
+		<!-- ================================ DropConfig ========================================= -->
+		<Param Name="DropId" ShortName="IN Drop Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="12" Step="1" Autolimit="" />
+		</Param>
+		<Param Name="PlOrtMode" ShortName="IN Ort Mode: " ShortCut="" Unit="" Var="" Enable="">
+			<List SelectedItem="">
+               <Item Disp="+X" Key="1" />
+               <Item Disp="+Y" Key="2" />
+               <Item Disp="-X" Key="-1" />
+               <Item Disp="-Y" Key="-2" />
+			</List>
+		</Param>
+		<Param Name="PlMaxOfsOrt" ShortName="IN PlMaxOfsOrt: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="200" Min="-1000000" Max="1000000" Step="50.0" Autolimit="" />
+		</Param>
+		<Param Name="PlMinOfsOrt" ShortName="IN PlMinOfsOrt: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="-200" Min="-1000000" Max="1000000" Step="50.0" Autolimit="" />
+		</Param>
+		
+		<Fold Name="DropConfigFold">		
+			<Line>ConvCfg[%DropId/].PlOrtMode = %PlOrtMode/</Line>		
+			<Line>ConvCfg[%DropId/].PlMaxOfsOrt = %PlMaxOfsOrt/</Line>		
+			<Line>ConvCfg[%DropId/].PlMinOfsOrt = %PlMinOfsOrt/</Line>		
+		</Fold>
+		<InlineForm Name="DropConfig" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="DropConfigFold" />
+			<PRM Name="DropId" />
+			<PRM Name="PlOrtMode" />
+			<PRM Name="PlMaxOfsOrt" />									
+			<PRM Name="PlMinOfsOrt" />									
+		</InlineForm>
+
+		<!-- ================================ ExtAxisConfig ========================================= -->
+		<Param Name="E7Coordinate" ShortName="IN Coordinate Mode: " ShortCut="" Unit="" Var="" Enable="">
+			<List SelectedItem="">
+               <Item Disp="+X" Key="1" />
+               <Item Disp="+Y" Key="2" />
+			</List>
+		</Param>
+		
+		<Fold Name="ExtAxisConfigFold">		
+			<Line>MixPkCfg.ExtCfg.E7Coordinate = %E7Coordinate/ </Line>		
+			<Line>MixPkCfg.ExtCfg.E7UpLim = $SOFTP_END[7] - 20 </Line>		
+			<Line>MixPkCfg.ExtCfg.E7DwLim = $SOFTN_END[7] + 20 </Line>		
+		</Fold>
+		<InlineForm Name="ExtAxisConfig" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="ExtAxisConfigFold" />
+			<PRM Name="E7Coordinate" />
+		</InlineForm>
+
+		<!-- ================================ PictureConfig ========================================= -->
+
+		<Param Name="RefPoint" ShortName="OUT Ref Dir: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="P1" />
+		</Param>
+	
+		<Script Name="DeclRefPoint">
+			<SetVar Fullpath="$ACT_TOOL" Value="0" />
+			<SetVar Fullpath="$TOOL" Value="$NULLFRAME" />
+			<SetVar Fullpath="$ACT_BASE" Value="0" />
+			<SetVar Fullpath="$BASE" Value="$NULLFRAME" />
+			<ShowVar Fullpath="$POS_ACT" Param="ActPos" />
+			<Redecl Path="%MODULE/" Declaration= "DECL E6POS X%RefPoint/=%ActPos/" />
+			<Message Text="Point X%RefPoint/ has been modified " />
+		</Script>
+
+		<Script Name="TouchRefPoint">
+			<Switch Dialog="TRUE" Condition="RECORD REF PICTURE POINT?">
+				<Case Value="YES" Do="DeclRefPoint" />
+				<Case Value="NO" Do="NOTHING" />
+			</Switch>
+		</Script>
+
+		<Script Name="ExistRefPoint">
+			<Switch Dialog="FALSE" Condition="ISCHANGE">
+				<Case Value="FALSE" Do="DeclRefPoint" />
+				<Case Value="TRUE" Do="NOTHING" />
+			</Switch>
+		</Script>
+
+		<Param Name="PtMinDist" ShortName="IN PtMinDist: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="REAL" Default="1400" Min="-1000000" Max="1000000" Step="50.0" Autolimit="" />
+		</Param>
+
+		<Fold Name="PictureConfigFold">	
+			<Line>MixPkCfg.PictCfg.RefPictPos = XRefPoint </Line>		
+			<Line>MixPkCfg.PictCfg.PtRlE7Pos = ($SOFTP_END[7] - $SOFTN_END[7]) / 2.0 </Line>		
+			<Line>MixPkCfg.PictCfg.PtMinDist = %PtMinDist/ </Line>		
+			<Line>MixPkCfg.PictCfg.PtMaxData = %Max/ </Line>		
+			<Line>MixPkCfg.PictCfg.PtMinData = %Min/ </Line>		
+		</Fold>
+		<InlineForm Name="PictureConfig" IlfType="" Style="" Focus="" Spline="" OnAccept="ExistRefPoint" OnTouchUp="TouchRefPoint" OnOpen="" > 		
+			<FLD Name="PictureConfigFold" />
+			<PRM Name="RefPoint" />
+			<PRM Name="PtMinDist" />
+			<PRM Name="Max" />
+			<PRM Name="Min" />
+		</InlineForm>
+
+		<!-- ================================ PickConfig ========================================= -->
+		<Fold Name="PickConfigFold">		
+			<Line>MixPkCfg.PickCfg.PickToolNo = 1 </Line>		
+			<Line>MixPkCfg.PickCfg.PkMaxData = %Max/ </Line>		
+			<Line>MixPkCfg.PickCfg.PkMinData = %Min/ </Line>		
+		</Fold>
+		<InlineForm Name="PickConfig" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="PickConfigFold" />
+			<PRM Name="Max" />
+			<PRM Name="Min" />
+		</InlineForm>
+
+		<!-- ================================ MixSortSr ========================================= -->
+		<Fold Name="MixSortSrFold">									
+			<Line>mixsort_sr_inte()</Line>		
+		</Fold>
+		<InlineForm Name="MixSortSr" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="MixSortSrFold" />								
+		</InlineForm>
+
+		<!-- ================================ EdgPicture ========================================= -->
+		<Fold Name="EdgPictureFold">									
+			<Line>mixsort_edg_picture()</Line>		
+		</Fold>
+		<InlineForm Name="EdgPicture" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="EdgPictureFold" />								
+		</InlineForm>
+
+		<!-- ================================ GetPicturePos ========================================= -->
+		<Fold Name="GetPicturePosFold">									
+			<Line>mixsort_get_picture()</Line>		
+		</Fold>
+		<InlineForm Name="GetPicturePos" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="GetPicturePosFold" />								
+		</InlineForm>
+
+		<!-- ================================ LtnPicture ========================================= -->
+		<Fold Name="LtnPictureFold">									
+			<Line>mixsort_get_picture()</Line>		
+		</Fold>
+		<InlineForm Name="LtnPicture" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="LtnPictureFold" />								
+		</InlineForm>
+
+		<!-- ================================ LtnPicture ========================================= -->
+		<Fold Name="LtnPictureFold">									
+			<Line>mixsort_ltn_picture()</Line>		
+		</Fold>
+		<InlineForm Name="LtnPicture" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="LtnPictureFold" />								
+		</InlineForm>
+
+		<!-- ================================ GetData ========================================= -->
+		<Fold Name="GetDataFold">									
+			<Line>mixsort_get_data()</Line>		
+		</Fold>
+		<InlineForm Name="GetData" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="GetDataFold" />								
+		</InlineForm>
+
+		<!-- ================================ GetTask ========================================= -->
+		<Fold Name="GetTaskFold">									
+			<Line>mixsort_get_task()</Line>		
+		</Fold>
+		<InlineForm Name="GetTask" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="GetTaskFold" />								
+		</InlineForm>
+	</Application>
+</KukaTechDescription>
+<!--checksum 45498028524 -->

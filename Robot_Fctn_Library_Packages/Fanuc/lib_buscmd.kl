@@ -1,0 +1,1867 @@
+program lib_buscmd
+--***********************************************************
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- file Name: lib_buscmd
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2023 - 09 - 25
+--   Modification Data    ==   2023 - 09 - 25
+--
+-- Author: speedbot
+--
+-- Version: 1.1
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+-- 2023 - 09 - 25 ++ bus_cmd001_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd002_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd003_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd004_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd005_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd006_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd007_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd008_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd009_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd010_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd011_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd012_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd013_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd014_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd015_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd016_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd017_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd018_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd019_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd020_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd021_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd022_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd023_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd024_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd025_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd026_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd027_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd028_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd029_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd030_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd031_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd032_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd033_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd034_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd035_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd036_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd037_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd038_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd039_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd040_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd041_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd042_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd043_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd044_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd045_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd046_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd047_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd048_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd049_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd050_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd051_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd052_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd053_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd054_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd055_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd056_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd057_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd058_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd059_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd060_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd061_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd062_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd063_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd064_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd065_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd066_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd067_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd068_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd069_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd070_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd071_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd072_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd073_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd074_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd075_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd076_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd077_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd078_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd079_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd080_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd081_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd082_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd083_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd084_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd085_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd086_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd087_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd088_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd089_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd090_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd091_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd092_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd093_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd094_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd095_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd096_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd097_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd098_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd099_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd100_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd101_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd102_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd103_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd104_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd105_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd106_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd107_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd108_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd109_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd110_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd111_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd112_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd113_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd114_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd115_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd116_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd117_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd118_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd119_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd120_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd121_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd122_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd123_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd124_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd125_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd126_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd127_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd128_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd129_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd130_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd131_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd132_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd133_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd134_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd135_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd136_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd137_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd138_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd139_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd140_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd141_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd142_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd143_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd144_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd145_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd146_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd147_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd148_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd149_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd150_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd151_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd152_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd153_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd154_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd155_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd156_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd157_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd158_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd159_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd160_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd161_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd162_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd163_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd164_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd165_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd166_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd167_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd168_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd169_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd170_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd171_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd172_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd173_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd174_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd175_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd176_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd177_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd178_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd179_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd180_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd181_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd182_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd183_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd184_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd185_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd186_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd187_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd188_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd189_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd190_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd191_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd192_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd193_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd194_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd195_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd196_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd197_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd198_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd199_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd200_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd201_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd202_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd203_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd204_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd205_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd206_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd207_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd208_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd209_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd210_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd211_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd212_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd213_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd214_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd215_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd216_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd217_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd218_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd219_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd220_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd221_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd222_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd223_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd224_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd225_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd226_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd227_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd228_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd229_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd230_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd231_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd232_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd233_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd234_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd235_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd236_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd237_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd238_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd239_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd240_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd241_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd242_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd243_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd244_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd245_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd246_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd247_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd248_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd249_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd250_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd251_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd252_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd253_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd254_() ==> integer 
+--
+-- 2023 - 09 - 25 ++ bus_cmd255_() ==> integer 
+--
+%nolockgroup
+%nobusylamp
+%nopause = tpenable + command + error
+%comment = 'Bus Cmd 231128'
+
+%include kliotyps
+%include include/lib_transform_t
+%include include/lib_busio_t
+%include include/lib_buscmd_t
+%include include/lib_logs_t
+%include include/lib_busio_h
+%include include/lib_buscmd_h
+%include include/lib_string_h
+%include include/lib_motion_h
+%include include/lib_logs_h
+
+routine buscmd_wo__(BusCmdId : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t) : integer     from lib_buscmd 
+
+routine buscmd_ro__(BusCmdId : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusTimeout : integer) : integer        from lib_buscmd 
+
+begin
+
+end lib_buscmd
+
+routine buscmd_wo__
+begin
+
+    select BusMstSel of
+    case(BUSCMD_MST):               -- ????????????
+
+        BusOut.RobMsgType = BusCmdId
+        bus_stell_(BusIn, BusOut)
+        return(OK)
+    case(BUSCMD_SLE):               -- ????????????
+        BusOut.MsgType = BusCmdId
+        bus_ftell_(BusIn, BusOut)
+        return(OK)
+    else:
+        post_err(CC_UALARM, 'bus cmd param2 err', 0, CC_ABORT)
+    endselect
+
+end buscmd_wo__
+
+routine buscmd_ro__
+var
+    Status            : integer
+begin
+    select BusMstSel of
+    case(BUSCMD_MST):               -- ????????????
+
+        -- ?? Command Id
+        --
+        Status = bus_rtell_(BusIn, BusOut, BusTimeout)
+
+        bus_sbyte_(BusOut.BusIoSt + 56, 0)
+        
+        if (not (Status = CC_SUCCESS)) then 
+
+            log_error_('MST', 'Read CMD[' + int_2str_(BusCmdId) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+        
+        if (not (BusIn.MsgType = BusCmdId)) then 
+
+            post_err(CC_UALARM, 'MST CMD[' + int_2str_(BusCmdId) + '] New CMD[' + int_2str_(BusIn.MsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+    case(BUSCMD_SLE):               -- ????????????
+
+        Status = bus_wtell_(BusIn, BusOut, BusTimeout)
+
+        if (not (Status = CC_SUCCESS)) then 
+
+            log_error_('SLE', 'Read CMD[' + int_2str_(BusCmdId) + '] Err[' + int_2str_(Status) + ']')
+            return(Status)
+        endif
+
+        if (not (BusIn.AgentMsgType = BusCmdId)) then 
+
+            post_err(CC_UALARM, 'SLE CMD[' + int_2str_(BusCmdId) + '] New CMD[' + int_2str_(BusIn.AgentMsgType) + '] Err', 0, CC_ABORT)
+            return(NG)
+        endif
+    else:
+        post_err(CC_UALARM, 'bus cmd param2 err', 0, CC_ABORT)
+    endselect
+
+    return(Status)
+end buscmd_ro__
+
+routine bus_cmd001_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        return(buscmd_wo__(BUS_CMD001, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+        --bus_sbyte_(BusOut.BusIoSt + 56, 0)
+        return(buscmd_ro__(BUS_CMD001, BusMstSel, BusIn, BusOut, BusTimeout))
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect
+    
+end bus_cmd001_
+
+routine bus_cmd002_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_ssint_(BusOut.BusIoSt + 80, BusData.Short03)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short04)
+        bus_sint_(BusOut.BusIoSt + 112, BusData.Int05)
+        bus_sint_(BusOut.BusIoSt + 144, BusData.Int06)
+        bus_sfloat2_(BusOut.BusIoSt + 176, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 208, BusData.Float08)
+        return(buscmd_wo__(BUS_CMD002, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD002, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData.Byte01 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Short03 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Short04 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Int05 = bus_gint_(IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Int06 = bus_gint_(IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Float07 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 176)
+            BusData.Float08 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 208)
+            return(OK)
+        endif
+
+        BusData.Byte01 = 0
+        BusData.Byte02 = 0
+        BusData.Short03 = 0
+        BusData.Short04 = 0
+        BusData.Int05 = 0
+        BusData.Int06 = 0
+        BusData.Float07 = 0.0
+        BusData.Float08 = 0.0
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect    
+end bus_cmd002_
+
+routine bus_cmd003_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_scartp_(BusOut.BusIoSt + 64, BusData, 6)
+        return(buscmd_wo__(BUS_CMD003, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD003, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData = bus_gcartp_(IO_DIN, BusIn.BusIoSt + 64, 6)
+            return(OK)
+        endif
+
+        BusData = null_pos_
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect
+    
+end bus_cmd003_
+
+routine bus_cmd009_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_scartp_(BusOut.BusIoSt + 64, BusData, 6)
+        return(buscmd_wo__(BUS_CMD009, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD009, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData = bus_gcartp_(IO_DIN, BusIn.BusIoSt + 64, 6)
+            return(OK)
+        endif
+
+        BusData = null_pos_
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect
+    
+end bus_cmd009_
+
+routine bus_cmd010_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_scartp_(BusOut.BusIoSt + 64, BusData, 6)
+        return(buscmd_wo__(BUS_CMD010, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD010, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData = bus_gcartp_(IO_DIN, BusIn.BusIoSt + 64, 6)
+            return(OK)
+        endif
+        BusData = null_pos_
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect
+    
+end bus_cmd010_
+
+routine bus_cmd011_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_scartp_(BusOut.BusIoSt + 64, BusData, 6)
+        return(buscmd_wo__(BUS_CMD011, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD011, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData = bus_gcartp_(IO_DIN, BusIn.BusIoSt + 64, 6)
+            return(OK)
+        endif
+
+        BusData = null_pos_
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect
+    
+end bus_cmd011_
+
+routine bus_cmd012_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_ssint_(BusOut.BusIoSt + 80, BusData.Short03)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short04)
+        bus_sint_(BusOut.BusIoSt + 112, BusData.Int05)
+        bus_sint_(BusOut.BusIoSt + 144, BusData.Int06)
+        bus_sfloat2_(BusOut.BusIoSt + 176, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 208, BusData.Float08)
+        return(buscmd_wo__(BUS_CMD012, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD012, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData.Byte01 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Short03 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Short04 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Int05 = bus_gint_(IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Int06 = bus_gint_(IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Float07 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 176)
+            BusData.Float08 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 208)
+            return(OK)
+        endif
+
+        BusData.Byte01 = 0
+        BusData.Byte02 = 0
+        BusData.Short03 = 0
+        BusData.Short04 = 0
+        BusData.Int05 = 0
+        BusData.Int06 = 0
+        BusData.Float07 = 0.0
+        BusData.Float08 = 0.0
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect    
+end bus_cmd012_
+
+routine bus_cmd013_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_ssint_(BusOut.BusIoSt + 80, BusData.Short03)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short04)
+        bus_sint_(BusOut.BusIoSt + 112, BusData.Int05)
+        bus_sint_(BusOut.BusIoSt + 144, BusData.Int06)
+        bus_sfloat2_(BusOut.BusIoSt + 176, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 208, BusData.Float08)
+        return(buscmd_wo__(BUS_CMD013, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD013, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData.Byte01 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Short03 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Short04 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Int05 = bus_gint_(IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Int06 = bus_gint_(IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Float07 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 176)
+            BusData.Float08 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 208)
+            return(OK)
+        endif
+
+        BusData.Byte01 = 0
+        BusData.Byte02 = 0
+        BusData.Short03 = 0
+        BusData.Short04 = 0
+        BusData.Int05 = 0
+        BusData.Int06 = 0
+        BusData.Float07 = 0.0
+        BusData.Float08 = 0.0
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect    
+end bus_cmd013_
+
+routine bus_cmd014_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_ssint_(BusOut.BusIoSt + 80, BusData.Short03)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short04)
+        bus_sint_(BusOut.BusIoSt + 112, BusData.Int05)
+        bus_sint_(BusOut.BusIoSt + 144, BusData.Int06)
+        bus_sfloat2_(BusOut.BusIoSt + 176, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 208, BusData.Float08)
+        return(buscmd_wo__(BUS_CMD014, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD014, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData.Byte01 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Short03 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Short04 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Int05 = bus_gint_(IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Int06 = bus_gint_(IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Float07 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 176)
+            BusData.Float08 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 208)
+            return(OK)
+        endif
+
+        BusData.Byte01 = 0
+        BusData.Byte02 = 0
+        BusData.Short03 = 0
+        BusData.Short04 = 0
+        BusData.Int05 = 0
+        BusData.Int06 = 0
+        BusData.Float07 = 0.0
+        BusData.Float08 = 0.0
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect    
+end bus_cmd014_
+
+routine bus_cmd017_
+var
+    I                   : integer
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sfloat2_(BusOut.BusIoSt + 64, BusData.Float01)
+        bus_sfloat2_(BusOut.BusIoSt + 96, BusData.Float02)
+        bus_sfloat2_(BusOut.BusIoSt + 128, BusData.Float03)
+        bus_sfloat2_(BusOut.BusIoSt + 160, BusData.Float04)
+        bus_sfloat2_(BusOut.BusIoSt + 192, BusData.Float05)
+        bus_sfloat2_(BusOut.BusIoSt + 224, BusData.Float06)
+        bus_sfloat2_(BusOut.BusIoSt + 256, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 288, BusData.Float08)
+        bus_sfloat2_(BusOut.BusIoSt + 320, BusData.Float09)
+        bus_sfloat2_(BusOut.BusIoSt + 352, BusData.Float10)
+        bus_sfloat2_(BusOut.BusIoSt + 384, BusData.Float11)
+        bus_sfloat2_(BusOut.BusIoSt + 416, BusData.Float12)
+        bus_sint_(BusOut.BusIoSt + 448, BusData.Int13)
+        bus_sint_(BusOut.BusIoSt + 480, BusData.Int14)
+        
+        dout[BusOut.BusIoSt + 3] = false
+        dout[BusOut.BusIoSt + 4] = false
+        
+        return(buscmd_wo__(BUS_CMD017, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD017, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData.Float01 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Float02 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Float03 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 128)
+            BusData.Float04 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 160)
+            BusData.Float05 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 192)
+            BusData.Float06 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 224)
+            BusData.Float07 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 256)
+            BusData.Float08 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 288)
+            BusData.Float09 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 320)
+            BusData.Float10 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 352)
+            BusData.Float11 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 384)
+            BusData.Float12 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 416)
+            BusData.Int13   = bus_gint_(IO_DIN, BusIn.BusIoSt + 448)
+            BusData.Int14   = bus_gint_(IO_DIN, BusIn.BusIoSt + 480)
+            return(OK)
+        endif
+
+        BusData.Float01 = 0.0
+        BusData.Float02 = 0.0
+        BusData.Float03 = 0.0
+        BusData.Float04 = 0.0
+        BusData.Float05 = 0.0
+        BusData.Float06 = 0.0
+        BusData.Float07 = 0.0
+        BusData.Float08 = 0.0
+        BusData.Float09 = 0.0
+        BusData.Float10 = 0.0
+        BusData.Float11 = 0.0
+        BusData.Float12 = 0.0
+        BusData.Int13   = 0
+        BusData.Int14   = 0
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect
+    
+end bus_cmd017_
+
+routine bus_cmd018_
+var
+    I                   : integer
+begin
+    
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sfloat2_(BusOut.BusIoSt + 64, BusData.Float01)
+        bus_sfloat2_(BusOut.BusIoSt + 96, BusData.Float02)
+        bus_sfloat2_(BusOut.BusIoSt + 128, BusData.Float03)
+        bus_sfloat2_(BusOut.BusIoSt + 160, BusData.Float04)
+        bus_sfloat2_(BusOut.BusIoSt + 192, BusData.Float05)
+        bus_sfloat2_(BusOut.BusIoSt + 224, BusData.Float06)
+        bus_sfloat2_(BusOut.BusIoSt + 256, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 288, BusData.Float08)
+        bus_sfloat2_(BusOut.BusIoSt + 320, BusData.Float09)
+        bus_sfloat2_(BusOut.BusIoSt + 352, BusData.Float10)
+        bus_sfloat2_(BusOut.BusIoSt + 384, BusData.Float11)
+        bus_sfloat2_(BusOut.BusIoSt + 416, BusData.Float12)
+        bus_sint_(BusOut.BusIoSt + 448, BusData.Int13)
+        bus_sint_(BusOut.BusIoSt + 480, BusData.Int14)
+        
+        dout[BusOut.BusIoSt + 3] = false
+        dout[BusOut.BusIoSt + 4] = false
+        
+        return(buscmd_wo__(BUS_CMD018, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD018, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData.Float01 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Float02 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Float03 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 128)
+            BusData.Float04 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 160)
+            BusData.Float05 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 192)
+            BusData.Float06 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 224)
+            BusData.Float07 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 256)
+            BusData.Float08 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 288)
+            BusData.Float09 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 320)
+            BusData.Float10 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 352)
+            BusData.Float11 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 384)
+            BusData.Float12 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 416)
+            BusData.Int13   = bus_gint_(IO_DIN, BusIn.BusIoSt + 448)
+            BusData.Int14   = bus_gint_(IO_DIN, BusIn.BusIoSt + 480)
+            return(OK)
+        endif
+
+        BusData.Float01 = 0.0
+        BusData.Float02 = 0.0
+        BusData.Float03 = 0.0
+        BusData.Float04 = 0.0
+        BusData.Float05 = 0.0
+        BusData.Float06 = 0.0
+        BusData.Float07 = 0.0
+        BusData.Float08 = 0.0
+        BusData.Float09 = 0.0
+        BusData.Float10 = 0.0
+        BusData.Float11 = 0.0
+        BusData.Float12 = 0.0
+        BusData.Int13   = 0
+        BusData.Int14   = 0
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect
+    
+end bus_cmd018_
+
+routine bus_cmd020_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_scartp_(BusOut.BusIoSt + 64, BusData, 6)
+        return(buscmd_wo__(BUS_CMD020, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD020, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData = bus_gcartp_(IO_DIN, BusIn.BusIoSt + 64, 6)
+            return(OK)
+        endif
+
+        BusData = null_pos_
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect
+    
+end bus_cmd020_
+
+routine bus_cmd021_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_ssint_(BusOut.BusIoSt + 80, BusData.Short03)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short04)
+        bus_sint_(BusOut.BusIoSt + 112, BusData.Int05)
+        bus_sint_(BusOut.BusIoSt + 144, BusData.Int06)
+        bus_sfloat2_(BusOut.BusIoSt + 176, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 208, BusData.Float08)
+        return(buscmd_wo__(BUS_CMD021, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD021, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData.Byte01 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Short03 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Short04 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Int05 = bus_gint_(IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Int06 = bus_gint_(IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Float07 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 176)
+            BusData.Float08 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 208)
+            return(OK)
+        endif
+
+        BusData.Byte01 = 0
+        BusData.Byte02 = 0
+        BusData.Short03 = 0
+        BusData.Short04 = 0
+        BusData.Int05 = 0
+        BusData.Int06 = 0
+        BusData.Float07 = 0.0
+        BusData.Float08 = 0.0
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect    
+end bus_cmd021_
+
+routine bus_cmd022_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_ssint_(BusOut.BusIoSt + 80, BusData.Short03)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short04)
+        bus_sint_(BusOut.BusIoSt + 112, BusData.Int05)
+        bus_sint_(BusOut.BusIoSt + 144, BusData.Int06)
+        bus_sfloat2_(BusOut.BusIoSt + 176, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 208, BusData.Float08)
+        return(buscmd_wo__(BUS_CMD022, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD022, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData.Byte01 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Short03 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Short04 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Int05 = bus_gint_(IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Int06 = bus_gint_(IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Float07 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 176)
+            BusData.Float08 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 208)
+            return(OK)
+        endif
+
+        BusData.Byte01 = 0
+        BusData.Byte02 = 0
+        BusData.Short03 = 0
+        BusData.Short04 = 0
+        BusData.Int05 = 0
+        BusData.Int06 = 0
+        BusData.Float07 = 0.0
+        BusData.Float08 = 0.0
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect    
+end bus_cmd022_
+
+routine bus_cmd026_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_ssint_(BusOut.BusIoSt + 80, BusData.Short03)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short04)
+        bus_sint_(BusOut.BusIoSt + 112, BusData.Int05)
+        bus_sint_(BusOut.BusIoSt + 144, BusData.Int06)
+        bus_sfloat2_(BusOut.BusIoSt + 176, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 208, BusData.Float08)
+        return(buscmd_wo__(BUS_CMD026, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD026, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData.Byte01 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Short03 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Short04 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Int05 = bus_gint_(IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Int06 = bus_gint_(IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Float07 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 176)
+            BusData.Float08 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 208)
+            return(OK)
+        endif
+
+        BusData.Byte01 = 0
+        BusData.Byte02 = 0
+        BusData.Short03 = 0
+        BusData.Short04 = 0
+        BusData.Int05 = 0
+        BusData.Int06 = 0
+        BusData.Float07 = 0.0
+        BusData.Float08 = 0.0
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect    
+end bus_cmd026_
+
+routine bus_cmd027_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_sbyte_(BusOut.BusIoSt + 80, BusData.Byte03)
+        bus_sbyte_(BusOut.BusIoSt + 88, BusData.Byte04)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short05)
+        bus_ssint_(BusOut.BusIoSt + 112, BusData.Short06)
+        bus_ssint_(BusOut.BusIoSt + 128, BusData.Short07)
+        bus_ssint_(BusOut.BusIoSt + 144, BusData.Short08)
+        bus_sint_(BusOut.BusIoSt + 160, BusData.Int09)
+        bus_sint_(BusOut.BusIoSt + 192, BusData.Int10)
+        bus_sint_(BusOut.BusIoSt + 224, BusData.Int11)
+        bus_sint_(BusOut.BusIoSt + 256, BusData.Int12)
+        bus_sfloat2_(BusOut.BusIoSt + 288, BusData.Float13)
+        bus_sfloat2_(BusOut.BusIoSt + 320, BusData.Float14)
+        bus_sfloat2_(BusOut.BusIoSt + 352, BusData.Float15)
+        bus_sfloat2_(BusOut.BusIoSt + 384, BusData.Float16)
+        return(buscmd_wo__(BUS_CMD027, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD027, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData.Byte01 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Byte03 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Byte04 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 88)
+            BusData.Short05 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Short06 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Short07 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 128)
+            BusData.Short08 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Int09 = bus_gint_(IO_DIN, BusIn.BusIoSt + 160)
+            BusData.Int10 = bus_gint_(IO_DIN, BusIn.BusIoSt + 192)
+            BusData.Int11 = bus_gint_(IO_DIN, BusIn.BusIoSt + 224)
+            BusData.Int12 = bus_gint_(IO_DIN, BusIn.BusIoSt + 256)
+            BusData.Float13 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 288)
+            BusData.Float14 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 320)
+            BusData.Float15 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 352)
+            BusData.Float16 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 384)
+            return(OK)
+        endif
+
+        BusData.Byte01 = 0
+        BusData.Byte02 = 0
+        BusData.Byte03 = 0
+        BusData.Byte04 = 0
+        BusData.Short05 = 0
+        BusData.Short06 = 0
+        BusData.Short07 = 0
+        BusData.Short08 = 0
+        BusData.Int09 = 0
+        BusData.Int10 = 0
+        BusData.Int11 = 0
+        BusData.Int12 = 0
+        BusData.Float13 = 0.0
+        BusData.Float14 = 0.0
+        BusData.Float15 = 0.0
+        BusData.Float16 = 0.0
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect    
+end bus_cmd027_
+
+routine bus_cmd129_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_scartp_(BusOut.BusIoSt + 64, BusData, 6)
+        return(buscmd_wo__(BUS_CMD129, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD129, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData = bus_gcartp_(IO_DIN, BusIn.BusIoSt + 64, 6)
+            return(OK)
+        endif
+
+        BusData = null_pos_
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect    
+end bus_cmd129_
+
+routine bus_cmd130_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sjoint_(BusOut.BusIoSt + 64, BusData, 6)
+        return(buscmd_wo__(BUS_CMD130, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD130, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData = bus_gjoint_(IO_DIN, BusIn.BusIoSt + 64, 6)
+            return(OK)
+        endif
+
+        BusData = null_pos_
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect
+
+end bus_cmd130_
+
+routine bus_cmd131_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sfloat2_(BusOut.BusIoSt + 64, BusData[1])
+        bus_sfloat2_(BusOut.BusIoSt + 96, BusData[2])
+        bus_sfloat2_(BusOut.BusIoSt + 128, BusData[3])
+        bus_sfloat2_(BusOut.BusIoSt + 160, BusData[4])
+        bus_sfloat2_(BusOut.BusIoSt + 192, BusData[5])
+        bus_sfloat2_(BusOut.BusIoSt + 224, BusData[6])
+        return(buscmd_wo__(BUS_CMD131, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD131, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData[1] = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 64)
+            BusData[2] = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 96)
+            BusData[3] = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 128)
+            BusData[4] = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 160)
+            BusData[5] = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 192)
+            BusData[6] = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 224)
+            return(OK)
+        endif
+
+        BusData[1] = 0.0
+        BusData[2] = 0.0
+        BusData[3] = 0.0
+        BusData[4] = 0.0
+        BusData[5] = 0.0
+        BusData[6] = 0.0
+        return(NG)
+
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect    
+end bus_cmd131_
+
+routine bus_cmd132_
+var
+    I                   : integer
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sfloat2_(BusOut.BusIoSt + 64, BusData.Float01)
+        bus_sfloat2_(BusOut.BusIoSt + 96, BusData.Float02)
+        bus_sfloat2_(BusOut.BusIoSt + 128, BusData.Float03)
+        bus_sfloat2_(BusOut.BusIoSt + 160, BusData.Float04)
+        bus_sfloat2_(BusOut.BusIoSt + 192, BusData.Float05)
+        bus_sfloat2_(BusOut.BusIoSt + 224, BusData.Float06)
+        bus_sfloat2_(BusOut.BusIoSt + 256, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 288, BusData.Float08)
+        bus_sfloat2_(BusOut.BusIoSt + 320, BusData.Float09)
+        bus_sfloat2_(BusOut.BusIoSt + 352, BusData.Float10)
+        bus_sfloat2_(BusOut.BusIoSt + 384, BusData.Float11)
+        bus_sfloat2_(BusOut.BusIoSt + 416, BusData.Float12)
+        bus_sint_(BusOut.BusIoSt + 448, BusData.Int13)
+        bus_sint_(BusOut.BusIoSt + 480, BusData.Int14)
+        return(buscmd_wo__(BUS_CMD132, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD132, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData.Float01 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Float02 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Float03 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 128)
+            BusData.Float04 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 160)
+            BusData.Float05 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 192)
+            BusData.Float06 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 224)
+            BusData.Float07 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 256)
+            BusData.Float08 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 288)
+            BusData.Float09 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 320)
+            BusData.Float10 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 352)
+            BusData.Float11 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 384)
+            BusData.Float12 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 416)
+            BusData.Int13   = bus_gint_(IO_DIN, BusIn.BusIoSt + 448)
+            BusData.Int14   = bus_gint_(IO_DIN, BusIn.BusIoSt + 480)
+            return(OK)
+        endif
+
+        BusData.Float01 = 0.0
+        BusData.Float02 = 0.0
+        BusData.Float03 = 0.0
+        BusData.Float04 = 0.0
+        BusData.Float05 = 0.0
+        BusData.Float06 = 0.0
+        BusData.Float07 = 0.0
+        BusData.Float08 = 0.0
+        BusData.Float09 = 0.0
+        BusData.Float10 = 0.0
+        BusData.Float11 = 0.0
+        BusData.Float12 = 0.0
+        BusData.Int13   = 0
+        BusData.Int14   = 0
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect
+    
+end bus_cmd132_
+
+routine bus_cmd133_
+var
+    I                   : integer
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sfloat2_(BusOut.BusIoSt + 64, BusData.Float01)
+        bus_sfloat2_(BusOut.BusIoSt + 96, BusData.Float02)
+        bus_sfloat2_(BusOut.BusIoSt + 128, BusData.Float03)
+        bus_sfloat2_(BusOut.BusIoSt + 160, BusData.Float04)
+        bus_sfloat2_(BusOut.BusIoSt + 192, BusData.Float05)
+        bus_sfloat2_(BusOut.BusIoSt + 224, BusData.Float06)
+        bus_sfloat2_(BusOut.BusIoSt + 256, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 288, BusData.Float08)
+        bus_sfloat2_(BusOut.BusIoSt + 320, BusData.Float09)
+        bus_sfloat2_(BusOut.BusIoSt + 352, BusData.Float10)
+        bus_sfloat2_(BusOut.BusIoSt + 384, BusData.Float11)
+        bus_sfloat2_(BusOut.BusIoSt + 416, BusData.Float12)
+        bus_sint_(BusOut.BusIoSt + 448, BusData.Int13)
+        bus_sint_(BusOut.BusIoSt + 480, BusData.Int14)
+        return(buscmd_wo__(BUS_CMD133, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD133, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData.Float01 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Float02 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Float03 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 128)
+            BusData.Float04 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 160)
+            BusData.Float05 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 192)
+            BusData.Float06 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 224)
+            BusData.Float07 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 256)
+            BusData.Float08 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 288)
+            BusData.Float09 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 320)
+            BusData.Float10 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 352)
+            BusData.Float11 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 384)
+            BusData.Float12 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 416)
+            BusData.Int13   = bus_gint_(IO_DIN, BusIn.BusIoSt + 448)
+            BusData.Int14   = bus_gint_(IO_DIN, BusIn.BusIoSt + 480)
+            return(OK)
+        endif
+
+        BusData.Float01 = 0.0
+        BusData.Float02 = 0.0
+        BusData.Float03 = 0.0
+        BusData.Float04 = 0.0
+        BusData.Float05 = 0.0
+        BusData.Float06 = 0.0
+        BusData.Float07 = 0.0
+        BusData.Float08 = 0.0
+        BusData.Float09 = 0.0
+        BusData.Float10 = 0.0
+        BusData.Float11 = 0.0
+        BusData.Float12 = 0.0
+        BusData.Int13   = 0
+        BusData.Int14   = 0
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect
+    
+end bus_cmd133_
+
+routine bus_cmd134_
+var
+    I                   : integer
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sint_(BusOut.BusIoSt + 64, BusData.Int01)
+        bus_sint_(BusOut.BusIoSt + 96, BusData.Int02)
+        bus_sfloat2_(BusOut.BusIoSt + 128, BusData.Float03)
+        bus_sfloat2_(BusOut.BusIoSt + 160, BusData.Float04)
+        bus_sfloat2_(BusOut.BusIoSt + 192, BusData.Float05)
+        bus_sfloat2_(BusOut.BusIoSt + 224, BusData.Float06)
+        bus_sfloat2_(BusOut.BusIoSt + 256, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 288, BusData.Float08)
+        bus_sfloat2_(BusOut.BusIoSt + 320, BusData.Float09)
+        bus_sfloat2_(BusOut.BusIoSt + 352, BusData.Float10)
+        bus_sfloat2_(BusOut.BusIoSt + 384, BusData.Float11)
+        bus_sfloat2_(BusOut.BusIoSt + 416, BusData.Float12)
+        bus_sfloat2_(BusOut.BusIoSt + 448, BusData.Float13)
+        bus_sfloat2_(BusOut.BusIoSt + 480, BusData.Float14)
+        return(buscmd_wo__(BUS_CMD134, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD134, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData.Int01 = bus_gint_(IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Int02 = bus_gint_(IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Float03 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 128)
+            BusData.Float04 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 160)
+            BusData.Float05 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 192)
+            BusData.Float06 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 224)
+            BusData.Float07 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 256)
+            BusData.Float08 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 288)
+            BusData.Float09 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 320)
+            BusData.Float10 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 352)
+            BusData.Float11 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 384)
+            BusData.Float12 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 416)
+            BusData.Float13 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 448)
+            BusData.Float14 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 480)
+            return(OK)
+        endif
+
+        BusData.Int01 = 0
+        BusData.Int02 = 0
+        BusData.Float03 = 0.0
+        BusData.Float04 = 0.0
+        BusData.Float05 = 0.0
+        BusData.Float06 = 0.0
+        BusData.Float07 = 0.0
+        BusData.Float08 = 0.0
+        BusData.Float09 = 0.0
+        BusData.Float10 = 0.0
+        BusData.Float11 = 0.0
+        BusData.Float12 = 0.0
+        BusData.Float13   = 0
+        BusData.Float14   = 0
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect
+    
+end bus_cmd134_
+
+routine bus_cmd137_
+var
+    I                   : integer
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        for I = 1 to array_len(BusData) do  
+            bus_sbyte_(BusOut.BusIoSt + 64 + 8 * (I - 1), BusData[I])
+        endfor
+        return(buscmd_wo__(BUS_CMD137, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD137, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            for I = 1 to array_len(BusData) do 
+                BusData[I] = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 64 + 8 * (I - 1))
+            endfor    
+            return(OK)
+        endif
+
+        for I = 1 to array_len(BusData) do  
+            BusData[I] = 0
+        endfor
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect
+    
+end bus_cmd137_
+
+routine bus_cmd145_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_ssint_(BusOut.BusIoSt + 80, BusData.Short03)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short04)
+        bus_sint_(BusOut.BusIoSt + 112, BusData.Int05)
+        bus_sint_(BusOut.BusIoSt + 144, BusData.Int06)
+        bus_sfloat2_(BusOut.BusIoSt + 176, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 208, BusData.Float08)
+        return(buscmd_wo__(BUS_CMD145, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD145, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData.Byte01 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Short03 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Short04 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Int05 = bus_gint_(IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Int06 = bus_gint_(IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Float07 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 176)
+            BusData.Float08 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 208)
+            return(OK)
+        endif
+
+        BusData.Byte01 = 0
+        BusData.Byte02 = 0
+        BusData.Short03 = 0
+        BusData.Short04 = 0
+        BusData.Int05 = 0
+        BusData.Int06 = 0
+        BusData.Float07 = 0.0
+        BusData.Float08 = 0.0
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect    
+end bus_cmd145_
+
+routine bus_cmd148_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_sbyte_(BusOut.BusIoSt + 72, BusData.Byte02)
+        bus_sbyte_(BusOut.BusIoSt + 80, BusData.Byte03)
+        bus_sbyte_(BusOut.BusIoSt + 88, BusData.Byte04)
+        bus_ssint_(BusOut.BusIoSt + 96, BusData.Short05)
+        bus_ssint_(BusOut.BusIoSt + 112, BusData.Short06)
+        bus_ssint_(BusOut.BusIoSt + 128, BusData.Short07)
+        bus_ssint_(BusOut.BusIoSt + 144, BusData.Short08)
+        bus_sint_(BusOut.BusIoSt + 160, BusData.Int09)
+        bus_sint_(BusOut.BusIoSt + 192, BusData.Int10)
+        bus_sint_(BusOut.BusIoSt + 224, BusData.Int11)
+        bus_sint_(BusOut.BusIoSt + 256, BusData.Int12)
+        bus_sfloat2_(BusOut.BusIoSt + 288, BusData.Float13)
+        bus_sfloat2_(BusOut.BusIoSt + 320, BusData.Float14)
+        bus_sfloat2_(BusOut.BusIoSt + 352, BusData.Float15)
+        bus_sfloat2_(BusOut.BusIoSt + 384, BusData.Float16)
+        return(buscmd_wo__(BUS_CMD148, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD148, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData.Byte01 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Byte02 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Byte03 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 80)
+            BusData.Byte04 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 88)
+            BusData.Short05 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 96)
+            BusData.Short06 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 112)
+            BusData.Short07 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 128)
+            BusData.Short08 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 144)
+            BusData.Int09 = bus_gint_(IO_DIN, BusIn.BusIoSt + 160)
+            BusData.Int10 = bus_gint_(IO_DIN, BusIn.BusIoSt + 192)
+            BusData.Int11 = bus_gint_(IO_DIN, BusIn.BusIoSt + 224)
+            BusData.Int12 = bus_gint_(IO_DIN, BusIn.BusIoSt + 256)
+            BusData.Float13 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 288)
+            BusData.Float14 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 320)
+            BusData.Float15 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 352)
+            BusData.Float16 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 384)
+            return(OK)
+        endif
+
+        BusData.Byte01 = 0
+        BusData.Byte02 = 0
+        BusData.Byte03 = 0
+        BusData.Byte04 = 0
+        BusData.Short05 = 0
+        BusData.Short06 = 0
+        BusData.Short07 = 0
+        BusData.Short08 = 0
+        BusData.Int09 = 0
+        BusData.Int10 = 0
+        BusData.Int11 = 0
+        BusData.Int12 = 0
+        BusData.Float13 = 0.0
+        BusData.Float14 = 0.0
+        BusData.Float15 = 0.0
+        BusData.Float16 = 0.0
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect    
+end bus_cmd148_
+
+routine bus_cmd151_
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sbyte_(BusOut.BusIoSt + 64, BusData.Byte01)
+        bus_ssint_(BusOut.BusIoSt + 72, BusData.Short02)
+        bus_ssint_(BusOut.BusIoSt + 88, BusData.Short03)
+        bus_ssint_(BusOut.BusIoSt + 104, BusData.Short04)
+        bus_sfloat2_(BusOut.BusIoSt + 120, BusData.Float05)
+        bus_sfloat2_(BusOut.BusIoSt + 152, BusData.Float06)
+        return(buscmd_wo__(BUS_CMD151, BusMstSel, BusIn, BusOut))
+    case(BUSCMD_READ):                  -- ????作
+
+        if buscmd_ro__(BUS_CMD151, BusMstSel, BusIn, BusOut, BusTimeout) = CC_SUCCESS then
+            BusData.Byte01 = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 64)
+            BusData.Short02 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 72)
+            BusData.Short03 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 88)
+            BusData.Short04 = bus_gsint_(IO_DIN, BusIn.BusIoSt + 104)
+            BusData.Float05 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 120)
+            BusData.Float06 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 152)
+            return(OK)
+        endif
+
+        BusData.Byte01 = 0
+        BusData.Short02 = 0
+        BusData.Short03 = 0
+        BusData.Short04 = 0
+        BusData.Float05 = 0.0
+        BusData.Float06 = 0.0
+        return(NG)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect    
+end bus_cmd151_
+
+routine bus_cmd254_
+var
+    I                   : integer
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sfloat2_(BusOut.BusIoSt + 64, BusData.Float01)
+        bus_sfloat2_(BusOut.BusIoSt + 96, BusData.Float02)
+        bus_sfloat2_(BusOut.BusIoSt + 128, BusData.Float03)
+        bus_sfloat2_(BusOut.BusIoSt + 160, BusData.Float04)
+        bus_sfloat2_(BusOut.BusIoSt + 192, BusData.Float05)
+        bus_sfloat2_(BusOut.BusIoSt + 224, BusData.Float06)
+        bus_sfloat2_(BusOut.BusIoSt + 256, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 288, BusData.Float08)
+        bus_sfloat2_(BusOut.BusIoSt + 320, BusData.Float09)
+        bus_sfloat2_(BusOut.BusIoSt + 352, BusData.Float10)
+        bus_sfloat2_(BusOut.BusIoSt + 384, BusData.Float11)
+        bus_sfloat2_(BusOut.BusIoSt + 416, BusData.Float12)
+        bus_sint_(BusOut.BusIoSt + 448, BusData.Int13)
+        bus_sint_(BusOut.BusIoSt + 480, BusData.Int14)
+
+        bus_sbyte_(BusOut.BusIoSt + 56, BUS_CMD254)
+
+        if (not dout[BusOut.BusIoSt + 3]) and (not dout[BusOut.BusIoSt + 4]) then 
+            dout[BusOut.BusIoSt + 3] = true
+            dout[BusOut.BusIoSt + 4] = false
+        else
+            dout[BusOut.BusIoSt + 3] = not (dout[BusOut.BusIoSt + 3])
+            dout[BusOut.BusIoSt + 4] = not (dout[BusOut.BusIoSt + 4])
+        endif
+
+        if dout[BusOut.BusIoSt + 3] then
+            wait for (din[BusIn.BusIoSt + 3] = true) and (din[BusIn.BusIoSt + 4] = false)
+        else
+            wait for (din[BusIn.BusIoSt + 3] = false) and (din[BusIn.BusIoSt + 4] = true)
+        endif
+        return(OK)
+    case(BUSCMD_READ):            
+
+        if (dout[BusOut.BusIoSt + 5]) and (not dout[BusOut.BusIoSt + 6]) then
+
+            wait for (din[BusIn.BusIoSt + 5] = false) and (din[BusIn.BusIoSt + 6] = true)
+        else
+        
+            wait for (din[BusIn.BusIoSt + 5] = true) and (din[BusIn.BusIoSt + 6] = false)
+        endif
+
+        BusData.Float01 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 64)
+        BusData.Float02 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 96)
+        BusData.Float03 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 128)
+        BusData.Float04 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 160)
+        BusData.Float05 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 192)
+        BusData.Float06 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 224)
+        BusData.Float07 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 256)
+        BusData.Float08 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 288)
+        BusData.Float09 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 320)
+        BusData.Float10 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 352)
+        BusData.Float11 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 384)
+        BusData.Float12 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 416)
+        BusData.Int13   = bus_gint_(IO_DIN, BusIn.BusIoSt + 448)
+        BusData.Int14   = bus_gint_(IO_DIN, BusIn.BusIoSt + 480)
+
+        dout[BusOut.BusIoSt + 5] = din[BusIn.BusIoSt + 5]
+        dout[BusOut.BusIoSt + 6] = din[BusIn.BusIoSt + 6]
+
+        return(OK)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect
+    
+end bus_cmd254_
+
+routine bus_cmd255_
+var
+    I                   : integer
+begin
+
+    select BusOperation of
+    case(BUSCMD_WRITE):                 -- ????作
+
+        bus_sfloat2_(BusOut.BusIoSt + 64, BusData.Float01)
+        bus_sfloat2_(BusOut.BusIoSt + 96, BusData.Float02)
+        bus_sfloat2_(BusOut.BusIoSt + 128, BusData.Float03)
+        bus_sfloat2_(BusOut.BusIoSt + 160, BusData.Float04)
+        bus_sfloat2_(BusOut.BusIoSt + 192, BusData.Float05)
+        bus_sfloat2_(BusOut.BusIoSt + 224, BusData.Float06)
+        bus_sfloat2_(BusOut.BusIoSt + 256, BusData.Float07)
+        bus_sfloat2_(BusOut.BusIoSt + 288, BusData.Float08)
+        bus_sfloat2_(BusOut.BusIoSt + 320, BusData.Float09)
+        bus_sfloat2_(BusOut.BusIoSt + 352, BusData.Float10)
+        bus_sfloat2_(BusOut.BusIoSt + 384, BusData.Float11)
+        bus_sfloat2_(BusOut.BusIoSt + 416, BusData.Float12)
+        bus_sint_(BusOut.BusIoSt + 448, BusData.Int13)
+        bus_sint_(BusOut.BusIoSt + 480, BusData.Int14)
+
+        bus_sbyte_(BusOut.BusIoSt + 56, BUS_CMD255)
+
+        if (not dout[BusOut.BusIoSt + 3]) and (not dout[BusOut.BusIoSt + 4]) then 
+            dout[BusOut.BusIoSt + 3] = true
+            dout[BusOut.BusIoSt + 4] = false
+        else
+            dout[BusOut.BusIoSt + 3] = not (dout[BusOut.BusIoSt + 3])
+            dout[BusOut.BusIoSt + 4] = not (dout[BusOut.BusIoSt + 4])
+        endif
+        return(OK)
+    case(BUSCMD_READ):                  -- ????作
+
+        BusData.Float01 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 64)
+        BusData.Float02 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 96)
+        BusData.Float03 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 128)
+        BusData.Float04 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 160)
+        BusData.Float05 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 192)
+        BusData.Float06 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 224)
+        BusData.Float07 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 256)
+        BusData.Float08 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 288)
+        BusData.Float09 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 320)
+        BusData.Float10 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 352)
+        BusData.Float11 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 384)
+        BusData.Float12 = bus_gfloat2_(IO_DIN, BusIn.BusIoSt + 416)
+        BusData.Int13   = bus_gint_(IO_DIN, BusIn.BusIoSt + 448)
+        BusData.Int14   = bus_gint_(IO_DIN, BusIn.BusIoSt + 480)
+        --return(buscmd_ro__(BUS_CMD133, BusMstSel, BusIn, BusOut))\
+        return(OK)
+    else:
+        post_err(CC_UALARM, 'bus cmd param1 err', 0, CC_ABORT)
+    endselect
+    
+end bus_cmd255_

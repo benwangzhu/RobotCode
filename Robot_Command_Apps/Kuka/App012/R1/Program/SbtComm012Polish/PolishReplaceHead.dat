@@ -1,0 +1,10 @@
+&ACCESS RVO
+&REL 79
+&COMMENT Polish Replace Head 250608
+defdat PolishReplaceHead
+
+decl state_t State
+decl int Offset = 0
+decl char Msg[128]
+
+enddat

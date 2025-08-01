@@ -1,0 +1,441 @@
+&ACCESS RVP1
+&REL 28
+&COMMENT App128 Main 250122
+&PARAM DISKPATH = KRC:\R1\Program\SbtComm128ArcMain
+def sbt_comm128_main( )
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; file Name: sbt_comm128_main.src
+;
+; Description:
+;   Language             ==   KRL for KUKA ROBOT
+;   Date                 ==   2022 - 02 - 26
+;   Modification Data    ==   2024 - 02 - 26
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+; This is the main task that runs in the foreground
+; The driver must be initialized by running this program first
+; This program is used to drive the robot's motion
+;
+;***********************************************************
+
+;FOLD BCO
+    bas(#initmov, 0)
+    bas(#base, DefineBase)
+    bas(#tool, DefineTool)
+    ptp cur_jpos_()
+;ENDFOLD
+
+;FOLD SPEEDBOT COMM128 MOTION CONTROL
+    OnlyCollect = false
+    sbt_comm128_state()     ; Call Status Interface
+    sbt_comm128_motion()    ; Call Control Interface   
+    sbt_comm128_tj()        ; Call Trajectory Interface
+;ENDFOLD
+end
+
+def sbt_comm128_tj()
+
+;FOLD CHECK MOTION ENABLE
+    ; When in data collection mode, exit
+    if OnlyCollect then  
+        return
+    endif
+;ENDFOLD
+
+;FOLD STOP CONDITION
+    ; Define a Stop Motion Interrupt to Halt Robot Movement When a Stop Command Is Received
+    global interrupt decl 21 when StopMoving == true do stop_move()
+    interrupt on 21
+;ENDFOLD
+
+    ; Set by Software OLD ATBg_StatusKey_Hot
+    skArcStatusKeyHot = WeldChannel.WeldEnable
+
+;FOLD WELD ENABLE CONDITION
+    ; Define a Stop Motion Interrupt to Halt Robot Movement When a Stop Command Is Received
+    global interrupt decl 22 when WeldChannel.WeldEnable <> skArcStatusKeyHot do arc_status()
+    interrupt on 22
+;ENDFOLD
+    
+;FOLD INIT MOTION CONTROL
+    ; Set Maximum Pre-advance Pointer
+    $advance = 5
+    DEF_ACC_PTP = 100
+    $flag[FLG_ACK_MOV_NUM] = false
+    NewTrajeSize = 0
+    ArcOn = false
+;ENDFOLD    
+   
+;FOLD ROBOT CONTROL
+    loop
+        exec_trajectorys()
+    endloop
+;ENDFOLD
+end
+
+;FOLD COPY TRAJECTORYS
+def copy_trajectorys()
+    NewTrajeSize = GlbTrajectorySize
+    GlbTrajectorySize = 0
+    for J = 1 to NewTrajeSize
+        NewTrajes[J] = GlbTrajectorys[J]
+    endfor
+end
+;ENDFOLD
+
+;FOLD EXEC TRAJECTORYS
+def exec_trajectorys()
+    ; Wait for Control Interface to Issue New Control Commands
+    continue
+    wait for $flag[FLG_ACK_MOV_NUM]
+    
+    ; Copy Trajectory
+    copy_trajectorys()
+
+    continue
+    $flag[FLG_ACK_MOV_NUM] = false
+    
+    ; Feedback Issued Control Command, Allow the Control Interface to Continue Receiving New Control Commands
+    Status = new_ack_()
+
+    if Status == OK then
+
+        ; Move as Many Times as There Are Trajectory Groups
+        for J = 1 to NewTrajeSize step 1
+            
+            ; Store MOVE ID for Status Task Feedback
+            CopyMoveId = NewTrajes[J].TrjMoveId
+            trigger when distance = 0 delay = 0.0 do GlbMoveId = CopyMoveId
+    
+            if NewTrajes[J].TrjMoveType == MTN_MOVJ then
+                move_j_(NewTrajes[J].TrajePose, NewTrajes[J].TrjSpeed, NewTrajes[J].TrjSmoot, DefineBase, DefineTool, NewTrajes[J].TrjAcc)
+            else 
+                if NewTrajes[J].TrjMoveType == MTN_MOVL then
+                    switch (NewTrajes[J].TrjProcessType)
+                    case PRC_ARC_ST
+                        ArcOn = true
+                        copyArcSch()
+                        arcOnMoveL(NewTrajes[J].TrajePose, NewTrajes[J].TrjSpeed, NewTrajes[J].TrjSmoot, DefineBase, DefineTool, NewTrajes[J].TrjAcc)
+                    case PRC_ARC_ED
+                        ArcOn = false
+                        arcOffMoveL(NewTrajes[J].TrajePose, NewTrajes[J].TrjSpeed, NewTrajes[J].TrjSmoot, DefineBase, DefineTool, NewTrajes[J].TrjAcc)
+                    default
+                        if ArcOn then
+                            arcSwiMoveL(NewTrajes[J].TrajePose, NewTrajes[J].TrjSpeed, NewTrajes[J].TrjSmoot, DefineBase, DefineTool, NewTrajes[J].TrjAcc)
+                        else
+                            move_l_(NewTrajes[J].TrajePose, NewTrajes[J].TrjSpeed, NewTrajes[J].TrjSmoot, DefineBase, DefineTool, NewTrajes[J].TrjAcc)
+                        endif
+                    endswitch
+                else
+                    
+                    if NewTrajes[J + 1].TrjMoveType <> MTN_MOVC2 then
+                        err_write_(" ", "MTN_MOVC2 Type Error")
+                    endif
+                    smove_c_(NewTrajes[J].TrajePose, NewTrajes[J + 1].TrajePose, NewTrajes[J].TrjSpeed, NewTrajes[J].TrjSmoot, DefineBase, DefineTool, NewTrajes[J].TrjAcc)
+                
+                    J = J + 1
+                endif
+            endif
+        endfor
+    endif
+
+    NewTrajeSize = 0
+end
+;ENDFOLD
+
+;FOLD STOP MOVE
+def stop_move()
+    interrupt off 21
+    brake
+    $flag[FLG_ACK_MOV_NUM] = false
+    NewTrajeSize = 0
+    StopMoving = false
+    ArcOn = false
+    interrupt on 21
+    ; resume
+end
+;ENDFOLD
+
+;FOLD ARC STATUS
+def arc_status()
+
+    skArcStatusKeyHot = WeldChannel.WeldEnable
+end
+;ENDFOLD
+
+;FOLD COPY ARC SCH
+def copyArcSch()
+    decl bool Res
+    WDAT1.Weld.Channel1 = WeldChannel.Channel1
+    WDAT1.Weld.Channel2 = WeldChannel.Channel2
+    Res = strcopy(WDAT1.Weld.JobModeId[], wArcW1ModiCoding[WeldChannel.JobMode].JobModeId[])
+    Res = strcopy(WDAT1.Strike.JobModeId[], wArcW1ModiCoding[WeldChannel.JobMode].JobModeId[])
+    if (WeaveSch.Length > 0) and (WeaveSch.Amplitude > 0) then
+        WDAT1.Weave.Pattern = #Triangle
+        WDAT1.Weave.Length = WeaveSch.Length
+        WDAT1.Weave.Amplitude = WeaveSch.Amplitude
+        WDAT1.Weave.Angle = WeaveSch.Angle
+        WDAT1.Weave.LeftSideDelay = WeaveSch.LeftSideDelay
+        WDAT1.Weave.RightSideDelay = WeaveSch.RightSideDelay
+    else
+        WDAT1.Weave.Pattern = #None
+    endif
+end
+;ENDFOLD
+
+;FOLD ROBOT ARC ON MOVE L
+global def arcOnMoveL(PointName : in, Speed : in, Accu : in, UframeNo : in, UtoolNo : in, Acc : in)
+    decl e6pos PointName
+    decl real Speed
+    decl real Accu
+    decl int UframeNo
+    decl int UtoolNo
+    decl real Acc
+    decl fdat ThisFdat
+    decl ldat ThisLdat
+
+    if (varstate("Speed") <> #initialized) then
+
+        Speed = DEF_VEL_CP * 1000.0
+    endif
+    if (varstate("Accu") <> #initialized) then
+
+        Accu = 0.00
+    endif
+    if (varstate("UframeNo") <> #initialized) then
+
+        continue
+        UframeNo = $act_base
+    endif
+    if (varstate("UtoolNo") <> #initialized) then
+
+        continue
+        UtoolNo = $act_tool
+    endif
+    if (varstate("Acc") <> #initialized) then
+
+        Acc = 100.0
+    endif
+    if Speed < 0.00 then
+        Speed = 0.1
+    endif
+    if Speed > (DEF_VEL_CP * 1000.0) then
+        Speed = (DEF_VEL_CP * 1000.0)
+    endif
+    if Accu < 0.00 then
+        Accu = DEF_APO_CVEL
+    endif
+    if Accu > 100.00 then
+        Accu = 100.00
+    endif
+    if Acc <= 0.00 then
+        Acc = 1.0
+    endif
+    if Acc > 100.00 then
+        Acc = 100.00
+    endif
+    ThisFdat.TOOL_NO = UtoolNo
+    ThisFdat.BASE_NO = UframeNo
+    ThisFdat.IPO_FRAME = #base
+    ThisFdat.POINT2[] = " "
+    ;      
+    ThisLdat.VEL = Speed / 1000.0
+    ThisLdat.ACC = Acc
+    ThisLdat.APO_DIST = Accu
+    ThisLdat.APO_FAC = 50.00
+    ThisLdat.AXIS_VEL = 100.00
+    ThisLdat.AXIS_ACC = 100.000
+    ThisLdat.ORI_TYP = #var
+    ThisLdat.CIRC_TYP = #base
+    ThisLdat.JERK_FAC = 50.0000
+    ThisLdat.GEAR_JERK = 100.000
+    ThisLdat.EXAX_IGN = 0
+    ;
+    $bwdstart = false
+    $apo.cvel = Accu
+    LDAT_ACT = ThisLdat
+    FDAT_ACT = ThisFdat
+    BAS(#CP_PARAMS, Speed / 1000.0)
+    set_cd_params (0)
+    ;
+    continue
+    TRIGGER WHEN DISTANCE = 1 DELAY = ArcGetDelay(#PreDefinition, WDAT1) DO ArcMainNG(#PreDefinition, WDAT1, WP1) PRIO = -1
+    TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = ArcGetDelay(#GasPreflow, WDAT1) DO ArcMainNG(#GasPreflow, WDAT1, WP1) PRIO = -1
+    TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOn, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOnMoveStd, WDAT1, WP1) PRIO = -1 
+    ArcMainNG(#ArcOnBeforeMoveStd, WDAT1, WP1)
+    lin PointName 
+    ArcMainNG(#ArcOnAfterMoveStd, WDAT1, WP1)
+end
+;ENDFOLD
+
+;FOLD ROBOT ARC SWI MOVE L
+global def arcSwiMoveL(PointName : in, Speed : in, Accu : in, UframeNo : in, UtoolNo : in, Acc : in)
+    decl e6pos PointName
+    decl real Speed
+    decl real Accu
+    decl int UframeNo
+    decl int UtoolNo
+    decl real Acc
+    decl fdat ThisFdat
+    decl ldat ThisLdat
+
+    if (varstate("Speed") <> #initialized) then
+
+        Speed = DEF_VEL_CP * 1000.0
+    endif
+    if (varstate("Accu") <> #initialized) then
+
+        Accu = 0.00
+    endif
+    if (varstate("UframeNo") <> #initialized) then
+
+        continue
+        UframeNo = $act_base
+    endif
+    if (varstate("UtoolNo") <> #initialized) then
+
+        continue
+        UtoolNo = $act_tool
+    endif
+    if (varstate("Acc") <> #initialized) then
+
+        Acc = 100.0
+    endif
+    if Speed < 0.00 then
+        Speed = 0.1
+    endif
+    if Speed > (DEF_VEL_CP * 1000.0) then
+        Speed = (DEF_VEL_CP * 1000.0)
+    endif
+    if Accu < 0.00 then
+        Accu = DEF_APO_CVEL
+    endif
+    if Accu > 100.00 then
+        Accu = 100.00
+    endif
+    if Acc <= 0.00 then
+        Acc = 1.0
+    endif
+    if Acc > 100.00 then
+        Acc = 100.00
+    endif
+    ThisFdat.TOOL_NO = UtoolNo
+    ThisFdat.BASE_NO = UframeNo
+    ThisFdat.IPO_FRAME = #base
+    ThisFdat.POINT2[] = " "
+    ;      
+    ThisLdat.VEL = Speed / 1000.0
+    ThisLdat.ACC = Acc
+    ThisLdat.APO_DIST = Accu
+    ThisLdat.APO_FAC = 50.00
+    ThisLdat.AXIS_VEL = 100.00
+    ThisLdat.AXIS_ACC = 100.000
+    ThisLdat.ORI_TYP = #var
+    ThisLdat.CIRC_TYP = #base
+    ThisLdat.JERK_FAC = 50.0000
+    ThisLdat.GEAR_JERK = 100.000
+    ThisLdat.EXAX_IGN = 0
+    ;
+    $bwdstart = false
+    $apo.cvel = Accu
+    LDAT_ACT = ThisLdat
+    FDAT_ACT = ThisFdat
+    BAS(#CP_PARAMS, Speed / 1000.0)
+    set_cd_params (0)
+    ;
+    continue
+    TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO ArcMainNG(#ArcSwiMoveStd, WDAT1, WP1) PRIO = -1
+    ArcMainNG(#ArcSwiBeforeMoveStd, WDAT1, WP1)
+    lin PointName c_vel
+    ArcMainNG(#ArcSwiAfterMoveStd, WDAT1, WP1)
+end
+;ENDFOLD
+
+;FOLD ROBOT ARC SWI MOVE L
+global def arcOffMoveL(PointName : in, Speed : in, Accu : in, UframeNo : in, UtoolNo : in, Acc : in)
+    decl e6pos PointName
+    decl real Speed
+    decl real Accu
+    decl int UframeNo
+    decl int UtoolNo
+    decl real Acc
+    decl fdat ThisFdat
+    decl ldat ThisLdat
+
+    if (varstate("Speed") <> #initialized) then
+
+        Speed = DEF_VEL_CP * 1000.0
+    endif
+    if (varstate("Accu") <> #initialized) then
+
+        Accu = 0.00
+    endif
+    if (varstate("UframeNo") <> #initialized) then
+
+        continue
+        UframeNo = $act_base
+    endif
+    if (varstate("UtoolNo") <> #initialized) then
+
+        continue
+        UtoolNo = $act_tool
+    endif
+    if (varstate("Acc") <> #initialized) then
+
+        Acc = 100.0
+    endif
+    if Speed < 0.00 then
+        Speed = 0.1
+    endif
+    if Speed > (DEF_VEL_CP * 1000.0) then
+        Speed = (DEF_VEL_CP * 1000.0)
+    endif
+    if Accu < 0.00 then
+        Accu = DEF_APO_CVEL
+    endif
+    if Accu > 100.00 then
+        Accu = 100.00
+    endif
+    if Acc <= 0.00 then
+        Acc = 1.0
+    endif
+    if Acc > 100.00 then
+        Acc = 100.00
+    endif
+    ThisFdat.TOOL_NO = UtoolNo
+    ThisFdat.BASE_NO = UframeNo
+    ThisFdat.IPO_FRAME = #base
+    ThisFdat.POINT2[] = " "
+    ;      
+    ThisLdat.VEL = Speed / 1000.0
+    ThisLdat.ACC = Acc
+    ThisLdat.APO_DIST = Accu
+    ThisLdat.APO_FAC = 50.00
+    ThisLdat.AXIS_VEL = 100.00
+    ThisLdat.AXIS_ACC = 100.000
+    ThisLdat.ORI_TYP = #var
+    ThisLdat.CIRC_TYP = #base
+    ThisLdat.JERK_FAC = 50.0000
+    ThisLdat.GEAR_JERK = 100.000
+    ThisLdat.EXAX_IGN = 0
+    ;
+    $bwdstart = false
+    $apo.cvel = Accu
+    LDAT_ACT = ThisLdat
+    FDAT_ACT = ThisFdat
+    BAS(#CP_PARAMS, Speed / 1000.0)
+    set_cd_params (0)
+    ;
+    TRIGGER WHEN PATH = ArcGetPath(#ArcOffBefore, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffBeforeOffStd, WDAT1, WP1) PRIO = -1
+    TRIGGER WHEN PATH = ArcGetPath(#OnTheFlyArcOff, WDAT1) DELAY = 0 DO ArcMainNG(#ArcOffMoveStd, WDAT1, WP1) PRIO = -1 
+    ArcMainNG(#ArcOffBeforeMoveStd, WDAT1, WP1)
+    lin PointName 
+    ArcMainNG(#ArcOffAfterMoveStd, WDAT1, WP1)
+end
+;ENDFOLD

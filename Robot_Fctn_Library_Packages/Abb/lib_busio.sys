@@ -1,0 +1,1324 @@
+module lib_busio(sysmodule, noview)
+!***********************************************************
+!
+! Copyright 2018 - 2024 speedbot All Rights reserved.
+!
+! File Name: lib_busio
+!
+! Description:
+!   Language             ==   Rapid for ABB ROBOT
+!   Date                 ==   2023 - 07 - 05
+!   Modification Data    ==   2023 - 12 - 12
+!
+! Author: speedbot
+!
+! Version: 1.0
+!*********************************************************************************************************!
+!                                                                                                         !
+!                                                      .^^^                                               !
+!                                               .,~<c+{{{{{{t,                                            ! 
+!                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          !
+!                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        !
+!                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       !
+!                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    !
+!                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  !
+!                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                !
+!                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              !
+!                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             !
+!                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             !
+!                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             !
+!                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              !
+!                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              !
+!                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               !
+!                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               !
+!                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                !
+!                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                !
+!                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 !
+!                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 !
+!                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  !
+!                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  !
+!                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    !                         
+!                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         !
+!                                         ^!{{{{{{{{t!",^`                                                !
+!                                                                                                         !
+!*********************************************************************************************************!
+!
+! 2023 - 12 - 12 ++ bus_io_define_()
+
+! 2023 - 12 - 12 ++ bus_sbyte_()
+
+! 2023 - 12 - 12 ++ bus_ssint_()
+
+! 2023 - 12 - 12 ++ bus_sint_()
+
+! 2023 - 12 - 12 ++ bus_sfloat_()
+
+! 2023 - 12 - 12 ++ bus_sfloat2_()
+
+! 2023 - 12 - 12 ++ bus_sdata_()
+
+! 2023 - 12 - 12 ++ bus_sjoint_()
+
+! 2023 - 12 - 12 ++ bus_scartp_()
+
+! 2021 - 12 - 12 ++ bus_gbyte_() ==> byte
+
+! 2021 - 12 - 12 ++ bus_gsint_() ==> num
+
+! 2021 - 12 - 12 ++ bus_gusint_() ==> num
+
+! 2021 - 12 - 12 ++ bus_gint_() ==> num
+
+! 2021 - 12 - 12 ++ bus_gfloat_() ==> num
+
+! 2021 - 12 - 12 ++ bus_gfloat2_() ==> num
+
+! 2021 - 12 - 12 ++ bus_gdata_() ==> num
+
+! 2021 - 12 - 12 ++ bus_gjoint_() ==> jointtarget
+
+! 2021 - 12 - 12 ++ bus_gcartp_() ==> robtarget
+
+! 2023 - 12 - 12 ++ bus_uptin_()
+
+! 2023 - 12 - 12 ++ bus_uptout_()
+
+! 2023 - 12 - 12 ++ bus_init_()
+
+! 2021 - 12 - 12 ++ bus_wtell_() ==> errnum
+
+! 2021 - 12 - 12 ++ bus_ftell_()
+
+! 2021 - 12 - 12 ++ bus_ntell_() ==> errnum
+
+!
+
+record busin_t
+	dionum SysReady;
+    dionum SysInited;
+    dionum StopMov;
+    dionum OnMeasure;
+    dionum MeasuerOver;
+    dionum ResultOk;
+    dionum ResultNG;
+    dionum Finished;
+    byte DeviceId;
+    byte JobId;
+    byte ErrorId;
+    byte AgentTellId;
+    byte AgentMsgType;
+    byte TellId;
+    byte MsgType;
+endrecord
+
+record busout_t
+    dionum SysEnable;
+    dionum SysInit;
+    dionum RobMoving;
+    dionum MeasuerSt;
+    dionum MeasuerEd;
+    dionum Reserverd1;
+    dionum Reserverd2;
+    dionum CycleEnd;
+    byte RobotId;
+    byte JobId;
+    byte ProtocolId;
+    byte TellId;
+    byte MsgType;
+    byte RobTellId;
+    byte RobMsgType;
+endrecord
+
+
+! [INPUT] 8 BOOL + 63 BYTE = 64 BYTE
+local const string BUSIO_INPUT_NM{71}       := ["Di_SysReady",      "Di_SysInited",     "Di_StopMov",       "Di_OnMeasure",     
+                                                "Di_MeasuerOver",   "Di_SysResultOk",   "Di_ResultNG",      "Di_Finished",      
+                                                "Gi_DeviceId",      "Gi_JobId",         "Gi_ErrorId",       "Gi_AgentTellId",   
+                                                "Gi_AgentMsgType",  "Gi_TellId",        "Gi_MsgType",       "Gi_DataByte09",
+                                                "Gi_DataByte10",    "Gi_DataByte11",    "Gi_DataByte12",    "Gi_DataByte13",
+                                                "Gi_DataByte14",    "Gi_DataByte15",    "Gi_DataByte16",    "Gi_DataByte17",
+                                                "Gi_DataByte18",    "Gi_DataByte19",    "Gi_DataByte20",    "Gi_DataByte21",
+                                                "Gi_DataByte22",    "Gi_DataByte23",    "Gi_DataByte24",    "Gi_DataByte25",
+                                                "Gi_DataByte26",    "Gi_DataByte27",    "Gi_DataByte28",    "Gi_DataByte29",
+                                                "Gi_DataByte30",    "Gi_DataByte31",    "Gi_DataByte32",    "Gi_DataByte33",
+                                                "Gi_DataByte34",    "Gi_DataByte35",    "Gi_DataByte36",    "Gi_DataByte37",
+                                                "Gi_DataByte38",    "Gi_DataByte39",    "Gi_DataByte40",    "Gi_DataByte41",
+                                                "Gi_DataByte42",    "Gi_DataByte43",    "Gi_DataByte44",    "Gi_DataByte45",
+                                                "Gi_DataByte46",    "Gi_DataByte47",    "Gi_DataByte48",    "Gi_DataByte49",
+                                                "Gi_DataByte50",    "Gi_DataByte51",    "Gi_DataByte52",    "Gi_DataByte53",
+                                                "Gi_DataByte54",    "Gi_DataByte55",    "Gi_DataByte56",    "Gi_DataByte57",
+                                                "Gi_DataByte58",    "Gi_DataByte59",    "Gi_DataByte60",    "Gi_DataByte61",
+                                                "Gi_DataByte62",    "Gi_DataByte63",    "Gi_DataByte64"];
+
+! [OUTPUT] 8 BOOL + 63 BYTE = 64 BYTE
+local const string BUSIO_OUTPUT_NM{71}      := ["Do_SysEnable",     "Do_SysInit",       "Do_RobMoving",     "Do_MeasuerSt",     
+                                                "Do_MeasuerEd",     "Do_Reserverd1",    "Do_Reserverd2",    "Do_CycleEnd",      
+                                                "Go_RobotId",       "Go_JobId",         "Go_ProtocolId",    "Go_TellId",   
+                                                "Go_MsgType",       "Go_RobTellId",     "Go_RobMsgType",    "Go_DataByte09",
+                                                "Go_DataByte10",    "Go_DataByte11",    "Go_DataByte12",    "Go_DataByte13",
+                                                "Go_DataByte14",    "Go_DataByte15",    "Go_DataByte16",    "Go_DataByte17",
+                                                "Go_DataByte18",    "Go_DataByte19",    "Go_DataByte20",    "Go_DataByte21",
+                                                "Go_DataByte22",    "Go_DataByte23",    "Go_DataByte24",    "Go_DataByte25",
+                                                "Go_DataByte26",    "Go_DataByte27",    "Go_DataByte28",    "Go_DataByte29",
+                                                "Go_DataByte30",    "Go_DataByte31",    "Go_DataByte32",    "Go_DataByte33",
+                                                "Go_DataByte34",    "Go_DataByte35",    "Go_DataByte36",    "Go_DataByte37",
+                                                "Go_DataByte38",    "Go_DataByte39",    "Go_DataByte40",    "Go_DataByte41",
+                                                "Go_DataByte42",    "Go_DataByte43",    "Go_DataByte44",    "Go_DataByte45",
+                                                "Go_DataByte46",    "Go_DataByte47",    "Go_DataByte48",    "Go_DataByte49",
+                                                "Go_DataByte50",    "Go_DataByte51",    "Go_DataByte52",    "Go_DataByte53",
+                                                "Go_DataByte54",    "Go_DataByte55",    "Go_DataByte56",    "Go_DataByte57",
+                                                "Go_DataByte58",    "Go_DataByte59",    "Go_DataByte60",    "Go_DataByte61",
+                                                "Go_DataByte62",    "Go_DataByte63",    "Go_DataByte64"];
+
+
+const num PTC_LN_PL				:= 1;
+const num PTC_ST_PK				:= 2;
+const num PTC_GEN_CMD		    := 64;
+const num PTC_ROB_CTL			:= 128;
+
+const num BUS_TYP_BYTE          := 1;
+const num BUS_TYP_INT           := 2;
+const num BUS_TYP_UINT          := 3;
+const num BUS_TYP_DINT          := 4;
+const num BUS_TYP_FLOAT         := 5;
+const num BUS_TYP_FLOAT2        := 6;
+
+
+! 输入头字节
+var signaldi DiSysReady;
+var signaldi DiSysInited;
+var signaldi DiStopMov;
+var signaldi DiOnMeasure;
+var signaldi DiMeasuerOver;
+var signaldi DiResultOk;
+var signaldi DiResultNG;
+var signaldi DiFinished;
+var signalgi GiDeviceId;
+var signalgi GiJobId;
+var signalgi GiErrorId;
+var signalgi GiAgentTellId;
+var signalgi GiAgentMsgType;
+var signalgi GiTellId;
+var signalgi GiMsgType;
+
+! 输入数据字节
+local var signalgi GiDataBytes{56};
+
+! 输出头字节
+var signaldo DoSysEnable;
+var signaldo DoSysInit;
+var signaldo DoRobMoving;
+var signaldo DoMeasuerSt;
+var signaldo DoMeasuerEd;
+var signaldo DoReserverd1;
+var signaldo DoReserverd2;
+var signaldo DoCycleEnd;
+var signalgo GoRobotId;
+var signalgo GoJobId;
+var signalgo GoProtocolId;
+var signalgo GoTellId;
+var signalgo GoMsgType;
+var signalgo GoRobTellId;
+var signalgo GoRobMsgType;
+
+! 输出数据字节
+local var signalgo GoDataBytes{56};
+
+! local var intnum HeartbeatInt;
+
+proc bus_io_define_()
+    var num I;
+
+    aliasio BUSIO_INPUT_NM{1}, DiSysReady;
+    aliasio BUSIO_INPUT_NM{2}, DiSysInited;
+    aliasio BUSIO_INPUT_NM{3}, DiStopMov;
+    aliasio BUSIO_INPUT_NM{4}, DiOnMeasure;
+    aliasio BUSIO_INPUT_NM{5}, DiMeasuerOver;
+    aliasio BUSIO_INPUT_NM{6}, DiResultOk;
+    aliasio BUSIO_INPUT_NM{7}, DiResultNG;
+    aliasio BUSIO_INPUT_NM{8}, DiFinished;
+    aliasio BUSIO_INPUT_NM{9}, GiDeviceId;
+    aliasio BUSIO_INPUT_NM{10}, GiJobId;
+    aliasio BUSIO_INPUT_NM{11}, GiErrorId;
+    aliasio BUSIO_INPUT_NM{12}, GiAgentTellId;
+    aliasio BUSIO_INPUT_NM{13}, GiAgentMsgType;
+    aliasio BUSIO_INPUT_NM{14}, GiTellId;
+    aliasio BUSIO_INPUT_NM{15}, GiMsgType;
+
+    aliasio BUSIO_OUTPUT_NM{1}, DoSysEnable;
+    aliasio BUSIO_OUTPUT_NM{2}, DoSysInit;
+    aliasio BUSIO_OUTPUT_NM{3}, DoRobMoving;
+    aliasio BUSIO_OUTPUT_NM{4}, DoMeasuerSt;
+    aliasio BUSIO_OUTPUT_NM{5}, DoMeasuerEd;
+    aliasio BUSIO_OUTPUT_NM{6}, DoReserverd1;
+    aliasio BUSIO_OUTPUT_NM{7}, DoReserverd2;
+    aliasio BUSIO_OUTPUT_NM{8}, DoCycleEnd;
+    aliasio BUSIO_OUTPUT_NM{9}, GoRobotId;
+    aliasio BUSIO_OUTPUT_NM{10}, GoJobId;
+    aliasio BUSIO_OUTPUT_NM{11}, GoProtocolId;
+    aliasio BUSIO_OUTPUT_NM{12}, GoTellId;
+    aliasio BUSIO_OUTPUT_NM{13}, GoMsgType;
+    aliasio BUSIO_OUTPUT_NM{14}, GoRobTellId;
+    aliasio BUSIO_OUTPUT_NM{15}, GoRobMsgType;
+
+    for I from 16 to 71 do 
+        aliasio BUSIO_INPUT_NM{I}, GiDataBytes{I - 15};
+        aliasio BUSIO_OUTPUT_NM{I}, GoDataBytes{I - 15};
+    endfor
+	!error
+	error
+	skipwarn;
+	trynext;
+endproc
+
+proc bus_io_cancel_define_()
+    var num I;
+
+    aliasioreset DiSysReady;
+    aliasioreset DiSysInited;
+    aliasioreset DiStopMov;
+    aliasioreset DiOnMeasure;
+    aliasioreset DiMeasuerOver;
+    aliasioreset DiResultOk;
+    aliasioreset DiResultNG;
+    aliasioreset DiFinished;
+    aliasioreset GiDeviceId;
+    aliasioreset GiJobId;
+    aliasioreset GiErrorId;
+    aliasioreset GiAgentTellId;
+    aliasioreset GiAgentMsgType;
+    aliasioreset GiTellId;
+    aliasioreset GiMsgType;
+
+    aliasioreset DoSysEnable;
+    aliasioreset DoSysInit;
+    aliasioreset DoRobMoving;
+    aliasioreset DoMeasuerSt;
+    aliasioreset DoMeasuerEd;
+    aliasioreset DoReserverd1;
+    aliasioreset DoReserverd2;
+    aliasioreset DoCycleEnd;
+    aliasioreset GoRobotId;
+    aliasioreset GoJobId;
+    aliasioreset GoProtocolId;
+    aliasioreset GoTellId;
+    aliasioreset GoMsgType;
+    aliasioreset GoRobTellId;
+    aliasioreset GoRobMsgType;
+
+    for I from 16 to 71 do 
+        aliasioreset GiDataBytes{I - 15};
+        aliasioreset GoDataBytes{I - 15};
+    endfor
+	!error
+	error
+	skipwarn;
+	trynext;
+endproc
+
+!***********************************************************
+! proc bus_sbyte_
+!***********************************************************
+!     输入输出参数 : GoSignal      * 信号 *         * 要设置的信号 *
+!     输入参数 : \byte Val        * 可选字节 *     * 要发送的字节值 *
+!***********************************************************
+! 功能 : 设置信号值为指定的字节值。
+!        如果提供了字节值，则使用提供的值；否则使用默认值 0。
+!        如果设置信号时出现别名 IO 未定义的错误，则定义 IO 并重试。
+!        如果出现未知错误，则记录错误并停止程序。
+!***********************************************************
+proc bus_sbyte_(var signalgo GoSignal, \byte Val) 
+	var num CopyVal 	:= 0;
+
+	if present(Val) CopyVal := Val;
+	setgo GoSignal, CopyVal;
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_sbyte_", " Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endproc
+
+proc bus_ssint_(var signalgo GoSignal, \num Val) 
+	var num CopyVal 	:= 0;
+
+	if present(Val) CopyVal := Val;
+	if (CopyVal < 0) CopyVal := CopyVal + 65536; 
+	setgo GoSignal, CopyVal;
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_ssint_", "Unknow Error !!!";
+        stop;
+    endif
+endproc
+
+proc bus_susint_(var signalgo GoSignal, \num Val) 
+	var dnum CopyVal 	:= 0;
+
+	if present(Val) CopyVal := numtodnum(Val);
+	setgo GoSignal, CopyVal;
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_susint_", "Unknow Error !!!";
+        stop;
+    endif
+endproc
+
+proc bus_sint_(var signalgo GoSignal, \num Val) 
+	var num CopyVal 	:= 0;
+    var dnum DnumVal    := 0;
+	var rawbytes Raw;
+
+	if present(Val) CopyVal := Val;
+
+	packrawbytes 	CopyVal,	Raw, 	1 		\INTX := DINT;
+	unpackrawbytes 	Raw, 		1, 		DnumVal \INTX := UDINT;
+	
+	setgo GoSignal, DnumVal;
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_sint_", "Unknow Error !!!";
+        stop;
+    endif
+endproc
+
+proc bus_sfloat_(var signalgo GoSignal, \num Val) 
+	var num CopyVal 	:= 0.0;
+    var dnum DnumVal    := 0;
+	var rawbytes Raw;
+
+	if present(Val) CopyVal := Val;
+
+	packrawbytes 	CopyVal,	Raw, 	1 		\FLOAT4;
+	unpackrawbytes 	Raw, 		1, 		DnumVal \INTX := UDINT;
+	
+	setgo GoSignal, DnumVal;
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_sfloat_", "Unknow Error !!!";
+        stop;
+    endif
+endproc
+
+proc bus_sfloat2_(var signalgo GoSignal, \num Val) 
+	var num CopyVal 	:= 0.0;
+	var num IntVal		:= 0;
+	var num DecVal		:= 0;
+    var dnum DnumVal    := 0;
+	var rawbytes Raw;
+
+	if present(Val) CopyVal := Val;
+
+    IntVal := trunc(CopyVal);
+    DecVal := round((CopyVal - IntVal) * 10000.0);
+	packrawbytes 	IntVal,		Raw, 	1 		\INTX := INT;
+	packrawbytes 	DecVal,		Raw, 	3 		\INTX := INT;
+	unpackrawbytes 	Raw, 		1, 		DnumVal \INTX := UDINT;
+	
+	setgo GoSignal, DnumVal;
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_sfloat2_", "Unknow Error !!!";
+        stop;
+    endif
+endproc
+
+proc bus_sdata_(byte BusDataType, num StartAddr, num Val) 
+	var rawbytes Raw;
+    var string StringPack := "";
+    
+    ! 写入 BYTE 类型
+    test BusDataType
+    case BUS_TYP_BYTE:              ! 写入 BYTE 类型
+        setgo GoDataBytes{StartAddr + 0}, Val;
+    
+    case BUS_TYP_INT:               ! 写入 INT 类型
+    	packrawbytes 	Val,    Raw,    1 		    \INTX   := INT;
+    	unpackrawbytes 	Raw,    1, 		StringPack  \ASCII  := 2;
+    	setgo GoDataBytes{StartAddr + 0}, strtobyte(strpart(StringPack, 1, 1) \CHAR);
+    	setgo GoDataBytes{StartAddr + 1}, strtobyte(strpart(StringPack, 2, 1) \CHAR);
+
+    case BUS_TYP_UINT:               ! 写入 UINT 类型
+    	packrawbytes 	Val,    Raw,    1 		    \INTX   := UINT;
+    	unpackrawbytes 	Raw,    1, 		StringPack  \ASCII  := 2;
+    	setgo GoDataBytes{StartAddr + 0}, strtobyte(strpart(StringPack, 1, 1) \CHAR);
+    	setgo GoDataBytes{StartAddr + 1}, strtobyte(strpart(StringPack, 2, 1) \CHAR);
+
+    case BUS_TYP_DINT:               ! 写入 DINT 类型
+    	packrawbytes 	Val,    Raw,    1 		    \INTX   := DINT;
+    	unpackrawbytes 	Raw,    1, 		StringPack  \ASCII  := 4;
+    	setgo GoDataBytes{StartAddr + 0}, strtobyte(strpart(StringPack, 1, 1) \CHAR);
+    	setgo GoDataBytes{StartAddr + 1}, strtobyte(strpart(StringPack, 2, 1) \CHAR);
+    	setgo GoDataBytes{StartAddr + 2}, strtobyte(strpart(StringPack, 3, 1) \CHAR);
+    	setgo GoDataBytes{StartAddr + 3}, strtobyte(strpart(StringPack, 4, 1) \CHAR);
+
+    case BUS_TYP_FLOAT:               ! 写入 FLOAT 类型
+    	packrawbytes 	Val,    Raw,    1 		    \FLOAT4;
+    	unpackrawbytes 	Raw,    1, 		StringPack  \ASCII  := 4;
+    	setgo GoDataBytes{StartAddr + 0}, strtobyte(strpart(StringPack, 1, 1) \CHAR);
+    	setgo GoDataBytes{StartAddr + 1}, strtobyte(strpart(StringPack, 2, 1) \CHAR);
+    	setgo GoDataBytes{StartAddr + 2}, strtobyte(strpart(StringPack, 3, 1) \CHAR);
+    	setgo GoDataBytes{StartAddr + 3}, strtobyte(strpart(StringPack, 4, 1) \CHAR);
+
+    case BUS_TYP_FLOAT2:               ! 写入 FLOAT2 类型
+    	packrawbytes 	trunc(Val),		                        Raw, 	1 		\INTX := INT;
+    	packrawbytes 	round((Val - trunc(Val)) * 10000.0),    Raw, 	3 		\INTX := INT;
+    	unpackrawbytes 	Raw,    1, 		StringPack  \ASCII  := 4;
+    	setgo GoDataBytes{StartAddr + 0}, strtobyte(strpart(StringPack, 1, 1) \CHAR);
+    	setgo GoDataBytes{StartAddr + 1}, strtobyte(strpart(StringPack, 2, 1) \CHAR);
+    	setgo GoDataBytes{StartAddr + 2}, strtobyte(strpart(StringPack, 3, 1) \CHAR);
+    	setgo GoDataBytes{StartAddr + 3}, strtobyte(strpart(StringPack, 4, 1) \CHAR);
+
+    default:
+        errwrite "bus_sdata_", "TYP Error !!!";
+        stop;
+    endtest
+
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_sdata_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endproc
+
+proc bus_sjoint_(num StartAddr, jointtarget Val, \num NumOfAxis)
+    var num InNumOfAxis := 6;
+
+    if present(NumOfAxis) InNumOfAxis := NumOfAxis;
+
+    if (InNumOfAxis >= 1)   bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 0, Val.robax.rax_1;
+    if (InNumOfAxis >= 2)   bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 4, Val.robax.rax_2;
+    if (InNumOfAxis >= 3)   bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 8, Val.robax.rax_3;
+    if (InNumOfAxis >= 4)   bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 12, Val.robax.rax_4;
+    if (InNumOfAxis >= 5)   bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 16, Val.robax.rax_5;
+    if (InNumOfAxis >= 6)   bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 20, Val.robax.rax_6;
+    if (InNumOfAxis >= 7)   bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 24, Val.extax.eax_a;
+    if (InNumOfAxis >= 8)   bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 28, Val.extax.eax_b;
+    if (InNumOfAxis >= 9)   bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 32, Val.extax.eax_c;
+    if (InNumOfAxis >= 10)  bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 36, Val.extax.eax_d;
+    if (InNumOfAxis >= 11)  bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 40, Val.extax.eax_e;
+    if (InNumOfAxis >= 12)  bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 44, Val.extax.eax_f;
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_sjoint_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endproc
+
+proc bus_scartp_(num StartAddr, robtarget Val, \num NumOfAxis)
+    var num InNumOfAxis := 6;
+
+    if present(NumOfAxis) InNumOfAxis := NumOfAxis;
+
+    if (InNumOfAxis >= 1)   bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 0, Val.trans.x;
+    if (InNumOfAxis >= 2)   bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 4, Val.trans.y;
+    if (InNumOfAxis >= 3)   bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 8, Val.trans.z;
+    if (InNumOfAxis >= 4)   bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 12, eulerzyx(\Z, Val.Rot);
+    if (InNumOfAxis >= 5)   bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 16, eulerzyx(\Y, Val.Rot);
+    if (InNumOfAxis >= 6)   bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 20, eulerzyx(\X, Val.Rot);
+    if (InNumOfAxis >= 7)   bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 24, Val.extax.eax_a;
+    if (InNumOfAxis >= 8)   bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 28, Val.extax.eax_b;
+    if (InNumOfAxis >= 9)   bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 32, Val.extax.eax_c;
+    if (InNumOfAxis >= 10)  bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 36, Val.extax.eax_d;
+    if (InNumOfAxis >= 11)  bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 40, Val.extax.eax_e;
+    if (InNumOfAxis >= 12)  bus_sdata_ BUS_TYP_FLOAT2, StartAddr + 44, Val.extax.eax_f;
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_scartp_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endproc
+
+func byte bus_gbyte_(\switch IO_DIN | switch IO_DOUT, \var signalgi GiSignal, \var signalgo GoSignal)
+    if present(IO_DIN) return(ginput(GiSignal));  
+    if present(IO_DOUT) return(goutput(GoSignal));
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_gbyte_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endfunc
+
+func num bus_gsint_(\switch IO_DIN | switch IO_DOUT, \var signalgi GiSignal, \var signalgo GoSignal)
+    var num Val     := 0;
+    if present(IO_DIN)  Val := ginput(GiSignal);  
+    if present(IO_DOUT) Val := goutput(GoSignal);
+
+    if Val > 32767      Val := Val - 65536;
+
+    return(Val);
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_gsint_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endfunc
+
+func num bus_gusint_(\switch IO_DIN | switch IO_DOUT, \var signalgi GiSignal, \var signalgo GoSignal)
+    if present(IO_DIN) return(ginput(GiSignal));  
+    if present(IO_DOUT) return(goutput(GoSignal));
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_gusint_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endfunc
+
+func num bus_gint_(\switch IO_DIN | switch IO_DOUT, \var signalgi GiSignal, \var signalgo GoSignal)
+	var rawbytes Raw;
+    var dnum Val        := 0;
+    if present(IO_DIN) packrawbytes 	ginputdnum(GiSignal),		Raw, 	1 		\INTX := UDINT;  
+    if present(IO_DOUT) packrawbytes 	goutputdnum(GoSignal),		Raw, 	1 		\INTX := UDINT;
+
+    unpackrawbytes 	Raw, 		1, 		Val \INTX := DINT;
+
+    return(dnumtonum(Val));
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_gint_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endfunc
+
+func num bus_gfloat_(\switch IO_DIN | switch IO_DOUT, \var signalgi GiSignal, \var signalgo GoSignal)
+	var rawbytes Raw;
+    var num Val     := 0;
+    if present(IO_DIN) packrawbytes 	ginputdnum(GiSignal),		Raw, 	1 		\INTX := UDINT;  
+    if present(IO_DOUT) packrawbytes 	goutputdnum(GoSignal),		Raw, 	1 		\INTX := UDINT;
+
+    unpackrawbytes 	Raw, 		1, 		Val \FLOAT4;
+
+    return(Val);
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_gfloat_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endfunc
+
+func num bus_gfloat2_(\switch IO_DIN | switch IO_DOUT, \var signalgi GiSignal, \var signalgo GoSignal)
+	var rawbytes Raw;
+    var num IntVal  := 0;
+    var num DecVal  := 0;
+
+    if present(IO_DIN) packrawbytes 	ginputdnum(GiSignal),		Raw, 	1 		\INTX := UDINT;  
+    if present(IO_DOUT) packrawbytes 	goutputdnum(GoSignal),		Raw, 	1 		\INTX := UDINT;
+
+	unpackrawbytes 	Raw, 		1, 		IntVal \INTX := INT;
+	unpackrawbytes 	Raw, 		3, 		DecVal \INTX := INT;
+
+    return(IntVal + DecVal / 10000.0);
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_gfloat2_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endfunc
+
+func num bus_gdata_(byte BusDataType, \switch IO_DOUT, num StartAddr)
+
+	var rawbytes Raw;
+    var num Val := 0;
+    var num IntVal  := 0;
+    var num DecVal  := 0;
+    var string StringPack := "";
+    
+    test BusDataType
+    case BUS_TYP_BYTE:                  ! 读出 BYTE 类型
+        if present(IO_DOUT) then
+            return(goutput(GoDataBytes{StartAddr + 0}));
+        else
+            return(ginput(GiDataBytes{StartAddr + 0}));
+        endif
+    
+    case BUS_TYP_INT:                   ! 读出 INT 类型
+        if present(IO_DOUT) then
+            StringPack := bytetostr(goutput(GoDataBytes{StartAddr + 0}) \CHAR) + 
+                          bytetostr(goutput(GoDataBytes{StartAddr + 1}) \CHAR);
+        else
+            StringPack := bytetostr(ginput(GiDataBytes{StartAddr + 0}) \CHAR) + 
+                          bytetostr(ginput(GiDataBytes{StartAddr + 1}) \CHAR);
+        endif
+    	packrawbytes 	StringPack, Raw,    1   \ASCII;
+    	unpackrawbytes 	Raw,        1, 	    Val \INTX := INT;
+        return(Val);
+
+    case BUS_TYP_UINT:                   ! 读出 UINT 类型
+        if present(IO_DOUT) then
+            StringPack := bytetostr(goutput(GoDataBytes{StartAddr + 0}) \CHAR) + 
+                          bytetostr(goutput(GoDataBytes{StartAddr + 1}) \CHAR);
+        else
+            StringPack := bytetostr(ginput(GiDataBytes{StartAddr + 0}) \CHAR) + 
+                          bytetostr(ginput(GiDataBytes{StartAddr + 1}) \CHAR);
+        endif
+    	packrawbytes 	StringPack, Raw,    1   \ASCII;
+    	unpackrawbytes 	Raw,        1, 		Val \INTX := UINT;
+        return(Val);
+
+    ! 读出 DINT 类型
+    case BUS_TYP_DINT:                   ! 读出 DINT 类型
+        if present(IO_DOUT) then
+            StringPack := bytetostr(goutput(GoDataBytes{StartAddr + 0}) \CHAR) + 
+                          bytetostr(goutput(GoDataBytes{StartAddr + 1}) \CHAR) +
+                          bytetostr(goutput(GoDataBytes{StartAddr + 2}) \CHAR) +
+                          bytetostr(goutput(GoDataBytes{StartAddr + 3}) \CHAR);
+        else
+            StringPack := bytetostr(ginput(GiDataBytes{StartAddr + 0}) \CHAR) + 
+                          bytetostr(ginput(GiDataBytes{StartAddr + 1}) \CHAR) +
+                          bytetostr(ginput(GiDataBytes{StartAddr + 2}) \CHAR) +
+                          bytetostr(ginput(GiDataBytes{StartAddr + 3}) \CHAR);
+        endif
+    	packrawbytes 	StringPack, Raw,    1   \ASCII;
+    	unpackrawbytes 	Raw,        1, 		Val \INTX := DINT;
+        return(Val);
+
+    ! 读出 FLOAT 类型
+    case BUS_TYP_FLOAT:                   ! 读出 FLOAT 类型
+        if present(IO_DOUT) then
+            StringPack := bytetostr(goutput(GoDataBytes{StartAddr + 0}) \CHAR) + 
+                          bytetostr(goutput(GoDataBytes{StartAddr + 1}) \CHAR) +
+                          bytetostr(goutput(GoDataBytes{StartAddr + 2}) \CHAR) +
+                          bytetostr(goutput(GoDataBytes{StartAddr + 3}) \CHAR);
+        else
+            StringPack := bytetostr(ginput(GiDataBytes{StartAddr + 0}) \CHAR) + 
+                          bytetostr(ginput(GiDataBytes{StartAddr + 1}) \CHAR) +
+                          bytetostr(ginput(GiDataBytes{StartAddr + 2}) \CHAR) +
+                          bytetostr(ginput(GiDataBytes{StartAddr + 3}) \CHAR);
+        endif
+    	packrawbytes 	StringPack, Raw,    1   \ASCII;
+    	unpackrawbytes 	Raw,        1, 		Val \FLOAT4;
+        return(Val);
+
+    case BUS_TYP_FLOAT2:                   ! 读出 FLOAT2 类型
+        if present(IO_DOUT) then
+            StringPack := bytetostr(goutput(GoDataBytes{StartAddr + 0}) \CHAR) + 
+                          bytetostr(goutput(GoDataBytes{StartAddr + 1}) \CHAR) +
+                          bytetostr(goutput(GoDataBytes{StartAddr + 2}) \CHAR) +
+                          bytetostr(goutput(GoDataBytes{StartAddr + 3}) \CHAR);
+        else
+            StringPack := bytetostr(ginput(GiDataBytes{StartAddr + 0}) \CHAR) + 
+                          bytetostr(ginput(GiDataBytes{StartAddr + 1}) \CHAR) +
+                          bytetostr(ginput(GiDataBytes{StartAddr + 2}) \CHAR) +
+                          bytetostr(ginput(GiDataBytes{StartAddr + 3}) \CHAR);
+        endif
+    	packrawbytes 	StringPack, Raw,    1       \ASCII;
+    	unpackrawbytes 	Raw,        1, 		IntVal  \INTX := INT;
+    	unpackrawbytes 	Raw,        3, 		DecVal  \INTX := INT;
+        return(IntVal + DecVal / 10000.0);
+    default:
+
+        errwrite "bus_gdata_", "TYP Error !!!";
+        stop;
+    endtest
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_gdata_", " Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endfunc
+
+func jointtarget bus_gjoint_(\switch IO_DIN | switch IO_DOUT, num StartAddr, \num NumOfAxis)
+    var jointtarget JointVal := [[ 0, 0, 0, 0, 0, 0], [ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9]];
+    var num InNumOfAxis := 6;
+    var num I;
+
+    if present(NumOfAxis) InNumOfAxis := NumOfAxis;
+
+    if present(IO_DOUT) then
+        if (InNumOfAxis >= 1)   JointVal.robax.rax_1 := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 0);
+        if (InNumOfAxis >= 2)   JointVal.robax.rax_2 := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 4);
+        if (InNumOfAxis >= 3)   JointVal.robax.rax_3 := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 8);
+        if (InNumOfAxis >= 4)   JointVal.robax.rax_4 := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 12);
+        if (InNumOfAxis >= 5)   JointVal.robax.rax_5 := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 16);
+        if (InNumOfAxis >= 6)   JointVal.robax.rax_6 := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 20);
+        if (InNumOfAxis >= 7)   JointVal.extax.eax_a := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 24);
+        if (InNumOfAxis >= 8)   JointVal.extax.eax_b := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 28);
+        if (InNumOfAxis >= 9)   JointVal.extax.eax_c := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 32);
+        if (InNumOfAxis >= 10)  JointVal.extax.eax_d := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 36);
+        if (InNumOfAxis >= 11)  JointVal.extax.eax_e := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 40);
+        if (InNumOfAxis >= 12)  JointVal.extax.eax_f := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 44);
+    else
+        if (InNumOfAxis >= 1)   JointVal.robax.rax_1 := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 0);
+        if (InNumOfAxis >= 2)   JointVal.robax.rax_2 := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 4);
+        if (InNumOfAxis >= 3)   JointVal.robax.rax_3 := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 8);
+        if (InNumOfAxis >= 4)   JointVal.robax.rax_4 := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 12);
+        if (InNumOfAxis >= 5)   JointVal.robax.rax_5 := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 16);
+        if (InNumOfAxis >= 6)   JointVal.robax.rax_6 := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 20);
+        if (InNumOfAxis >= 7)   JointVal.extax.eax_a := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 24);
+        if (InNumOfAxis >= 8)   JointVal.extax.eax_b := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 28);
+        if (InNumOfAxis >= 9)   JointVal.extax.eax_c := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 32);
+        if (InNumOfAxis >= 10)  JointVal.extax.eax_d := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 36);
+        if (InNumOfAxis >= 11)  JointVal.extax.eax_e := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 40);
+        if (InNumOfAxis >= 12)  JointVal.extax.eax_f := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 44);
+    endif
+
+    return(JointVal);
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_gjoint_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endfunc
+
+func robtarget bus_gcartp_(\switch IO_DIN | switch IO_DOUT, num StartAddr, \num NumOfAxis)
+    var robtarget CartVal;
+    var num InNumOfAxis := 6;
+    var num I;
+    
+    CartVal := crobt(); 
+
+    CartVal.trans := [0, 0, 0];
+    CartVal.rot := [1, 0, 0, 0];
+    CartVal.extax := [ 9E9, 9E9, 9E9, 9E9, 9E9, 9E9];
+
+    if present(NumOfAxis) InNumOfAxis := NumOfAxis;
+
+    if present(IO_DOUT) then
+        if (InNumOfAxis >= 1)   CartVal.trans.x     := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 0);
+        if (InNumOfAxis >= 2)   CartVal.trans.y     := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 4);
+        if (InNumOfAxis >= 3)   CartVal.trans.z     := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 8);
+        if (InNumOfAxis >= 6)   CartVal.rot         := orientzyx(bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 12),
+                                                                 bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 16),
+                                                                 bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 20));
+        if (InNumOfAxis >= 7)   CartVal.extax.eax_a := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 24);
+        if (InNumOfAxis >= 8)   CartVal.extax.eax_b := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 28);
+        if (InNumOfAxis >= 9)   CartVal.extax.eax_c := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 32);
+        if (InNumOfAxis >= 10)  CartVal.extax.eax_d := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 36);
+        if (InNumOfAxis >= 11)  CartVal.extax.eax_e := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 40);
+        if (InNumOfAxis >= 12)  CartVal.extax.eax_f := bus_gdata_(BUS_TYP_FLOAT2, \IO_DOUT, StartAddr + 44);
+        
+    else
+        if (InNumOfAxis >= 1)   CartVal.trans.x     := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 0);
+        if (InNumOfAxis >= 2)   CartVal.trans.y     := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 4);
+        if (InNumOfAxis >= 3)   CartVal.trans.z     := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 8);
+        if (InNumOfAxis >= 6)   CartVal.rot         := orientzyx(bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 12),
+                                                                 bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 16),
+                                                                 bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 20));
+        if (InNumOfAxis >= 7)   CartVal.extax.eax_a := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 24);
+        if (InNumOfAxis >= 8)   CartVal.extax.eax_b := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 28);
+        if (InNumOfAxis >= 9)   CartVal.extax.eax_c := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 32);
+        if (InNumOfAxis >= 10)  CartVal.extax.eax_d := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 36);
+        if (InNumOfAxis >= 11)  CartVal.extax.eax_e := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 40);
+        if (InNumOfAxis >= 12)  CartVal.extax.eax_f := bus_gdata_(BUS_TYP_FLOAT2, StartAddr + 44);
+    endif
+
+    return(CartVal);
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_gcartp_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endfunc
+
+!***********************************************************
+! proc bus_uptin_
+!***********************************************************
+!     输入输出参数 : BusIn         * 总线输入 *     * 总线输入结构 *
+!***********************************************************
+! 功能 : 更新总线输入结构。
+!        读取系统准备、初始化、停止运动、测量开始、测量结束、结果正常、结果异常、完成等数字输入，
+!        以及设备ID、任务ID、错误ID、代理通知ID、消息类型等通用输入。
+!        如果读取输入时出现别名 IO 未定义的错误，则定义 IO 并重试。
+!        如果出现未知错误，则记录错误并停止程序。
+!***********************************************************
+proc bus_uptin_(inout busin_t BusIn)
+    BusIn := [dinput(DiSysReady),
+              dinput(DiSysInited),
+              dinput(DiStopMov),
+              dinput(DiOnMeasure),
+              dinput(DiMeasuerOver),
+              dinput(DiResultOk),
+              dinput(DiResultNG),
+              dinput(DiFinished),
+              ginput(GiDeviceId),
+              ginput(GiJobId),
+              ginput(GiErrorId),
+              ginput(GiAgentTellId),
+              ginput(GiAgentMsgType),
+              ginput(GiTellId),
+              ginput(GiMsgType)];
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_uptin_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endproc
+
+!***********************************************************
+! proc bus_uptout_
+!***********************************************************
+!     输入输出参数 : BusOut        * 总线输出 *     * 总线输出结构 *
+!***********************************************************
+! 功能 : 更新总线输出结构。
+!        设置使能、初始化、机器人运动、测量开始、测量结束、预留、周期结束等数字输出，
+!        以及机器人ID、任务ID、协议ID、通知ID、消息类型、机器人通知ID、机器人消息类型等通用输出。
+!        如果设置输出时出现别名 IO 未定义的错误，则定义 IO 并重试。
+!        如果出现未知错误，则记录错误并停止程序。
+!***********************************************************
+proc bus_uptout_(inout busout_t BusOut)
+    setdo DoSysEnable,  BusOut.SysEnable;
+    setdo DoSysInit,    BusOut.SysInit;
+    setdo DoRobMoving,  BusOut.RobMoving;
+    setdo DoMeasuerSt,  BusOut.MeasuerSt;
+    setdo DoMeasuerEd,  BusOut.MeasuerEd;
+    setdo DoReserverd1, BusOut.Reserverd1;
+    setdo DoReserverd2, BusOut.Reserverd2;
+    setdo DoCycleEnd,   BusOut.CycleEnd;
+
+    setgo GoRobotId,    BusOut.RobotId;
+    setgo GoJobId,      BusOut.JobId;
+    setgo GoProtocolId, BusOut.ProtocolId;
+    setgo GoTellId,     BusOut.TellId;
+    setgo GoMsgType,    BusOut.MsgType;
+    setgo GoRobTellId,  BusOut.RobTellId;
+    setgo GoRobMsgType, BusOut.RobMsgType;
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_uptout_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endproc
+
+!***********************************************************
+! proc bus_init_
+!***********************************************************
+!     输入输出参数 : BusIn         * 总线输入 *     * 总线输入结构 *
+!     输入输出参数 : BusOut        * 总线输出 *     * 总线输出结构 *
+!     输入参数 : \num RobId        * 可选数字 *     * 机器人的ID *
+!     输入参数 : \num ProtId       * 可选数字 *     * 协议ID *
+!***********************************************************
+! 功能 : 初始化总线输入输出。
+!        设置机器人ID和协议ID（如果提供），初始化系统使能和初始化信号，
+!        等待一段时间后更新总线输出，并等待直到协议ID为预设值之一。
+!        如果协议ID不为预设值之一，则等待直到通知ID为0。
+!        更新总线输入，设置通知ID和消息类型，并关闭初始化信号。
+!        如果过程中出现别名 IO 未定义的错误，则定义 IO 并重试。
+!        如果出现未知错误，则记录错误并停止程序。
+!***********************************************************
+proc bus_init_(inout busin_t BusIn, inout busout_t BusOut, \num RobId, \num ProtId)
+
+
+    if present(RobId)   then BusOut.RobotId     := RobId;   else BusOut.RobotId     := 0; endif
+    if present(ProtId)  then BusOut.ProtocolId  := ProtId;  else BusOut.ProtocolId  := 0; endif
+
+    if (doutput(DoSysInit) = 1) then
+
+        setdo DoSysInit, 0;
+
+        waittime 0.2;
+    endif
+
+    BusOut.SysEnable        := 1;
+    BusOut.SysInit          := 1;
+    BusOut.RobMoving        := 0;
+    BusOut.MeasuerSt        := 0;
+    BusOut.MeasuerEd        := 0;
+    BusOut.Reserverd1       := 0;
+    BusOut.Reserverd2       := 0;
+    BusOut.CycleEnd         := 0;
+    BusOut.JobId            := 0;
+    BusOut.RobTellId        := 0;
+
+    ! Code Modified on 2025.05.01
+    ! 不初始化 RobMsgType, 以免 lib_buscmd 函数传参受到影响 
+    ! BusOut.RobMsgType       := 0;
+    !
+
+    bus_uptout_ BusOut;
+
+    ! waittime 0.2;
+
+    ! Code Modified on 2025.05.04
+    ! 判断 DiSysReady 信号
+    ! if dinput(DiSysReady) = 0 then
+
+    !     log_error_ "bus_init_", "sofeware Not Ready!" \ELOG
+    !     return
+    ! endif
+
+    ! if not ((BusOut.ProtocolId = PTC_LN_PL) or (BusOut.ProtocolId = PTC_ST_PK)) then 
+
+    waituntil (GiTellId = 0) and (dinput(DiSysInited) = 1)  \Visualize 
+                                                            \Header :="BUS IO INIT" 
+                                                            \Message := "Waiting For Initialized!!!";
+
+    !
+    ! endif
+    bus_uptin_ BusIn;
+
+    BusOut.TellId           := BusIn.AgentTellId;
+    BusOut.MsgType          := BusIn.AgentMsgType;
+    BusOut.SysInit          := 0;
+
+    bus_uptout_ BusOut;
+
+    ! connect HeartbeatInt with heartbeat_handle_;
+    ! itimer 0.5, HeartbeatInt;
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_init_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+
+endproc
+
+!***********************************************************
+! func bus_wtell_
+!***********************************************************
+!     输入输出参数 : BusIn         * 总线输入 *     * 总线输入结构 *
+!     输入输出参数 : BusOut        * 总线输出 *     * 总线输出结构 *
+!     输入参数 : \num Timeout      * 可选数字 *     * 等待超时时间 *
+! 返回 :                     * 错误码 *     * 通信状态 *
+!***********************************************************
+! 功能 : 等待直到接收到代理的通知ID与发送的通知ID不同，或者系统准备状态无效。
+!        在指定时间内等待，如果超时则检查当前状态。
+!        如果系统准备状态无效、使能信号无效或仍在初始化阶段，则返回特定错误码。
+!        如果通知ID相同或代理的通知ID为0，则返回特定错误码。
+!        否则返回代理的错误ID。
+!        如果过程中出现别名 IO 未定义的错误，则定义 IO 并重试。
+!        如果出现等待超时或其他未知错误，则记录错误并根据情况返回错误码或停止程序。
+!***********************************************************
+func errnum bus_wtell_(inout busin_t BusIn, inout busout_t BusOut, \num Timeout)
+    var num TimeVal     := WAIT_MAX;
+
+    if present(Timeout) TimeVal := Timeout;
+
+    ! Code Modified on 2025.05.23
+    ! 输入为 -1 时设定为永久等待
+    if (TimeVal < 0) TimeVal := WAIT_MAX;
+
+    waituntil ((ginput(GiAgentTellId) <> goutput(GoTellId)) and (ginput(GiAgentTellId) <> 0)) or 
+               (dinput(DiSysReady) <> 1) or (doutput(DoSysEnable) <> 1) \MaxTime  := TimeVal \PollRate := 0.04;
+        
+    BusOut.TellId       := goutput(GoTellId);
+    BusIn.AgentTellId   := ginput(GiAgentTellId);
+    BusIn.SysReady      := dinput(DiSysReady);
+    BusOut.SysEnable    := doutput(DoSysEnable);
+    BusOut.SysInit      := doutput(DoSysInit);
+
+    if (BusIn.SysReady) <> 1 or (BusOut.SysEnable <> 1) or (BusOut.SysInit = 1) return(-2);
+
+    if (BusOut.TellId = BusIn.AgentTellId) or (BusIn.AgentTellId = 0) return(-1);
+     
+    BusIn.JobId         := ginput(GiJobId);
+    BusIn.AgentMsgType  := ginput(GiAgentMsgType);
+    BusIn.ErrorId       := ginput(GiErrorId);
+    return(BusIn.ErrorId);
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    elseif errno = ERR_WAIT_MAXTIME then
+
+        if (goutput(GoTellId) <> ginput(GiAgentTellId)) or (ginput(GiAgentTellId) = 0) then 
+        
+            skipwarn;
+            return(-3);
+        else
+
+            skipwarn;
+            trynext;
+        endif
+    else
+        errwrite "bus_wtell_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endfunc
+
+!***********************************************************
+! proc bus_ftell_
+!***********************************************************
+!     输入输出参数 : BusIn         * 总线输入 *     * 总线输入结构 *
+!     输入输出参数 : BusOut        * 总线输出 *     * 总线输出结构 *
+!***********************************************************
+! 功能 : 更新总线输入输出中的通知ID和消息类型。
+!        读取代理的通知ID和消息类型到总线输入结构，
+!        并将这些值设置到总线输出结构中，
+!        然后更新对应的通用输出信号。
+!        如果过程中出现别名 IO 未定义的错误，则定义 IO 并重试。
+!        如果出现未知错误，则记录错误并停止程序。
+!***********************************************************
+proc bus_ftell_(inout busin_t BusIn, inout busout_t BusOut)
+
+
+    BusIn.AgentTellId   := ginput(GiAgentTellId);
+    BusIn.AgentMsgType  := ginput(GiAgentMsgType);
+    BusOut.TellId       := BusIn.AgentTellId;
+    BusOut.MsgType      := BusIn.AgentMsgType;
+
+    setgo GoMsgType, BusOut.MsgType;
+    setgo GoTellId, BusOut.TellId;
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_ftell_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endproc
+
+func errnum bus_ntell_(inout busin_t BusIn, inout busout_t BusOut, \num Timeout)
+    var num TimeVal     := WAIT_MAX;
+
+    if present(Timeout) TimeVal := Timeout;
+
+    ! Code Modified on 2025.05.23
+    ! 输入为 -1 时设定为永久等待
+    if (TimeVal < 0) TimeVal := WAIT_MAX;
+
+    BusIn.TellId        := ginput(GiTellId);
+    BusOut.RobTellId    := BusIn.TellId  + 1;
+    if BusOut.RobTellId > 255 BusOut.RobTellId := 1;
+
+    setgo GoRobotId,    BusOut.RobotId;
+    setgo GoJobId,      BusOut.JobId;
+    setgo GoRobMsgType, BusOut.RobMsgType;
+    setgo GoRobTellId,  BusOut.RobTellId;
+
+    waituntil (ginput(GiTellId) = goutput(GoRobTellId)) or (dinput(DiSysReady) <> 1) or 
+              (doutput(DoSysEnable) <> 1) \MaxTime  := TimeVal \PollRate := 0.04; 
+              !\Visualize \Header :="BUS NEW TELL" \MsgArray:=["Robot Job Id = " + num_to_str_(goutput(GoJobId)), "Robot Msg Id = " + num_to_str_(goutput(GoRobMsgType))] \Icon := iconInfo;
+
+
+    BusIn.TellId        := ginput(GiTellId);
+    BusIn.SysReady      := dinput(DiSysReady);
+    BusOut.SysEnable    := doutput(DoSysEnable);
+    BusOut.SysInit      := doutput(DoSysInit);
+
+    if (BusIn.SysReady) <> 1 or (BusOut.SysEnable <> 1) or (BusOut.SysInit = 1) return(-2);
+    
+    if ginput(GiTellId) <> goutput(GoRobTellId) return(-1); 
+
+    BusIn.JobId         := ginput(GiJobId);
+    BusIn.MsgType       := ginput(GiMsgType);
+    BusIn.ErrorId       := ginput(GiErrorId);
+    return(BusIn.ErrorId);
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    elseif errno = ERR_WAIT_MAXTIME then
+        if ginput(GiTellId) <> goutput(GoRobTellId) then 
+        
+            skipwarn;
+            return(-3);
+        else
+
+            skipwarn;
+            trynext;
+        endif
+    else
+        errwrite "bus_ntell_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endfunc
+
+proc bus_stell_(inout busin_t BusIn, inout busout_t BusOut)
+
+    BusIn.TellId        := ginput(GiTellId);
+    BusOut.RobTellId    := goutput(GoRobTellId);
+    BusOut.SysEnable    := doutput(DoSysEnable);
+
+    ! Tell Id 不同步时，先同步一下
+    !
+    ! Code Modified on 2025.05.16
+    ! 修复当机器人没有使能 SysEnable 信号时，重新进行初始化
+    if (BusIn.TellId <> BusOut.RobTellId) or (BusOut.SysEnable = 0) then  
+
+        bus_init_ BusIn, BusOut  \RobId := BusOut.RobotId \ProtId := PTC_GEN_CMD;
+    endif
+    !
+
+    BusOut.RobTellId    := BusIn.TellId  + 1;
+    if BusOut.RobTellId > 255 BusOut.RobTellId := 1;
+
+    setgo GoRobotId,    BusOut.RobotId;
+    setgo GoJobId,      BusOut.JobId;
+    setgo GoRobMsgType, BusOut.RobMsgType;
+    setgo GoRobTellId,  BusOut.RobTellId;
+
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "bus_stell_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endproc
+
+func errnum bus_rtell_(inout busin_t BusIn, inout busout_t BusOut, \num Timeout)
+    var num TimeVal     := WAIT_MAX;
+
+
+
+    if present(Timeout) TimeVal := Timeout;
+
+    ! Code Modified on 2025.05.23
+    ! 输入为 -1 时设定为永久等待
+    if (TimeVal < 0) TimeVal := WAIT_MAX;
+
+    waituntil (ginput(GiTellId) = goutput(GoRobTellId)) or (dinput(DiSysReady) <> 1) or 
+              (doutput(DoSysEnable) <> 1) \MaxTime  := TimeVal \PollRate := 0.04; 
+              !\Visualize \Header :="BUS READ TELL" \MsgArray:=["Robot Tell Id = " + num_to_str_(goutput(GoRobTellId)), "Robot Command Id = " + num_to_str_(goutput(GoRobMsgType))] \Icon := iconInfo;
+
+
+    BusIn.TellId        := ginput(GiTellId);
+    BusIn.SysReady      := dinput(DiSysReady);
+    BusOut.SysEnable    := doutput(DoSysEnable);
+    BusOut.SysInit      := doutput(DoSysInit);
+
+    if (BusIn.SysReady) <> 1 or (BusOut.SysEnable <> 1) or (BusOut.SysInit = 1) return(-2);
+    
+    if ginput(GiTellId) <> goutput(GoRobTellId) return(-1); 
+
+    BusIn.JobId         := ginput(GiJobId);
+    BusIn.MsgType       := ginput(GiMsgType);
+    BusIn.ErrorId       := ginput(GiErrorId);
+    return(BusIn.ErrorId);
+
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        bus_io_define_;
+        skipwarn;
+        retry;
+    elseif errno = ERR_WAIT_MAXTIME then
+        if ginput(GiTellId) <> goutput(GoRobTellId) then 
+        
+            skipwarn;
+            return(-3);
+        else
+
+            skipwarn;
+            trynext;
+        endif
+    else
+        errwrite "bus_rtell_", "Unknow Error !!!" \Rl2 := "Error Code = " + numtostr(errno, 0);
+        stop;
+    endif
+endfunc
+
+! local trap heartbeat_handle_
+!     setdo DoReserverd1, bitxor(doutput(DoReserverd1), 1);
+
+!     error
+!     return;
+! endtrap
+
+
+
+endmodule

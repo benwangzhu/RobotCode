@@ -1,0 +1,71 @@
+&ACCESS RP
+&comment Sbt Comm010 T
+defdat sbt_comm10_t public
+;***********************************************************
+;
+; Copyright 2025 - 2025 speedbot All Rights reserved.
+;
+; file Name: sbt_comm10_t.dat
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2025 - 05 - 08
+;   Modification Data    ==   2025 - 06 - 03
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+;
+
+global struc snr_data_table_t char Mode, int TaskNum, char Area, Pip, real BoxLenght, BoxWidth, BoxHigh, e6pos ObliPos, PickPos, PlacePos
+
+global const int COMM010_COMMAND_INIT       = 255
+global const int COMM010_COMMAND_DATA       = 1
+global const int COMM010_COMMAND_POS1       = 2
+global const int COMM010_COMMAND_POS2       = 3
+global const int COMM010_COMMAND_DTFEEK     = 4
+global const int COMM010_COMMAND_PKSU       = 5
+global const int COMM010_COMMAND_MISS       = 6
+global const int COMM010_COMMAND_PRESS      = 7
+global const int COMM010_COMMAND_PKFL       = 8
+global const int COMM010_COMMAND_AREA       = 9
+
+
+global const char COMM010_WORKMODE_STACK    = "'H01'" 
+global const char COMM010_WORKMODE_UNSTACK  = "'H02'"
+
+global const char COMM010_RESULT_UNKNOWN    = "'H00'" 
+global const char COMM010_RESULT_OK         = "'H81'"
+global const char COMM010_RESULT_NOTOK      = "'H82'"
+
+global const char COMM010_MODE_UNKNOWN      = "'H00'" 
+global const char COMM010_MODE_ONE          = "'H0B'"
+global const char COMM010_MODE_TWO          = "'H0C'"
+
+global const char COMM010_FEEDBACK_DATA     = "'HC9'" 
+global const char COMM010_FEEDBACK_STATE    = "'HCA'"
+global const char COMM010_FEEDBACK_AREA     = "'HCB'"
+
+global const int COMM010_STATE_SUCCESS      = 0
+global const int COMM010_STATE_MISS         = -1
+global const int COMM010_STATE_PERSS        = -2
+global const int COMM010_STATE_FAILED       = -3
+
+global const int COMM010_POS_TYPE_NULL      = 0 
+global const int COMM010_POS_TYPE_PICK      = 101
+global const int COMM010_POS_TYPE_PLACE     = 102
+global const int COMM010_POS_TYPE_OBLI      = 103
+
+global const int COMM010_REQ_ONE            = 1
+global const int COMM010_REQ_TWO            = 2
+
+global const int PRIO_COMM010_TELL_NO = 35              ; INTERRUPT[35]
+global const int PRIO_COMM010_TIMEOUT_NO = 34           ; INTERRUPT[34]
+global const int PRIO_COMM010_READY_NO = 33             ; INTERRUPT[33]
+global const int COMM010_TIMEOUT_TIME_IDX = 33          ; $TIMER[33]
+
+
+
+
+enddat

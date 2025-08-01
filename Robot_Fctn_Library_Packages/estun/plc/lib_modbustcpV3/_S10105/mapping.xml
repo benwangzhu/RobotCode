@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VariablesMappingFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Entries />
+  <TaskEntries />
+  <Settings>
+    <UseSharedMemory>false</UseSharedMemory>
+    <SharedMemoryInputSize>0</SharedMemoryInputSize>
+    <SharedMemoryOutputSize>0</SharedMemoryOutputSize>
+  </Settings>
+</VariablesMappingFile>

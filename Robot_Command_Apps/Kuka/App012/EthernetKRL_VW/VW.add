@@ -1,0 +1,13 @@
+[Version]
+Version=1.0.0
+Type=Block
+
+[ReplaceCallOfBas]
+Type=REPLACE
+Start=DEF showMsgDepend(Ret:OUT)
+End=ENDIF
+What=VW.txt 
+
+
+
+

@@ -1,0 +1,436 @@
+program sbt_comm004
+--***********************************************************
+--
+-- file Name: sbt_comm004.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2024 - 04 - 01
+--   Modification Data    ==   2024 - 04 - 07
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--
+%comment = 'Guide 240421'
+%nolockgroup 
+%nopause = error + tpenable + command
+%include include\lib_busio_t
+%include include\lib_buscmd_t
+%include include\lib_math_t
+%include include\lib_logs_t
+%include include\lib_transform_t
+const
+
+    CMD_VPARM                           = 1                 -- 初始化和车型信息交互
+    CMD_VGIDE                           = 2                 -- 引导
+    CMD_VASMB                           = 3                 -- 装调
+    CMD_SEDPOS                          = 4                 -- 发送坐标
+    CMD_CAMERA                          = 5                 -- 发送相机编号          
+    CMD_DQMONI                          = 6                 -- 质量监控
+     
+var
+    --
+    -- 总线通讯接口
+    BusInput    in cmos     : busin_t               
+    BusOutput   in cmos     : busout_t
+
+    CommType01              : cmd_typ01_t
+    CommType03              : cmd_typ03_t
+
+    BusTimeout  in cmos     : integer
+
+    Count                   : integer
+
+    Pid                                     : integer
+    VinRegIdx                               : integer
+
+    SendPose                : xyzwprext
+    PicturePose             : xyzwprext
+    CommandPose             : xyzwprext
+    GuidePose               : xyzwprext
+
+    MaxCorr     in cmos     : vector
+
+    Status                  : integer
+
+    CommandId               : integer
+
+%include include\lib_logs_h
+%include include\lib_math_h
+%include include\lib_motion_h
+%include include\lib_string_h
+%include include\lib_tp_if_h
+%include include\lib_busio_h
+%include include\lib_buscmd_h
+
+routine err_display_(BusIn : busin_t;
+                     BusOut : busout_t) from sbt_comm004
+begin
+
+    Count = 0
+
+    CommandId = get_iparm_(1)
+
+    while true do 
+
+        select CommandId of
+        case(CMD_VPARM):
+
+            --
+            -- 默认总线输入开始地址为 513 位
+            --
+            BusInput.BusIoSt = tern_int_(uninit(BusInput.BusIoSt), 513, BusInput.BusIoSt)
+            --
+            -- 默认总线输出开始地址为 513 位
+            --
+            BusOutput.BusIoSt = tern_int_(uninit(BusOutput.BusIoSt), 513, BusOutput.BusIoSt)
+
+
+            BusTimeout = tern_int_(uninit(BusTimeout), 10000, BusTimeout)
+
+
+            bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+
+            -- 工件编号
+            Pid = get_iparm_(2)
+
+            -- Vin R[] 寄存器起始地址
+            VinRegIdx = get_iparm_(3)
+
+            CommType03[1] = Pid
+            CommType03[2] = get_ireg_(VinRegIdx + 0)
+            CommType03[3] = get_ireg_(VinRegIdx + 1)
+            CommType03[4] = get_ireg_(VinRegIdx + 2)
+            CommType03[5] = get_ireg_(VinRegIdx + 3)
+            CommType03[6] = get_ireg_(VinRegIdx + 4)
+            CommType03[7] = get_ireg_(VinRegIdx + 5)
+            CommType03[8] = get_ireg_(VinRegIdx + 6)
+            CommType03[9] = get_ireg_(VinRegIdx + 7)
+            CommType03[10] = get_ireg_(VinRegIdx + 8)
+            CommType03[11] = get_ireg_(VinRegIdx + 9)
+            CommType03[12] = get_ireg_(VinRegIdx + 10)
+            CommType03[13] = get_ireg_(VinRegIdx + 11)
+            CommType03[14] = get_ireg_(VinRegIdx + 12)
+            CommType03[15] = get_ireg_(VinRegIdx + 13)
+            CommType03[16] = get_ireg_(VinRegIdx + 14)
+            CommType03[17] = get_ireg_(VinRegIdx + 15)
+            CommType03[18] = get_ireg_(VinRegIdx + 16)
+            
+            Status = bus_cmd137_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CommType03, 0)
+            Status = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+
+            if Status = OK then 
+
+                -- 正常结束
+                return
+            else
+
+                err_display_(BusInput, BusOutput)
+            endif
+        case(CMD_VGIDE):
+
+            CommType01.Byte01 = 100
+            CommType01.Byte02 = get_iparm_(3)
+            CommType01.Short03 = 0
+            CommType01.Short04 = 0
+            CommType01.Int05 = 0
+            CommType01.Int06 = 0
+            CommType01.Float07 = 0.0
+            CommType01.Float08 = 0.0
+
+            Status = bus_cmd145_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CommType01, 0)
+            Status = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+
+            if Status = OK then
+
+                Count = Count + 1
+
+                BusOutput.JobId = Count
+
+                PicturePose = c_mulgp_ps_(0, 0, 1)
+
+                Status = bus_cmd009_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, PicturePose, 0)
+                Status = bus_cmd129_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, CommandPose, BusTimeout)
+            
+                if Status = OK then 
+
+                    GuidePose = PicturePose 
+                    GuidePose.X = CommandPose.X
+                    GuidePose.Y = CommandPose.Y
+                    GuidePose.Z = CommandPose.Z
+                    GuidePose.W = CommandPose.W
+                    GuidePose.P = CommandPose.P
+                    GuidePose.R = CommandPose.R
+
+                    set_preg_(get_iparm_(2), GuidePose)
+                    return
+                else
+
+                    err_display_(BusInput, BusOutput)
+
+                    bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+
+                    Count = Count - 1
+                endif
+
+            else
+
+                err_display_(BusInput, BusOutput)
+
+                bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+            endif
+
+
+        case(CMD_SEDPOS):
+
+            CommType01.Byte01 = 103
+            CommType01.Byte02 = 0
+            CommType01.Short03 = 0
+            CommType01.Short04 = 0
+            CommType01.Int05 = 0
+            CommType01.Int06 = 0
+            CommType01.Float07 = 0.0
+            CommType01.Float08 = 0.0
+
+            Status = bus_cmd145_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CommType01, 0)
+            Status = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+
+            if Status = OK then 
+
+                SendPose = c_mulgp_ps_(get_iparm_(2), get_iparm_(3), 1)
+
+                Status = bus_cmd009_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, SendPose, 0)
+                Status = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, BusTimeout )
+            
+                if Status = OK then 
+                    
+                    return
+                else
+
+                    err_display_(BusInput, BusOutput)
+
+                    bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+
+                endif
+
+            else
+                err_display_(BusInput, BusOutput)
+
+                bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+            endif
+
+        case(CMD_CAMERA):
+
+            CommType01.Byte01 = 104
+            CommType01.Byte02 = get_iparm_(2)
+            CommType01.Short03 = 0
+            CommType01.Short04 = 0
+            CommType01.Int05 = 0
+            CommType01.Int06 = 0
+            CommType01.Float07 = 0.0
+            CommType01.Float08 = 0.0
+
+            Status = bus_cmd145_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CommType01, 0)
+            Status = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+
+            if Status = OK then
+
+                SendPose = c_mulgp_ps_(get_iparm_(3), get_iparm_(4), 1)
+
+                Status = bus_cmd009_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, SendPose, 0)
+                Status = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, BusTimeout )
+            
+                if Status = OK then 
+                    
+                    return
+                else
+
+                    err_display_(BusInput, BusOutput)
+
+                    bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+
+                endif
+            else
+
+                err_display_(BusInput, BusOutput)
+
+                bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+            endif
+
+        case(CMD_VASMB, CMD_DQMONI):
+
+            if Count = 0 then
+
+                --
+                -- 设置默认的最大纠正极限
+                --
+                if uninit(MaxCorr.X) then
+
+                    MaxCorr.X = 10.0
+                endif
+                if uninit(MaxCorr.Y) then
+
+                    MaxCorr.Y = 10.0
+                endif
+                if uninit(MaxCorr.Z) then
+
+                    MaxCorr.Z = 10.0
+                endif
+                -- 
+                -- 发送流程开始启动指令
+                --
+                select CommandId of
+                case(CMD_VASMB):            -- 装调
+                    CommType01.Byte01 = 101
+                    CommType01.Byte02 = 0
+                    CommType01.Short03 = 0
+                    CommType01.Short04 = 0
+                    CommType01.Int05 = 0
+                    CommType01.Int06 = 0
+                    CommType01.Float07 = 0.0
+                    CommType01.Float08 = 0.0
+                case(CMD_DQMONI):           -- 质量监控
+                    CommType01.Byte01 = 102
+                    CommType01.Byte02 = 0
+                    CommType01.Short03 = 0
+                    CommType01.Short04 = 0
+                    CommType01.Int05 = 0
+                    CommType01.Int06 = 0
+                    CommType01.Float07 = 0.0
+                    CommType01.Float08 = 0.0
+                endselect
+
+                Status = bus_cmd145_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CommType01, 0)
+                Status = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+            endif
+
+            if Status = OK then
+
+                Count = tern_int_(Count >= 254, 1, Count + 1)
+
+                BusOutput.JobId = Count
+
+                PicturePose = c_mulgp_ps_(($mnuframenum[1]), ($mnutoolnum[1]), 1)
+
+                Status = bus_cmd009_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, PicturePose, 0)
+                Status = bus_cmd129_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, CommandPose, BusTimeout)
+
+                if Status = OK then 
+
+                    if BusInput.JobId = 255 then
+
+                        -- log_info_('Sbt >', 'VASMB Completed !!!')
+                        return
+                    endif
+
+                    if BusInput.JobId = BusOutput.JobId then
+
+                        GuidePose = PicturePose 
+                        GuidePose.X = CommandPose.X
+                        GuidePose.Y = CommandPose.Y
+                        GuidePose.Z = CommandPose.Z
+                        GuidePose.W = CommandPose.W
+                        GuidePose.P = CommandPose.P
+                        GuidePose.R = CommandPose.R
+
+                        if (abs(GuidePose.X - PicturePose.X) <= MaxCorr.X) and &
+                        (abs(GuidePose.Y - PicturePose.Y) <= MaxCorr.Y) and &
+                        (abs(GuidePose.Z - PicturePose.Z) <= MaxCorr.Z) then
+
+                            -- 拿到机器人的控制权限
+                            while not lock_grp_(1) do  
+
+                                delay(100)
+                            endwhile
+
+                            -- 设置到位精度
+                            $loctol = 0.2
+                            $orienttol = 0.1
+                            $checkconfig = false
+
+                            repeat
+
+                                move_l_(GuidePose, get_rparm_(2), FINE, ($mnuframenum[1]), ($mnutoolnum[1]))
+                                delay(100)
+                            until(GuidePose >=< cur_pos_(($mnuframenum[1]), ($mnutoolnum[1])))
+
+                            -- 释放机器人控制权限，
+                            unlock_grp_(1)
+
+                            delay(get_iparm_(3))
+                        else
+                            
+                            post_err(CC_UALARM, '801 装调量超出设置极限', 0, CC_PAUSE)
+                        endif
+                    else
+
+                        post_err(CC_UALARM, '802 装调时序错误', 0, CC_PAUSE)
+                    endif
+
+                else
+
+                    err_display_(BusInput, BusOutput)
+
+                    bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+
+                    Count = 0
+                endif
+            else
+                err_display_(BusInput, BusOutput)
+
+                bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+            endif
+        else:
+            
+            post_err(CC_UALARM, '999 Cmd Param1 Err !!!', 0, CC_ABORT)
+            
+        endselect
+    
+    endwhile  
+
+end sbt_comm004
+
+routine err_display_
+begin
+    if not BusIn.SysReady then 
+
+        post_err(CC_UALARM, '901 软件未就绪', 0, CC_PAUSE)
+        return
+    endif
+
+    if BusIn.TellId <> BusOut.RobTellId then 
+
+        post_err(CC_UALARM, '902 软件处理超时', 0, CC_PAUSE)
+        return
+    endif
+
+    select BusIn.ErrorId of
+    case(1):
+        post_err(CC_UALARM, '001 相机连接失败', 0, CC_PAUSE)
+    case(2):
+        post_err(CC_UALARM, '002 相机拍照失败', 0, CC_PAUSE)
+    case(3):
+        post_err(CC_UALARM, '003 上料算法识别失败', 0, CC_PAUSE)
+    case(4):
+        post_err(CC_UALARM, '004 铰链贴合算法计算失败', 0, CC_PAUSE)
+    case(5):
+        post_err(CC_UALARM, '005 铰链调整算法计算失败', 0, CC_PAUSE)
+    case(6):
+        post_err(CC_UALARM, '006 间隙面差计算失败', 0, CC_PAUSE)
+    case(7):
+        post_err(CC_UALARM, '007 装调算法调用失败', 0, CC_PAUSE)
+    case(8):
+        post_err(CC_UALARM, '008 拧紧算法调用失败', 0, CC_PAUSE)
+    case(9):
+        post_err(CC_UALARM, '009 车门吸平算法调用失败', 0, CC_PAUSE)
+    case(10):
+        post_err(CC_UALARM, '010 超出纠偏阈值范围', 0, CC_PAUSE)
+    else:
+        post_err(CC_UALARM, '903 未知错误', 0, CC_PAUSE)
+    endselect
+    
+end err_display_

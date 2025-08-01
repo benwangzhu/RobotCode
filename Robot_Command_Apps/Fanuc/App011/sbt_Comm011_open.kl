@@ -1,0 +1,117 @@
+program sbt_open
+--***********************************************************
+--
+-- file Name: sbt_open
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2024 - 07 - 04
+--   Modification Data    ==   2024 - 07 - 04
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+-- 链接通讯开启任务
+--
+%nolockgroup
+%comment = '焊接-打开'
+%include include/lib_math_t
+%include sbt_Comm011_t
+%include sbt_Comm011_global
+%include include/lib_transform_t
+var
+    Status                      : integer
+    TaskId1                     : integer
+%include include/lib_thread_h
+%include include/lib_socket_h
+%include include/lib_math_h
+%include include/lib_logs_h
+%include include/lib_tp_if_h
+%include include/lib_motion_h
+
+begin
+
+
+    -- 初始化通讯参数
+    using RelTmSockCfg do
+        Connected           = false                   
+        Host                = tern_str_(uninit(Host), '127.0.0.1', Host)
+        PortTag             = tern_str_(uninit(PortTag), RELTM_TAG, PortTag)
+        ServerPort          = tern_int_(uninit(ServerPort), RELTM_PORT, ServerPort)
+        NByte               = 0                    
+        AtrTimeout          = 0               
+        AtrBinary           = true             
+        AtrIntAct           = false            
+        AtrProbably         = tern_bool_(uninit(AtrProbably), true, AtrProbably) 
+    endusing
+
+    NumOfRobAxis = get_axs_num_(1)  
+    NumOfRotAxis = get_axs_num_(2)
+
+    -- 创建信号量
+    SemRltAck = 2
+    GlbCommannd = 0
+    clear_sema_(SemRltAck)
+    RelTmSockCfg.Connected = false
+
+    ShutdownReq = false
+
+    GlbSlodId = 0
+    GlbWeldMode = MODE_NORMAL
+    
+    log_info_('', '尝试进行网络链接 !')
+    repeat
+        status = csock_conn_(RelTmSockCfg)
+        if status <> OK then
+
+            post_err(CC_UALARM, '通讯链接失败', 0, CC_PAUSE)         
+        endif
+    until status = OK
+
+    log_info_('', '已连接 !')
+    -- if task_status_('sbt_network') <> PG_RUNNING then 
+
+    thrd_end_('sbt_network')
+
+    delay(100)
+
+    TaskId1 = thrd_create_('sbt_network', 0, false)
+    if TaskId1 <= 0 then
+
+        post_err(CC_UALARM, '创建通讯任务失败', 0, CC_ABORT)         
+    endif
+    -- endif
+
+    -- wait for RelTmSockCfg.Connected = true
+    delay(200)
+end sbt_open

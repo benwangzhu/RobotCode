@@ -1,0 +1,366 @@
+program lib_inst
+--***********************************************************
+--
+-- file Name: lib_inst
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 05 - 06
+--
+-- Author: 
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+-- 2025 - 05 - 06 ++ f000_it00_() 
+--
+-- 2025 - 05 - 06 ++ f001_it01_() 
+--
+-- 2025 - 05 - 06 ++ f002_it01_() 
+--
+-- 2025 - 05 - 06 ++ f003_it01_()
+--
+-- 2025 - 05 - 06 ++ f004_it01_()
+--
+%comment = 'Inst 250429'
+%nolockgroup
+%nobusylamp
+%nopause = error + command + tpenable
+
+%include include/lib_busio_t
+%include include/lib_buscmd_t
+%include include/lib_packages_t
+%include include/lib_tpe_t
+%include include/lib_socket_t
+%include include/lib_transform_t
+%include include/lib_math_t
+%include include/lib_inst_t
+%include include/lib_logs_t
+%include klevtpe
+var 
+    FileVar                     : file 
+    InstSendHead                : pack_head_t
+    InstReadHead                : pack_head_t
+    InstSendBody                : busout_t
+    InstReadBody                : busin_t
+    InstSendTail                : pack_tail_t
+    InstReadTail                : pack_tail_t
+
+%include include/lib_packages_h
+%include include/lib_socket_h
+%include include/lib_tpe_h
+%include include/lib_motion_h
+%include include/lib_tp_if_h
+%include include/lib_inst_h
+%include include/lib_math_h
+begin 
+
+end lib_inst
+
+routine f000_it00_
+var
+    Ack                         : integer 
+    Status                      : integer
+begin
+    Ack                         = 0
+    InstSendHead.Head           = PACK_HEADER
+    InstSendHead.Length         = 24
+    InstSendHead.PacketCount    = 1
+    InstSendHead.Cmd            = 253
+    InstSendHead.Type_          = TYPE_FANUC
+    InstSendHead.Seq            = 0 
+    InstSendHead.VirtualRob     = bol_to_int_(is_vir_rob_)      --判断机器人是否为真实机器人，真实机器人为0，仿真机器人为1       
+    InstSendTail                = PACK_TAIL
+
+    ThisSocket.Connected        = false                 -- 设置 CtrlSock 连接状态为 false
+    ThisSocket.ServerPort       = INST_PORT             -- 设置 CtrlSock 的服务器端口号
+    ThisSocket.NByte            = 0                     -- 设置 CtrlSock 的字节数
+    ThisSocket.AtrTimeout       = 0                     -- 设置 CtrlSock 的超时属性
+    ThisSocket.AtrBinary        = true                  -- 设置 CtrlSock 的二进制传输属性
+    ThisSocket.AtrIntAct        = false                 -- 设置 CtrlSock 的中断激活属性
+
+    repeat  
+        delay(100)                         
+        tcp_close_(ThisSocket, FileVar)            
+        Status = tcp_connect_(ThisSocket, FileVar)    
+    until(Status = OK)
+
+    Status = spack_head_(ThisSocket, FileVar, InstSendHead)
+    write FileVar(Ack)
+    Status = spack_tail_(ThisSocket, FileVar, InstSendTail)
+    if Status <> OK then  
+        return(Status) 
+    endif 
+
+    Status = rpack_head_(ThisSocket, FileVar,  InstReadHead)
+    read FileVar(Ack)
+    Status = rpack_tail_(ThisSocket, FileVar,  InstReadTail)
+    return(Status) 
+end f000_it00_
+
+routine f001_it01_
+var
+    TempInt                     : integer 
+    Status                      : integer 
+    SendCmdTyp07                : cmd_typ07_t
+begin
+    InstSendHead.Seq = InstSendHead.Seq + 1
+    if InstSendHead.Seq > 255 then 
+        InstSendHead.Seq = 1
+    endif
+    InstSendHead.Length         = 80
+    InstSendHead.Cmd            = 64
+    InstSendHead.Type_          = 1
+
+    InstSendBody.RobotId        = 1
+    InstSendBody.JobId          = 0
+    InstSendBody.ProtocolId     = 0
+    InstSendBody.RobMsgType     = 17
+
+    SendCmdTyp07.Float01 = PosData.x
+    SendCmdTyp07.Float02 = PosData.y
+    SendCmdTyp07.Float03 = PosData.z
+    SendCmdTyp07.Float04 = PosData.w
+    SendCmdTyp07.Float05 = PosData.p
+    SendCmdTyp07.Float06 = PosData.r
+    SendCmdTyp07.Float07 = PosData.ext1
+    SendCmdTyp07.Float08 = PosData.ext2
+    SendCmdTyp07.Float09 = PosData.ext3
+
+    SendCmdTyp07.Float10 = 0.0
+    SendCmdTyp07.Float11 = 0.0
+    SendCmdTyp07.Float12 = 0.0
+    SendCmdTyp07.Int13   = CamerNumber
+    SendCmdTyp07.Int14   = PointNumber
+    
+    Status = spack_head_(ThisSocket, FileVar, InstSendHead)
+    Status = spack_body_(ThisSocket, FileVar, InstSendBody)
+    Status = pack_cmd017_(ThisSocket, FileVar, PACKCMD_WRIT, SendCmdTyp07)
+    Status = spack_tail_(ThisSocket, FileVar, InstSendTail)
+    if Status <> OK then  
+        return(Status)
+    endif 
+
+    Status = rpack_head_(ThisSocket, FileVar,  InstReadHead)
+    Status = rpack_body_(ThisSocket, FileVar,  InstReadBody)
+    Status = rpack_tail_(ThisSocket, FileVar,  InstReadTail)
+    return(Status)
+end f001_it01_
+
+routine f002_it01_
+var
+    Status                      : integer 
+    SendCmdTyp01                : cmd_typ01_t
+    ReadCmdTyp01                : cmd_typ01_t
+begin
+    InstSendHead.Seq = InstSendHead.Seq + 1
+    if InstSendHead.Seq > 255 then 
+        InstSendHead.Seq = 1
+    endif
+    InstSendHead.Length         = 50
+    InstSendHead.Cmd            = 64
+    InstSendHead.Type_          = 1
+
+    InstSendBody.RobotId        = 2
+    InstSendBody.JobId          = JobIdData
+    InstSendBody.ProtocolId     = 0
+    InstSendBody.RobMsgType     = 21
+
+    SendCmdTyp01.Byte01         = PlanPara  
+    SendCmdTyp01.Byte02         = 0 
+    SendCmdTyp01.Short03        = 0  
+    SendCmdTyp01.Short04        = 0
+    SendCmdTyp01.Int05          = 0
+    SendCmdTyp01.Int06          = 0
+    SendCmdTyp01.Float07        = 0.0
+    SendCmdTyp01.Float08        = 0.0
+    
+    Status = spack_head_(ThisSocket, FileVar, InstSendHead)
+    Status = spack_body_(ThisSocket, FileVar, InstSendBody)
+    Status = pack_cmd021_(ThisSocket, FileVar, PACKCMD_WRIT, SendCmdTyp01)
+    Status = spack_tail_(ThisSocket, FileVar, InstSendTail)
+    if Status <> OK then  
+        return(Status)
+    endif 
+
+    Status = rpack_head_(ThisSocket, FileVar,  InstReadHead)
+    Status = rpack_body_(ThisSocket, FileVar,  InstReadBody)
+    Status = pack_cmd021_(ThisSocket, FileVar, PACKCMD_READ, ReadCmdTyp01)
+    Status = rpack_tail_(ThisSocket, FileVar,  InstReadTail)
+    if Status = OK then 
+        ProcNum = ReadCmdTyp01.Byte01
+    endif 
+    return(Status)
+end f002_it01_
+
+routine f003_it01_
+var
+    Status                      : integer 
+    SendCmdTyp01                : cmd_typ01_t
+    ReadCmdTyp08                : cmd_typ08_t
+begin
+    InstSendHead.Seq = InstSendHead.Seq + 1
+    if InstSendHead.Seq > 255 then 
+        InstSendHead.Seq = 1
+    endif
+    InstSendHead.Length         = 50
+    InstSendHead.Cmd            = 64
+    InstSendHead.Type_          = 1
+
+    InstSendBody.RobotId        = 3
+    InstSendBody.JobId          = JobIdData
+    InstSendBody.ProtocolId     = 0
+    InstSendBody.RobMsgType     = 21
+
+    SendCmdTyp01.Byte01         = ProcNumber  
+    SendCmdTyp01.Byte02         = 0 
+    SendCmdTyp01.Short03        = 0  
+    SendCmdTyp01.Short04        = 0
+    SendCmdTyp01.Int05          = 0
+    SendCmdTyp01.Int06          = 0
+    SendCmdTyp01.Float07        = 0.0
+    SendCmdTyp01.Float08        = 0.0
+    
+    Status = spack_head_(ThisSocket, FileVar, InstSendHead)
+    Status = spack_body_(ThisSocket, FileVar, InstSendBody)
+    Status = pack_cmd021_(ThisSocket, FileVar, PACKCMD_WRIT, SendCmdTyp01)
+    Status = spack_tail_(ThisSocket, FileVar, InstSendTail)
+    if Status <> OK then  
+        return(Status)
+    endif 
+
+    Status = rpack_head_(ThisSocket, FileVar,  InstReadHead)
+    Status = rpack_body_(ThisSocket, FileVar,  InstReadBody)
+    Status = pack_cmd148_(ThisSocket, FileVar, PACKCMD_READ, ReadCmdTyp08)
+    Status = rpack_tail_(ThisSocket, FileVar,  InstReadTail)
+    if Status = OK then 
+        GrindNumber = ReadCmdTyp08.Byte01
+        GrindSpeed  = ReadCmdTyp08.Float13
+    endif 
+    return(Status)
+end f003_it01_
+
+routine f004_it01_
+var
+    I                           : integer 
+    TpeOpenId                   : integer 
+    TpeLen                      : integer 
+    Status                      : integer 
+    ConvPos                     : xyzwprext
+    InstMove                    : inst_move_t
+    SendCmdTyp01                : cmd_typ01_t
+    ReadCmdTyp07                : cmd_typ07_t
+begin
+    InstSendHead.Length         = 50
+    InstSendHead.Cmd            = 64
+    InstSendHead.Type_          = 1
+
+    InstSendBody.RobotId        = 4
+    InstSendBody.JobId          = JobIdData
+    InstSendBody.ProtocolId     = 0
+    InstSendBody.RobMsgType     = 21
+
+    SendCmdTyp01.Byte01         = PointType  
+    SendCmdTyp01.Byte02         = ProcNumber
+    SendCmdTyp01.Short03        = 0  
+    SendCmdTyp01.Short04        = 0
+    SendCmdTyp01.Int05          = 0
+    SendCmdTyp01.Int06          = 0
+    SendCmdTyp01.Float07        = PointLen
+    SendCmdTyp01.Float08        = 0.0
+
+    TpeLen = 0
+    InstMove.PointNo    = 1
+    InstMove.MovType    = LM_MTN_LIN
+    InstMove.PointTyp   = LM_MTN_NPOS
+    InstMove.SpeedTyp   = LM_MTN_CMMIN
+
+    TpeOpenId = tpe_open_(TpeProgram, TPE_RWACC, TPE_NOREJ)
+    if TpeOpenId <= 0 then 
+        post_err(CC_UALARM, '路径程序打开错误', 0, CC_ABORT)
+    endif
+    tpe_del_ln_(TpeOpenId, TPE_ALL_LINE)
+
+    repeat
+        InstSendHead.Seq = InstSendHead.Seq + 1
+        if InstSendHead.Seq > 255 then 
+            InstSendHead.Seq = 1
+        endif
+
+        Status = spack_head_(ThisSocket, FileVar, InstSendHead)
+        Status = spack_body_(ThisSocket, FileVar, InstSendBody)
+        Status = pack_cmd021_(ThisSocket, FileVar, PACKCMD_WRIT, SendCmdTyp01)
+        Status = spack_tail_(ThisSocket, FileVar, InstSendTail)
+        if Status <> OK then  
+            return(Status)
+        endif 
+
+        Status = rpack_head_(ThisSocket, FileVar,  InstReadHead)
+        Status = rpack_body_(ThisSocket, FileVar,  InstReadBody)  
+        if Status <> OK then 
+            return(Status)
+        endif               
+
+        for I = 1 to InstReadHead.PacketCount do  
+            Status = pack_cmd132_(ThisSocket, FileVar, PACKCMD_READ, ReadCmdTyp07)
+            if Status <> OK then 
+                return(Status)
+            endif 
+            
+            ConvPos   =  null_pos_
+            ConvPos.x = ReadCmdTyp07.Float01 
+            ConvPos.y = ReadCmdTyp07.Float02
+            ConvPos.z = ReadCmdTyp07.Float03
+            ConvPos.w = ReadCmdTyp07.Float04
+            ConvPos.p = ReadCmdTyp07.Float05
+            ConvPos.r = ReadCmdTyp07.Float06
+            ConvPos.ext1 = ReadCmdTyp07.Float07
+            ConvPos.ext2 = ReadCmdTyp07.Float08
+            ConvPos.ext3 = ReadCmdTyp07.Float09 
+
+            InstMove.Speed      = ReadCmdTyp07.Int13
+            InstMove.Cnt        = 100
+            tpe_it_mov_(TpeOpenId, InstMove, TpeLen)
+            tpe_s_cpos_(TpeOpenId, 1, (InstMove.PointNo), ConvPos)
+
+            InstMove.PointNo = InstMove.PointNo + 1
+        endfor 
+
+        Status = rpack_tail_(ThisSocket, FileVar,  InstReadTail)
+        if Status <> OK then 
+            return(Status)
+        endif 
+    until(InstReadHead.Type_ = 1)   
+
+    tpe_close_(TpeOpenId)
+    return(Status)
+end f004_it01_

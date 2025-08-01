@@ -1,0 +1,5 @@
+TASKDIR	4	Tasks		eCLR	I486_LE_MSC12_ACONTIS
+TASK	5	UTask		eCLR	I486_LE_MSC12_ACONTIS
+PROGRAM	6	lib_modbustcpV3	lib_modbustcpV3		
+VAR_GLOBALS	4	Global_Variables	C\Configuration\R\Resource\Global_Variables.VGR		
+IO/CONFIGURATION	4	IO_Configuration	C\Configuration\R\Resource\IOCONFIG.CNF		

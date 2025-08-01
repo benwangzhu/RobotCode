@@ -1,0 +1,43 @@
+&ACCESS RVP1
+&REL 7
+&COMMENT Picture Main
+&PARAM EDITMASK = *
+&PARAM DISKPATH = KRC:\R1\Program\SbtComm001Main\D
+DEF PICTURE_main( )
+;***********************************************************
+; 
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+; 
+; File Name: mixsort_main.DAT
+; 
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 27
+;   Modification Data    ==   2025 - 02 - 10
+; 
+; Author: speedbot
+; 
+; Version: 1.1
+;***********************************************************
+;FOLD INI;%{PE}
+    ;FOLD BASISTECH INI
+        GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+        INTERRUPT ON 3 
+        BAS (#INITMOV,0 )
+    ;ENDFOLD (BASISTECH INI)
+    ;FOLD USER INI
+        ;Make your modifications here
+        
+    ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+;FOLD Basic.Override IN Override: 30  ;%{PE}
+override_(30)
+;ENDFOLD
+;FOLD PLC.Pounce ;%{PE}
+pounce_()
+;ENDFOLD
+PICTRUE01()
+;FOLD PLC.MoveToHome ;%{PE}
+move_to_home_()
+;ENDFOLD
+END

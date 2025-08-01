@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceProfile DeviceProfileName="eCLR Simulation (Core: 3.0.7)" DeviceProfileVersion="2.4.1" UpdateType="AskUser">
+  <CILGenerator Name="Ade.Eclr.CilGenerator" Version="3.2.1" IsNative="false" />
+  <CILCompiler Prefix="cilc" ProcessorType="i486" ProgrammingModel="msc12" Version="3.0.0" CompilerOptions="2" />
+  <SimulationSupported>true</SimulationSupported>
+  <MetaDump Version="1.1.0" />
+  <ImageBuilder Version="1.0.0" />
+  <Assembly Name="demoio" Version="2.1.0" IsNative="true" />
+  <Assembly Name="simio" Version="1.0.0" IsNative="true" />
+  <Assembly Name="nvtcpudp" Version="1.0.0" IsNative="true" />
+  <Assembly Name="mscorlib" Version="2.4.0" IsNative="true" />
+  <Assembly Name="pcoslib" Version="2.6.0" IsNative="true" />
+  <Assembly Name="eclrlib" Version="2.6.0" IsNative="true" />
+  <Assembly Name="Iec61131Standard" Version="1.9.2" IsNative="false" />
+  <Assembly Name="dummyio" Version="1.4.0" IsNative="false" />
+  <DeviceDescription CPUType="259" MaximumProgramSize="4194304" MaximumDataSize="10485768" MaximumRetainDataSize="327696" MaximumImageSize="67108864" MaximumImageFilesSize="67108864" IsDownloadChangesCapable="true" ScheduleInterval="1000" ThreadingPriorityLevel="12" ThreadingType="" LogicAnalyzerState="None" RedundancyRole="" />
+  <VirtualLimitation UserCodeSize="-1" UserCodeSizeWarningLevel="-1" DataSize="-1" DataSizeWarningLevel="-1" RetainDataSize="-1" RetainDataSizeWarningLevel="-1" />
+  <DownloadPouInfoList>true</DownloadPouInfoList>
+  <DownloadSfcPouList>true</DownloadSfcPouList>
+  <TaskProperties MinimumInterval="1000" MaximumInterval="1800000000" DefaultIntervalNewTask="100000" MinimumWatchdog="1000" MaximumWatchdog="5000000" DefaultWatchdogNewTask="100000" MaximumUserTasks="16" TaskTimeResolution="1000" AvailablePriorities="16" UniquePriorities="false" />
+</ResourceProfile>

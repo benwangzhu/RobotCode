@@ -1,0 +1,668 @@
+program lib_string
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_string
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 09 - 03
+--   Modification Data    ==   2023 - 03 - 12
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--   
+-- 2021 - 09 - 03 ++ str_find_() ==> integer
+
+-- 2023 - 03 - 10 ++ str_find2_() ==> integer
+   
+-- 2021 - 09 - 03 ++ int_to_str_() ==> string
+   
+-- 2021 - 09 - 03 ++ rel_to_str_() ==> string
+   
+-- 2021 - 09 - 03 ++ pos_to_str_() ==> string
+   
+-- 2021 - 09 - 03 ++ ais_to_str_() ==> string 
+   
+-- 2021 - 09 - 03 ++ str_to_int_() ==> integer
+   
+-- 2021 - 09 - 03 ++ str_to_rel_() ==> real
+   
+-- 2021 - 09 - 03 ++ str_to_pos_() ==> xyzwpr
+   
+-- 2021 - 09 - 03 ++ str_to_ais_() ==> jointpos6
+
+-- 2022 - 11 - 10 ++ str_comp_() ==> boolean
+
+-- 2023 - 03 - 10 ++ cur_ios_tm_() ==> string
+
+-- 2023 - 03 - 11 ++ int_2str_() ==> string
+
+-- 2023 - 03 - 11 ++ int_2bin_() ==> string
+
+-- 2023 - 03 - 11 ++ int_2hex_() ==> string
+
+-- 2023 - 03 - 11 ++ real_2str_() ==> string
+
+-- 2023 - 03 - 11 ++ pos_2str_() ==> string
+
+-- 2023 - 03 - 11 ++ axis_2str_() ==> string
+
+-- 2023 - 03 - 11 ++ str_2int_() ==> integer
+
+-- 2023 - 03 - 11 ++ bin_2int_() ==> integer
+
+-- 2023 - 03 - 11 ++ hex_2int_() ==> integer
+
+-- 2023 - 03 - 11 ++ str_2real_() ==> 
+
+-- 2023 - 03 - 11 ++ str_2pos_() ==> xyzwprext
+
+-- 2023 - 03 - 11 ++ str_2axis_() ==> jointpos
+
+-- 2023 - 03 - 11 ++ dec_fblank_()
+
+-- 2023 - 03 - 11 ++ dec_rblank_()
+
+-- 2023 - 03 - 11 ++ dec_frblank_()
+
+-- 2023 - 03 - 11 ++ is_int_() ==> boolean
+
+-- 2023 - 03 - 11 ++ is_bin_() ==> boolean
+
+-- 2023 - 03 - 11 ++ is_hex_() ==> boolean
+
+
+%nolockgroup
+%nobusylamp
+%nopause = tpenable + command + error
+%comment = 'string 231129'
+
+%include include/lib_transform_t
+
+	
+	
+%include include/lib_string_h
+%include include/lib_motion_h
+
+
+begin
+
+
+end lib_string
+
+routine str_find_
+-- var	
+--     Count      : integer
+--     Str1       : string[1]
+begin
+    -- if str_len(InStr)=0 then ; return(0) ; endif
+    -- Count = 0			
+    -- repeat
+    --     Count = Count + 1 
+    --     if Count > str_len(InStr) then ; return(0) ; endif
+    --     Str1 = sub_str(InStr, Count, 1)
+    -- until Str1 = FindStr
+    -- return(Count)
+    return(index(InStr, FindStr))
+end str_find_
+
+routine str_find2_
+begin
+    return(index_nocase(InStr, FindStr, 0))
+end str_find2_
+
+routine int_to_str_
+var
+    IntStr       : string[127]
+begin
+    cnv_int_str(IntVal, 0, 10, IntStr)
+    return(sub_str(IntStr, 2, str_len(IntStr)-1))
+end int_to_str_
+
+routine rel_to_str_
+var
+    realStr       : string[127]
+begin
+    cnv_real_str(RealVal, 0, 3, realStr)
+    return(sub_str(realStr, 2, str_len(realStr)-1))
+end rel_to_str_
+
+routine pos_to_str_
+begin
+    return(rel_to_str_(PosVal.X) + ',' + &
+           rel_to_str_(PosVal.Y) + ',' + &
+           rel_to_str_(PosVal.Z) + ',' + &
+           rel_to_str_(PosVal.W) + ',' + &
+           rel_to_str_(PosVal.P) + ',' + &
+           rel_to_str_(PosVal.R))
+end pos_to_str_
+
+routine ais_to_str_
+var
+    AxisAry 	: array[9] of real
+    CnvStatus	: integer
+begin
+    cnv_jpos_rel(AxisVal, AxisAry, CnvStatus)
+    if CnvStatus <> CC_SUCCESS then ; post_err(CnvStatus, '', 0, CC_ABORT) ; endif
+    
+    return(rel_to_str_(AxisAry[1]) + ',' + &
+            rel_to_str_(AxisAry[2]) + ',' + &
+            rel_to_str_(AxisAry[3]) + ',' + &
+            rel_to_str_(AxisAry[4]) + ',' + &
+            rel_to_str_(AxisAry[5]) + ',' + &
+            rel_to_str_(AxisAry[6]))
+end ais_to_str_
+
+routine str_to_int_
+var
+    IntVal       : integer
+begin
+    cnv_str_int(StrVal, IntVal)
+    return(IntVal)
+end str_to_int_
+
+routine str_to_rel_
+var
+    RealVal       : real
+begin
+    cnv_str_real(StrVal, RealVal)
+    return(RealVal)
+end str_to_rel_
+
+routine str_to_pos_
+var
+    CnvStr	 : string[127]
+    PosVal       : xyzwpr
+    I			 : integer
+    PosArray		 : array[6] of real
+begin
+    CnvStr = StrVal + ','
+    for I = 1 to array_len(PosArray) do
+        cnv_str_real(sub_str(CnvStr, 1, str_find_(CnvStr, ',') - 1), PosArray[I])
+        CnvStr = sub_str(CnvStr, str_find_(CnvStr, ',') + 1, str_len(CnvStr) - str_find_(CnvStr, ','))
+    endfor
+    PosVal                              = curpos(0, 0)
+    PosVal.X                            = PosArray[1]
+    PosVal.Y                            = PosArray[2]
+    PosVal.Z                            = PosArray[3]
+    PosVal.W                            = PosArray[4]
+    PosVal.P                            = PosArray[5]
+    PosVal.R                            = PosArray[6]
+    PosVal.config_data.cfg_turn_no1     = 0 
+    PosVal.config_data.cfg_turn_no2     = 0
+    PosVal.config_data.cfg_turn_no3     = 0
+    PosVal.config_data.cfg_flip         = false
+    PosVal.config_data.cfg_left         = false
+    PosVal.config_data.cfg_up           = true
+    PosVal.config_data.cfg_front        = true
+    
+    return(PosVal)
+end str_to_pos_
+
+routine str_to_ais_
+var
+    CnvStr	        : string[127]
+    AxisVal         : jointpos
+    I			    : integer
+    AxisAry		    : array[9] of real
+    CnvStatus	    : integer
+begin
+
+    CnvStr = StrVal + ','
+    for I = 1 to array_len(AxisAry) do AxisAry[I] = 0.0; endfor
+    for I = 1 to 6 do
+        cnv_str_real(sub_str(CnvStr, 1, str_find_(CnvStr, ',') - 1), AxisAry[I])
+        CnvStr = sub_str(CnvStr, str_find_(CnvStr, ',') + 1, str_len(CnvStr) - str_find_(CnvStr, ',')) 
+    endfor
+    cnv_rel_jpos(AxisAry, AxisVal, CnvStatus)
+    if CnvStatus <> CC_SUCCESS then ; post_err(CnvStatus, '', 0, CC_ABORT) ; endif
+    return(AxisVal)
+end str_to_ais_
+
+routine str_comp_
+var
+    I           : integer
+    S1, S2      : integer
+begin
+
+    if not NoCase then ; return(Str1 = Str2); endif
+    if not (str_len(Str1) = str_len(Str2)) then ; return(false); endif
+
+    for I = 1 to str_len(Str1) do
+        
+        S1 = ord(Str1, I)
+        S2 = ord(Str2, I)
+        
+        if (S1 >= 65) and (S1 <= 90) then  
+
+            S1 = S1 + 32
+        endif
+
+        if (S2 >= 65) and (S2 <= 90) then  
+
+            S2 = S2 + 32
+        endif
+
+        if S1 <> S2 then ; return(false); endif
+    endfor
+
+    return(true)
+end str_comp_
+
+routine cur_ios_tm_
+var
+    IntTime         : integer
+    RtnVal          : string[25]
+begin
+
+    get_time(IntTime)
+    cnv_tim_iso(IntTime, RtnVal)
+
+    return(sub_str(RtnVal, 1, index(RtnVal, 'T') - 1) + ' ' + &
+           sub_str(RtnVal, index(RtnVal, 'T') + 1, str_len(RtnVal) - index(RtnVal, 'T')))
+end cur_ios_tm_
+
+routine int_2str_
+var
+    StrVal          : string[127]
+begin
+    cnv_int_str(IntVal, 0, 10, StrVal)
+    return(sub_str(StrVal, 2, str_len(StrVal) - 1))
+end int_2str_
+
+routine int_2bin_
+var
+    StrVal          : string[127]
+begin
+    cnv_int_str(IntVal, 0, 2, StrVal)
+    return('0b' + sub_str(StrVal, 2, str_len(StrVal) - 1))
+end int_2bin_
+
+routine int_2hex_
+var
+    StrVal          : string[127]
+begin
+    cnv_int_str(IntVal, 0, 16, StrVal)
+    return('0x' + sub_str(StrVal, 2, str_len(StrVal) - 1))
+end int_2hex_
+
+routine real_2str_
+var
+    StrVal       : string[127]
+begin
+    cnv_real_str(RealVal, 0, 3, StrVal)
+    return(sub_str(StrVal, 2, str_len(StrVal) - 1))
+end real_2str_
+
+routine pos_2str_
+var
+    StrVal          : string[127]
+    PosArray        : array[9] of real
+    I               : integer
+begin
+    StrVal      = ''
+    PosArray    = decom_pos_(PosVal)
+
+    if IndexVal >= 7 then PosArray[7] = PosVal.Ext1; endif
+    if IndexVal >= 8 then PosArray[8] = PosVal.Ext2; endif
+    if IndexVal >= 9 then PosArray[9] = PosVal.Ext3; endif
+    
+    for I = 1 to IndexVal do 
+
+        StrVal = StrVal + real_2str_(PosArray[I]) + Sep
+
+    endfor
+
+    return(sub_str(StrVal, 1, str_len(StrVal) - 1))
+end pos_2str_
+
+routine axis_2str_
+var
+    StrVal          : string[127]
+    JntArray        : array[9] of real
+    I               : integer
+begin
+    StrVal      = ''
+    JntArray    = decom_axis_(AxisVal)
+    
+    for I = 1 to IndexVal do 
+
+        StrVal = StrVal + real_2str_(JntArray[I]) + Sep
+
+    endfor
+
+    return(sub_str(StrVal, 1, str_len(StrVal) - 1))
+end axis_2str_
+
+routine str_2int_
+var
+    IntVal       : integer
+    InputBin     : string[254]
+begin
+    InputBin    = StrVal
+    dec_fblank_(InputBin)
+    dec_rblank_(InputBin)
+    if not is_int_(InputBin) then post_err(CC_UALARM, InputBin + ' Data Not Int', 0, CC_ABORT); endif
+    cnv_str_int(StrVal, IntVal)
+    return(IntVal)
+end str_2int_
+
+routine bin_2int_
+var
+    IntVal       : integer
+    IntMask      : array[32] of integer
+    I            : integer
+    InputBin     : string[254]
+begin
+    InputBin    = StrVal
+    IntMask[1]  = 1
+    
+    for I = 1 to 30 do IntMask[I + 1] = IntMask[I] * 2; endfor
+
+    IntMask[32] = MININT
+
+    dec_fblank_(InputBin)
+    dec_rblank_(InputBin)
+    if not is_bin_(InputBin) then post_err(CC_UALARM, InputBin + ' Data Not Bin', 0, CC_ABORT); endif
+    
+    IntVal = 0
+
+    for I = str_len(InputBin) downto 3 do 
+
+        IntVal = IntVal + (ord(InputBin, I) - 48) * IntMask[str_len(InputBin) - I + 1]
+    endfor
+
+    return(IntVal)
+end bin_2int_
+
+routine hex_2int_
+var
+    IntVal       : integer
+    IntMask      : array[8] of integer
+    I            : integer
+    InputBin     : string[254]
+begin
+    InputBin    = StrVal
+    IntMask[1]  = 1
+    
+    for I = 1 to 7 do IntMask[I + 1] = IntMask[I] * 16; endfor
+
+    dec_fblank_(InputBin)
+    dec_rblank_(InputBin)
+    if not is_hex_(InputBin) then post_err(CC_UALARM, InputBin + ' Data Not Hex', 0, CC_ABORT); endif
+
+
+    for I = str_len(InputBin) downto 3 do 
+
+        if (ord(InputBin, I) >= 48) and (ord(InputBin, I) <= 57) then 
+
+            IntVal = IntVal + (ord(InputBin, I) - 48) * IntMask[str_len(InputBin) - I + 1]
+        endif
+
+        if (ord(InputBin, I) >= 65) and (ord(InputBin, I) <= 70) then 
+
+            IntVal = IntVal + (ord(InputBin, I) - 55) * IntMask[str_len(InputBin) - I + 1]
+        endif
+
+        if (ord(InputBin, I) >= 97) and (ord(InputBin, I) <= 102) then 
+
+            IntVal = IntVal + (ord(InputBin, I) - 87) * IntMask[str_len(InputBin) - I + 1]
+        endif
+    endfor
+
+    return(IntVal)
+end hex_2int_
+
+routine str_2real_
+var
+    RealVal       : real
+begin
+    cnv_str_real(StrVal, RealVal)
+    return(RealVal)
+end str_2real_
+
+routine str_2pos_
+var
+    PosArray        : array[9] of real
+    I               : integer
+    CnvStr          : string[127]
+    PosVal          : xyzwprext
+begin
+    CnvStr  = StrVal + Sep
+
+    for I = 1 to array_len(PosArray) do PosArray[I] = 0.0; endfor
+
+    I  = 0
+    repeat
+        I = I + 1
+        PosArray[I] = str_2real_(sub_str(CnvStr, 1, str_find_(CnvStr, Sep) - 1))
+        CnvStr = sub_str(CnvStr, str_find_(CnvStr, Sep) + 1, str_len(CnvStr) - str_find_(CnvStr, Sep))
+    until (str_find_(CnvStr, Sep) = 0) or (I = array_len(PosArray))
+    PosVal                              = curpos(0, 0)
+    PosVal.X                            = PosArray[1]
+    PosVal.Y                            = PosArray[2]
+    PosVal.Z                            = PosArray[3]
+    PosVal.W                            = PosArray[4]
+    PosVal.P                            = PosArray[5]
+    PosVal.R                            = PosArray[6]
+    PosVal.Ext1                         = PosArray[7]
+    PosVal.EXT2                         = PosArray[8]
+    PosVal.EXT3                         = PosArray[9]
+    PosVal.config_data.cfg_turn_no1     = 0 
+    PosVal.config_data.cfg_turn_no2     = 0
+    PosVal.config_data.cfg_turn_no3     = 0
+    PosVal.config_data.cfg_flip         = false
+    PosVal.config_data.cfg_left         = false
+    PosVal.config_data.cfg_up           = true
+    PosVal.config_data.cfg_front        = true 
+    return(PosVal)
+end str_2pos_
+
+routine str_2axis_
+var
+    JntArray        : array[9] of real
+    I               : integer
+    CnvStr          : string[127]
+    JntVal          : jointpos
+    CnvStatus       : integer
+begin
+    CnvStr  = StrVal + Sep
+
+    for I = 1 to array_len(JntArray) do JntArray[I] = 0.0; endfor
+
+    I  = 0
+    repeat
+        I = I + 1
+        JntArray[I] = str_2real_(sub_str(CnvStr, 1, str_find_(CnvStr, Sep) - 1))
+        CnvStr = sub_str(CnvStr, str_find_(CnvStr, Sep) + 1, str_len(CnvStr) - str_find_(CnvStr, Sep))
+    until (str_find_(CnvStr, Sep) = 0) or (I = array_len(JntArray))
+    cnv_rel_jpos(JntArray, JntVal, CnvStatus)
+    if CnvStatus <> CC_SUCCESS then ; post_err(CnvStatus, '', 0, CC_ABORT) ; endif
+    return(JntVal)
+end str_2axis_
+
+routine dec_fblank_
+var 
+    FirstStr                : string[1]
+begin
+    repeat
+
+        FirstStr = ''
+        if str_len(StrVal) > 1 then
+
+            FirstStr = sub_str(StrVal, 1, 1)
+            if FirstStr = ' ' then StrVal = sub_str(StrVal, 2, str_len(StrVal) - 1); endif
+        endif
+    until (FirstStr <> ' ')
+
+    if StrVal = ' ' then StrVal = ''; endif
+end dec_fblank_
+
+routine dec_rblank_
+var 
+    FirstStr                : string[1]
+begin
+    repeat
+
+        FirstStr = ''
+        if str_len(StrVal) > 1 then
+
+            FirstStr = sub_str(StrVal, str_len(StrVal), 1)
+            if FirstStr = ' ' then StrVal = sub_str(StrVal, 1, str_len(StrVal) - 1); endif
+        endif
+    until (FirstStr <> ' ')
+
+    if StrVal = ' ' then StrVal = ''; endif
+end dec_rblank_
+
+routine dec_frblank_
+begin
+    dec_fblank_(StrVal)
+    dec_rblank_(StrVal)
+end dec_frblank_
+
+routine is_int_
+var 
+    I               : integer
+    StrCpy          : string[254]
+begin
+    StrCpy = StrVal
+
+    dec_fblank_(StrCpy)
+    dec_rblank_(StrCpy)
+
+    if (((ord(StrCpy, 1) = 43) or (ord(StrCpy, 1) = 45)) and &
+       (str_len(StrCpy) = 1))  or (str_len(StrCpy) > 11) then return(false); endif
+
+    for I = 1 to str_len(StrCpy) do  
+
+        if I = 1 then 
+            if not (((ord(StrCpy, I) >= 48) and (ord(StrCpy, I) <= 57)) or &
+                    (ord(StrCpy, I) = 43) or (ord(StrCpy, I) = 45)) then return(false); endif
+        else
+            if not ((ord(StrCpy, I) >= 48) and (ord(StrCpy, I) <= 57)) then return(false); endif
+        endif
+    endfor
+
+    return(true)
+end is_int_
+
+routine is_bin_
+var 
+    I               : integer
+    StrCpy          : string[254]
+begin
+    StrCpy = StrVal
+
+    dec_fblank_(StrCpy)
+    dec_rblank_(StrCpy)
+
+    if (str_len(StrCpy) <= 2) or (str_len(StrCpy) > 34) then return(false); endif
+
+    if not ((sub_str(StrCpy, 1, 2) <> '0b') or (sub_str(StrCpy, 1, 2) <> '0B')) then return(false); endif
+
+    for I = 3 to str_len(StrCpy) do  
+
+        if (ord(StrCpy, I) < 48) or (ord(StrCpy, I) > 49) then return(false); endif
+    endfor
+
+    return(true)
+end is_bin_
+
+routine is_hex_
+var 
+    I               : integer
+    StrCpy          : string[254]
+begin
+    StrCpy = StrVal
+
+    dec_fblank_(StrCpy)
+    dec_rblank_(StrCpy)
+
+    if (str_len(StrCpy) <= 2) or (str_len(StrCpy) > 10) then return(false); endif
+
+    if not ((sub_str(StrCpy, 1, 2) <> '0x') or (sub_str(StrCpy, 1, 2) <> '0X')) then return(false); endif
+
+    for I = 3 to str_len(StrCpy) do  
+
+        if not ((ord(StrCpy, I) >= 48) and (ord(StrCpy, I) <= 57) or &
+                (ord(StrCpy, I) >= 65) and (ord(StrCpy, I) <= 70) or &
+                (ord(StrCpy, I) >= 97) and (ord(StrCpy, I) <= 102)) then return(false); endif
+    endfor
+
+    return(true)
+end is_hex_
+
+routine low_2upper_
+var
+    UpperStr            : string[254]
+    I                   : integer
+    OrdVal              : integer
+begin
+    UpperStr = ''
+    --if str_len(StrVal) = 0 then 
+    for I = 1 to str_len(StrVal) do 
+
+        OrdVal = ord(StrVal, I)
+
+        if (OrdVal >= 97) and (OrdVal <= 122) then 
+
+            OrdVal = OrdVal - 32
+        endif
+
+        UpperStr = UpperStr + chr(OrdVal)
+
+    endfor
+
+    return(UpperStr)
+end low_2upper_
+
+routine str_remove_
+begin
+    
+    repeat
+        
+        if index(StrMsg, StrLead) = 1 then
+            
+            StrMsg = sub_str(StrMsg, str_len(StrLead) + 1, str_len(StrMsg))
+        else
+            return(StrMsg)
+        endif
+    until (sub_str(StrMsg, 1, str_len(StrLead)) <> StrLead)
+    
+    return(StrMsg)
+end str_remove_
+
+

@@ -1,0 +1,3 @@
+;FOLD SbtComm012 Init
+Comm012SubMitInit()
+;ENDFOLD (SbtComm012 Init)

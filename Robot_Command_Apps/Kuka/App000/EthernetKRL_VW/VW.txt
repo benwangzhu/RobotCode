@@ -1,0 +1,6 @@
+   DEF showMsgDepend(Ret:OUT)
+      DECL EKI_STATUS Ret
+      
+      IF (Ret.Msg_no B_AND ERRMSG_FORBIDDEN)==0 THEN   
+         ;EKI_CHECK(Ret,#NOTIFY)
+      ENDIF

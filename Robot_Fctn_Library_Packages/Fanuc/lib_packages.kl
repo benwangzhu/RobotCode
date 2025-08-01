@@ -1,0 +1,1401 @@
+program lib_packages
+--***********************************************************
+--
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
+-- file Name: lib_packages
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2024 - 09 - 12
+--   Modification Data    ==   2025 - 05 - 06
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+-- 2024 - 09 - 12 ++ spack_head_() ==> integer
+--
+-- 2025 - 05 - 06 ++ spack_body_() ==> integer
+--
+-- 2024 - 09 - 12 ++ spack_tail_() ==> integer
+--
+-- 2024 - 09 - 12 ++ rpack_head_() ==> integer
+--
+-- 2025 - 05 - 06 ++ rpack_body_() ==> integer
+--
+-- 2024 - 09 - 12 ++ rpack_tail_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd002_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd003_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd009_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd010_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd011_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd012_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd013_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd014_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd017_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd018_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd020_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd021_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd022_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd026_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd027_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd129_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd130_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd131_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd132_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd133_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd137_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd145_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd148_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd151_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd254_() ==> integer
+--
+-- 2025 - 05 - 06 ++ pack_cmd255_() ==> integer
+--
+%nolockgroup
+%nobusylamp
+%nopause = tpenable + command + error
+%comment = 'Packags 250506'
+%include include/lib_transform_t
+%include include/lib_socket_t
+%include include/lib_logs_t
+%include include/lib_packages_t
+%include include/lib_math_t
+%include include/lib_buscmd_t
+%include include/lib_busio_t
+
+%include include/lib_socket_h
+%include include/lib_packages_h
+%include include/lib_logs_h
+%include include/lib_math_h
+%include include/lib_tp_if_h
+%include include/lib_motion_h
+begin
+
+end lib_packages
+
+routine spack_head_
+var
+    Status              : integer
+begin
+
+    -- Header.Seq = tern_int_(Header.Seq < 255, Header.Seq + 1, 1)
+
+    -- if not is_vir_rob_ then
+    --     Header.VirtualRob = 0
+    -- endif
+
+    write ThisFile( Header.Head, &
+                    Header.Length, &
+                    Header.PacketCount, &
+                    chr((Header.Cmd))::1, &
+                    chr((Header.Type_))::1, &
+                    chr((Header.Seq))::1, &
+                    chr((Header.VirtualRob))::1)
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(Status)
+end spack_head_
+
+routine spack_body_
+var
+    Status              : integer
+begin
+    write ThisFile( chr((Bodyer.RobotId))::1, &
+                    chr((Bodyer.JobId))::1, &
+                    chr((Bodyer.ProtocolId))::1, &
+                    chr((Bodyer.RobMsgType))::1)
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(Status)
+end spack_body_
+
+routine spack_tail_
+var
+    Status              : integer
+begin
+    write ThisFile(Tail)
+
+    if ThisSock.AtrIntAct = false then 
+
+        write ThisFile(cr)
+    endif
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(Status)
+end spack_tail_
+
+routine rpack_head_
+var
+    Status              : integer
+    TmpStr              : string[4]
+begin
+    read ThisFile( Header.Head, &
+                   Header.Length, &
+                   Header.PacketCount, &
+                   TmpStr::4)   
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; return(Status)
+    else
+        Header.Cmd          = ord(TmpStr, 1)
+        Header.Type_        = ord(TmpStr, 2)
+        Header.Seq          = ord(TmpStr, 3)
+        Header.VirtualRob   = ord(TmpStr, 4)
+    endif
+
+    if Header.Head <> PACK_HEADER then
+
+        post_err(CC_UALARM, '报文头校验错误', 0, CC_ABORT)
+        return(NG)
+    endif
+
+    return(OK)
+end rpack_head_
+
+routine rpack_body_
+var
+    Status              : integer
+    TmpStr              : string[4]
+begin
+    read ThisFile(TmpStr::4)   
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false
+    else
+        Bodyer.DeviceId = ord(TmpStr, 1)
+        Bodyer.JobId    = ord(TmpStr, 2)
+        Bodyer.ErrorId  = ord(TmpStr, 3)
+        Bodyer.MsgType  = ord(TmpStr, 4)
+    endif
+     return(Status)
+end rpack_body_
+
+routine rpack_tail_
+var
+    Status              : integer
+begin
+    read ThisFile(Tail)
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; return(Status); endif 
+
+    if Tail <> PACK_TAIL then
+
+        post_err(CC_UALARM, '报文尾校验错误', 0, CC_ABORT)
+        return(NG)
+    endif
+
+    return(OK)
+end rpack_tail_
+
+routine pack_cmd002_
+var
+    Status              : integer 
+    TmpStr              : string[4]
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read ThisFile(  TmpStr::2, &
+                            PackData.Short03, &
+                            PackData.Short04, &
+                            PackData.Int05, &
+                            PackData.Int06, &
+                            PackData.Float07, &
+                            PackData.Float08)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false
+            else 
+                PackData.Byte01 = ord(TmpStr, 1) 
+                PackData.Byte02 = ord(TmpStr, 2)
+            endif
+        case(PACKCMD_WRIT):
+
+            write ThisFile( chr((PackData.Byte01))::1, &
+                            chr((PackData.Byte02))::1, &
+                            PackData.Short03, &
+                            PackData.Short04, &
+                            PackData.Int05, &
+                            PackData.Int06, &
+                            PackData.Float07, &
+                            PackData.Float08)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+        else:
+
+            post_err(CC_UALARM, 'pack cmd002 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    return(Status)
+end pack_cmd002_
+
+routine pack_cmd003_
+var
+    Status              : integer
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            PackData = curpos(0, 0)
+            read ThisFile(  PackData.X, &
+                            PackData.Y, &
+                            PackData.Z, &
+                            PackData.W, &
+                            PackData.P, &
+                            PackData.R)
+        case(PACKCMD_WRIT):
+
+            write ThisFile( PackData.X, &
+                            PackData.Y, &
+                            PackData.Z, &
+                            PackData.W, &
+                            PackData.P, &
+                            PackData.R)
+        else:
+
+            post_err(CC_UALARM, 'pack cmd003 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(Status)
+end pack_cmd003_
+
+routine pack_cmd009_
+var
+    Status              : integer
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            PackData = curpos(0, 0)
+            read ThisFile(  PackData.X, &
+                            PackData.Y, &
+                            PackData.Z, &
+                            PackData.W, &
+                            PackData.P, &
+                            PackData.R)
+        case(PACKCMD_WRIT):
+
+            write ThisFile( PackData.X, &
+                            PackData.Y, &
+                            PackData.Z, &
+                            PackData.W, &
+                            PackData.P, &
+                            PackData.R)
+        else:
+
+            post_err(CC_UALARM, 'pack cmd009 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(Status)
+end pack_cmd009_
+
+routine pack_cmd010_
+var
+    Status              : integer
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            PackData = curpos(0, 0)
+            read ThisFile(  PackData.X, &
+                            PackData.Y, &
+                            PackData.Z, &
+                            PackData.W, &
+                            PackData.P, &
+                            PackData.R)
+        case(PACKCMD_WRIT):
+
+            write ThisFile( PackData.X, &
+                            PackData.Y, &
+                            PackData.Z, &
+                            PackData.W, &
+                            PackData.P, &
+                            PackData.R)
+        else:
+
+            post_err(CC_UALARM, 'pack cmd010 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(Status)
+end pack_cmd010_
+
+routine pack_cmd011_
+var
+    Status              : integer
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            PackData = curpos(0, 0)
+            read ThisFile(  PackData.X, &
+                            PackData.Y, &
+                            PackData.Z, &
+                            PackData.W, &
+                            PackData.P, &
+                            PackData.R)
+        case(PACKCMD_WRIT):
+
+            write ThisFile( PackData.X, &
+                            PackData.Y, &
+                            PackData.Z, &
+                            PackData.W, &
+                            PackData.P, &
+                            PackData.R)
+        else:
+
+            post_err(CC_UALARM, 'pack cmd011 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(Status)
+end pack_cmd011_
+
+routine pack_cmd012_
+var
+    Status              : integer 
+    TmpStr              : string[4]
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read ThisFile(  TmpStr::2, &
+                            PackData.Short03, &
+                            PackData.Short04, &
+                            PackData.Int05, &
+                            PackData.Int06, &
+                            PackData.Float07, &
+                            PackData.Float08)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false
+            else 
+                PackData.Byte01 = ord(TmpStr, 1)
+                PackData.Byte02 = ord(TmpStr, 2)
+            endif
+        case(PACKCMD_WRIT):
+
+            write ThisFile( chr((PackData.Byte01))::1, &
+                            chr((PackData.Byte02))::1, &
+                            PackData.Short03, &
+                            PackData.Short04, &
+                            PackData.Int05, &
+                            PackData.Int06, &
+                            PackData.Float07, &
+                            PackData.Float08)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+        else:
+
+            post_err(CC_UALARM, 'pack cmd012 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    return(Status)
+end pack_cmd012_
+
+routine pack_cmd013_
+var
+    Status              : integer 
+    TmpStr              : string[4]
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read ThisFile(  TmpStr::2, &
+                            PackData.Short03, &
+                            PackData.Short04, &
+                            PackData.Int05, &
+                            PackData.Int06, &
+                            PackData.Float07, &
+                            PackData.Float08)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false
+            else 
+                PackData.Byte01 = ord(TmpStr, 1)
+                PackData.Byte02 = ord(TmpStr, 2)
+            endif
+        case(PACKCMD_WRIT):
+
+            write ThisFile( chr((PackData.Byte01))::1, &
+                            chr((PackData.Byte02))::1, &
+                            PackData.Short03, &
+                            PackData.Short04, &
+                            PackData.Int05, &
+                            PackData.Int06, &
+                            PackData.Float07, &
+                            PackData.Float08)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+        else:
+
+            post_err(CC_UALARM, 'pack cmd013 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    return(Status)
+end pack_cmd013_
+
+routine pack_cmd014_
+var
+    Status              : integer 
+    TmpStr              : string[4]
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read ThisFile(  TmpStr::2, &
+                            PackData.Short03, &
+                            PackData.Short04, &
+                            PackData.Int05, &
+                            PackData.Int06, &
+                            PackData.Float07, &
+                            PackData.Float08)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false
+            else 
+                PackData.Byte01 = ord(TmpStr, 1)
+                PackData.Byte02 = ord(TmpStr, 2)
+            endif
+        case(PACKCMD_WRIT):
+
+            write ThisFile( chr((PackData.Byte01))::1, &
+                            chr((PackData.Byte02))::1, &
+                            PackData.Short03, &
+                            PackData.Short04, &
+                            PackData.Int05, &
+                            PackData.Int06, &
+                            PackData.Float07, &
+                            PackData.Float08)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+        else:
+
+            post_err(CC_UALARM, 'pack cmd014 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    return(Status)
+end pack_cmd014_
+
+routine pack_cmd017_
+var
+    Status              : integer 
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read  ThisFile( PackData.Float01, &
+                            PackData.Float02, &
+                            PackData.Float03, &
+                            PackData.Float04, &
+                            PackData.Float05, &
+                            PackData.Float06, &
+                            PackData.Float07, &
+                            PackData.Float08, &
+                            PackData.Float09, &
+                            PackData.Float10, &
+                            PackData.Float11, &
+                            PackData.Float12, &
+                            PackData.Int13, &
+                            PackData.Int14)
+        case(PACKCMD_WRIT):
+
+            write ThisFile( PackData.Float01, &
+                            PackData.Float02, &
+                            PackData.Float03, &
+                            PackData.Float04, &
+                            PackData.Float05, &
+                            PackData.Float06, &
+                            PackData.Float07, &
+                            PackData.Float08, &
+                            PackData.Float09, &
+                            PackData.Float10, &
+                            PackData.Float11, &
+                            PackData.Float12, &
+                            PackData.Int13, &
+                            PackData.Int14)
+        else:
+
+            post_err(CC_UALARM, 'pack cmd017 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(Status)
+end pack_cmd017_
+
+routine pack_cmd018_
+var
+    Status              : integer 
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read  ThisFile( PackData.Float01, &
+                            PackData.Float02, &
+                            PackData.Float03, &
+                            PackData.Float04, &
+                            PackData.Float05, &
+                            PackData.Float06, &
+                            PackData.Float07, &
+                            PackData.Float08, &
+                            PackData.Float09, &
+                            PackData.Float10, &
+                            PackData.Float11, &
+                            PackData.Float12, &
+                            PackData.Int13, &
+                            PackData.Int14)
+        case(PACKCMD_WRIT):
+
+            write ThisFile( PackData.Float01, &
+                            PackData.Float02, &
+                            PackData.Float03, &
+                            PackData.Float04, &
+                            PackData.Float05, &
+                            PackData.Float06, &
+                            PackData.Float07, &
+                            PackData.Float08, &
+                            PackData.Float09, &
+                            PackData.Float10, &
+                            PackData.Float11, &
+                            PackData.Float12, &
+                            PackData.Int13, &
+                            PackData.Int14)
+        else:
+
+            post_err(CC_UALARM, 'pack cmd018 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(Status)
+end pack_cmd018_
+
+routine pack_cmd020_
+var
+    Status              : integer
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            PackData = curpos(0, 0)
+            read ThisFile(  PackData.X, &
+                            PackData.Y, &
+                            PackData.Z, &
+                            PackData.W, &
+                            PackData.P, &
+                            PackData.R)
+        case(PACKCMD_WRIT):
+
+            write ThisFile( PackData.X, &
+                            PackData.Y, &
+                            PackData.Z, &
+                            PackData.W, &
+                            PackData.P, &
+                            PackData.R)
+        else:
+
+            post_err(CC_UALARM, 'pack cmd020 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(Status)
+end pack_cmd020_
+
+routine pack_cmd021_
+var
+    Status              : integer 
+    TmpStr              : string[4]
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read ThisFile(  TmpStr::2, &
+                            PackData.Short03, &
+                            PackData.Short04, &
+                            PackData.Int05, &
+                            PackData.Int06, &
+                            PackData.Float07, &
+                            PackData.Float08)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false
+            else 
+                PackData.Byte01 = ord(TmpStr, 1)
+                PackData.Byte02 = ord(TmpStr, 2)
+            endif
+        case(PACKCMD_WRIT):
+
+            write ThisFile( chr((PackData.Byte01))::1, &
+                            chr((PackData.Byte02))::1, &
+                            PackData.Short03, &
+                            PackData.Short04, &
+                            PackData.Int05, &
+                            PackData.Int06, &
+                            PackData.Float07, &
+                            PackData.Float08)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+        else:
+
+            post_err(CC_UALARM, 'pack cmd021 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    return(Status)
+end pack_cmd021_
+
+routine pack_cmd022_
+var
+    Status              : integer 
+    TmpStr              : string[4]
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read ThisFile(  TmpStr::2, &
+                            PackData.Short03, &
+                            PackData.Short04, &
+                            PackData.Int05, &
+                            PackData.Int06, &
+                            PackData.Float07, &
+                            PackData.Float08)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false
+            else 
+                PackData.Byte01 = ord(TmpStr, 1)
+                PackData.Byte02 = ord(TmpStr, 2)
+            endif
+        case(PACKCMD_WRIT):
+
+            write ThisFile( chr((PackData.Byte01))::1, &
+                            chr((PackData.Byte02))::1, &
+                            PackData.Short03, &
+                            PackData.Short04, &
+                            PackData.Int05, &
+                            PackData.Int06, &
+                            PackData.Float07, &
+                            PackData.Float08)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+        else:
+
+            post_err(CC_UALARM, 'pack cmd022 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    return(Status)
+end pack_cmd022_
+
+routine pack_cmd026_
+var
+    Status              : integer 
+    TmpStr              : string[4]
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read ThisFile(  TmpStr::2, &
+                            PackData.Short03, &
+                            PackData.Short04, &
+                            PackData.Int05, &
+                            PackData.Int06, &
+                            PackData.Float07, &
+                            PackData.Float08)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false
+            else 
+                PackData.Byte01 = ord(TmpStr, 1)
+                PackData.Byte02 = ord(TmpStr, 2)
+            endif
+        case(PACKCMD_WRIT):
+
+            write ThisFile( chr((PackData.Byte01))::1, &
+                            chr((PackData.Byte02))::1, &
+                            PackData.Short03, &
+                            PackData.Short04, &
+                            PackData.Int05, &
+                            PackData.Int06, &
+                            PackData.Float07, &
+                            PackData.Float08)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+        else:
+
+            post_err(CC_UALARM, 'pack cmd026 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    return(Status)
+end pack_cmd026_
+
+routine pack_cmd027_
+var
+    Status              : integer 
+    TmpStr              : string[4]
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read ThisFile(  TmpStr::4, &
+                            PackData.Short05, &
+                            PackData.Short06, &
+                            PackData.Short07, &
+                            PackData.Short08, &
+                            PackData.Int09, &
+                            PackData.Int10, &
+                            PackData.Int11, &
+                            PackData.Int12, &
+                            PackData.Float13, &
+                            PackData.Float14, &
+                            PackData.Float15, &
+                            PackData.Float16)    
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false
+            else 
+                PackData.Byte01 = ord(TmpStr, 1)
+                PackData.Byte02 = ord(TmpStr, 2)
+                PackData.Byte03 = ord(TmpStr, 3)
+                PackData.Byte04 = ord(TmpStr, 4)
+            endif
+        case(PACKCMD_WRIT):
+
+            write ThisFile( chr((PackData.Byte01))::1, &
+                            chr((PackData.Byte02))::1, &
+                            chr((PackData.Byte03))::1, &
+                            chr((PackData.Byte04))::1, &
+                            PackData.Short05, &
+                            PackData.Short06, &
+                            PackData.Short07, &
+                            PackData.Short08, &
+                            PackData.Int09, &
+                            PackData.Int10, &
+                            PackData.Int11, &
+                            PackData.Int12, &
+                            PackData.Float13, &
+                            PackData.Float14, &
+                            PackData.Float15, &
+                            PackData.Float16)                
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+        else:
+
+            post_err(CC_UALARM, 'pack cmd027 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    return(Status)
+end pack_cmd027_
+
+routine pack_cmd129_
+var
+    Status              : integer
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            PackData = curpos(0, 0)
+            read ThisFile(  PackData.X, &
+                            PackData.Y, &
+                            PackData.Z, &
+                            PackData.W, &
+                            PackData.P, &
+                            PackData.R)
+        case(PACKCMD_WRIT):
+
+            write ThisFile( PackData.X, &
+                            PackData.Y, &
+                            PackData.Z, &
+                            PackData.W, &
+                            PackData.P, &
+                            PackData.R)
+        else:
+
+            post_err(CC_UALARM, 'pack cmd129 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(Status)
+end pack_cmd129_
+
+routine pack_cmd130_
+var
+    AxisAry             : array[6] of real
+    Status              : integer
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+            
+            read  ThisFile( AxisAry[1], &
+                            AxisAry[2], &
+                            AxisAry[3], &
+                            AxisAry[4], &
+                            AxisAry[5], &
+                            AxisAry[6])
+            PackData = trans_axis_(AxisAry)
+        case(PACKCMD_WRIT):
+
+            decom_axis2_(PackData,AxisAry)
+            write ThisFile( AxisAry[1], &
+                            AxisAry[2], &
+                            AxisAry[3], &
+                            AxisAry[4], &
+                            AxisAry[5], &
+                            AxisAry[6])
+        else:
+
+            post_err(CC_UALARM, 'pack cmd130 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(Status)
+end pack_cmd130_
+
+routine pack_cmd131_
+var
+    Status              : integer
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read  ThisFile( PackData[1], &
+                            PackData[2], &
+                            PackData[3], &
+                            PackData[4], &
+                            PackData[5], &
+                            PackData[6])
+        case(PACKCMD_WRIT):
+
+            write ThisFile( PackData[1], &
+                            PackData[2], &
+                            PackData[3], &
+                            PackData[4], &
+                            PackData[5], &
+                            PackData[6])
+        else:
+
+            post_err(CC_UALARM, 'pack cmd131 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(Status)
+end pack_cmd131_
+
+routine pack_cmd132_
+var
+    Status              : integer
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read  ThisFile( PackData.Float01, &
+                            PackData.Float02, &
+                            PackData.Float03, &
+                            PackData.Float04, &
+                            PackData.Float05, &
+                            PackData.Float06, &
+                            PackData.Float07, &
+                            PackData.Float08, &
+                            PackData.Float09, &
+                            PackData.Float10, &
+                            PackData.Float11, &
+                            PackData.Float12, &
+                            PackData.Int13,   &
+                            PackData.Int14)
+        case(PACKCMD_WRIT):
+
+            write ThisFile( PackData.Float01, &
+                            PackData.Float02, &
+                            PackData.Float03, &
+                            PackData.Float04, &
+                            PackData.Float05, &
+                            PackData.Float06, &
+                            PackData.Float07, &
+                            PackData.Float08, &
+                            PackData.Float09, &
+                            PackData.Float10, &
+                            PackData.Float11, &
+                            PackData.Float12, &
+                            PackData.Int13,   &
+                            PackData.Int14)
+        else:
+
+            post_err(CC_UALARM, 'pack cmd132 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(Status)
+end pack_cmd132_
+
+routine pack_cmd133_
+var
+    Status              : integer
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read  ThisFile( PackData.Float01, &
+                            PackData.Float02, &
+                            PackData.Float03, &
+                            PackData.Float04, &
+                            PackData.Float05, &
+                            PackData.Float06, &
+                            PackData.Float07, &
+                            PackData.Float08, &
+                            PackData.Float09, &
+                            PackData.Float10, &
+                            PackData.Float11, &
+                            PackData.Float12, &
+                            PackData.Int13,   &
+                            PackData.Int14)
+        case(PACKCMD_WRIT):
+
+            write ThisFile( PackData.Float01, &
+                            PackData.Float02, &
+                            PackData.Float03, &
+                            PackData.Float04, &
+                            PackData.Float05, &
+                            PackData.Float06, &
+                            PackData.Float07, &
+                            PackData.Float08, &
+                            PackData.Float09, &
+                            PackData.Float10, &
+                            PackData.Float11, &
+                            PackData.Float12, &
+                            PackData.Int13,   &
+                            PackData.Int14)
+        else:
+
+            post_err(CC_UALARM, 'pack cmd133 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(Status)
+end pack_cmd133_
+
+routine pack_cmd134_
+var
+    Status              : integer
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read  ThisFile( PackData.Int01,   &
+                            PackData.Int02,   &
+                            PackData.Float03, &
+                            PackData.Float04, &
+                            PackData.Float05, &
+                            PackData.Float06, &
+                            PackData.Float07, &
+                            PackData.Float08, &
+                            PackData.Float09, &
+                            PackData.Float10, &
+                            PackData.Float11, &
+                            PackData.Float12, &
+                            PackData.Float13, &
+                            PackData.Float14)
+        case(PACKCMD_WRIT):
+
+            write ThisFile( PackData.Int01,   &
+                            PackData.Int02,   &
+                            PackData.Float03, &
+                            PackData.Float04, &
+                            PackData.Float05, &
+                            PackData.Float06, &
+                            PackData.Float07, &
+                            PackData.Float08, &
+                            PackData.Float09, &
+                            PackData.Float10, &
+                            PackData.Float11, &
+                            PackData.Float12, &
+                            PackData.Float13, &
+                            PackData.Float14)
+        else:
+
+            post_err(CC_UALARM, 'pack cmd134 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(Status)
+end pack_cmd134_
+
+routine pack_cmd137_
+var
+    Status              : integer 
+    TmpStr              : string[20]
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read ThisFile(TmpStr::18)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false
+            else 
+                PackData[1] = ord(TmpStr, 1)
+                PackData[2] = ord(TmpStr, 2)
+                PackData[3] = ord(TmpStr, 3)
+                PackData[4] = ord(TmpStr, 4)
+                PackData[5] = ord(TmpStr, 5)
+                PackData[6] = ord(TmpStr, 6)
+                PackData[7] = ord(TmpStr, 7)
+                PackData[8] = ord(TmpStr, 8)
+                PackData[9] = ord(TmpStr, 9)
+                PackData[10] = ord(TmpStr, 10)
+                PackData[11] = ord(TmpStr, 11)
+                PackData[12] = ord(TmpStr, 12)
+                PackData[13] = ord(TmpStr, 13)
+                PackData[14] = ord(TmpStr, 14)
+                PackData[15] = ord(TmpStr, 15)
+                PackData[16] = ord(TmpStr, 16)
+                PackData[17] = ord(TmpStr, 17)
+                PackData[18] = ord(TmpStr, 18)
+            endif
+        case(PACKCMD_WRIT):
+
+            write ThisFile( chr(PackData[1] and 255)::1, &
+                            chr(PackData[2] and 255)::1, &
+                            chr(PackData[3] and 255)::1, &
+                            chr(PackData[4] and 255)::1, &
+                            chr(PackData[5] and 255)::1, &
+                            chr(PackData[6] and 255)::1, &
+                            chr(PackData[7] and 255)::1, &
+                            chr(PackData[8] and 255)::1, &
+                            chr(PackData[9] and 255)::1, &
+                            chr(PackData[10] and 255)::1, &
+                            chr(PackData[11] and 255)::1, &
+                            chr(PackData[12] and 255)::1, &
+                            chr(PackData[13] and 255)::1, &
+                            chr(PackData[14] and 255)::1, &
+                            chr(PackData[15] and 255)::1, &
+                            chr(PackData[16] and 255)::1, &
+                            chr(PackData[17] and 255)::1, &
+                            chr(PackData[18] and 255)::1)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+        else:
+
+            post_err(CC_UALARM, 'pack cmd137 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    return(Status)
+end pack_cmd137_
+
+routine pack_cmd145_
+var
+    Status              : integer 
+    TmpStr              : string[4]
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read ThisFile(  TmpStr::2, &
+                            PackData.Short03, &
+                            PackData.Short04, &
+                            PackData.Int05, &
+                            PackData.Int06, &
+                            PackData.Float07, &
+                            PackData.Float08)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false
+            else 
+                PackData.Byte01 = ord(TmpStr, 1)
+                PackData.Byte02 = ord(TmpStr, 2)
+            endif
+        case(PACKCMD_WRIT):
+
+            write ThisFile( chr((PackData.Byte01))::1, &
+                            chr((PackData.Byte02))::1, &
+                            PackData.Short03, &
+                            PackData.Short04, &
+                            PackData.Int05, &
+                            PackData.Int06, &
+                            PackData.Float07, &
+                            PackData.Float08)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+        else:
+
+            post_err(CC_UALARM, 'pack cmd145 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    return(Status)
+end pack_cmd145_
+
+routine pack_cmd148_
+var
+    Status              : integer 
+    TmpStr              : string[4]
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read ThisFile(  TmpStr::4, &
+                            PackData.Short05, &
+                            PackData.Short06, &
+                            PackData.Short07, &
+                            PackData.Short08, &
+                            PackData.Int09, &
+                            PackData.Int10, &
+                            PackData.Int11, &
+                            PackData.Int12, &
+                            PackData.Float13, &
+                            PackData.Float14, &
+                            PackData.Float15, &
+                            PackData.Float16)    
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false
+            else 
+                PackData.Byte01 = ord(TmpStr, 1)
+                PackData.Byte02 = ord(TmpStr, 2)
+                PackData.Byte03 = ord(TmpStr, 3)
+                PackData.Byte04 = ord(TmpStr, 4)
+            endif
+        case(PACKCMD_WRIT):
+
+            write ThisFile( chr((PackData.Byte01))::1, &
+                            chr((PackData.Byte02))::1, &
+                            chr((PackData.Byte03))::1, &
+                            chr((PackData.Byte04))::1, &
+                            PackData.Short05, &
+                            PackData.Short06, &
+                            PackData.Short07, &
+                            PackData.Short08, &
+                            PackData.Int09, &
+                            PackData.Int10, &
+                            PackData.Int11, &
+                            PackData.Int12, &
+                            PackData.Float13, &
+                            PackData.Float14, &
+                            PackData.Float15, &
+                            PackData.Float16)                
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+        else:
+
+            post_err(CC_UALARM, 'pack cmd148 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    return(Status)
+end pack_cmd148_
+
+routine pack_cmd151_
+var
+    Status              : integer 
+    TmpStr              : string[4]
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read ThisFile(  TmpStr::1, &
+                            PackData.Short02, &
+                            PackData.Short03, &
+                            PackData.Short04, &
+                            PackData.Float05, &
+                            PackData.Float06)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false
+            else 
+                PackData.Byte01 = ord(TmpStr, 1)
+            endif
+        case(PACKCMD_WRIT):
+
+            write ThisFile( chr((PackData.Byte01))::1, &
+                            PackData.Short02, &
+                            PackData.Short03, &
+                            PackData.Short04, &
+                            PackData.Float05, &
+                            PackData.Float06)
+            Status = io_status(ThisFile)
+            if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+        else:
+
+            post_err(CC_UALARM, 'pack cmd151 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    return(Status)
+end pack_cmd151_
+
+routine pack_cmd254_
+var
+    Status              : integer 
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read  ThisFile( PackData.Float01, &
+                            PackData.Float02, &
+                            PackData.Float03, &
+                            PackData.Float04, &
+                            PackData.Float05, &
+                            PackData.Float06, &
+                            PackData.Float07, &
+                            PackData.Float08, &
+                            PackData.Float09, &
+                            PackData.Float10, &
+                            PackData.Float11, &
+                            PackData.Float12, &
+                            PackData.Int13, &
+                            PackData.Int14)
+        case(PACKCMD_WRIT):
+
+            write ThisFile( PackData.Float01, &
+                            PackData.Float02, &
+                            PackData.Float03, &
+                            PackData.Float04, &
+                            PackData.Float05, &
+                            PackData.Float06, &
+                            PackData.Float07, &
+                            PackData.Float08, &
+                            PackData.Float09, &
+                            PackData.Float10, &
+                            PackData.Float11, &
+                            PackData.Float12, &
+                            PackData.Int13, &
+                            PackData.Int14)
+        else:
+
+            post_err(CC_UALARM, 'pack cmd254 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(Status)
+end pack_cmd254_
+
+routine pack_cmd255_
+var
+    Status              : integer 
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read  ThisFile( PackData.Float01, &
+                            PackData.Float02, &
+                            PackData.Float03, &
+                            PackData.Float04, &
+                            PackData.Float05, &
+                            PackData.Float06, &
+                            PackData.Float07, &
+                            PackData.Float08, &
+                            PackData.Float09, &
+                            PackData.Float10, &
+                            PackData.Float11, &
+                            PackData.Float12, &
+                            PackData.Int13, &
+                            PackData.Int14)
+        case(PACKCMD_WRIT):
+
+            write ThisFile( PackData.Float01, &
+                            PackData.Float02, &
+                            PackData.Float03, &
+                            PackData.Float04, &
+                            PackData.Float05, &
+                            PackData.Float06, &
+                            PackData.Float07, &
+                            PackData.Float08, &
+                            PackData.Float09, &
+                            PackData.Float10, &
+                            PackData.Float11, &
+                            PackData.Float12, &
+                            PackData.Int13, &
+                            PackData.Int14)
+        else:
+
+            post_err(CC_UALARM, 'pack cmd254 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(Status)
+end pack_cmd255_

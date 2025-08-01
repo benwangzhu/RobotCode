@@ -1,0 +1,93 @@
+program sbt_GetPath
+--***********************************************************
+--
+-- file Name: sbt_GetPath
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2024 - 07 - 04
+--   Modification Data    ==   2024 - 07 - 04
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+-- 获取焊接轨迹命令
+--
+%nolockgroup
+%comment = '焊接-获取路径'
+%include include/lib_math_t
+%include sbt_Comm011_t
+%include sbt_Comm011_global
+%include include/lib_transform_t
+var
+    SemBool                     : boolean
+    Status                      : integer
+%include include/lib_thread_h
+%include include/lib_socket_h
+%include include/lib_math_h
+%include include/lib_tp_if_h
+%include include/lib_motion_h
+%include include/lib_tpe_h
+
+begin
+
+
+    GlbWeldMode = get_iparm_(1)                 -- 获取焊接模式
+    GlbSlodId = get_iparm_(2)                   -- 获取焊缝 ID
+    InstMove.MovType = get_iparm_(3)            -- 获取运动类型
+    TpeProgName = get_sparm_(4)                 -- 获取 TPE 程序名
+    GlbSpeed = get_rparm_(5)                    -- 焊接前进速度
+    InstMove.PointTyp = LM_MTN_NPOS
+    InstMove.PointNo = 0
+    InstMove.SpeedTyp = LM_MTN_CMMIN
+    InstMove.Speed = 0
+    InstMove.Cnt = 100
+
+    TpeOpenId = tpe_open_(TpeProgName, TPE_RWACC, TPE_NOREJ)
+
+    if TpeOpenId <= 0 then
+
+        post_err(CC_UALARM, '打开轨迹程序失败', 0, CC_ABORT)
+    endif
+
+    tpe_del_ln_(TpeOpenId, TPE_ALL_LINE)
+
+    tpe_close_(TpeOpenId)
+
+    TrajeTpeLine = 0
+
+    clear_sema_(SemRltAck)
+    GlbCommannd = INST_PATH
+    SemBool = pead_sema_(SemRltAck, 0)
+    wait for GlbCommannd = INST_UNKNOWN
+end sbt_GetPath

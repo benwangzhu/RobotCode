@@ -1,0 +1,45 @@
+&ACCESS  R
+&COMMENT Sbt Comm011 Global
+DEFDAT  SBT_COMM11_GLOBAL PUBLIC
+;***********************************************************
+; 
+; Copyright 2025 - 2025 speedbot All Rights reserved.
+; 
+; file Name: sbt_comm11_global.dat
+; 
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2025 - 05 - 08
+;   Modification Data    ==   2025 - 05 - 08
+; 
+; Author: speedbot
+; 
+; Version: 1.0
+;***********************************************************
+
+;Set network communication parameters
+DECL GLOBAL sock_cfg_t GlbSocketCfg={Connected FALSE,SockXmlName[] "SbtComm011Config",ActFlagNo 12,RecvFlagNo 13,NByte 1,RecvTimeout 0}
+
+;Trajectory Points
+DECL GLOBAL E6POS GlbTrajectoryPoint[1000]
+DECL GLOBAL E6POS GlbTrajectoryPoint1[1000]
+
+;Trajectory Length
+DECL GLOBAL INT GlbTrajectoryLen=2
+
+;Command Id
+DECL GLOBAL INT GlbCommandId=0
+
+;Sold Id
+DECL GLOBAL INT GlbSlodId=3
+
+;Real-time data sending
+DECL GLOBAL pk_realtm_t GlbPackRealTime
+
+;Receive data
+DECL GLOBAL pk_tarje_t GlbPackTrajeInst
+
+;Command completed flag
+DECL GLOBAL BOOL FlagRltAck=TRUE
+
+ENDDAT

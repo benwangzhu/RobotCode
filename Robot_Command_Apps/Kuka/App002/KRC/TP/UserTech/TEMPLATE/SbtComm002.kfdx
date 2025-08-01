@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--For an example how to add menu entries for UserTech InlineForms see file C:\KRC\TP\UserTech\SmartHMI\SmartHMI.exe.UserTech.InlineForms.config-->
+<KukaTechDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	
+	<!-- ===================================================================================== -->
+	<!-- =============================== SbtComm002 ========================================== -->
+	<!-- ===================================================================================== -->
+	<Application Name="SbtComm002" SOT="FALSE" SOC="TRUE">							
+		<!-- ================================ Global Data Type ========================================= -->
+
+		<Param Name="Pid" ShortName="IN Part Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="255" Step="1" Autolimit="" />
+		</Param>
+		
+		<Param Name="PictureId" ShortName="IN Picture Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="255" Step="1" Autolimit="" />
+		</Param>
+		
+		<Param Name="SleepTime" ShortName="IN Sleep Time: " ShortCut="" Unit="sec" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="0.0" Max="88888888.0" Step="0.5" Autolimit="True" />
+		</Param>
+		
+		<!-- ================================ Global Script ========================================= -->
+
+
+	
+		<!-- ================================ InitParm ========================================= -->
+		
+		<Fold Name="InitParmFold">									
+			<Line>sbt_comm002_(1, %Pid/)</Line>		
+		</Fold>
+		<InlineForm Name="InitParm" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="InitParmFold" />	
+			<PRM Name="Pid" />
+		</InlineForm>
+
+		<!-- ================================ Trigger ========================================= -->
+		
+		<Fold Name="TriggerFold">	
+			<Line>wait sec %SleepTime/</Line>	
+			<Line>sbt_comm002_(2, ,%PictureId/)</Line>	
+		</Fold>
+		<InlineForm Name="Trigger" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="TriggerFold" />	
+			<PRM Name="SleepTime" />
+			<PRM Name="PictureId" />
+		</InlineForm>
+
+		<!-- ================================ ScanStart ========================================= -->
+		
+		<Fold Name="ScanStartFold">
+			<Line>wait sec %SleepTime/</Line>									
+			<Line>sbt_comm002_(3, ,%PictureId/)</Line>		
+		</Fold>
+		<InlineForm Name="ScanStart" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="ScanStartFold" />
+			<PRM Name="SleepTime" />
+			<PRM Name="PictureId" />	
+		</InlineForm>
+
+		<!-- ================================ ScanStop ========================================= -->
+		
+		<Fold Name="ScanStopFold">
+			<Line>wait sec %SleepTime/</Line>									
+			<Line>sbt_comm002_(4, )</Line>		
+		</Fold>
+		<InlineForm Name="ScanStop" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="ScanStopFold" />
+			<PRM Name="SleepTime" />	
+		</InlineForm>
+
+		<!-- ================================ Result ========================================= -->
+		
+		<Fold Name="ResultFold">								
+			<Line>sbt_comm002_(5, )</Line>		
+		</Fold>
+		<InlineForm Name="Result" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="ResultFold" />
+		</InlineForm>
+
+	</Application>
+</KukaTechDescription>
+<!--checksum 45498028524 -->

@@ -1,0 +1,641 @@
+program mixsort_sr
+--***********************************************************
+--
+-- file Name: mixsort_sr.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 11 - 25
+--   Modification Data    ==   2021 - 11 - 25
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--
+%comment = 'Mix Sensor V2.0'
+%nolockgroup 
+%nobusylamp
+%nopause = error + tpenable + command
+%include include\lib_busio_t
+%include mixsort_t
+%include mixsort_global
+%include include\lib_math_t
+%include include\lib_logs_t
+%include kliotyps
+var
+
+    CurAgtData                              : agt_data_t
+
+    I                                       : integer
+
+    MixStatus                               : integer
+
+    GlobalTaskId                            : integer
+
+    RefPictPos                              : xyzwprext
+    PictPos                                 : xyzwprext
+
+    PickPos                                 : xyzwprext 
+    PickUpPos                               : xyzwprext
+    PickRUpPos                              : xyzwprext
+
+    PlacePos                                : xyzwprext
+    PlaceUpPos                              : xyzwprext
+
+    OffsPosAry                              : array[6] of real
+    posary                                  : array[9] of real
+
+%include include\lib_logs_h
+%include include\lib_math_h
+%include include\lib_motion_h
+%include include\lib_string_h
+%include include\lib_tp_if_h
+%include include\lib_busio_h
+
+
+routine mix_ack_tp_(AckMove : integer)                          from mixsort_sr
+routine mix_ack_pc_(AckSensor : integer)                        from mixsort_sr
+routine init_data_(ThisData : agt_data_t)                       from mixsort_sr
+routine mix_cnv_pos_(ThisPosAry : array of real) : xyzwprext    from mixsort_sr
+
+begin
+
+    log_clear_
+
+    ShutDownReq = false
+
+    GlobalTaskId = 0
+    
+    log_info_('SR','(^_~) - 总线通讯初始化 !')
+
+    bus_init_(BusInput, BusOutput, MixPkCfg.RobotId, PTC_ST_PK)
+
+    while (not ShutDownReq) do
+
+        -- 等待示教器命令激活
+        log_info_('SR','等待前台输入命令 ...') 
+       
+        wait for (flg[F_REQ_TO_KL]) or (ShutDownReq = true)
+
+        if flg[F_REQ_TO_KL] then
+
+            flg[F_REQ_TO_KL] = false
+
+            BusOutput.RobMsgType    = 0
+            BusOutput.JobId         = get_ireg_(R_CMD_TO_KL)
+
+            -- 根据不同的命令码对 agent 通知不同的处理，以此获取对应的数据
+            -- 根据激活码对任务坐标不同的操作
+
+            select BusOutput.JobId of
+
+            case(MIX_EDG_PIT):
+
+                log_info_('SR','执行粗定位拍照命令 ...')
+                BusOutput.RobMsgType    = BusOutput.RobMsgType + 1
+
+                log_info_('SR','等待软件反馈数据中 ... ')
+                MixStatus               = bus_ntell_(BusInput, BusOutput, BusTimeout)
+
+                if MixStatus = OK then mix_ack_tp_(TO_TP_NEXT); endif 
+            case(MIX_PIT_DAT):
+
+                log_info_('SR','执行获取拍照位置命令 ...')
+
+                BusOutput.RobMsgType    = BusOutput.RobMsgType + 1
+
+                log_info_('SR','等待软件反馈数据中 ... ')
+                MixStatus               = bus_ntell_(BusInput, BusOutput, BusTimeout)
+                if MixStatus = OK then  
+
+                    bus_uptin_(BusInput)
+
+                    if BusInput.Finished then 
+
+                        log_info_('SR','全部抓取完成 ...')
+                        ShutDownReq = true
+                        mix_ack_tp_(TO_TP_HOME)
+						log_info_('SR','后台任务退出 ...')
+                        return
+                    else
+                        log_info_('SR','获取拍照位置成功 ...')
+
+                        RefPictPos = get_preg_(MixPkCfg.PictCfg.RefPtpregNo)
+                        
+                        CurAgtData.PictData.PictVec.X   = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 64)
+                        CurAgtData.PictData.PictVec.Y   = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 96)
+                        CurAgtData.PictData.PictVec.Z   = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 128)
+                        
+                        CurAgtData.PictData.PictPos[1]  = CurAgtData.PictData.PictVec.X + RefPictPos.x
+                        CurAgtData.PictData.PictPos[2]  = CurAgtData.PictData.PictVec.Y + RefPictPos.y
+                        CurAgtData.PictData.PictPos[3]  = CurAgtData.PictData.PictVec.Z + RefPictPos.z
+                        CurAgtData.PictData.PictPos[4]  = RefPictPos.W
+                        CurAgtData.PictData.PictPos[5]  = RefPictPos.P
+                        CurAgtData.PictData.PictPos[6]  = RefPictPos.R
+                        CurAgtData.PictData.PictPos[7]  = 0.0
+                        CurAgtData.PictData.PictPos[8]  = 0.0
+                        CurAgtData.PictData.PictPos[9]  = 0.0
+
+                        PictPos = mix_cnv_pos_(CurAgtData.PictData.PictPos)
+
+                        CurAgtData.PictData.PictPos = decom_pos_(PictPos)
+
+                        CurAgtData.PictData.IsUnrefId = 0
+
+                        if (PictPos.X > MixPkCfg.PictCfg.PtMaxData.X) or (PictPos.X < MixPkCfg.PictCfg.PtMinData.X) then
+
+                            CurAgtData.PictData.IsUnrefId = 101
+                            log_error_('SR','拍照位置 X 方向超限 ...')
+                            log_error_('SR','(T_T) X[' + rel_to_str_(PictPos.X) + ']' + 'MaxX[' + rel_to_str_(MixPkCfg.PictCfg.PtMaxData.X) + ']')
+                            log_error_('SR','(T_T) X[' + rel_to_str_(PictPos.X) + ']' + 'MinX[' + rel_to_str_(MixPkCfg.PictCfg.PtMinData.X) + ']')
+                            go to PICTURE_ACK
+                        endif
+
+                        if (PictPos.Y > MixPkCfg.PictCfg.PtMaxData.Y) or (PictPos.Y < MixPkCfg.PictCfg.PtMinData.Y) then
+
+                            CurAgtData.PictData.IsUnrefId = 102
+                            log_error_('SR','拍照位置 Y 方向超限 ...')
+                            log_error_('SR','(T_T) Y[' + rel_to_str_(PictPos.Y) + ']' + 'MaxY[' + rel_to_str_(MixPkCfg.PictCfg.PtMaxData.Y) + ']')
+                            log_error_('SR','(T_T) Y[' + rel_to_str_(PictPos.Y) + ']' + 'MinY[' + rel_to_str_(MixPkCfg.PictCfg.PtMinData.Y) + ']')
+                            go to PICTURE_ACK
+                        endif
+                        
+                        if not chk_pos_(PictPos, 0, 0) then
+
+                            CurAgtData.PictData.IsUnrefId = 103
+                            log_error_('SR','拍照位置不可达 ...')
+                            go to PICTURE_ACK
+                        endif
+
+                        PICTURE_ACK::
+
+                        log_info_('SR','反馈拍照位置可达状态[' + int_2str_(CurAgtData.PictData.IsUnrefId) + ']')
+                        bus_sbyte_(BusOutput.BusIoSt + 64, CurAgtData.PictData.IsUnrefId)
+                        BusOutput.RobMsgType    = BusOutput.RobMsgType + 1
+
+                        log_info_('SR','等待软件反馈数据中 ... ')
+                        MixStatus               = bus_ntell_(BusInput, BusOutput, 3000)
+
+                        if MixStatus = OK then  
+                            if CurAgtData.PictData.IsUnrefId <> 0 then
+
+                                log_error_('SR','拍照位置不可达 ...')
+								delay 50
+
+                                -- Code Modified on 2025.05.02
+                                -- 不可达时修改为获取任务，而不是获取拍照位置
+
+                                -- mix_ack_pc_(MIX_PIT_DAT)
+                                mix_ack_pc_(MIX_GET_TASK)
+                                --
+                            else
+                                log_info_('SR','机器人去拍照位置 ...')
+                                set_preg_(MixPkCfg.PictCfg.PictPregNo, PictPos)
+                                mix_ack_tp_(TO_TP_PICT)
+                            endif
+                        endif
+                    endif
+                endif
+            case(MIX_LTN_PIT):
+                log_info_('SR','执行精定位拍照命令 ...')
+				
+                bus_scartp_(BusOutput.BusIoSt + 64, c_mulgp_ps_(0, 0, 1), 6)
+                BusOutput.RobMsgType    = BusOutput.RobMsgType + 1
+
+                log_info_('SR','等待软件反馈数据中 ... ')
+                MixStatus               = bus_ntell_(BusInput, BusOutput, BusTimeout)
+
+                if MixStatus = OK then 
+
+                    log_info_('SR','机器人去等待位 ...')
+                    mix_ack_tp_(TO_TP_NEXT) 
+                endif
+
+            case(MIX_PIK_DAT):
+
+                BusInput.Finished   = false
+                MixStatus = OK
+
+                log_info_('SR','执行获取数据命令 ...')
+                if flg[MixPkCfg.AckCfg.IsPickingFlg] then
+
+                    bus_sbyte_(BusOutput.BusIoSt + 64, 1)
+                else
+
+                    bus_sbyte_(BusOutput.BusIoSt + 64, 0)
+                endif
+
+                while (MixStatus = OK) and (not BusInput.Finished) and (BusOutput.RobMsgType < 3) do
+
+                    BusOutput.RobMsgType    = BusOutput.RobMsgType + 1
+
+                    log_info_('SR','等待软件反馈数据中 ... ')
+                    MixStatus               = bus_ntell_(BusInput, BusOutput, BusTimeout)
+
+                    select BusOutput.RobMsgType of
+
+                    case(1):
+                        CurAgtData.PartData.FromRobId   = bus_gbyte_(IO_DIN, BusInput.BusIoSt + 64)
+                        CurAgtData.PartData.PartLen     = round(bus_gsint_(IO_DIN, BusInput.BusIoSt + 72) / 10.0)
+                        CurAgtData.PartData.OfsOrt      = bus_gsint_(IO_DIN, BusInput.BusIoSt + 88) / 10.0
+                        CurAgtData.PartData.OfsRz       = bus_gsint_(IO_DIN, BusInput.BusIoSt + 104) / 10.0
+                        CurAgtData.PartData.MagPip[1]   = bus_gbyte_(IO_DIN, BusInput.BusIoSt + 120)
+                        CurAgtData.PartData.MagPip[2]   = bus_gbyte_(IO_DIN, BusInput.BusIoSt + 128)
+                        CurAgtData.PartData.MagPip[3]   = bus_gbyte_(IO_DIN, BusInput.BusIoSt + 136)
+                        CurAgtData.PartData.MagPip[4]   = bus_gbyte_(IO_DIN, BusInput.BusIoSt + 144)
+                        CurAgtData.PartData.MagPip[5]   = bus_gbyte_(IO_DIN, BusInput.BusIoSt + 152)
+                        CurAgtData.PartData.MagPip[6]   = bus_gbyte_(IO_DIN, BusInput.BusIoSt + 160)
+                        CurAgtData.PartData.MagPip[7]   = bus_gbyte_(IO_DIN, BusInput.BusIoSt + 168)
+                        CurAgtData.PartData.MagPip[8]   = bus_gbyte_(IO_DIN, BusInput.BusIoSt + 176)
+                        CurAgtData.PartData.GripDist1   = bus_gsint_(IO_DIN, BusInput.BusIoSt + 184) / 10.0
+                        CurAgtData.PartData.Thickness   = bus_gsint_(IO_DIN, BusInput.BusIoSt + 200) / 10.0
+                        CurAgtData.PartData.Weight      = bus_gsint_(IO_DIN, BusInput.BusIoSt + 216) / 10.0
+                        CurAgtData.PartData.PlaceId     = bus_gbyte_(IO_DIN, BusInput.BusIoSt + 232)
+                        CurAgtData.PartData.GripDist2   = bus_gsint_(IO_DIN, BusInput.BusIoSt + 240) / 10.0					
+                    case(2):
+
+                        CurAgtData.PartData.PkPos[1]    = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 64)
+                        CurAgtData.PartData.PkPos[2]    = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 96)
+                        CurAgtData.PartData.PkPos[3]    = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 128)
+                        CurAgtData.PartData.PkPos[4]    = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 160)
+                        CurAgtData.PartData.PkPos[5]    = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 192)
+                        CurAgtData.PartData.PkPos[6]    = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 224)
+
+                    case(3):
+                        CurAgtData.PartData.PlPos[1]    = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 64)
+                        CurAgtData.PartData.PlPos[2]    = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 96)
+                        CurAgtData.PartData.PlPos[3]    = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 128)
+                        CurAgtData.PartData.PlPos[4]    = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 160)
+                        CurAgtData.PartData.PlPos[5]    = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 192)
+                        CurAgtData.PartData.PlPos[6]    = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 224)
+                    else:
+                        --
+                        --
+                    endselect
+                    delay 50
+                    bus_uptin_(BusInput)
+                endwhile
+
+                if BusInput.Finished then 
+                    log_info_('SR','此次抓取完成 ...')
+
+                    ShutDownReq = (not MixPkCfg.EyeInHand)
+                    if MixPkCfg.EyeInHand then mix_ack_pc_(MIX_PIT_DAT); endif
+                endif
+
+                if (MixStatus = OK) and (not BusInput.Finished) then 
+                
+                    PickPos = mix_cnv_pos_(CurAgtData.PartData.PkPos)
+
+                    PickUpPos       = PickPos 
+                    PickRUpPos      = PickPos 
+                    PickUpPos.Z     = PickUpPos.Z + MixPkCfg.PickCfg.PkUpDist
+                    PickRUpPos.Z    = PickRUpPos.Z + MixPkCfg.PickCfg.PkRUpDist
+
+                    -- 复位坐标异常状态
+                    CurAgtData.PartData.IsUnrefId = 0
+
+                    if (CurAgtData.PartData.Thickness < 0) or (CurAgtData.PartData.Thickness > 100) then
+
+                        post_err(38000, '零件厚度错误[' + rel_to_str_(CurAgtData.PartData.Thickness) + ']', 0, 2)
+                    endif
+
+                    -- 判断放置位置是否超过最大的设定值                    
+                    if CurAgtData.PartData.PlaceId > MixPkCfg.NumPlPoint then 
+                        
+                        CurAgtData.PartData.IsUnrefId = 1
+                        log_error_('SR','放置 ID > 最大设置 ID ...')
+                        GO TO PICK_ACK 
+                    endif
+
+                    -- 检查抓取位置是否超限
+                    if not chk_pos_(PickPos, 0, MixPkCfg.PickCfg.PickToolNo) then 
+                        
+                        CurAgtData.PartData.IsUnrefId = 2
+                        log_error_('SR','抓取位置不可达 ...')
+                        GO TO PICK_ACK 
+                    endif
+
+                    -- 检查抓取接近位置是否超限
+                    if not chk_pos_(PickUpPos, 0, MixPkCfg.PickCfg.PickToolNo) then 
+                        
+                        CurAgtData.PartData.IsUnrefId = 3
+                        log_error_('SR','抓取接近位置不可达 ...')
+                        GO TO PICK_ACK 
+                    endif
+
+                    -- 检查抓取接近位置是否超限
+                    if not chk_pos_(PickRUpPos, 0, MixPkCfg.PickCfg.PickToolNo) then 
+                        
+                        CurAgtData.PartData.IsUnrefId = 4
+                        log_error_('SR','抓取离开位置不可达 ...')
+                        GO TO PICK_ACK 
+                    endif
+                    
+                    if (PickPos.X > MixPkCfg.PickCfg.PkMaxData.X) or (PickPos.X < MixPkCfg.PickCfg.PkMinData.X) then
+
+                        CurAgtData.PartData.IsUnrefId = 5
+                        log_error_('SR','抓取 X 方向超限 ...')
+                        log_error_('SR','(T_T) X[' + rel_to_str_(PickPos.X) + ']' + 'MaxX[' + rel_to_str_(MixPkCfg.PickCfg.PkMaxData.X) + ']')
+                        log_error_('SR','(T_T) X[' + rel_to_str_(PickPos.X) + ']' + 'MinX[' + rel_to_str_(MixPkCfg.PickCfg.PkMinData.X) + ']')
+
+                        go to PICK_ACK
+                    endif
+
+                    if (PickPos.Y > MixPkCfg.PickCfg.PkMaxData.Y) or (PickPos.Y < MixPkCfg.PickCfg.PkMinData.Y) then
+
+                        CurAgtData.PartData.IsUnrefId = 6
+                        log_error_('SR','抓取 Y 方向超限 ...')
+                        log_error_('SR','(T_T) Y[' + rel_to_str_(PickPos.Y) + ']' + 'MaxY[' + rel_to_str_(MixPkCfg.PickCfg.PkMaxData.Y) + ']')
+                        log_error_('SR','(T_T) Y[' + rel_to_str_(PickPos.Y) + ']' + 'MinY[' + rel_to_str_(MixPkCfg.PickCfg.PkMinData.Y) + ']')
+                        go to PICK_ACK
+                    endif
+
+                    if (MixPkCfg.PlaceCfg.BoxOrConv) and (CurAgtData.PartData.IsUnrefId = 0) then  
+
+                        -- 码框模式
+                        -- 将码框坐标计算到世界坐标系
+                        PlacePos        = MixPkCfg.PlaceCfg.BoxCfg[CurAgtData.PartData.PlaceId].BoxFrame : trans_pos_(CurAgtData.PartData.PlPos) 
+                        PlacePos.Ext1   = tern_real_(MixPkCfg.NumAxis > 6, MixPkCfg.PlaceCfg.BoxCfg[CurAgtData.PartData.PlaceId].PlaceE7Pos, 0.0)
+                        PlaceUpPos      = PlacePos
+                        PlaceUpPos.Z    = MixPkCfg.PlaceCfg.BoxCfg[CurAgtData.PartData.PlaceId].PlaceUpDst
+
+                        -- 检查码框坐标是否可达
+                        if not chk_pos_(PlacePos, 0, MixPkCfg.PlaceCfg.BoxCfg[CurAgtData.PartData.PlaceId].PlaceToolNo) then
+                            
+                            CurAgtData.PartData.IsUnrefId = 201
+                            log_error_('SR','码垛坐标不可达 ...')
+                            go to PICK_ACK
+                        endif
+
+                        -- 检查码框坐标是否可达
+                        if not chk_pos_(PlaceUpPos, 0, MixPkCfg.PlaceCfg.BoxCfg[CurAgtData.PartData.PlaceId].PlaceToolNo) then
+                            
+                            CurAgtData.PartData.IsUnrefId = 202
+                            log_error_('SR','码垛抬起坐标不可达 ...')
+                            go to PICK_ACK
+                        endif
+                        
+                    endif
+                    
+                    PICK_ACK::
+                    
+                    -- 反馈可达性
+                    log_info_('SR','反馈抓取位置可达状态[' + int_2str_(CurAgtData.PartData.IsUnrefId) + ']')
+                    bus_sbyte_(BusOutput.BusIoSt + 64, CurAgtData.PartData.IsUnrefId)
+                    BusOutput.RobMsgType    = BusOutput.RobMsgType + 1
+
+                    log_info_('SR','等待软件反馈数据中 ... ')
+                    MixStatus               = bus_ntell_(BusInput, BusOutput, 3000)
+
+                    if MixStatus = OK then 
+
+                        if CurAgtData.PartData.IsUnrefId <> 0 then 
+
+                            delay 50
+
+                            -- Code Modified on 2025.05.02
+                            -- 不可达时修改为获取任务，而不是获取抓取数据
+
+                            --  mix_ack_pc_(MIX_PIK_DAT)
+                            mix_ack_pc_(MIX_GET_TASK)
+
+                            --
+                        else
+
+                            log_info_('SR','机器人执行抓取过程 ...')
+                            
+                            -- 将零件长度写入寄存器
+                            set_ireg_(MixPkCfg.PickCfg.PtLenRegNo, CurAgtData.PartData.PartLen)
+
+                            -- 将抓取接近偏移写入寄存器
+                            set_preg_(MixPkCfg.PickCfg.PkUpPregNo, trans_dz_(MixPkCfg.PickCfg.PkUpDist))
+
+                            -- 将抓取坐标写入寄存器
+                            set_preg_(MixPkCfg.PickCfg.PkPosRegNo, PickPos)
+
+                            -- 将抓取离开偏移写入寄存器
+                            set_preg_(MixPkCfg.PickCfg.PkRUpPregNo, trans_dz_(MixPkCfg.PickCfg.PkRUpDist))
+
+                            if MixPkCfg.PlaceCfg.BoxOrConv then 
+
+                                -- 将码框坐标写入寄存器
+                                set_preg_(MixPkCfg.PlaceCfg.PlPosPregNo, PlacePos)
+
+                                -- 将码框上方点写入寄存器
+                                set_preg_(MixPkCfg.PlaceCfg.PlUpPregNo, PlaceUpPos)
+                            else
+
+                                for I = 1 to array_len(OffsPosAry) do OffsPosAry[I] = 0.0; endfor
+
+                                -- 放置偏移方向极限设置
+                                CurAgtData.PartData.OfsOrt = min_(CurAgtData.PartData.OfsOrt, MixPkCfg.PlaceCfg.ConvCfg[CurAgtData.PartData.PlaceId].PlMaxOfsOrt)    
+                                CurAgtData.PartData.OfsOrt = max_(CurAgtData.PartData.OfsOrt, MixPkCfg.PlaceCfg.ConvCfg[CurAgtData.PartData.PlaceId].PlMinOfsOrt)    
+                                
+                                -- 放置偏移方向设定
+                                OffsPosAry[1] = tern_real_(MixPkCfg.PlaceCfg.ConvCfg[CurAgtData.PartData.PlaceId].PlOrtMode = 1, CurAgtData.PartData.OfsOrt, OffsPosAry[1])
+                                OffsPosAry[2] = tern_real_(MixPkCfg.PlaceCfg.ConvCfg[CurAgtData.PartData.PlaceId].PlOrtMode = 2, CurAgtData.PartData.OfsOrt, OffsPosAry[2])
+                                OffsPosAry[3] = CurAgtData.PartData.Thickness
+
+                                -- 放置偏移角度设定
+                                OffsPosAry[6] = CurAgtData.PartData.OfsRz
+
+                                -- 将放置偏移写入寄存器
+                                set_preg_(MixPkCfg.PlaceCfg.PlPosPregNo, trans_pos_(OffsPosAry))
+
+                                OffsPosAry[3] = MixPkCfg.PlaceCfg.ConvCfg[CurAgtData.PartData.PlaceId].PlUpDist + CurAgtData.PartData.Thickness
+
+                                -- 将放置偏移上方点偏移写入寄存器
+                                set_preg_(MixPkCfg.PlaceCfg.PlUpPregNo, trans_pos_(OffsPosAry))
+
+                            endif
+
+                            -- 将开磁通道写入寄存器
+                            for I = 1 to array_len(CurAgtData.PartData.MagPip) do set_ireg_(MixPkCfg.PickCfg.MagPipRegNo[I], CurAgtData.PartData.MagPip[I]); endfor
+                            
+                            -- 将伺服距离写入寄存器
+                            set_ireg_(MixPkCfg.PickCfg.GripDt1RegNo, trunc(CurAgtData.PartData.GripDist1))
+                            set_ireg_(MixPkCfg.PickCfg.GripDt2RegNo, trunc(CurAgtData.PartData.GripDist2))
+
+                            -- 将放置编号写入寄存器
+                            set_ireg_(MixPkCfg.PlaceCfg.PlaceIdReg, CurAgtData.PartData.PlaceId)
+                            mix_ack_tp_(TO_TP_PK)
+                        endif
+                    endif               
+                endif
+
+            -- Code added on 2025.04.17
+            -- 添加获取任务接口
+            case(MIX_GET_TASK):
+                log_info_('SR','执行获取任务命令 ...')
+
+                -- log_info_('SR','执行获取数据命令 ...')
+                -- 提前将上一次的抓取成功标志写入
+                if flg[MixPkCfg.AckCfg.IsPickingFlg] then
+
+                    bus_sbyte_(BusOutput.BusIoSt + 64, 1)
+                else
+
+                    bus_sbyte_(BusOutput.BusIoSt + 64, 0)
+                endif
+				
+                BusOutput.RobMsgType    = BusOutput.RobMsgType + 1
+
+                log_info_('SR','等待软件反馈数据中 ... ')
+                MixStatus               = bus_ntell_(BusInput, BusOutput, BusTimeout)
+                if MixStatus = OK then 
+
+                    log_info_('SR','接收到任务' + int_2str_((BusInput.JobId)) + ' ...')
+                    GlobalTaskId = BusInput.JobId
+                    select GlobalTaskId of
+                    case(1):
+                        mix_ack_pc_(MIX_PIT_DAT)
+                    case(2):
+                        mix_ack_pc_(MIX_PIK_DAT)
+                    case(3):
+                        mix_ack_pc_(MIX_PIK_DAT)
+                    case(4):
+                        mix_ack_pc_(MIX_PIK_DAT)
+                    case(5):
+                        mix_ack_pc_(MIX_PIK_DAT)
+                    else:
+                        -- 错误的任务类型
+                        post_err(38000, 'Mixsort 任务错误[' + int_2str_(BusInput.JobId) + ']', 0, 2)
+                    endselect
+                endif
+            --
+            endselect
+
+            ShutDownReq = not (MixStatus = OK) 
+        endif
+    endwhile
+    
+    mix_ack_tp_(TO_TP_HOME)
+
+    if MixStatus = OK then
+        log_info_('SR','后台任务退出 ...')
+    else    
+        log_error_('SR','软件出现错误 ...')
+    endif
+end mixsort_sr
+
+routine mix_ack_tp_
+begin
+    set_ireg_(R_CMD_TASK, GlobalTaskId)
+    set_ireg_(R_CMD_TO_TP, AckMove)
+    flg[F_NXT_TO_TP] = true
+end mix_ack_tp_
+
+routine mix_ack_pc_
+begin
+    set_ireg_(R_CMD_TO_KL, AckSensor)
+    flg[F_REQ_TO_KL] = true
+end mix_ack_pc_
+
+routine init_data_
+var
+    I               : integer
+begin
+    using ThisData do
+        PictData.IsUnrefId    = 0
+        PictData.PictVec.X  = 0
+        PictData.PictVec.Y  = 0
+        PictData.PictVec.Z  = 0
+        PartData.IsUnrefId    = 0
+        PartData.FromRobId  = -1
+        PartData.PartLen    = 0
+        PartData.OfsOrt     = 0.0
+        PartData.OfsRz      = 0.0
+        PartData.GripDist1   = 0.0
+        PartData.GripDist2   = 0.0
+        PartData.Thickness  = 0.0
+        PartData.Weight     = 0.0
+        PartData.PlaceId    = 0
+
+        for I = 1 to array_len(PictData.PictPos)    do PictData.PictPos[I] = 0; endfor
+        for I = 1 to array_len(PartData.PkPos)      do PartData.PkPos[I] = 0;   endfor
+        for I = 1 to array_len(PartData.PkPos)      do PartData.PlPos[I] = 0;   endfor
+        for I = 1 to array_len(PartData.MagPip)     do PartData.MagPip[I] = 0;  endfor
+    endusing
+end init_data_
+
+routine mix_cnv_pos_
+var
+    CnvPos              : xyzwprext
+begin
+
+    CnvPos = trans_pos_(ThisPosAry)
+
+    if MixPkCfg.NumAxis <= 6 then
+
+        return(CnvPos)
+    endif
+
+    select MixPkCfg.ExtCfg.E7Coordinate of
+    case(1):
+        CnvPos.Ext1 = CnvPos.X
+
+        if abs(CnvPos.Y) < abs(MixPkCfg.PictCfg.PtMinDist) then
+
+            if CnvPos.EXT1 > MixPkCfg.PictCfg.PtRlE7Pos then
+
+                CnvPos.EXT1 = CnvPos.EXT1 - sqrt(MixPkCfg.PictCfg.PtMinDist * MixPkCfg.PictCfg.PtMinDist - CnvPos.Y * CnvPos.Y)
+            else
+
+                CnvPos.EXT1 = CnvPos.EXT1 + sqrt(MixPkCfg.PictCfg.PtMinDist * MixPkCfg.PictCfg.PtMinDist - CnvPos.Y * CnvPos.Y)
+            endif
+        
+        endif
+
+        if (CnvPos.EXT1 >= MixPkCfg.ExtCfg.E7UpLim) then
+            CnvPos.EXT1 = MixPkCfg.ExtCfg.E7UpLim
+        endif
+        if (CnvPos.EXT1 <= MixPkCfg.ExtCfg.E7DwLim) then
+            CnvPos.EXT1 = MixPkCfg.ExtCfg.E7DwLim
+        endif
+
+
+        if CnvPos.Ext1 = CnvPos.X then 
+
+            CnvPos.Ext1 = CnvPos.Ext1 - 1.0
+        endif
+
+
+    case(2):
+        CnvPos.Ext1 = CnvPos.Y
+
+        if abs(CnvPos.X) < abs(MixPkCfg.PictCfg.PtMinDist) then
+
+            if CnvPos.EXT1 > MixPkCfg.PictCfg.PtRlE7Pos then
+
+                CnvPos.EXT1 = CnvPos.EXT1 - sqrt(MixPkCfg.PictCfg.PtMinDist * MixPkCfg.PictCfg.PtMinDist - CnvPos.X * CnvPos.X)
+            else
+
+                CnvPos.EXT1 = CnvPos.EXT1 + sqrt(MixPkCfg.PictCfg.PtMinDist * MixPkCfg.PictCfg.PtMinDist - CnvPos.X * CnvPos.X)
+            endif
+        
+        endif
+
+        if (CnvPos.EXT1 >= MixPkCfg.ExtCfg.E7UpLim) then
+            CnvPos.EXT1 = MixPkCfg.ExtCfg.E7UpLim
+        endif
+        if (CnvPos.EXT1 <= MixPkCfg.ExtCfg.E7DwLim) then
+            CnvPos.EXT1 = MixPkCfg.ExtCfg.E7DwLim
+        endif
+
+
+        if CnvPos.Ext1 = CnvPos.Y then 
+
+            CnvPos.Ext1 = CnvPos.Ext1 - 1.0
+        endif
+    else:
+        log_error_('SR','J7 Coordinate Is Error ...')
+        abort_task_('*')  
+    endselect
+
+    return(CnvPos)
+
+end mix_cnv_pos_

@@ -1,0 +1,130 @@
+--***********************************************************
+--
+-- file Name: sbt_inst_t
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2024 - 07 - 04
+--   Modification Data    ==   2024 - 07 - 04
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+
+%include include/lib_socket_t
+%include include/lib_logs_t
+%include include/lib_tpe_t
+%include include/lib_packages_t
+%include klevtpe
+const
+
+	RELTM_PORT					= 11002
+	RELTM_TAG					= 'C4:'	
+
+
+	REG_SOLD_IDX				= 12
+	REG_SOLD_CUR				= 13
+	REG_SOLD_VOL				= 14
+	REG_SOLD_WV					= 15
+	REG_SOLD_AMP				= 16
+	REG_SOLD_FRQ				= 17
+	REG_SOLD_DEL				= 18
+	REG_SLOD_GAP				= 19
+
+	REG_WELD_IDX				= 22
+
+	PR_START_POS				= 12
+	PR_STOP_POS					= 13
+
+	-- TPE_PC_PATH					= 'PATH_PROC'
+
+	INST_UNKNOWN				= 0
+	INST_PATH					= 1
+	INST_2D_ST					= 2
+	INST_2D_ED					= 3
+	INST_3D_ST					= 4
+	INST_3D_ED					= 5
+	INST_LS_ST					= 6
+	INST_LS_ED					= 7
+	INST_PRM_ST					= 8
+	INST_PRM_ED					= 9
+	INST_ADD_TH					= 10	-- 添加示教姿态命令
+
+	MODE_NORMAL					= 0		-- 普通模式
+	MODE_ADAP					= 1 	-- 自适应模式
+	MODE_ADAP2					= 2		-- 自适应模式2
+type		
+
+	
+	pk_realtm_t from sbt_network = structure
+		Header 				: pack_head_t			-- 报文头
+		Pos					: array[13] of real		-- 机器人当前位置
+		ProcessPrm01		: real					-- 工艺数据01
+		ProcessPrm02		: real					-- 工艺数据02
+		ProcessPrm03		: real					-- 工艺数据03
+		ProcessPrm04  		: real					-- 工艺数据04
+		Reversed 			: array[8] of byte		-- 预留
+		Tail 				: pack_tail_t			-- 报文尾
+	endstructure 
+
+	pk_tarje_t from sbt_network = structure
+		Header 				: pack_head_t			-- 报文头
+		Pos					: array[13] of real		-- 机器人当前位置
+		ProcessPrm01		: real					-- 工艺数据01
+		ProcessPrm02		: real					-- 工艺数据02
+		ProcessPrm03		: real					-- 工艺数据03
+		ProcessPrm04  		: real					-- 工艺数据04
+		Reversed 			: array[8] of byte		-- 预留
+		Tail 				: pack_tail_t			-- 报文尾
+	endstructure 
+
+	adap_param_t from sbt_network = structure
+		WvSch 				: integer				-- 使用的摆动参数
+		WeldSch 			: integer				-- 使用的焊接参数
+		SdGap 				: real					-- 标准焊缝宽度
+		SdAWvmp 			: real					-- 标准摆动幅度
+		SdWeldVol			: real					-- 标准摆动幅度
+		SdWeldCur			: real					-- 标准焊接电流
+		AmpAgin				: real					-- 摆动增益
+		VolAgin				: real					-- 电压增益
+		CurAgin				: real					-- 电流增益
+		MaxAmp				: real					-- 最大摆动幅度
+		MaxVol				: real					-- 最大电压
+		MaxCur				: real					-- 最大电流
+	endstructure 
+
+	tch_param_t from sbt_network = structure
+		Flag 				: integer				-- 1 首个示教点    0 添加示教点
+		PosG1 				: xyzwprext				-- 位置 G1	
+		PosG2				: jointpos				-- 位置 G2
+	endstructure

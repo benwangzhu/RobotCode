@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<KukaTechDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Application Name="Comm010Keys" SOT="TRUE" SOC="TRUE">
+    
+		<!-- ================================ GripOn ========================================= -->
+    <StatKey Name="GripOn" Style="" Next="" Enable="" UserMode="">
+      <Picture Default="C:\KRC\TP\UserTech\Template\GripOn.ICO" KeyDown="" KeyDownMinus="" />
+      <Text Top="" Center="" Bottom="" />
+      <Needs SafetySwitch="True" DrivesOk="" Prostate0="" Prostate="30" ModeOp="T1" />
+      <Scripts OnKeyDown="SB01" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+    </StatKey>
+
+		<!-- ================================ GripOff ========================================= -->
+    <StatKey Name="GripOff" Style="" Next="" Enable="" UserMode="">
+      <Picture Default="C:\KRC\TP\UserTech\Template\GripOff.ICO" KeyDown="" KeyDownMinus="" />
+      <Text Top="" Center="" Bottom="" />
+      <Needs SafetySwitch="True" DrivesOk="" Prostate0="" Prostate="" ModeOp="T1" />
+      <Scripts OnKeyDown="SB02" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+    </StatKey>
+
+		<!-- ================================  ========================================= -->
+    <StatKey Name="" Style="" Next="" Enable="" UserMode="">
+      <Picture Default="" KeyDown="" KeyDownMinus="" />
+      <Text Top="" Center="" Bottom="" />
+      <Needs SafetySwitch="" DrivesOk="" Prostate0="" Prostate="" ModeOp="T1" />
+      <Scripts OnKeyDown="" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+    </StatKey>
+
+		<!-- ================================  ========================================= -->
+    <StatKey Name="" Style="" Next="" Enable="" UserMode="">
+      <Picture Default="" KeyDown="" KeyDownMinus="" />
+      <Text Top="" Center="" Bottom="" />
+      <Needs SafetySwitch="" DrivesOk="" Prostate0="" Prostate="" ModeOp="T1" />
+      <Scripts OnKeyDown="" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+    </StatKey>
+
+		<!-- ================================ KeyState Cmd ========================================= -->
+    <Script Name="SB01">
+      <SetVar Fullpath="SEComm010SortKey" Value="1" />
+    </Script>
+    <Script Name="SB02">
+      <SetVar Fullpath="SEComm010SortKey" Value="2" />
+    </Script>
+    <Script Name="SB03">
+      <SetVar Fullpath="SEComm010SortKey" Value="3" />
+    </Script>
+    <Script Name="SB04">
+      <SetVar Fullpath="SEComm010SortKey" Value="4" />
+    </Script>
+    <Script Name="SB05">
+      <SetVar Fullpath="SEComm010SortKey" Value="5" />
+    </Script>
+    <Script Name="SB06">
+      <SetVar Fullpath="SEComm010SortKey" Value="6" />
+    </Script>
+    <Script Name="SB07">
+      <SetVar Fullpath="SEComm010SortKey" Value="7" />
+    </Script>
+    <Script Name="SB08">
+      <SetVar Fullpath="SEComm010SortKey" Value="8" />
+    </Script>
+    <Script Name="SB09">
+      <SetVar Fullpath="SEComm010SortKey" Value="9" />
+    </Script>
+    <Script Name="SB10">
+      <SetVar Fullpath="SEComm010SortKey" Value="10" />
+    </Script>
+    <Script Name="SB11">
+      <SetVar Fullpath="SEComm010SortKey" Value="11" />
+    </Script>
+    <Script Name="SB12">
+      <SetVar Fullpath="SEComm010SortKey" Value="12" />
+    </Script>
+    <Script Name="SB13">
+      <SetVar Fullpath="SEComm010SortKey" Value="13" />
+    </Script>
+    <Script Name="SB14">
+      <SetVar Fullpath="SEComm010SortKey" Value="14" />
+    </Script>
+    <Script Name="SB15">
+      <SetVar Fullpath="SEComm010SortKey" Value="15" />
+    </Script>
+    <Script Name="SB16">
+      <SetVar Fullpath="SEComm010SortKey" Value="16" />
+    </Script>
+    
+    <!-- <Script Name="SB41">
+      <ShowVar Fullpath="SEKeyCpn" Param="CorrPoolNr" />
+      <Message Text="Correction pool %CorrPoolNr" />
+      <Switch Dialog="TRUE" Condition="Correction pool %CorrPoolNr">
+        <Case Value="Cancel" Do="END" />
+        <Case Value="Add" Do="SB411" />
+        <Case Value="Clear" Do="SB412" />
+      </Switch>
+    </Script>
+    <Script Name="SB42">
+      <SetVar Fullpath="SEKeyState" Value="42" />
+    </Script>
+    <Script Name="SB43">
+      <SetVar Fullpath="SEKeyState" Value="43" />
+    </Script>
+    <Script Name="SB44">
+      <SetVar Fullpath="SEKeyState" Value="44" />
+    </Script> -->
+    <!-- <Script Name="ST1">
+      <Switch Dialog="FALSE" Condition="%BildNr">
+        <Case Value="1" Do="SB11" />
+        <Case Value="2" Do="SB21" />
+        <Case Value="3" Do="SB31" />
+        <Case Value="4" Do="SB41" />
+      </Switch>
+    </Script>
+    <Script Name="ST2">
+      <Switch Dialog="FALSE" Condition="%BildNr">
+        <Case Value="1" Do="SB12" />
+        <Case Value="2" Do="SB22" />
+        <Case Value="3" Do="SB32" />
+        <Case Value="4" Do="SB42" />
+      </Switch>
+    </Script>
+    <Script Name="ST3">
+      <Switch Dialog="FALSE" Condition="%BildNr">
+        <Case Value="1" Do="SB13" />
+        <Case Value="2" Do="SB23" />
+        <Case Value="3" Do="SB33" />
+        <Case Value="4" Do="SB43" />
+      </Switch>
+    </Script> -->
+    <!-- <Script Name="SKB1">
+      <ShowVar Fullpath="1" Param="BildNr" />
+      <Set Name="Key1" Enable="" UserMode="" Style="" Next="">
+        <Picture Default="" KeyDown="" KeyDownMinus="" />
+        <Text Top="" Center="" Bottom="" />
+        <Needs SafetySwitch="" DrivesOk="" Prostate0="" Prostate="" ModeOp="" />
+        <Scripts OnKeyDown="" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+      </Set>
+      <Set Name="Key2" Enable="" UserMode="" Style="" Next="">
+        <Picture Default="" KeyDown="" KeyDownMinus="" />
+        <Text Top="" Center="" Bottom="" />
+        <Needs SafetySwitch="" DrivesOk="" Prostate0="" Prostate="" ModeOp="" />
+        <Scripts OnKeyDown="" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+      </Set>
+      <Set Name="Key3" Enable="" UserMode="" Style="" Next="">
+        <Picture Default="" KeyDown="" KeyDownMinus="" />
+        <Text Top="" Center="" Bottom="" />
+        <Needs SafetySwitch="" DrivesOk="" Prostate0="" Prostate="" ModeOp="" />
+        <Scripts OnKeyDown="" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+      </Set>
+      <Set Name="Key4" Enable="" UserMode="" Style="" Next="">
+        <Picture Default="" KeyDown="" KeyDownMinus="" />
+        <Text Top="" Center="" Bottom="" />
+        <Needs SafetySwitch="" DrivesOk="" Prostate0="" Prostate="" ModeOp="" />
+        <Scripts OnKeyDown="" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+      </Set>
+    </Script>
+    <Script Name="CHGSTatkey">
+      <Switch Dialog="FALSE" Condition="%BildNr">
+        <Case Value="1" Do="SKB2" />
+        <Case Value="2" Do="SKB3" />
+        <Case Value="3" Do="SKB4" />
+        <Case Value="4" Do="SKB1" />
+      </Switch>
+    </Script> -->
+
+		<!-- ================================ KeyState Trigger ========================================= -->
+    <Set Name="Key1" Enable="" UserMode="" Style="" Next="">
+      <Picture Default="C:\KRC\TP\UserTech\Template\Bild21.ICO" KeyDown="" KeyDownMinus="" />
+      <Text Top="" Center="" Bottom="" />
+      <Needs SafetySwitch="" DrivesOk="" Prostate0="" Prostate="" ModeOp="" />
+      <Scripts OnKeyDown="SB01" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+    </Set>
+    <Set Name="Key2" Enable="" UserMode="" Style="" Next="">
+      <Picture Default="C:\KRC\TP\UserTech\Template\Bild22.ICO" KeyDown="" KeyDownMinus="" />
+      <Text Top="" Center="" Bottom="" />
+      <Needs SafetySwitch="" DrivesOk="" Prostate0="" Prostate="" ModeOp="" />
+      <Scripts OnKeyDown="SB02" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+    </Set>
+    <!-- <Set Name="Key3" Enable="" UserMode="" Style="" Next="">
+      <Picture Default="" KeyDown="" KeyDownMinus="" />
+      <Text Top="" Center="" Bottom="" />
+      <Needs SafetySwitch="" DrivesOk="" Prostate0="" Prostate="" ModeOp="" />
+      <Scripts OnKeyDown="SB03" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+    </Set>
+    <Set Name="Key4" Enable="" UserMode="" Style="" Next="">
+      <Picture Default="" KeyDown="" KeyDownMinus="" />
+      <Text Top="" Center="" Bottom="" />
+      <Needs SafetySwitch="" DrivesOk="" Prostate0="" Prostate="" ModeOp="" />
+      <Scripts OnKeyDown="SB04" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+    </Set> -->
+    <StatkeyBar Name="SeKeys">
+      <SK Name="GripOn" Pos="1" />
+      <SK Name="GripOff" Pos="2" />
+      <!-- <SK Name="" Pos="3" />
+      <SK Name="" Pos="4" /> -->
+    </StatkeyBar>
+  </Application>
+</KukaTechDescription>
+<!--checksum 62624726176 -->

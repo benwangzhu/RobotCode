@@ -1,0 +1,193 @@
+&ACCESS RVEO
+def sbt_comm003()
+;***********************************************************
+;
+; file Name: sbt_comm003
+;
+; Description:
+;   Language             ==   KRL for KUKA ROBOT
+;   Date                 ==   2024 - 06 - 03
+;   Modification Data    ==   2022 - 06 - 03
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+end
+
+global def sbt_comm003_(Command : in, Pid :in, PictureId : in,ThisPos : out)
+    decl int Command
+    decl char Pid
+    decl char PictureId
+    decl pos ThisPos
+
+    while true
+
+        switch (Command)
+        case 1                                                 ; CMD_VPARM
+    
+           bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+    
+            ;FOLD PID 
+            if (varstate("Pid") == #initialized) then
+                CmdType03.Byte01 = Pid
+            else
+                CmdType03.Byte01 = 0
+            endif
+                    
+            CmdType03.Byte02 = 0
+            CmdType03.Byte03 = 0
+            CmdType03.Byte04 = 0
+            CmdType03.Byte05 = 0
+            CmdType03.Byte06 = 0
+            CmdType03.Byte07 = 0
+            CmdType03.Byte08 = 0
+            CmdType03.Byte09 = 0
+            CmdType03.Byte10 = 0
+            CmdType03.Byte11 = 0
+            CmdType03.Byte12 = 0
+            CmdType03.Byte13 = 0
+            CmdType03.Byte14 = 0
+            CmdType03.Byte15 = 0
+            CmdType03.Byte16 = 0
+            CmdType03.Byte17 = 0
+            CmdType03.Byte18 = 0
+            ;ENDFOLD
+    
+            Status = bus_cmd137_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CmdType03)
+            Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+    
+            if Status == OK then
+
+                return
+            else
+
+                err_display_(BusInput, BusOutput)
+                bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+                
+            endif
+    
+        case 2                                                 ; CMD_POS 获取纠偏
+    
+            wait sec 0.0
+    
+            CmdType01 = {Byte01 0, Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}
+    
+            Status = bus_cmd021_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CmdType01)
+            Status = bus_cmd129_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, ThisPos,BusTimeout)
+    
+            if Status == OK then
+    
+                return
+            else
+    
+                err_display_(BusInput, BusOutput)
+                bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+
+            endif
+
+        case 3,4,5                                             ; CMD_TRIG, CMD_SCANSRT, CMD_SCANSTP
+    
+            wait sec 0.0
+
+            switch (Command)
+            case 3
+                CmdType01.Byte01 = 1
+                CmdType01.Byte02 = 0
+            case 4
+                CmdType01.Byte01 = 2
+                CmdType01.Byte02 = 1
+            case 5
+                CmdType01.Byte01 = 2
+                CmdType01.Byte02 = 2
+            endswitch     
+
+            if (varstate("PictureId") == #initialized) then
+                CmdType01.Short03 = PictureId
+            else
+                CmdType01.Short03 = 0
+            endif
+            CmdType01.Short04 = 0
+            CmdType01.Int05 = 0
+            CmdType01.Int06 = 0
+            CmdType01.Float07 = 0
+            CmdType01.Float08 = 0
+    
+            Status = bus_cmd012_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CmdType01,0)
+            Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+    
+            if Status == OK then
+                
+            else
+                err_display_(BusInput, BusOutput)
+    
+            endif
+            return       
+     
+        case 6                                                 ; CMD_RESULT 流程结束
+    
+            wait sec 0.0
+    
+            CmdType01.Byte01 = 100
+            CmdType01.Byte02 = 0
+            CmdType01.Short03 = 0
+            CmdType01.Short04 = 0
+            CmdType01.Int05 = 0
+            CmdType01.Int06 = 0
+            CmdType01.Float07 = 0
+            CmdType01.Float08 = 0
+    
+            Status = bus_cmd013_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CmdType01,0)
+            Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+    
+            if Status == OK then
+            
+            else
+                err_display_(BusInput, BusOutput)
+    
+            endif
+            return
+        
+        default
+
+            error_write_(999,"Calibration Param Err")
+            
+        endswitch
+
+    endwhile
+
+
+end
+
+
+def err_display_(BusIn : in,BusOut : in)
+    
+    decl busin_t BusIn
+    decl busout_t BusOut
+
+    if not BusIn.SysReady then 
+
+        error_write_(901,"Software not ready")
+        return
+    endif
+
+    if BusIn.TellId <> BusOut.RobTellId then 
+
+        error_write_(902,"Software processing timeout")
+        return
+    endif
+
+    switch BusIn.ErrorId 
+    case 1
+        error_write_(001,"Camera connection failed")
+    case 2
+        warn_write_(002,"Camera shot failed")
+    case 3
+        error_write_(003,"Error correction failure")
+    case 4
+        warn_write_(004,"Gap surface difference failed")
+    default
+        error_write_(903,"Unknow error")
+    endswitch
+
+end

@@ -1,0 +1,140 @@
+program second_cfg
+--***********************************************************
+--
+-- file Name: second_cfg.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 09 - 03
+--   Modification Data    ==   2023 - 07 - 03
+--
+-- Author: speedbot
+--
+-- Version: 5.0
+--***********************************************************
+--   
+%comment = 'SndCfg241027'
+%nolockgroup
+%nobusylamp
+%nopause = error + tpenable + command
+%include second_t
+%include second_global
+
+var 
+
+    I                           : integer
+%include include\lib_busio_h
+%include include\lib_logs_h
+%include include\lib_tp_if_h
+%include include\lib_motion_h
+
+routine init_queue_ from second_cfg
+
+begin
+
+    if uninit(BusInput.BusIoSt)     then BusInput.BusIoSt   = 513; CfgChecked = false; endif
+    if uninit(BusOutput.BusIoSt)    then BusOutput.BusIoSt  = 513; CfgChecked = false; endif
+
+    using PkPlCfg do
+
+        NumAxis = get_axs_num_(1)
+
+        if uninit(RobId)        then  RobId         = 0;            CfgChecked = false; endif
+        if uninit(NumOfConv)    then  NumOfConv     = 1;            CfgChecked = false; endif
+        if uninit(NumOfBox)     then  NumOfBox      = 4;            CfgChecked = false; endif
+        if uninit(OverlapTol)   then  OverlapTol    = 25;           CfgChecked = false; endif
+        if uninit(SrEnable)     then  SrEnable      = false;        CfgChecked = false; endif
+        if uninit(SrSens)       then  SrSens        = 16;           CfgChecked = false; endif
+        if uninit(NumOfConvReg) then  NumOfConvReg  = SS_CONV_CNT;  CfgChecked = false; endif
+        if uninit(ServoDistReg) then  ServoDistReg  = SS_GRP_DIS;   CfgChecked = false; endif
+        if uninit(TolOfsUPreg)  then  TolOfsUPreg   = SS_PKCV_UP;   CfgChecked = false; endif
+        if uninit(TolOfsRUPreg) then  TolOfsRUPreg  = SS_PKCV_RUP;  CfgChecked = false; endif
+        if uninit(AdjOfsPreg)   then  AdjOfsPreg    = SS_ADJ_POS;   CfgChecked = false; endif
+        if uninit(PlaceIDReg)   then  PlaceIDReg    = SS_BOX_NO;    CfgChecked = false; endif
+        if uninit(PlaceUpPreg)  then  PlaceUpPreg   = SS_PLUP_POS;  CfgChecked = false; endif
+        if uninit(PlacePreg)    then  PlacePreg     = SS_PL_POS;    CfgChecked = false; endif
+
+        for I = 1 to NumOfConv do
+            using pkcvCfg[I] do
+                if uninit(CstnId)           then  CstnId           = 1;                     CfgChecked = false; endif
+                if uninit(LnSchNo)          then  LnSchNo          = 1;                     CfgChecked = false; endif
+                if uninit(VReg)             then  VReg             = 1;                     CfgChecked = false; endif
+                if uninit(EncId)            then  EncId            = 1;                     CfgChecked = false; endif
+                if uninit(SrPortIndex)      then  SrPortIndex      = 0;                     CfgChecked = false; endif
+                if uninit(PkRefPreg)        then  PkRefPreg        = (SS_PKCV_REF + I - 1); CfgChecked = false; endif
+                if uninit(TolOfsUpDst)      then  TolOfsUpDst      = -100.0;                CfgChecked = false; endif
+                if uninit(TolOfsRUpDst)     then  TolOfsRUpDst     = -100.0;                CfgChecked = false; endif
+                if uninit(ManualZerOfs.X)   then  ManualZerOfs.X   = 0.0;                   CfgChecked = false; endif
+                if uninit(ManualZerOfs.Y)   then  ManualZerOfs.Y   = 0.0;                   CfgChecked = false; endif
+                if uninit(ManualZerOfs.Z)   then  ManualZerOfs.Z   = 0.0;                   CfgChecked = false; endif
+                if uninit(ManualAdjOfs.X)   then  ManualAdjOfs.X   = 0.0;                   CfgChecked = false; endif
+                if uninit(ManualAdjOfs.Y)   then  ManualAdjOfs.Y   = 0.0;                   CfgChecked = false; endif
+                if uninit(ManualAdjOfs.Z)   then  ManualAdjOfs.Z   = 0.0;                   CfgChecked = false; endif
+            endusing
+        endfor
+
+        for I = 1 to NumOfBox do
+            using plfsCfg[I] do
+                if uninit(PlaceToolNo)      then  PlaceToolNo      = 1;         CfgChecked = false; endif
+                if uninit(PlaceUpDst)       then  PlaceUpDst       = 300.0;     CfgChecked = false; endif
+                if uninit(PlaceE7Pos)       then  PlaceE7Pos       = 0.0;       CfgChecked = false; endif
+                if uninit(BoxFrame)         then  BoxFrame         = null_pos_; CfgChecked = false; endif
+                if uninit(Lim.MaxX)         then  Lim.MaxX         = 0.0;       CfgChecked = false; endif
+                if uninit(Lim.MinX)         then  Lim.MinX         = 0.0;       CfgChecked = false; endif
+                if uninit(Lim.MaxY)         then  Lim.MaxY         = 0.0;       CfgChecked = false; endif
+                if uninit(Lim.MinY)         then  Lim.MinY         = 0.0;       CfgChecked = false; endif
+            endusing
+        endfor
+    endusing
+   
+    if uninit(CfgChecked) then CfgChecked = false; endif
+
+
+    set_ireg_(PkPlCfg.NumOfConvReg,PkPlCfg.NumOfConv)
+
+    init_queue_
+
+    if not CfgChecked then
+
+        log_error_('CFG','Config Not Check ...')
+
+        abort_task_('*')
+    
+    endif
+
+end second_cfg
+
+routine init_queue_
+var
+    I               : integer
+    J               : integer
+    K               : integer
+begin
+    for I = 1 to MAX_NUM_CONV do
+        for J = 1 to MAX_QUE_NUM do
+            using PartIndex[I, J] do
+                NrQueue             = -1
+                PartData.ConvId     = 0
+                PartData.TaskId     = 0
+                PartData.BoxId      = 0
+                PartData.EncCount   = 0
+                PartData.ServoDist  = 0.0
+                PartData.Thickness  = 0.0
+                PartData.Weight     = 0.0
+                PartData.Num        = 0
+
+                for K = 1 to array_len(PartData.PkcvOfs)    do PartData.PkcvOfs[K]   = 0.0; endfor
+                for K = 1 to array_len(PartData.PlacePosn)  do PartData.PlacePosn[K] = 0.0; endfor
+            endusing
+            QueueIndex[I, J] = -1
+            EncodeVal[I, J] = 0
+        endfor
+
+        init_queue(SecondQueue[I])
+        init_queue(EncodeQue[I])
+        QueueCount[I] = 0
+    endfor
+
+end init_queue_

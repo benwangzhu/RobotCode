@@ -1,0 +1,11 @@
+WAIT((PcTellId <> RobotTellId) AND (PcTellId <> 0) AND (PcCmd <> CMD_STOP));
+CALL: copy_data_();
+CALL: new_ack_(PcCmd);
+CASE CopyCmd OF
+	CMD_CTRL:
+		CALL: exec_trajectorys_();
+		EXIT;
+	ELSE
+		ERROR(-1, "Motion does not support this mode", 0);
+		EXIT;
+END_CASE;

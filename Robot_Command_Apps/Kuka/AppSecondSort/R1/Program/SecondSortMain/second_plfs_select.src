@@ -1,0 +1,54 @@
+&ACCESS RV
+&REL 1
+&PARAM DISKPATH = KRC:\R1\Program\SecondSortMain
+&comment Plfs Select
+def second_plfs_select()
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: second_plfs_select.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 27
+;   Modification Data    ==   2024 - 10 - 25
+;
+; Author: speedbot
+;
+; Version: 1.1
+;***********************************************************
+
+    switch (GlbPartData.BoxId)
+    case 1
+        second_place01()
+    case 2
+        second_place02()
+    case 3
+        second_place03()
+    case 4
+        second_place04()
+    case 5
+        second_place05()
+    case 6
+        second_place06()
+    case 7
+        second_place07()
+    case 8
+        second_place08()
+    case 9
+        second_place09()
+    case 10
+        second_place10()
+    case 11
+        second_place11()
+    case 12
+        second_place12()
+    default
+        Offset = 0
+        swrite(Msg[], State, Offset, "BoxId Error[BoxId:%D, MaxBoxId:%D]", GlbPartData.BoxId, PkPlCfg.NumOfBox)
+        err_write_("SecondSort", Msg[], true)
+    endswitch 
+end
+
+

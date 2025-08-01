@@ -1,0 +1,164 @@
+--***********************************************************
+--
+-- file Name: mixsort_t.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 11 - 25
+--   Modification Data    ==   2021 - 11 - 25
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--   
+
+const
+
+    MIX_SUCCESS                             = 0
+	
+    MIX_EDG_PIT                             = 1
+    MIX_PIT_DAT                             = 2
+    MIX_LTN_PIT                             = 3
+    MIX_PIK_DAT                             = 4
+    MIX_GET_TASK                            = 255
+	
+	TO_TP_NEXT                  			= 1
+	TO_TP_PICT                  			= 2
+	TO_TP_PK                    			= 3
+	TO_TP_HOME                  			= 4
+
+    MAX_MAG_PIP                             = 8
+
+    F_PICKING                               = 100
+    R_CMD_TO_KL                             = 95
+    F_REQ_TO_KL                             = 10
+    F_NXT_TO_TP                             = 11
+    R_CMD_TO_TP                             = 100  
+
+    -- Code added on 2025.04.17
+    -- 添加存储当前任务的 R 寄存器
+    R_CMD_TASK                              = 101  
+
+    --
+
+    PR_REF_PICT                             = 102 
+    PR_CUR_PICT                             = 100  
+
+    R_PART_LEN                              = 105   
+    PR_PICK_POS                             = 99    
+    R_MAG_PIP                               = 161               -- R[161] - R[168]  
+    R_GIRP_DIST1                            = 114
+    R_GIRP_DIST2                            = 116
+    R_PLACE_ID                              = 115
+
+    PR_PICK_UP                              = 107
+    PR_PICK_RUP                             = 108
+    PR_PLACE_UP                             = 109
+    PR_PLACE                                = 110
+
+type
+
+    part_data_t from mixsort_t = structure 
+        IsUnrefId       : integer 
+        FromRobId       : integer
+        PartLen         : integer
+        PkPos           : array[9] of real
+        PlPos           : array[9] of real
+        OfsOrt          : real
+        OfsRz           : real
+        MagPip          : array[MAX_MAG_PIP] of integer
+        GripDist1       : real
+        GripDist2       : real
+        PlaceId         : integer
+        Thickness       : real
+        Weight          : real
+    endstructure
+
+    pict_data_t from mixsort_t = structure 
+        IsUnrefId       : integer
+        PictVec         : vector
+        PictPos         : array[9] of real
+    endstructure
+
+    agt_data_t from mixsort_t = structure
+        PictData        : pict_data_t
+        PartData        : part_data_t
+    endstructure
+
+    ext_cfg_t from mixsort_t = structure
+        E7Coordinate    : integer
+        E7UpLim         : real
+        E7DwLim         : real
+    endstructure
+
+    ack_cfg_t from mixsort_t = structure
+        IsPickingFlg    : integer
+        ReqRegNo        : integer
+        ReqFlagNo       : integer
+        NxtPthFlagNo    : integer
+        NxtPthRegNo     : integer
+    endstructure
+
+    pict_cfg_t from mixsort_t = structure
+        RefPtpregNo     : integer
+        PictPregNo      : integer
+        PtRlE7Pos       : real
+        PtMinDist       : real
+        PtMaxData       : vector
+        PtMinData       : vector
+    endstructure
+
+    pick_cfg_t from mixsort_t = structure
+        PickToolNo      : integer
+        PtLenRegNo      : integer
+        PkPosRegNo      : integer
+        MagPipRegNo     : array[MAX_MAG_PIP] of integer
+        GripDt1RegNo    : integer
+        GripDt2RegNo    : integer
+        PkUpPregNo      : integer
+        PkRUpPregNo     : integer
+        PkUpDist        : real   
+        PkRUpDist       : real   
+        PkMaxData       : vector
+        PkMinData       : vector
+    endstructure
+
+    conv_cfg_t from mixsort_t = structure
+        PlUpDist        : real
+		PlOrtMode		: integer
+        PlMaxOfsOrt     : real
+        PlMinOfsOrt     : real
+    endstructure
+
+    box_cfg_t from mixsort_t = structure
+        PlaceToolNo     : integer
+        PlaceUpDst      : real
+        BoxFrame        : position
+        PlaceE7Pos      : real
+        PlMaxData       : vector
+        PlMinData       : vector      
+    endstructure
+
+    place_cfg_t from mixsort_t = structure
+        BoxOrConv       : boolean
+        PlaceIdReg      : integer
+        PlUpPregNo      : integer
+        PlPosPregNo     : integer
+        ConvCfg         : array[4] of conv_cfg_t
+        BoxCfg          : array[12] of box_cfg_t
+    endstructure
+
+    mix_cfg_t from mixsort_t = structure
+        RobotId             : integer
+        NumPlPoint          : integer 
+        NumAxis             : integer
+        EyeInHand           : boolean
+        ExtCfg              : ext_cfg_t
+        AckCfg              : ack_cfg_t
+        PictCfg             : pict_cfg_t
+        PickCfg             : pick_cfg_t
+        PlaceCfg            : place_Cfg_t
+    endstructure

@@ -1,0 +1,48 @@
+&ACCESS RVO1
+defdat MixSort_t public
+;***********************************************************
+;
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+;
+; file Name: MixSort_t
+;
+; Description:
+;   Language             ==   KRL for KUKA ROBOT
+;   Date                 ==   2024 - 09 - 21
+;   Modification Data    ==   2022 - 09 - 21
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+
+global const int MIX_EDG_PIT                   = 1
+global const int MIX_PIT_DAT                   = 2
+global const int MIX_LTN_PIT                   = 3
+global const int MIX_PIK_DAT                   = 4
+global const int MIX_GET_TASK                  = 255
+
+global const int PRIO_MIXSORT_TELL_NO = 35              ; INTERRUPT[35]
+global const int PRIO_MIXSORT_TIMEOUT_NO = 34           ; INTERRUPT[34]
+global const int PRIO_MIXSORT_READY_NO = 33             ; INTERRUPT[33]
+global const int MIXSORT_TIMEOUT_TIME_IDX = 33          ; $TIMER[33]
+
+; Code added on 2025.03.02
+; Add Picking Flag Index
+global const int F_PICKING = 100            ; $FLAG[100]
+;
+
+global enum MIXSORT_TYPE TO_TP_NEXT, TO_TP_PICT, TO_TP_PK, TO_TP_HOME
+
+global struc part_data_t int IsUnrefId, FromRobId, PartLen, PlaceId, char MagPip[8], real OfsOrt, OfsRz, GripDist1, GripDist2, Thickness, Weight, e6pos PkPos, PlPos
+global struc pict_data_t int IsUnrefId, vector_t PictVec,  e6pos PictPos
+global struc agt_data_t pict_data_t PictData, part_data_t PartData
+global struc ext_cfg_t int E7Coordinate, real E7UpLim, E7DwLim
+global struc pict_cfg_t e6pos RefPictPos, real PtRlE7Pos, PtMinDist, vector_t PtMaxData, PtMinData
+global struc pick_cfg_t int PickToolNo, vector_t PkMaxData, PkMinData
+global struc conv_cfg_t int PlOrtMode, real PlMaxOfsOrt, PlMinOfsOrt
+global struc box_cfg_t int PlaceToolNo, real PlaceUpDst, PlaceE7Pos, vector_t PlMaxData, PlMinData
+global struc mix_cfg_t  bool EyeInHand, BoxOrConv, int RobotId, NumPlPoint, NumAxis, ext_cfg_t ExtCfg, pict_cfg_t PictCfg, pick_cfg_t PickCfg
+
+
+enddat

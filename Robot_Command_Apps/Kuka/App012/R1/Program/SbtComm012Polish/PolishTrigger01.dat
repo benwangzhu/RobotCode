@@ -1,0 +1,13 @@
+&ACCESS RVO1
+&REL 83
+&COMMENT Polish Take Photo 250712
+&PARAM DISKPATH = KRC:\R1\Program\SbtComm012Polish
+DEFDAT  POLISHTRIGGER01
+
+DECL E6POS XP1={X 1765.00,Y 1.40642442E-07,Z 1784.00,A 0.0,B 90.0000,C -4.56556259E-09,S 6,T 27,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+DECL FDAT FP1={TOOL_NO 1,BASE_NO 0,IPO_FRAME #BASE,POINT2[] " "}
+DECL LDAT LCPDAT1={VEL 0.300000,ACC 100.000,APO_DIST 500.000,APO_FAC 50.0000,AXIS_VEL 100.000,AXIS_ACC 100.000,ORI_TYP #VAR,CIRC_TYP #BASE,JERK_FAC 50.0000,GEAR_JERK 100.000,EXAX_IGN 0}
+
+DECL MODULEPARAM_T LAST_TP_PARAMS={PARAMS[] "SBTCOMM012.SLEEPTIME=1; SBTCOMM012.CAMERAID=1; SBTCOMM012.CAPTUREID=1; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.MovementParameterFieldEnabled=True; Kuka.IsAngleEnabled=False; Kuka.PointName=P1; Kuka.FrameData.base_no=0; Kuka.FrameData.tool_no=1; Kuka.FrameData.ipo_frame=#BASE; Kuka.FrameData.point2=; Kuka.isglobalpoint=False; Kuka.MoveDataPtpName=PDAT1; Kuka.MovementDataPdat.apo_mode=#CDIS; Kuka.MovementDataPdat.apo_dist=500; Kuka.MovementData.vel=100; Kuka.MovementData.acc=100; Kuka.MovementData.gear_jerk=100; Kuka.MovementData.exax_ign=0; Kuka.VelocityPtp=100; Kuka.BlendingEnabled=False; Kuka.CurrentCDSetIndex=0"}
+DECL PDAT PPDAT1={VEL 100.000,ACC 100.000,APO_DIST 500.000,APO_MODE #CDIS,GEAR_JERK 100.000,EXAX_IGN 0}
+ENDDAT

@@ -1,0 +1,842 @@
+&ACCESS RO
+&COMMENT Lib String 240227
+def lib_string ()
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: lib_string.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2021 - 08 - 29
+;   Modification Data    ==   2024 - 02 - 27
+;
+; Author: speedbot
+;
+; Version: 1.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+; 2021 - 08 - 29 ++ str_clear_()
+
+; 2021 - 08 - 29 ++ str_copy_() ==> char[256]
+
+; 2021 - 08 - 29 ++ str_add_() ==> char[256]
+
+; 2021 - 08 - 29 ++ sub_str_() ==> char[256]
+
+; 2021 - 08 - 29 ++ str_to_int_() ==> int
+
+; 2021 - 08 - 29 ++ str_to_rel_() ==> real 
+
+; 2021 - 08 - 29 ++ str_to_pos_() ==> pos
+
+; 2021 - 08 - 29 ++ str_to_ais_() ==> axis
+
+; 2022 - 09 - 26 ++ str_to_bol_() ==> bool
+
+; 2022 - 11 - 22 ++ str_2e6pos_() ==> e6pos
+
+; 2022 - 11 - 22 ++ str_2e6axis_() ==> e6axis
+
+; 2022 - 11 - 22 ++ str_2frame_() ==> frame
+
+; 2021 - 08 - 29 ++ int_to_str_() ==> char[24]
+
+; 2021 - 08 - 29 ++ rel_to_str_() ==> char[24]
+
+; 2021 - 08 - 29 ++ pos_to_str_() ==> char[256]
+
+; 2021 - 08 - 29 ++ ais_to_str_() ==> char[256] 
+
+; 2022 - 09 - 26 ++ bol_to_str_() ==> char[12] 
+
+; 2021 - 11 - 10 ++ decode_data_() ==> bool
+
+; 2022 - 09 - 26 ++ sprintf_() ==> char[512]
+         
+end
+
+;FOLD CLEAR STRING
+global def str_clear_(src[] : out)
+    decl char src[]
+    while not strclear(src[]) 
+        err_write_("str_clear_", "Clear String Err")
+        halt      
+    endwhile
+end
+;ENDFOLD
+
+;FOLD COPY STRING
+global deffct char[256] str_copy_(StrSource[] : in)
+    decl char StrSource[]
+    decl char StrDest[256]
+
+    if varstate("StrSource[]") <> #initialized then  
+
+        return(" ")
+    endif
+
+    while not strcopy(StrDest[], StrSource[]) 
+        err_write_("str_copy_", "Copy String Err")
+        halt      
+    endwhile
+    return(StrDest[])
+endfct
+;ENDFOLD
+
+;FOLD ADD STRING
+global deffct char[256] str_add_(SrcDest[] : in, StrToAdd[] : in)
+    decl char SrcDest[]
+    decl char StrToAdd[]
+    decl char TmpStr[256]
+
+    if (varstate("SrcDest[]") <> #initialized) and (varstate("StrToAdd[]") == #initialized) then  
+
+        return(StrToAdd[])
+    endif
+    if (varstate("SrcDest[]") == #initialized) and (varstate("StrToAdd[]") <> #initialized) then  
+
+        return(SrcDest[])
+    endif
+
+    TmpStr[] = str_copy_(SrcDest[])
+    while stradd(TmpStr[], StrToAdd[]) == 0
+        err_write_("str_add_", "Add String Err")
+        halt 
+        TmpStr[] = str_copy_(SrcDest[])      
+    endwhile
+    return(TmpStr[])
+endfct
+;ENDFOLD
+
+;FOLD SUB STRING
+global deffct char[256] sub_str_(src[] : in, SrcS : in, Len : in)
+    decl char src[]
+    decl int SrcS
+    decl int Len
+    decl int K
+    decl int J
+    decl char SrcC[256]
+    while not strclear(SrcC[]) 
+        err_write_("sub_str_", "Clear String Err")
+        halt   
+    endwhile
+    while (strlen(src[]) < SrcS) or (strlen(src[]) < Len) 
+        err_write_("sub_str_", "String Parm Err")
+        halt
+    endwhile
+    J = 0
+    for K = SrcS to SrcS + Len - 1
+        J = J + 1
+        SrcC[J] = src[K]     
+    endfor
+    return(SrcC[])
+endfct
+;ENDFOLD
+
+;FOLD STRING TO INT
+global deffct int str_to_int_(StrVal[] : in)
+    decl char StrVal[]
+    decl int IntVal
+    while not strtoint(StrVal[], IntVal)
+        err_write_("str_to_int_", "Cnv String to int Err")
+        halt      
+    endwhile
+    return(IntVal)
+endfct
+;ENDFOLD
+
+;FOLD STRING TO INT
+global deffct int str_2int_(StrVal[] : in)
+    decl char StrVal[]
+    decl int IntVal
+    while not strtoint(StrVal[], IntVal)
+        err_write_("str_2int_", "Cnv String to int Err")
+        halt      
+    endwhile
+    return(IntVal)
+endfct
+;ENDFOLD
+
+;FOLD STRING TO REAL
+global deffct real str_to_rel_(StrVal[] : in)
+    decl char StrVal[]
+    decl real RelVal
+    while not strtoreal(StrVal[], RelVal)
+        err_write_("str_to_rel_", "Cnv String to real Err")
+        halt      
+    endwhile
+    return(RelVal)
+endfct
+;ENDFOLD
+
+;FOLD STRING TO REAL
+global deffct real str_2rel_(StrVal[] : in)
+    decl char StrVal[]
+    decl real RelVal
+    while not strtoreal(StrVal[], RelVal)
+        err_write_("str_2rel_", "Cnv String to real Err")
+        halt      
+    endwhile
+    return(RelVal)
+endfct
+;ENDFOLD
+
+;FOLD STRING TO POS
+global deffct pos str_to_pos_(StrVal[] : in)
+    decl char StrVal[]
+    decl char TmpStr[256]
+    decl pos PosVal
+    decl real PosValAry[6]
+    decl int K
+    TmpStr[] = str_add_(StrVal[], ", ")
+    for K = 1 to 6
+        PosValAry[K] = str_to_rel_(sub_str_(TmpStr[], 1, strfind(1, TmpStr[], ", ", #NOT_CASE_SENS) - 1))          
+        if K < 6 then
+        TmpStr[] = sub_str_(TmpStr[], strfind(1, TmpStr[], ", ", #NOT_CASE_SENS) + 1, strlen(TmpStr[]) - strfind(1, TmpStr[], ", ", #NOT_CASE_SENS))
+        endif         
+    endfor
+    if varstate("$base")==#DECLARED then
+        continue
+        $base = $nullframe
+    endif
+    if varstate("$tool")==#DECLARED then
+        continue
+        $tool = $nullframe
+    endif
+    PosVal.X = PosValAry[1]
+    PosVal.Y = PosValAry[2]
+    PosVal.Z = PosValAry[3]
+    PosVal.A = PosValAry[4]
+    PosVal.B = PosValAry[5]
+    PosVal.C = PosValAry[6]
+    continue
+    PosVal.S = $pos_act.S
+    continue
+    PosVal.T = $pos_act.T
+    return(PosVal)
+endfct
+;ENDFOLD
+
+;FOLD STRING TO POS
+global deffct pos str_2pos_(StrVal[] : in)
+    decl char StrVal[]
+    decl char TmpStr[256]
+    decl pos PosVal
+    decl real PosValAry[6]
+    decl int K
+    TmpStr[] = str_add_(StrVal[], ", ")
+    for K = 1 to 6
+        PosValAry[K] = str_to_rel_(sub_str_(TmpStr[], 1, strfind(1, TmpStr[], ", ", #NOT_CASE_SENS) - 1))          
+        if K < 6 then
+        TmpStr[] = sub_str_(TmpStr[], strfind(1, TmpStr[], ", ", #NOT_CASE_SENS) + 1, strlen(TmpStr[]) - strfind(1, TmpStr[], ", ", #NOT_CASE_SENS))
+        endif         
+    endfor
+    if varstate("$base")==#DECLARED then
+        continue
+        $base = $nullframe
+    endif
+    if varstate("$tool")==#DECLARED then
+        continue
+        $tool = $nullframe
+    endif
+    PosVal.X = PosValAry[1]
+    PosVal.Y = PosValAry[2]
+    PosVal.Z = PosValAry[3]
+    PosVal.A = PosValAry[4]
+    PosVal.B = PosValAry[5]
+    PosVal.C = PosValAry[6]
+    continue
+    PosVal.S = $pos_act.S
+    continue
+    PosVal.T = $pos_act.T
+    return(PosVal)
+endfct
+;ENDFOLD
+
+;FOLD STRING TO AXIS POS
+global deffct axis str_to_ais_(StrVal[] : in)
+    decl char StrVal[]
+    decl char TmpStr[256]
+    decl axis AxisVal
+    decl real AxisValAry[6]
+    decl int K
+    TmpStr[] = str_add_(StrVal[], ", ")
+    for K = 1 to 6
+        AxisValAry[K] = str_to_rel_(sub_str_(TmpStr[], 1, strfind(1, TmpStr[], ", ", #NOT_CASE_SENS) - 1))          
+        if K < 6 then
+        TmpStr[] = sub_str_(TmpStr[], strfind(1, TmpStr[], ", ", #NOT_CASE_SENS) + 1, strlen(TmpStr[]) - strfind(1, TmpStr[], ", ", #NOT_CASE_SENS))
+        endif         
+    endfor
+    AxisVal.A1 = AxisValAry[1]
+    AxisVal.A2 = AxisValAry[2]
+    AxisVal.A3 = AxisValAry[3]
+    AxisVal.A4 = AxisValAry[4]
+    AxisVal.A5 = AxisValAry[5]
+    AxisVal.A6 = AxisValAry[6]
+    return(AxisVal)
+endfct
+;ENDFOLD
+
+;FOLD STRING TO AXIS POS
+global deffct axis str_2ais_(StrVal[] : in)
+    decl char StrVal[]
+    decl char TmpStr[256]
+    decl axis AxisVal
+    decl real AxisValAry[6]
+    decl int K
+    TmpStr[] = str_add_(StrVal[], ", ")
+    for K = 1 to 6
+        AxisValAry[K] = str_to_rel_(sub_str_(TmpStr[], 1, strfind(1, TmpStr[], ", ", #NOT_CASE_SENS) - 1))          
+        if K < 6 then
+        TmpStr[] = sub_str_(TmpStr[], strfind(1, TmpStr[], ", ", #NOT_CASE_SENS) + 1, strlen(TmpStr[]) - strfind(1, TmpStr[], ", ", #NOT_CASE_SENS))
+        endif         
+    endfor
+    AxisVal.A1 = AxisValAry[1]
+    AxisVal.A2 = AxisValAry[2]
+    AxisVal.A3 = AxisValAry[3]
+    AxisVal.A4 = AxisValAry[4]
+    AxisVal.A5 = AxisValAry[5]
+    AxisVal.A6 = AxisValAry[6]
+    return(AxisVal)
+endfct
+;ENDFOLD
+
+;FOLD STRING TO BOOL
+global deffct bool str_to_bol_(StrVal[] : in)
+    decl char StrVal[]
+    return((strcomp(StrVal[], "T", #NOT_CASE_SENS)) or (strcomp(StrVal[], "true", #NOT_CASE_SENS)))  
+endfct
+;ENDFOLD
+
+;FOLD STRING TO BOOL
+global deffct bool str_2bol_(StrVal[] : in)
+    decl char StrVal[]
+    return((strcomp(StrVal[], "T", #NOT_CASE_SENS)) or (strcomp(StrVal[], "true", #NOT_CASE_SENS)))  
+endfct
+;ENDFOLD
+
+;FOLD STRING TO E6POS
+global deffct e6pos str_2e6pos_(StrVal[] : in)
+    decl char StrVal[]
+    decl e6pos E6PosVal
+    while not strtoe6pos(StrVal[], E6PosVal)
+        err_write_("str_2e6pos_", "Cnv String to E6pos Err")
+        halt      
+    endwhile
+    return(E6PosVal)
+endfct
+;ENDFOLD
+
+;FOLD STRING TO E6AXIS
+global deffct e6axis str_2e6axis_(StrVal[] : in)
+    decl char StrVal[]
+    decl e6axis E6AxisVal
+    while not strtoe6axis(StrVal[], E6AxisVal)
+        err_write_("str_2e6axis_", "Cnv String to E6axis Err")
+        halt      
+    endwhile
+    return(E6AxisVal)
+endfct
+;ENDFOLD
+
+;FOLD STRING TO FRAME
+global deffct frame str_2frame_(StrVal[] : in)
+    decl char StrVal[]
+    decl frame FrameVal
+    while not strtoframe(StrVal[], FrameVal)
+        err_write_("str_2frame_", "Cnv String to Frame Err")
+        halt      
+    endwhile
+    return(FrameVal)
+endfct
+;ENDFOLD
+
+;FOLD INT TO STRING
+global deffct char[24] int_to_str_(IntVal : in)
+    decl int IntVal, Offset
+    decl char SrcC[24]
+    decl state_t State
+    Offset = 0
+    continue
+    swrite(SrcC[], State, Offset, "%d", IntVal)
+    while State.MSG_NO <> STR_SUCCESS 
+        err_write_("int_to_str_", "Cnv int to String Err")
+        halt      
+    endwhile
+    return(SrcC[])
+endfct
+;ENDFOLD
+
+;FOLD INT TO STRING
+global deffct char[24] int_2str_(IntVal : in)
+    decl int IntVal, Offset
+    decl char SrcC[24]
+    decl state_t State
+    Offset = 0
+    continue
+    swrite(SrcC[], State, Offset, "%d", IntVal)
+    while State.MSG_NO <> STR_SUCCESS 
+        err_write_("int_2str_", "Cnv int to String Err")
+        halt      
+    endwhile
+    return(SrcC[])
+endfct
+;ENDFOLD
+
+;FOLD REAL TO STRING
+global deffct char[24] rel_to_str_(RelVal : in)
+    decl real RelVal
+    decl char SrcC[24]
+    decl state_t State
+    decl int Offset
+    Offset = 0
+    continue
+    swrite(SrcC[], State, Offset, "%.3f", RelVal)
+    while State.MSG_NO <> STR_SUCCESS 
+        err_write_("rel_to_str_", "Cnv real to String Err")
+        halt      
+    endwhile
+    return(SrcC[])
+endfct
+;ENDFOLD
+
+;FOLD REAL TO STRING
+global deffct char[24] rel_2str_(RelVal : in)
+    decl real RelVal
+    decl char SrcC[24]
+    decl state_t State
+    decl int Offset
+    Offset = 0
+    continue
+    swrite(SrcC[], State, Offset, "%.3f", RelVal)
+    while State.MSG_NO <> STR_SUCCESS 
+        err_write_("rel_2str_", "Cnv real to String Err")
+        halt      
+    endwhile
+    return(SrcC[])
+endfct
+;ENDFOLD
+
+;FOLD POS TO STRING
+global deffct char[256] pos_to_str_(PosVal : in)
+    pos PosVal
+    char PosStr[256]
+    decl state_t State
+    decl int Offset
+    Offset = 0
+    str_clear_(PosStr[])
+    swrite(PosStr[], State, Offset, "%.3f,%.3f,%.3f,%.3f,%.3f,%.3f", PosVal.x, PosVal.y, PosVal.z, PosVal.a, PosVal.b, PosVal.c)
+    while State.MSG_NO <> STR_SUCCESS 
+        err_write_("pos_to_str_", "Cnv Pos to String Err")
+        halt      
+    endwhile
+    return(PosStr[])
+endfct
+;ENDFOLD
+
+;FOLD POS TO STRING
+global deffct char[256] pos_2str_(PosVal : in)
+    pos PosVal
+    char PosStr[256]
+    decl state_t State
+    decl int Offset
+    Offset = 0
+    str_clear_(PosStr[])
+    swrite(PosStr[], State, Offset, "%.3f,%.3f,%.3f,%.3f,%.3f,%.3f", PosVal.x, PosVal.y, PosVal.z, PosVal.a, PosVal.b, PosVal.c)
+    while State.MSG_NO <> STR_SUCCESS 
+        err_write_("pos_2str_", "Cnv Pos to String Err")
+        halt      
+    endwhile
+    return(PosStr[])
+endfct
+;ENDFOLD
+
+;FOLD AXIS POS TO STRING
+global deffct char[256] ais_to_str_(AxisVal : in)
+    axis AxisVal
+    char AxisStr[256]
+    decl state_t State
+    decl int StrLen
+    StrLen = 0
+    str_clear_(AxisStr[])
+    swrite(AxisStr[], State, StrLen, "%.3f,%.3f,%.3f,%.3f,%.3f,%.3f", AxisVal.A1, AxisVal.A2, AxisVal.A3, AxisVal.A4, AxisVal.A5, AxisVal.A6)
+    while State.MSG_NO <> STR_SUCCESS 
+        err_write_("ais_to_str_", "Cnv Axis to String Err")
+        halt      
+    endwhile
+    return(AxisStr[])
+endfct
+;ENDFOLD
+
+;FOLD AXIS POS TO STRING
+global deffct char[256] ais_2str_(AxisVal : in)
+    axis AxisVal
+    char AxisStr[256]
+    decl state_t State
+    decl int StrLen
+    StrLen = 0
+    str_clear_(AxisStr[])
+    swrite(AxisStr[], State, StrLen, "%.3f,%.3f,%.3f,%.3f,%.3f,%.3f", AxisVal.A1, AxisVal.A2, AxisVal.A3, AxisVal.A4, AxisVal.A5, AxisVal.A6)
+    while State.MSG_NO <> STR_SUCCESS 
+        err_write_("ais_2str_", "Cnv Axis to String Err")
+        halt      
+    endwhile
+    return(AxisStr[])
+endfct
+;ENDFOLD
+
+;FOLD BOOL TO STRING
+global deffct char[12] bol_to_str_(BoolVal : in)
+    bool BoolVal
+
+    if BoolVal then
+
+        return("true")
+    endif
+
+    return("false")
+endfct
+;ENDFOLD
+
+;FOLD BOOL TO STRING
+global deffct char[12] bol_2str_(BoolVal : in)
+    bool BoolVal
+
+    if BoolVal then
+
+        return("true")
+    endif
+
+    return("false")
+endfct
+;ENDFOLD
+
+;FOLD DECODE STRING DATA
+global deffct bool decode_data_(Str[] : in, Separator[] : in, TmpStr[, ] : out)
+    decl char TmpStr[, ]
+    decl char Str[]
+    decl char Separator[]
+    decl char StrSeparator[10]
+    decl int IpositionN, Offset, K, J
+    decl bool Res
+    IpositionN = 0
+    Offset = 0
+    J = 1
+
+    if not strclear(StrSeparator[]) then
+        return(false)
+    endif
+    Res = true
+    if strfind(1, Str[], Separator[], #NOT_CASE_SENS) == 0 then
+        return(false)
+    endif
+    for K = 1 to strlen(Separator[])
+        StrSeparator[K] = Str[K]
+    endfor
+
+    if strcomp(StrSeparator[], Separator[], #NOT_CASE_SENS) then
+        Offset = strfind(1, Str[], Separator[], #NOT_CASE_SENS)
+        while Res         
+            if Offset < strlen(Str[]) then
+                if Offset + strlen(Separator[]) - 1 >= strlen(Str[]) then
+                    Res = false
+                else
+                    IpositionN = strfind((Offset + strlen(Separator[])), Str[], Separator[], #NOT_CASE_SENS)
+                    if IpositionN == 0 then
+                        if Offset < strlen(Str[]) then
+                            Offset = Offset + strlen(Separator[]) - 1
+                            for K = 1 to (strlen(Str[]) - Offset)
+                                TmpStr[J, K] = Str[Offset + K]
+                            endfor
+                        endif
+                        Res = false
+                    else
+                        Offset = Offset + strlen(Separator[]) - 1
+                        for K = 1 to (IpositionN - 1)
+                            TmpStr[J, K] = Str[Offset + K]
+                        endfor
+                        Offset = Offset + IpositionN
+                        J = J + 1
+                    endif
+                endif
+            else
+                Res = false  
+            endif
+        endwhile
+    else   
+        while Res
+            if Offset < strlen(Str[]) then
+                if Offset + strlen(Separator[]) - 1 >= strlen(Str[]) then
+                    Res = false
+                else
+                    if Offset == 0 then
+                        IpositionN = strfind(1, Str[], Separator[], #NOT_CASE_SENS)
+                    else
+                        IpositionN = strfind((Offset + strlen(Separator[])), Str[], Separator[], #NOT_CASE_SENS)
+                    endif
+                    if IpositionN == 0 then
+                        if Offset < strlen(Str[]) then
+                            Offset = Offset + strlen(Separator[]) - 1
+                            for K = 1 to (strlen(Str[]) - Offset)
+                                TmpStr[J, K] = Str[Offset + K]
+                            endfor
+                        endif
+                        Res = false
+                    else
+                        if Offset > 0 then
+                            Offset = Offset + strlen(Separator[]) - 1
+                        endif
+                        for K = 1 to (IpositionN - 1)
+                            TmpStr[J, K] = Str[Offset + K]
+                        endfor
+                        Offset = Offset + IpositionN
+                        J = J + 1
+                    endif
+                endif
+            else
+                Res = false 
+            endif
+        endwhile
+    endif
+    return(true)
+endfct
+;ENDFOLD
+
+;FOLD FORMAT PRINT 
+global deffct char[512] sprintf_(FormatStr[] : in, I1 : in, I2 : in, R1 : in, R2 : in, S1[] : in, S2[] : in, P1 : in, P2 : in, A1 : in, A2 : in, B1 : in, B2 : in)
+    decl char FormatStr[], RtnStr[512]
+    decl int I1, I2
+    decl real R1, R2
+    decl char S1[], S2[]
+    decl pos P1, P2
+    decl axis A1, A2
+    decl bool B1, B2
+    decl int J
+    decl bool IsFormat
+    decl int NumOfI, NumOfF, NumOfS, NumOfP, NumOfA, NumOfB
+    NumOfI = 0
+    NumOfF = 0
+    NumOfS = 0
+    NumOfP = 0
+    NumOfA = 0
+    NumOfB = 0
+
+    str_clear_(RtnStr[])
+
+    RtnStr[] = " "
+
+    if varstate("FormatStr[]") <> #initialized then  
+                            
+        return(" ")
+    endif
+
+    if strlen(FormatStr[]) == 0 then  
+
+        return(" ")
+    endif
+
+    for J = 1 to strlen(FormatStr[])
+        
+        if strcomp(sub_str_(FormatStr[], J, 1), "%", #NOT_CASE_SENS) then  
+            
+            if J == strlen(FormatStr[]) then  
+
+                RtnStr[] = str_add_(RtnStr[], sub_str_(FormatStr[], J, 1))
+            else
+
+                IsFormat = false
+
+                if strcomp(sub_str_(FormatStr[], J + 1, 1), "d", #NOT_CASE_SENS) then  
+
+                    IsFormat = true
+                    NumOfI = NumOfI + 1
+                    switch (NumOfI)
+                    case 1
+                        if varstate("I1") == #initialized then  
+                            
+                            RtnStr[] = str_add_(RtnStr[], int_to_str_(I1))
+                        else
+
+                            if varstate("I2") == #initialized then 
+                                
+                                RtnStr[] = str_add_(RtnStr[], int_to_str_(I2))
+                                NumOfI = NumOfI + 1
+                            endif
+                        endif
+                    case 2
+                        if varstate("I2") == #initialized then 
+                                
+                            RtnStr[] = str_add_(RtnStr[], int_to_str_(I2))
+                        endif
+                    endswitch                 
+                endif
+                if strcomp(sub_str_(FormatStr[], J + 1, 1), "f", #NOT_CASE_SENS) then  
+
+                    IsFormat = true
+                    NumOfF = NumOfF + 1
+                    switch (NumOfF)
+                    case 1
+                        if varstate("R1[]") == #initialized then  
+                            
+                            RtnStr[] = str_add_(RtnStr[], rel_to_str_(R1))
+                        else
+
+                            if varstate("R2[]") == #initialized then 
+                                
+                                RtnStr[] = str_add_(RtnStr[], rel_to_str_(R2))
+                                NumOfF = NumOfF + 1
+                            endif
+                        endif
+                    case 2
+                        if varstate("R2") == #initialized then 
+                                
+                            RtnStr[] = str_add_(RtnStr[], rel_to_str_(R2))
+                        endif
+                    endswitch                 
+                    
+                endif
+                if strcomp(sub_str_(FormatStr[], J + 1, 1), "s", #NOT_CASE_SENS) then  
+
+                    IsFormat = true
+                    NumOfS = NumOfS + 1
+                    switch (NumOfS)
+                    case 1
+                        if varstate("S1[]") == #initialized then  
+                            
+                            RtnStr[] = str_add_(RtnStr[], S1[])
+                        else
+
+                            if varstate("S2[]") == #initialized then 
+                                
+                                RtnStr[] = str_add_(RtnStr[], S2[])
+                                NumOfS = NumOfS + 1
+                            endif
+                        endif
+                    case 2
+                        if varstate("S2[]") == #initialized then 
+                                
+                            RtnStr[] = str_add_(RtnStr[], S2[])
+                        endif
+                    endswitch                 
+                    
+                endif
+                if strcomp(sub_str_(FormatStr[], J + 1, 1), "p", #NOT_CASE_SENS) then  
+
+                    IsFormat = true
+                    NumOfP = NumOfP + 1
+                    switch (NumOfP)
+                    case 1
+                        if varstate("P1") == #initialized then  
+                            
+                            RtnStr[] = str_add_(RtnStr[], pos_to_str_(P1))
+                        else
+
+                            if varstate("P2") == #initialized then 
+                                
+                                RtnStr[] = str_add_(RtnStr[], pos_to_str_(P2))
+                                NumOfP = NumOfP + 1
+                            endif
+                        endif
+                    case 2
+                        if varstate("P2") == #initialized then 
+                                
+                            RtnStr[] = str_add_(RtnStr[], pos_to_str_(P2))
+                        endif
+                    endswitch                 
+                endif
+                if strcomp(sub_str_(FormatStr[], J + 1, 1), "a", #NOT_CASE_SENS) then  
+                    
+                    IsFormat = true
+                    NumOfA = NumOfA + 1
+                    switch (NumOfA)
+                    case 1
+                        if varstate("A1") == #initialized then  
+                            
+                            RtnStr[] = str_add_(RtnStr[], ais_to_str_(A1))
+                        else
+
+                            if varstate("A2") == #initialized then 
+                                
+                                RtnStr[] = str_add_(RtnStr[], ais_to_str_(A2))
+                                NumOfA = NumOfA + 1
+                            endif
+                        endif
+                    case 2
+                        if varstate("A2") == #initialized then 
+                                
+                            RtnStr[] = str_add_(RtnStr[], ais_to_str_(A2))
+                        endif
+                    endswitch                 
+                endif
+                if strcomp(sub_str_(FormatStr[], J + 1, 1), "b", #NOT_CASE_SENS) then  
+                    
+                    IsFormat = true
+                    NumOfB = NumOfB + 1
+                    switch (NumOfB)
+                    case 1
+                        if varstate("B1") == #initialized then  
+                            
+                            RtnStr[] = str_add_(RtnStr[], bol_to_str_(B1))
+                        else
+
+                            if varstate("B2") == #initialized then 
+                                
+                                RtnStr[] = str_add_(RtnStr[], bol_to_str_(B2))
+                                NumOfB = NumOfB + 1
+                            endif
+                        endif
+                    case 2
+                        if varstate("B2") == #initialized then 
+                                
+                            RtnStr[] = str_add_(RtnStr[], bol_to_str_(B2))
+                        endif
+                    endswitch                 
+                endif
+
+                if not IsFormat then
+
+                    RtnStr[] = str_add_(RtnStr[], sub_str_(FormatStr[], J, 2))
+                    
+                endif
+
+                J = J + 1
+            endif
+        else
+
+            RtnStr[] = str_add_(RtnStr[], sub_str_(FormatStr[], J, 1))
+        endif
+    endfor
+
+    return(RtnStr[])
+endfct
+;ENDFOLD

@@ -1,0 +1,92 @@
+program sbt_chkpos
+--***********************************************************
+--
+-- file Name: sbt_chkpos.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2024 - 04 - 01
+--   Modification Data    ==   2024 - 08 - 09
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--
+%comment = 'CheckPos 240809'
+%nolockgroup 
+%nopause = error + tpenable + command
+%include include\lib_math_t
+%include include\lib_logs_t
+%include include\lib_transform_t
+
+var
+
+    OffsPos                     : xyzwpr
+    OffsPos2                    : xyzwpr
+    MaxPos                      : xyzwpr
+    MinPos                      : xyzwpr
+
+    OffsUfNum                   : integer
+    ChkUfNum                    : integer
+    FlagNum                     : integer
+    
+    
+%include include\lib_logs_h
+%include include\lib_math_h
+%include include\lib_motion_h
+%include include\lib_string_h
+%include include\lib_tp_if_h
+
+begin
+    OffsPos = get_preg_(get_iparm_(1))
+    OffsUfNum = get_iparm_(2)
+    ChkUfNum = get_iparm_(3)
+    MaxPos = get_preg_(get_iparm_(4))
+    MinPos = get_preg_(get_iparm_(5))
+    FlagNum = get_iparm_(6)
+
+    OffsPos2 = ts_frame_((OffsPos), OffsUfNum, ChkUfNum, 1)
+
+    Flg[FlagNum] = false
+
+    if (OffsPos2.x > MaxPos.x) or (OffsPos2.x < MinPos.x) then
+
+        Flg[FlagNum] = true
+        return
+    endif
+
+    if (OffsPos2.y > MaxPos.y) or (OffsPos2.y < MinPos.y) then
+
+        Flg[FlagNum] = true
+        return
+    endif
+
+    if (OffsPos2.z > MaxPos.z) or (OffsPos2.z < MinPos.z) then
+
+        Flg[FlagNum] = true
+        return
+    endif
+
+    if (OffsPos2.w > MaxPos.w) or (OffsPos2.w < MinPos.w) then
+
+        Flg[FlagNum] = true
+        return
+    endif
+
+    if (OffsPos2.p > MaxPos.p) or (OffsPos2.p < MinPos.p) then
+
+        Flg[FlagNum] = true
+        return
+    endif
+
+    if (OffsPos2.r > MaxPos.r) or (OffsPos2.r < MinPos.r) then
+
+        Flg[FlagNum] = true
+        return
+    endif
+
+end sbt_chkpos

@@ -1,0 +1,35 @@
+--***********************************************************
+--
+-- file Name: second_global.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 09 - 03
+--   Modification Data    ==   2021 - 09 - 18
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--   
+
+var
+    -- Bus I/O Comm Data
+    BusInput    in cmos from second_t           : busin_t
+    BusOutput   in cmos from second_t           : busout_t
+
+    -- Pick & Place Data
+    PkPlCfg     in cmos from second_t           : pkpl_cfg_t
+
+    QueueCount          from second_que_t       : array[MAX_NUM_CONV] of integer
+
+    PartIndex           from second_que_t       : array[MAX_NUM_CONV] of part_idx_t
+    SecondQueue         from second_que_t       : array[MAX_NUM_CONV] of queue_type
+    QueueIndex          from second_que_t       : array[MAX_NUM_CONV] of queue_idx_t
+
+    EncodeQue           from second_que_t       : array[MAX_NUM_CONV] of queue_type
+    EncodeVal           from second_que_t       : array[MAX_NUM_CONV] of queue_idx_t
+
+    CfgChecked in cmos from second_t            : boolean

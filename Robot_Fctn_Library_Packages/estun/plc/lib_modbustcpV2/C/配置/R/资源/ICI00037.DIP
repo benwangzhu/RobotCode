@@ -1,0 +1,15 @@
+(*
+T: FUNCTION_BLOCK ReadModbusReg
+FW: NO
+CI#: 37
+QSL: 6
+QVE: 6
+QVPC: 6
+QPar: 5
+QFBI: 0
+*)
+EnRead	@IV 2	@TYP:1	VAR_INPUT
+IndexError	@IV 6	@TYP:1	VAR_OUTPUT
+RegIndex	@IV 3	@TYP:3	VAR_INPUT
+RegValue	@IV 4	@TYP:18	VAR_OUTPUT
+ValueValid	@IV 5	@TYP:1	VAR_OUTPUT

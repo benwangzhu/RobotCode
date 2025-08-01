@@ -1,0 +1,12 @@
+// InstParseVersion: V1.02
+Start:
+/**********************************/
+/*根据激活通道退磁*/
+/**********************************/
+Wait{T=200}
+BusSetNUM{Type="BIT",StAddrInt=45,Int=0}
+BusSetNUM{Type="BIT",StAddrInt=46,Int=1}
+WaitForSimIo{IoType="SIMDI",StAddrInt=46,Val=1,T=0,Ret=t_l.Status}
+BusSetNUM{Type="BIT",StAddrInt=46,Int=0}
+Wait{T=500}
+End;

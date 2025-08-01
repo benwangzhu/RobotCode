@@ -1,0 +1,794 @@
+&access RP
+&comment SecondSort 250227
+def SecondSort()
+;***********************************************************
+;
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+;
+; File Name: SecondSort.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 27
+;   Modification Data    ==   2025 - 01 - 05
+;
+; Author: speedbot
+;
+; Version: 1.1
+;***********************************************************
+end
+
+;FOLD ----------------------------------------------- Sub Init ----------------------------------------------
+
+global def second_SubMitInit()
+
+    SESecondSortKey = 0
+end
+
+global def second_SubMitLoop()
+
+    if SESecondSortKey > 0 then
+        switch (SESecondSortKey)
+        case 1
+            mag_tool_forc_ctrl_(#ON, 0)
+            log_info_("Mag Tool Force On!")
+        case 2
+            mag_tool_forc_ctrl_(#OFF, 0)
+            log_info_("Mag Tool Force Off!")
+        case 3
+            servo01_ctrl_(#MOVING, 100)
+            log_info_("Servo Open!")
+        case 4
+            servo01_ctrl_(#MOVING, 0)
+            log_info_("Servo Close!")
+        case 5
+            cwrite($cmd, State, mode, "CANCEL 1")
+            cwrite($cmd, State, mode, "RUN/R1/MOVE_TO_HOME()")
+            log_info_("Call MOVE_TO_HOME!")
+        case 6
+            cwrite($cmd, State, mode, "CANCEL 1")
+            cwrite($cmd, State, mode, "RUN/R1/CELL()")
+            log_info_("Call Cell!")
+        default
+        endswitch
+
+        SESecondSortKey = 0
+    endif
+end
+
+;ENDFOLD
+
+;FOLD ----------------------------------------------- Global Function ----------------------------------------------
+
+global def second_sr_inte()
+
+    second_initialize()
+
+    bus_init_(BusInput, BusOutput, PkPlCfg.RobId, PTC_LN_PL)
+
+    global interrupt decl PRIO_TELL_NO when GiAgentTellId <> GoTellId do second_sr_()   
+    interrupt on PRIO_TELL_NO
+
+    wait sec 0.012
+
+end
+
+global def second_fdbk(Conv : in, PkCvState : in, ThisQueue : in)
+    decl int Conv
+    decl part_dat_t ThisQueue
+    decl pkcv_stat_t PkCvState
+    decl int FdbkStatus, j, k
+
+    if (varstate("Conv") == #initialized) then
+
+        ThisQueue = CurQueue[Conv]
+    endif
+
+    if ThisQueue.TaskId <= 0 then  
+
+        return
+    endif
+    
+    bus_sint_(BusOutput.BusIoSt + 64, ThisQueue.TaskId)
+
+    if PkCvState == #PICK_SUCC then
+
+        if DEBUG then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Feedback Pick State![TaskId:%d, ConvId:%d, PkCvState:%d]", ThisQueue.TaskId, Conv, 0)
+            log_info_(Msg[])
+        endif
+        
+        bus_sbyte_(BusOutput.BusIoSt + 96, 0)
+        FdbkStatus = bus_ntell_(BusInput, BusOutput, 0)
+
+        ;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        continue
+        $timer[PRIO_QUEUE_FLOW_TIME_IDX] = -abs(TIME_QUEUE_FLOW)
+        continue
+        $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = false
+
+        ;interrupt on PRIO_QUEUE_FLOW_NO
+        ;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    else
+
+        if DEBUG then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Feedback Pick State![TaskId:%d, ConvId:%d, PkCvState:%d]", ThisQueue.TaskId, Conv, 1)
+            log_info_(Msg[])
+        endif
+        
+        bus_sbyte_(BusOutput.BusIoSt + 96, 1)
+        for j = 1 to PkPlCfg.NumOfConv  
+            for k = 1 to QueueLength[j]  
+                if (ThisQueue.BoxId == QueueData[j, k].BoxId) and (ThisQueue.PlacePosn.x == QueueData[j, k].PlacePosn.x) and (ThisQueue.PlacePosn.y == QueueData[j, k].PlacePosn.y) then  
+                
+                    QueueData[j, k].PlacePosn.z = QueueData[j, k].PlacePosn.z - ThisQueue.PkcvOfs.z            
+                endif
+            endfor
+        endfor
+        continue
+        FdbkStatus = bus_ntell_(BusInput, BusOutput, 3000)
+    endif
+
+end
+
+global def second_getq(Conv : in, SleedTime : in, State : out)
+    decl int Conv
+    decl int State
+    decl int SleedTime
+
+    B_CALL_CONV_MOV = false
+
+    continue
+    $timer[PRIO_QUEUE_FLOW_TIME_IDX] = 0
+    continue
+    $timer_flag[PRIO_QUEUE_FLOW_TIME_IDX] = false
+    continue
+    $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = true
+    
+    interrupt off PRIO_QUEUE_FLOW_NO
+    
+
+    CopyConv = Conv
+    CopyState = -2
+    continue
+    $timer_stop[INTR_GETQ_TIME_IDX] = true
+    continue
+    $timer[INTR_GETQ_TIME_IDX] = -abs(SleedTime)
+    continue
+    $timer_flag[INTR_GETQ_TIME_IDX] = false
+
+    interrupt decl PRIO_GETQ_NO when $timer_flag[INTR_GETQ_TIME_IDX] == true do get_queue_(CopyConv, PartData, CopyState)   
+    interrupt on PRIO_GETQ_NO
+
+    continue
+    wait sec 0.012
+    continue
+    $timer_stop[INTR_GETQ_TIME_IDX] = false
+    continue
+    wait for CopyState <> -2
+
+
+
+    interrupt off PRIO_GETQ_NO
+    continue
+    $timer_stop[INTR_GETQ_TIME_IDX] = true
+    State = CopyState
+end
+
+global def second_wpos(Conv : in, RefPkPos : in, GiveDist : in, WaitPos : out, DsnState : out)
+    decl int Conv
+    decl e6pos RefPkPos
+    decl real GiveDist
+    decl e6pos WaitPos
+    decl pkcv_dcsn_t DsnState
+
+    PartPresent[Conv] = false
+    PartFrame = eb_test($nullframe, PkCvCfg[Conv].ConvName[], $nullframe, conv_part_nbr[conv_get_machine_index(Conv)], PartPresent[Conv])
+    if cor_dir[Conv] == #X then  
+
+        CurFlowDist[Conv] = conv_get_part_sen_prea(PartFrame, Conv) + CurQueue[Conv].PkcvOfs.x + PkCvCfg[Conv].ManualZerOfs.x
+    endif
+
+    if PartPresent[Conv] == false then  
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Not Part Present![Conv:%d, TaskId:%d]", Conv, CurQueue[Conv].TaskId)
+        log_warn_(Msg[])
+        DsnState = #DCSN_SKIP
+        return
+    endif
+
+    if CurFlowDist[Conv] >= (PkCvCfg[Conv].DownStream - GiveDist) then  
+
+        DsnState = #DCSN_SKIP
+        return
+    endif
+
+    if (CurFlowDist[Conv] >= PkCvCfg[Conv].WaitPosStream) and (CurFlowDist[Conv] <= (PkCvCfg[Conv].UpStream - 300)) then
+
+        CurWaitPos = RefPkPos
+        CurWaitPos.X = PkCvCfg[Conv].UpStream
+        CurWaitPos.Y = CurWaitPos.y + CurQueue[Conv].PkcvOfs.y + PkCvCfg[Conv].ManualZerOfs.x
+        CurWaitPos.Z = CurWaitPos.z + CurQueue[Conv].PkcvOfs.z + PkCvCfg[Conv].ManualZerOfs.y
+        CurWaitPos = machine_def[Conv_get_machine_index(Conv)].root : CurWaitPos
+        
+        WaitPos = RefPkPos
+        WaitPos.x = CurWaitPos.x
+        WaitPos.y = CurWaitPos.y
+        WaitPos.z = CurWaitPos.z
+        WaitPos.a = CurWaitPos.a
+        WaitPos.b = CurWaitPos.b
+        WaitPos.c = CurWaitPos.c
+
+        DsnState = #DCSN_WPOS
+        return
+    endif
+    
+    if CurFlowDist[Conv] < PkCvCfg[Conv].WaitPosStream then
+
+        continue
+        wait sec 0.1
+        DsnState = #DCSN_WAIT
+        return
+    endif
+    
+    DsnState = #DCSN_PICK
+
+end
+
+global def second_mov_wpos(Conv : in, MovWPosStat : in, WaitPos : in, ToolOffs : in, Limit : in, State : out)
+    decl int Conv
+    decl pkcv_dcsn_t MovWPosStat
+    decl e6pos WaitPos
+    decl frame ToolOffs
+    decl xy_lim_t Limit
+    decl int State
+    
+    State = OK
+
+    ; Check if part is out of reach
+    if (WaitPos.x >= Limit.MaxX) or (WaitPos.x <= Limit.MinX) or (WaitPos.y >= Limit.MaxY) or (WaitPos.y <= Limit.MinY) then
+        State = NG
+        return
+    endif
+
+    if MovWPosStat == #DCSN_WPOS then  
+
+        ; Move to waiting position
+        smove_l_(WaitPos : ToolOffs, 1000.0, 0, 0, 1, 100)
+    endif
+
+    repeat
+
+        PartFrame = eb_test($nullframe, PkCvCfg[Conv].ConvName[], $nullframe, conv_part_nbr[conv_get_machine_index(Conv)], PartPresent[Conv])
+        if cor_dir[Conv] == #X then  
+   
+            CurFlowDist[Conv] = conv_get_part_sen_prea(PartFrame, Conv) + CurQueue[Conv].PkcvOfs.x + PkCvCfg[Conv].ManualZerOfs.x
+        endif
+        
+        if CurFlowDist[Conv] >= (PkCvCfg[Conv].DownStream) then  
+
+            State = NG
+            return
+        endif
+
+        if CurFlowDist[Conv] > PkCvCfg[Conv].UpStream then
+
+            B_CALL_CONV_MOV = true
+            return
+        endif
+
+        continue
+        wait sec 0.05
+    until false
+
+end
+
+global def second_frame(Conv : in, Dist : in, BaseNo : in)
+    decl int Conv
+    decl real Dist
+    decl int BaseNo
+    decl frame ConvDist 
+    decl frame NewFrame
+
+    Offset = 0
+    str_clear_(Msg[])
+    swrite(Msg[], State, Offset, "[Conv:%d] Calc New Machine_def[%d].root ?", Conv, Conv_get_machine_index(Conv))
+    if user_select_(Msg[], "Yes", "No", , , , ) <> 1 then 
+
+        return
+    endif
+
+    ConvDist.X = Dist
+    ConvDist.Y = 0.0
+    ConvDist.Z = 0.0
+    ConvDist.A = 0.0
+    ConvDist.B = 0.0
+    ConvDist.C = 0.0
+
+    Offset = 0
+    str_clear_(Msg[])
+    swrite(Msg[], State, Offset, "Old Frame {X %.3f, Y %.3f, Z %.3f, A %.3f, B %.3f, C %.3f,}", machine_def[Conv_get_machine_index(Conv)].root.X, machine_def[Conv_get_machine_index(Conv)].root.Y, machine_def[Conv_get_machine_index(Conv)].root.Z, machine_def[Conv_get_machine_index(Conv)].root.A, machine_def[Conv_get_machine_index(Conv)].root.B, machine_def[Conv_get_machine_index(Conv)].root.C)
+    log_info_(Msg[])
+
+    base_data[BaseNo] = machine_def[Conv_get_machine_index(Conv)].root
+    NewFrame = machine_def[Conv_get_machine_index(Conv)].root : ConvDist
+
+    Offset = 0
+    str_clear_(Msg[])
+    swrite(Msg[], State, Offset, "New Frame {X %.3f, Y %.3f, Z %.3f, A %.3f, B %.3f, C %.3f,}", NewFrame.X, NewFrame.Y, NewFrame.Z, NewFrame.A, NewFrame.B, NewFrame.C)
+    log_info_(Msg[])
+
+    Offset = 0
+    str_clear_(Msg[])
+    swrite(Msg[], State, Offset, "[Conv:%d] App Frame To New Machine_def[%d].root", Conv, Conv_get_machine_index(Conv))
+
+    if user_select_(Msg[], "Yes", "No", , , , ) == 1 then 
+        
+        machine_def[Conv_get_machine_index(Conv)].root = NewFrame
+        ; base_data[BaseNo] = NewFrame
+    endif    
+
+end
+
+;ENDFOLD
+
+;FOLD ----------------------------------------------- Local Function ----------------------------------------------
+
+def init_queue_()
+    for j = 1 to 4
+        for k = 1 to MAX_QUE_DAT
+            QueueData[j, k] = {ConvId 0, TaskId 0, BoxId 0, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+            QueueData[j, k].PkcvOfs = $nullframe
+            QueueData[j, k].PlacePosn = $nullframe
+        endfor
+
+        AddQueueCount[j] = 0
+        QueueLength[j] = 0
+    endfor
+end
+
+def conv_trig_count_(Conv : in)
+    decl int Conv
+    PkCvCfg[Conv].SrTrigCount = PkCvCfg[Conv].SrTrigCount + 1
+
+    if DEBUG then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "New Meas Taking Picture![ConvId:%d, Count:%d]", Conv, PkCvCfg[Conv].SrTrigCount)
+        log_info_(Msg[])
+    endif
+end
+
+def second_initialize()
+    decl int DelCount, ErrInt
+    ; PkPlCfg = {RobId 1, NumAxis 6, NumOfConv 1, NumOfBox 4, SrSens 0}
+
+    ; PkCvCfg[1] = {ConvName[] " ", SrPortIndex 0, SrTrigCount 0, WaitPosStream 0.0, UpStream 0.0, DownStream 0.0, ManualZerOfs {x 0.0, y 0.0, z 0.0}}
+    ; PkCvCfg[2] = {ConvName[] " ", SrPortIndex 0, SrTrigCount 0, WaitPosStream 0.0, UpStream 0.0, DownStream 0.0, ManualZerOfs {x 0.0, y 0.0, z 0.0}}
+    ; PkCvCfg[3] = {ConvName[] " ", SrPortIndex 0, SrTrigCount 0, WaitPosStream 0.0, UpStream 0.0, DownStream 0.0, ManualZerOfs {x 0.0, y 0.0, z 0.0}}
+    ; PkCvCfg[4] = {ConvName[] " ", SrPortIndex 0, SrTrigCount 0, WaitPosStream 0.0, UpStream 0.0, DownStream 0.0, ManualZerOfs {x 0.0, y 0.0, z 0.0}}
+
+
+    ; PlFsCfg[1] = {PlaceUpDst 0.0, LimUp {x 0.0, y 0.0, z 0.0}, LimDown {x 0.0, y 0.0, z 0.0}}
+    ; PlFsCfg[2] = {PlaceUpDst 0.0, LimUp {x 0.0, y 0.0, z 0.0}, LimDown {x 0.0, y 0.0, z 0.0}}
+    ; PlFsCfg[3] = {PlaceUpDst 0.0, LimUp {x 0.0, y 0.0, z 0.0}, LimDown {x 0.0, y 0.0, z 0.0}}
+    ; PlFsCfg[4] = {PlaceUpDst 0.0, LimUp {x 0.0, y 0.0, z 0.0}, LimDown {x 0.0, y 0.0, z 0.0}}
+    ; PlFsCfg[5] = {PlaceUpDst 0.0, LimUp {x 0.0, y 0.0, z 0.0}, LimDown {x 0.0, y 0.0, z 0.0}}
+    ; PlFsCfg[6] = {PlaceUpDst 0.0, LimUp {x 0.0, y 0.0, z 0.0}, LimDown {x 0.0, y 0.0, z 0.0}}
+    ; PlFsCfg[7] = {PlaceUpDst 0.0, LimUp {x 0.0, y 0.0, z 0.0}, LimDown {x 0.0, y 0.0, z 0.0}}
+    ; PlFsCfg[8] = {PlaceUpDst 0.0, LimUp {x 0.0, y 0.0, z 0.0}, LimDown {x 0.0, y 0.0, z 0.0}}
+    ; PlFsCfg[9] = {PlaceUpDst 0.0, LimUp {x 0.0, y 0.0, z 0.0}, LimDown {x 0.0, y 0.0, z 0.0}}
+    ; PlFsCfg[10] = {PlaceUpDst 0.0, LimUp {x 0.0, y 0.0, z 0.0}, LimDown {x 0.0, y 0.0, z 0.0}}
+    ; PlFsCfg[11] = {PlaceUpDst 0.0, LimUp {x 0.0, y 0.0, z 0.0}, LimDown {x 0.0, y 0.0, z 0.0}}
+    ; PlFsCfg[12] = {PlaceUpDst 0.0, LimUp {x 0.0, y 0.0, z 0.0}, LimDown {x 0.0, y 0.0, z 0.0}}
+
+    ; Initialize Conv
+    conv_reinit_md()
+    $advance = 1
+    B_CALL_CONV_MOV = false
+    
+    GlbPickSelectId = 0
+
+    for j = 1 to PkPlCfg.NumOfConv  
+        ; PkCvCfg[j].ConvName[] = conv_get_name(j)
+        conv_ini_off(j)
+        conv_on(j)
+        ; PkCvCfg[j].SrTrigCount = 0
+        FirstTrigger[j] = false
+        FirstPicking[j] = false
+
+        ErrInt = conv_delete_all_wps(j, DelCount)
+
+        $fast_meas_count[j] = 0
+        CurFlowDist[j] = 0
+        conv_part_nbr[conv_get_machine_index(j)] = 0
+
+        if PkCvCfg[j].SrPortIndex <= 0 then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Meas Taking Picture Port Error![ConvId:%d, SrPortIndex]", j, PkCvCfg[j].SrPortIndex)
+            log_error_(Msg[])
+        endif
+
+        switch (j)
+        case 1
+            global interrupt decl PRIO_CONV_SR_NO[1] when $in[PkCvCfg[1].SrPortIndex] == true do conv_trig_count_(1)
+            interrupt on PRIO_CONV_SR_NO[1]
+        case 2
+            global interrupt decl PRIO_CONV_SR_NO[2] when $in[PkCvCfg[2].SrPortIndex] == true do conv_trig_count_(2)
+            interrupt on PRIO_CONV_SR_NO[2]
+        case 3
+            global interrupt decl PRIO_CONV_SR_NO[3] when $in[PkCvCfg[3].SrPortIndex] == true do conv_trig_count_(3)
+            interrupt on PRIO_CONV_SR_NO[3]
+        case 4
+            global interrupt decl PRIO_CONV_SR_NO[4] when $in[PkCvCfg[4].SrPortIndex] == true do conv_trig_count_(4)
+            interrupt on PRIO_CONV_SR_NO[4]
+        endswitch
+    endfor
+
+    $flag[FLAG_CONV_PKSU] = false
+    $flag[FLAG_CONV_QUE_ACQ[1]] = false
+    $flag[FLAG_CONV_QUE_ACQ[2]] = false
+    $flag[FLAG_CONV_QUE_ACQ[3]] = false
+    $flag[FLAG_CONV_QUE_ACQ[4]] = false
+
+    init_queue_()
+
+    continue
+    $timer[PRIO_QUEUE_FLOW_TIME_IDX] = 0
+    continue
+    $timer_flag[PRIO_QUEUE_FLOW_TIME_IDX] = false
+    continue
+    $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = false
+    
+    global interrupt decl PRIO_QUEUE_FLOW_NO when $timer_flag[PRIO_QUEUE_FLOW_TIME_IDX] == true do queue_overflow_()      
+    interrupt off PRIO_QUEUE_FLOW_NO
+end
+
+def second_sr_()
+
+    continue
+    if GiAgentTellId == 0 then  
+        return
+    endif
+
+    bus_uptin_(BusInput)
+
+    switch BusInput.AgentMsgType
+    case 1
+        SensorPack.TaskId       = bus_gint_(#IO_DIN, BusInput.BusIoSt + 64)
+        SensorPack.ConvId       = bus_gbyte_(#IO_DIN, BusInput.BusIoSt + 96)
+        SensorPack.BoxId        = bus_gbyte_(#IO_DIN, BusInput.BusIoSt + 104)
+        SensorPack.ServoDist    = bus_gsint_(#IO_DIN, BusInput.BusIoSt + 112) / 10.0
+        SensorPack.EncCount     = bus_gint_(#IO_DIN, BusInput.BusIoSt + 128) 
+        SensorPack.Thickness    = bus_gsint_(#IO_DIN, BusInput.BusIoSt + 160) / 10.0
+        SensorPack.Weight       = bus_gsint_(#IO_DIN, BusInput.BusIoSt + 176) / 10.0
+        SensorPack.Num          = bus_gbyte_(#IO_DIN, BusInput.BusIoSt + 192)
+        
+        if DEBUG then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Receive workpiece data![TaskId:%d, ConvId:%d, BoxId:%d, Num:%d]", SensorPack.TaskId, SensorPack.ConvId, SensorPack.BoxId, SensorPack.Num)
+            log_info_(Msg[])
+        endif
+
+        bus_sbyte_(BusOutput.BusIoSt + 104, 0)
+        bus_ftell_(BusInput, BusOutput)
+        
+        return
+    case 2
+        SensorPack.PkcvOfs.x   = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 64)
+        SensorPack.PkcvOfs.y   = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 96)
+        SensorPack.PkcvOfs.z   = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 128)
+        SensorPack.PkcvOfs.a   = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 160)
+        SensorPack.PkcvOfs.b   = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 192)
+        SensorPack.PkcvOfs.c   = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 224)
+
+        if DEBUG then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Receive Pick Pos![x:%.3f, y:%.3f, z:%.3f,]", SensorPack.PkcvOfs.x, SensorPack.PkcvOfs.y, SensorPack.PkcvOfs.z)
+            log_info_(Msg[])
+        endif
+
+        bus_sbyte_(BusOutput.BusIoSt + 104, 0)
+        bus_ftell_(BusInput, BusOutput)
+        
+        return
+    case 3
+        SensorPack.PlacePosn.x = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 64)
+        SensorPack.PlacePosn.y = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 96)
+        SensorPack.PlacePosn.z = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 128)
+        SensorPack.PlacePosn.a = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 160)
+        SensorPack.PlacePosn.b = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 192)
+        SensorPack.PlacePosn.c = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 224)
+
+        if DEBUG then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Receive Place Pos![x:%.3f, y:%.3f, z:%.3f,]", SensorPack.PlacePosn.x, SensorPack.PlacePosn.y, SensorPack.PlacePosn.z)
+            log_info_(Msg[])
+        endif
+    default
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Step ID error[%d]", BusInput.AgentMsgType)
+        log_error_(Msg[])
+
+        return
+    endswitch
+ 
+    SndErrNo = 0
+
+    switch BusInput.JobId
+    case 1
+
+        if DEBUG then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Add new task[TaskId:%d]", SensorPack.TaskId)
+            log_info_(Msg[])
+        endif
+
+        if SensorPack.TaskId > 0 then  
+            if second_chk_() <> OK then  
+                
+                SensorPack.TaskId = 0
+                ; goto ACK
+            endif
+        endif
+
+        if $fast_meas_count[SensorPack.ConvId] <= AddQueueCount[SensorPack.ConvId] then  
+
+            SndErrNo = 202
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "$fast_meas_count Missing[Conv:%d, TaskId:%d, FastCount:%d, QueueCount:%d]", SensorPack.ConvId, SensorPack.TaskId, $fast_meas_count[SensorPack.ConvId], AddQueueCount[SensorPack.ConvId])
+            log_warn_(Msg[])
+            goto ACK
+        endif
+
+        if put_queue_(SensorPack.ConvId, SensorPack) <> OK then
+
+            SndErrNo = 201
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Workpiece failed to join queue[TaskId:%d]", SensorPack.TaskId)
+            log_error_(Msg[])
+            goto ACK
+        endif
+        
+        if SensorPack.Num == 1 then
+            
+            AddQueueCount[SensorPack.ConvId] = AddQueueCount[SensorPack.ConvId] + 1
+        endif
+
+        if DEBUG then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Successfully joined queue[TaskId:%d]", SensorPack.TaskId)
+            log_info_(Msg[])
+        endif
+    case 2
+
+        if DEBUG then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Modify task[TaskId:%d]", SensorPack.TaskId)
+            log_info_(Msg[])
+        endif
+
+        if second_chk_() <> OK then  
+                
+            goto ACK
+        endif
+
+        PartFind = false
+
+        for j = 1 to MAX_QUE_DAT
+            if SensorPack.TaskId == abs(QueueData[SensorPack.ConvId, j].TaskId) then  
+
+                QueueData[SensorPack.ConvId, j].BoxId = SensorPack.BoxId
+                QueueData[SensorPack.ConvId, j].TaskId = SensorPack.TaskId
+                QueueData[SensorPack.ConvId, j].PlacePosn = SensorPack.PlacePosn
+                PartFind = true
+
+                if DEBUG then
+                    Offset = 0
+                    str_clear_(Msg[])
+                    swrite(Msg[], State, Offset, "Successfully Modify task[TaskId:%d]", SensorPack.TaskId)
+                    log_info_(Msg[])
+                endif
+            endif
+        endfor
+        
+        if not PartFind then  
+
+            SndErrNo = 254
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Queue to modify not found[TaskId:%d]", SensorPack.TaskId)
+            log_warn_(Msg[])
+            goto ACK
+        endif
+        
+    default
+        SndErrNo = 255
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Job ID error[JobId:%d]", BusInput.JobId)
+        log_error_(Msg[])
+    endswitch  
+    
+    ACK:
+
+    ; bus_sbyte_(BusOutput.BusIoSt + 104, SndErrNo)
+    ; bus_ftell_(BusInput, BusOutput)
+
+    if DEBUG then
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "Feedback task success[SndErrNo:%d] !", SndErrNo)
+        log_info_(Msg[])
+    endif
+
+    bus_sbyte_(BusOutput.BusIoSt + 104, SndErrNo)
+    bus_ftell_(BusInput, BusOutput)
+
+    return
+end
+
+deffct int second_chk_()
+
+    if ((SensorPack.BoxId > PkPlCfg.NumOfBox) or (SensorPack.BoxId <= 0)) and (SensorPack.TaskId > 0) then
+
+        SndErrNo = 1
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "BoxId error[BoxId:%d] !", SensorPack.BoxId)
+        log_warn_(Msg[])
+        return(NG)
+    endif
+
+    if ((SensorPack.ConvId > PkPlCfg.NumOfConv) or (SensorPack.ConvId <= 0)) and (SensorPack.TaskId > 0) then
+
+        SndErrNo = 2
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "ConvId error[ConvId:%d] !", SensorPack.ConvId)
+        log_warn_(Msg[])
+        return(NG)
+    endif
+
+    if (SensorPack.PlacePosn.x > plfsCfg[SensorPack.BoxId].LimUp.x) then
+
+        SndErrNo = 101
+        
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "PlacePos X > MaxX[BoxId:%d, x:%.3f, MaxX:%.3f] !", SensorPack.BoxId, SensorPack.PlacePosn.x, plfsCfg[SensorPack.BoxId].LimUp.x)
+        log_warn_(Msg[])
+        return(NG)
+    endif
+    
+    if (SensorPack.PlacePosn.x < plfsCfg[SensorPack.BoxId].LimDown.x) then
+
+        SndErrNo = 102
+        
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "PlacePos X < MinX[BoxId:%d, x:%.3f, MinX:%.3f] !", SensorPack.BoxId, SensorPack.PlacePosn.x, plfsCfg[SensorPack.BoxId].LimDown.x)
+        log_warn_(Msg[])
+        return(NG)
+    endif
+    
+    if (SensorPack.PlacePosn.y > plfsCfg[SensorPack.BoxId].LimUp.y) then
+
+        SndErrNo = 103
+
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "PlacePos Y > MaxY[BoxId:%d, y:%.3f, MaxY:%.3f] !", SensorPack.BoxId, SensorPack.PlacePosn.y, plfsCfg[SensorPack.BoxId].LimUp.y)
+        log_warn_(Msg[])
+        return(NG)
+    endif
+
+    if (SensorPack.PlacePosn.y < plfsCfg[SensorPack.BoxId].LimDown.y) then
+
+        SndErrNo = 104
+        Offset = 0
+        str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "PlacePos Y <> MinY[BoxId:%d, y:%.3f, MinY:%.3f] !", SensorPack.BoxId, SensorPack.PlacePosn.y, plfsCfg[SensorPack.BoxId].LimDown.y)
+        log_warn_(Msg[])
+        return(NG)
+    endif
+
+    return(OK)
+endfct
+
+deffct int put_queue_(Conv : in, ThisPart : in)
+    decl int Conv 
+    decl part_dat_t ThisPart
+
+    if QueueLength[Conv] >= MAX_QUE_DAT then  
+        
+        return(NG)
+    endif
+
+
+    QueueLength[Conv] = QueueLength[Conv] + 1
+    QueueData[Conv, QueueLength[Conv]] = ThisPart
+
+    return(OK)
+endfct
+
+def get_queue_(Conv : in, ThisPart : out, Status : out)
+    decl int Conv
+    decl part_dat_t ThisPart
+    decl int Status
+    decl int j
+
+    if QueueLength[Conv] <= 0 then  
+        
+        Status = NG
+        return
+    endif
+
+    ThisPart = QueueData[Conv, 1]
+    QueueLength[Conv] = QueueLength[Conv] - 1
+
+    for j = 1 to QueueLength[Conv]
+        QueueData[Conv, j] = QueueData[Conv, j + 1]
+    endfor
+
+    for j = QueueLength[Conv] + 1 to MAX_QUE_DAT
+        QueueData[Conv, j] = {ConvId 0, TaskId 0, BoxId 0, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+        QueueData[Conv, j].PkcvOfs = $nullframe
+        QueueData[Conv, j].PlacePosn = $nullframe
+    endfor
+
+    CurQueue[Conv] = ThisPart
+    Status = OK
+end
+
+def queue_overflow_()
+    decl int j, k
+    decl real Dist
+    decl int Status
+    for j = 1 to PkPlCfg.NumOfConv
+        continue
+        if QueueLength[j] > 0 then
+            Dist = $sen_prea_c[j] + QueueData[j, 1].PkcvOfs.x
+            if Dist > PkCvCfg[j].DownStream then  
+                
+                second_fdbk( , #PICK_FAIL, QueueData[j, 1])
+                
+                QueueLength[j] = QueueLength[j] - 1
+
+                for k = 1 to QueueLength[j]
+                    QueueData[j, k] = QueueData[j, k + 1]
+                endfor
+
+                for k = QueueLength[j] + 1 to MAX_QUE_DAT
+                    QueueData[j, k] = {ConvId 0, TaskId 0, BoxId 0, EncCount 0, ServoDist 0.0, Thickness 0.0, Weight 0.0, Num 0}
+                    QueueData[j, k].PkcvOfs = $nullframe
+                    QueueData[j, k].PlacePosn = $nullframe
+                endfor
+            endif
+
+        endif
+    endfor
+
+
+end
+
+;ENDFOLD

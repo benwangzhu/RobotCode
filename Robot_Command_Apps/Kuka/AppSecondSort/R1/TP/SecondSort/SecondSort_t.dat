@@ -1,0 +1,58 @@
+defdat  SecondSort_t public
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: SecondSort_t.dat
+; 
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 28
+;   Modification Data    ==   2024 - 10 - 25
+; 
+; Author: speedbot
+; 
+; Version: 1.0
+;***********************************************************
+
+global const int PRIO_CONV_SR_NO[4]
+PRIO_CONV_SR_NO[1] = 11
+PRIO_CONV_SR_NO[2] = 12
+PRIO_CONV_SR_NO[3] = 13
+PRIO_CONV_SR_NO[4] = 14
+
+global const int PRIO_TELL_NO = 9
+global const int PRIO_GETQ_NO = 10
+global const int PRIO_QUEUE_FLOW_NO = 11
+global const int INTR_GETQ_TIME_IDX = 10
+global const int PRIO_QUEUE_FLOW_TIME_IDX = 11
+
+global const int TIME_QUEUE_FLOW = 2000
+
+global const int FLAG_CONV_PKSU = 300
+
+global const int FLAG_CONV_QUE_ACQ[4]
+FLAG_CONV_QUE_ACQ[1] = 301
+FLAG_CONV_QUE_ACQ[2] = 302
+FLAG_CONV_QUE_ACQ[3] = 303
+FLAG_CONV_QUE_ACQ[4] = 304
+
+global const int MAX_QUE_DAT = 50
+
+global struc part_dat_t int ConvId, int TaskId, int BoxId, e6pos PkcvOfs, e6pos PlacePosn, int EncCount, real ServoDist, real Thickness, real Weight, int Num
+
+global struc pkcv_cfg_t char ConvName[24], int SrPortIndex, int SrTrigCount, real WaitPosStream, real UpStream, real DownStream, vector_t ManualZerOfs
+
+global struc plfs_cfg_t real PlaceUpDst, real PlaceE7Pos, vector_t LimUp, vector_t LimDown
+
+global struc pkpl_cfg_t int RobId, int NumAxis, int NumOfConv, int NumOfBox, int SrSens
+
+global struc xy_lim_t real MaxX, real MinX, real MaxY, real MinY
+
+global enum pkcv_stat_t PICK_SUCC, PICK_FAIL
+global enum pkcv_dcsn_t DCSN_WPOS, DCSN_WAIT, DCSN_PICK, DCSN_SKIP
+
+enddat
+
+
+

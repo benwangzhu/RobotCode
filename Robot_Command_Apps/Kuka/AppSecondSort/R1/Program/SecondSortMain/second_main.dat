@@ -1,0 +1,29 @@
+&ACCESS RV
+&REL 1
+&PARAM DISKPATH = KRC:\R1\Program\SecondSortMain
+&comment SecondSort Main
+defdat second_main 
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: second_main.dat
+; 
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 28
+;   Modification Data    ==   2022 - 06 - 28
+; 
+; Author: speedbot
+; 
+; Version: 1.0
+;***********************************************************
+
+ext second_config()
+ext second_pkcv_select()
+ext second_plfs_select()
+
+enddat
+
+
+

@@ -1,0 +1,42 @@
+&ACCESS RVP1
+&REL 28
+&COMMENT App128 Main 250122
+&PARAM DISKPATH = KRC:\R1\Program\SbtComm128ArcMain
+DEFDAT  SBT_COMM128_MAIN
+;***********************************************************
+; 
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+; 
+; file Name: sbt_comm128_main.dat
+; 
+; Description:
+;   Language             ==   Karel for KUKA ROBOT
+;   Date                 ==   2022 - 02 - 26
+;   Modification Data    ==   2022 - 02 - 26
+; 
+; Author: speedbot
+; 
+; Version: 1.0
+;***********************************************************
+
+EXT  bas (BAS_COMMAND  :IN,REAL  :IN )
+EXT  sbt_comm128_state ( )
+EXT  sbt_comm128_motion ( )
+
+DECL INT Status
+DECL INT J
+DECL INT NewTrajeSize
+DECL trajectory_pt_t NewTrajes[1000]
+
+DECL INT CopyMoveId=3818
+
+
+DECL INT DefineTool=3
+DECL INT DefineBase=0
+
+DECL BOOL ArcOn=FALSE
+
+DECL stArcDat_T WDAT1={WdatId[] "WDAT1",Strike {JobModeId[] "Standard",ParamSetId[] "??1",StartTime 0.0,PreFlowTime 0.0,Channel1 0.0,Channel2 0.0,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0,PurgeTime 0.0},Weld {JobModeId[] "Standard",ParamSetId[] "??2",Velocity 0.00830000,Channel1 170.000,Channel2 20.0000,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0},Weave {Pattern #None,Length 4.00000,Amplitude 2.00000,Angle 0.0,LeftSideDelay 0.0,RightSideDelay 0.0}}
+DECL stArcDat_T WP1={WdatId[] "WP1",Info {Version 303020298},Strike {SeamName[] " ",PartName[] " ",SeamNumber 0,PartNumber 0,DesiredLength 0.0,LengthTolNeg 0.0,LengthTolPos 0.0,LengthCtrlActive FALSE}}
+
+ENDDAT

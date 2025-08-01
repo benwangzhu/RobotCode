@@ -1,0 +1,75 @@
+&ACCESS RVO
+&REL 79
+&COMMENT Polish Replace Head 250608
+def  PolishReplaceHead (ToolNumber : in)
+    decl int ToolNumber
+	
+	;Determine whether it is necessary to replace the grinding head
+	;if (ToolNumber == Gi_PolishHeadNumber) then  
+		;return 
+
+	;endif 
+
+	;Determine whether a polishing head needs to be placed
+    ;if (Gi_PolishHeadNumber <> 0) then 
+      	;SbtComm012_PutHead()
+
+    ;endif 
+
+	;Determine if there is a polishing head
+	;if (Gi_PolishHeadNumber <> 0) then 
+		;while (Gi_PolishHeadNumber <> 0)
+			;Offset = 0
+			;str_clear_(Msg[])
+			;swrite(Msg[], State, Offset, "Place the polishing head already[CurHead:%d]!", Gi_PolishHeadNumber)
+			;log_error_(Msg[])
+		;endwhile
+	;
+	;else 
+		;Obtain the corresponding polishing head
+		;SbtComm012_GetHead(ToolNumber)
+	;
+	;endif 
+	;
+end
+
+;FOLD COMM012 POLISH PUT HEAD
+def SbtComm012_PutHead()
+
+	;switch (Gi_PolishHeadNumber)
+		;case 1
+			;PolishPutDownHead01()
+
+		;default 
+			;error_write_(1, "There is no corresponding grinding head position err")
+
+	;endswitch
+
+	;BAS(#TOOL, 0)
+
+end 
+;ENDFOLD
+
+;FOLD COMM012 POLISH GET HEAD
+def SbtComm012_GetHead(ToolNumber : in)
+	decl int ToolNumber
+
+	;while (Gi_PolishHeadNumber <> 0)
+        ;Offset = 0
+        ;str_clear_(Msg[])
+        ;swrite(Msg[], State, Offset, "Place the polishing head already[CurHead:%d]!", Gi_PolishHeadNumber)
+        ;log_error_(Msg[])
+    ;endwhile
+
+	;switch (ToolNumber)
+		;case 1
+			;PolishPickUpHead01(ToolNumber)
+
+		;default
+			;error_write_(1, "No corresponding polishing head err")
+	;endswitch
+
+	;BAS(#TOOL, ToolNumber)
+
+end 
+;ENDFOLD

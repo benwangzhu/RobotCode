@@ -1,0 +1,278 @@
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_tpe_h
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2023 - 03 - 11
+--   Modification Data    ==   2023 - 03 - 11
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+--***********************************************************
+-- copy_tpels_()
+--***********************************************************
+--      in : FromFile           * string *      * 需要读取的文件 *
+--      in : ToFile             * string *      * 将需要读取的文件处理完成，保存的文件名称 *
+--	return : 					* integer *     * 返回TPE程序的程序行数 *
+--***********************************************************
+--	TPE程序文件从默认的MD盘中复制，将文件处理过后保存到FRA盘中的ToFile文件名的文件
+--***********************************************************	
+routine copy_tpels_(FileVar1 : file;
+                    FileVar2 : file;
+                    FromFile : string; 
+                    ToFile : string) : integer from lib_tpe
+
+--***********************************************************
+-- extr_tpe_()
+--***********************************************************
+--      in : FineStar           * integer *      * 从TPE程序的多少行开始寻找 *
+--      in : FineEnd            * integer *      * 寻找到TPE程序多少行结束 *
+--      in : FineStr            * string  *      * FlgBool为true时则需要找FineStr里的内容在TPE的行，列如CALL PROGRAM，则返回CALL PROGRAM所在行 *
+--      in ：FlgBool            * boolean *      * 为true则在范围内寻找对应的字符所在行，为false则在范围内从上往下找最近的L和J的运动指令，若没有则返回NULL *
+--	return : 					* integer *      * FlgBool为true则返回查找内容在的行，FlgBool为false则返回运动程序内容，没有找到则返回NULL *
+--***********************************************************
+
+--	extr_tpe_程序需要先运行copy_tpels_完成对TPE程序的单独处理
+--  extr_tpe_程序不会死循环，在对应的范围内或找到程序文件的底部还未找到会退出返回NULL
+--  通过extr_tpe_查找对应字符的行，来确认查找运动指令的行
+--  通过extr_tpe_返回的NULL来不断扩大搜寻范围，来完成对目标内容的提取
+routine extr_tpe_(FileVar : file;
+                  FineStar : integer; 
+                  FineEnd : integer; 
+                  FineStr : string; 
+                  FlgBool : boolean) : string from lib_tpe
+
+--***********************************************************
+-- anal_tpels_
+--***********************************************************
+--      in : TpeMsg             * string *               * 需要解析的TPE运动指令字符串 *
+--	return : 					* array of string *      * 通过数组字符串返回TPE指令解析信息 *
+--***********************************************************
+--	anal_tpels_程序需要先运行extr_tpe_()将所需TPE运动指令提取出来
+--  array[1]返回TPE运动程序所在行
+--  array[2]返回TPE运动程序的运动方式L或者J，否则报错
+--  array[3]返回程序的点号，大于0则为对应P点号码，小于零则为PR寄存器号码
+--  array[4]该指令的速度，只能解析单位mm/sec和%，支持速度用R寄存器代替，返回类型为整形
+--  array[5]该指令的转弯半径，精确到达返回FINE，CNT返回其值，支持R寄存器代替,返回类型为整形
+--***********************************************************	
+routine anal_tpels_(TpeMsg : string) : array of string from lib_tpe
+
+routine tpe_exist_(TpeName : string) : boolean from lib_tpe
+
+--***********************************************************
+-- tpe_open_
+--***********************************************************
+--      in : TpeName            * string *               * 需要打开得示教器程序 *
+--      in : OpenMode           * string *               * 打开模式 *
+--      in : RejectMode         * string *               * 拒绝模式 *
+--	return : 					* integer *              * 返回一个 ID *
+--***********************************************************
+--	打开一个 TPE 程序，返回一个 ID. ID <= 0 时代表打开失败
+--
+--  OpenMode 
+--  TPE_RDACC：读取访问权限
+--  TPE_RWACC：读/写访问
+--
+--  RejectMode
+--  TPE_NOREJ：无
+--  TPE_RDREJ：读取拒绝
+--  TPE_WRTREJ：写入拒绝
+--  TPE_RWREJ：读/写拒绝
+--  TPE_ALLREJ：全部拒绝
+--***********************************************************	
+routine tpe_open_(TpeName : string;
+                  OpenMode : integer;
+                  RejectMode : integer) : integer from lib_tpe
+          
+routine tpe_close_(OpenId : integer) from lib_tpe
+
+--***********************************************************
+-- tpe_open_
+--***********************************************************
+--      in : TpeName            * string *               * 需要创建得示教器程序 *
+--      in : OpenMode           * string *               * 创建模式 *
+--      in : RejectMode         * string *               * 拒绝模式 *
+--	return : 					* integer *              * 返回一个 ID *
+--***********************************************************
+--	创建一个 TPE 程序
+--
+--  ProgType 
+--  PT_MNE_UNDEF：未定义子类型的TPE程序
+--  PT_MNE_JOB：TPE作业
+--  PT_MNE_PROC：TPE进程
+--  PT_MNE_MACRO：TPE宏
+--
+--***********************************************************	
+routine tpe_create_(TpeName : string;
+                    ProgType : integer) : integer from lib_tpe
+
+routine tpe_copy_(FromProg : string;
+                  ToProg : string;
+                  OverWrite : boolean) : integer from lib_tpe
+
+routine tpe_delete_(TpeName : string) : integer from lib_tpe
+
+
+
+routine tpe_select_(TpeName : string) : integer from lib_tpe
+
+routine tpe_s_cpos_(OpenId : integer;
+                   GrpId : integer;
+                   PointNo : integer;
+                   Val : xyzwprext) from lib_tpe
+
+routine tpe_s_jpos_(OpenId : integer;
+                   GrpId : integer;
+                   PointNo : integer;
+                   Val : jointpos) from lib_tpe
+
+routine tpe_pos_cmt_(OpenId : integer;
+                     PointNo : integer;
+                     Comment : string) from lib_tpe
+
+
+routine tpe_del_ln_(OpenId : integer;
+                    LineNo : integer) from lib_tpe                 
+
+routine tpe_text_(TpeName : string;
+                  Text : string;
+                  LineNo : integer) from lib_tpe
+
+-- routine tpe_movj_(TpeName : string;
+--                   PointMode : integer;
+--                   PointNo : integer;
+--                   SpeedTyp : integer;
+--                   Speed : real;
+--                   Cnt : integer;
+--                   AddIns : string;
+--                   LineNo : integer) from lib_tpe
+
+-- routine tpe_movl_(TpeName : string;
+--                   PointMode : integer;
+--                   PointNo : integer;
+--                   SpeedTyp : integer;
+--                   Speed : real;
+--                   Cnt : integer;
+--                   AddIns : string;
+--                   LineNo : integer) from lib_tpe
+
+-- routine tpe_mova_(TpeName : string;
+--                   PointMode : integer;
+--                   PointNo : integer;
+--                   SpeedTyp : integer;
+--                   Speed : real;
+--                   Cnt : integer;
+--                   AddIns : string;
+--                   LineNo : integer) from lib_tpe
+
+-- routine tpe_uframe_(TpeName : string;
+--                     UframeNo : integer;
+--                     LineNo : integer) from lib_tpe
+
+-- routine tpe_utool_(TpeName : string;
+--                    UToolNo : integer;
+--                    LineNo : integer) from lib_tpe
+
+-- routine tpe_payload_(TpeName : string;
+--                      PayloadNo : integer;
+--                      LineNo : integer) from lib_tpe
+
+-- routine tpe_weldst_(TpeName : string;
+--                     ProcNo : integer;
+--                     SchNo : integer;
+--                     LineNo : integer) from lib_tpe
+
+-- routine tpe_welded_(TpeName : string;
+--                     ProcNo : integer;
+--                     SchNo : integer;
+--                     LineNo : integer) from lib_tpe
+
+-- routine tpe_weavest_(TpeName : string;
+--                      WeaveTyp : integer;
+--                      SchNo : integer;
+--                      LineNo : integer) from lib_tpe
+
+-- routine tpe_weaveed_(TpeName : string;
+--                      SchNo : integer;
+--                      LineNo : integer) from lib_tpe
+
+routine tpe_it_mov_(OpenId : integer;
+                    InstSch : inst_move_t;
+                    LineNo : integer)           from lib_tpe
+
+routine tpe_it_frm_(OpenId : integer;
+                    InstSch : inst_frm_t;
+                    LineNo : integer)           from lib_tpe
+
+routine tpe_it_wv_(OpenId : integer;
+                   InstSch : inst_wv_t;
+                   LineNo : integer)            from lib_tpe
+
+routine tpe_it_wd_(OpenId : integer;
+                   InstSch : inst_wd_t;
+                   LineNo : integer)            from lib_tpe
+
+
+routine tpe_it_io_(OpenId : integer;
+                   InstSch : inst_io_t;
+                   LineNo : integer)            from lib_tpe
+
+routine tpe_it_reg_(OpenId : integer;
+                    InstSch : inst_reg_t;
+                    LineNo : integer)           from lib_tpe
+
+
+routine tpe_it_twat_(OpenId : integer; 
+                     InstSch : inst_tw_t;
+                     LineNo : integer)           from lib_tpe
+
+routine tpe_it_swat_(OpenId : integer; 
+                     InstSch : inst_sw_t;
+                     LineNo : integer)           from lib_tpe
+
+routine tpe_it_tst_(OpenId : integer; 
+                    InstSch : inst_tst_t;
+                    LineNo : integer)           from lib_tpe
+
+
+routine tpe_it_tked_(OpenId : integer; 
+                     LineNo : integer)           from lib_tpe
+
+
+routine tpe_it_call_(OpenId : integer; 
+                     InstSch : inst_call_t;
+                     LineNo : integer)           from lib_tpe

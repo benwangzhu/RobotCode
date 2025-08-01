@@ -1,0 +1,120 @@
+&ACCESS RP
+&comment Calib 250122
+def sbt_comm000()
+;***********************************************************
+;
+; file Name: sbt_comm000.src
+;
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+;
+;
+; Description:
+;   Language             ==   KRL for KUKA ROBOT
+;   Date                 ==   2024 - 06 - 03
+;   Modification Data    ==   2025 - 01 - 21
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+end
+
+global def sbt_comm000_(Command : in, TrajeNo :in)
+    decl int Command
+    decl char TrajeNo
+
+    switch (Command)
+    case 1                                 ; Calib Start                                 
+
+        bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+
+        Count = 0
+
+        CommType01.Byte01 = 1
+        CommType01.Byte02 = TrajeNo
+
+        CommType01.Short03 = 0
+        CommType01.Short04 = 0
+        
+        CommType01.Int05 = 0
+        CommType01.Int06 = 0
+
+        CommType01.Float07 = 0.0
+        CommType01.Float08 = 0.0
+
+        Status = bus_cmd002_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CommType01)
+        Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+
+        if Status <> OK then
+
+            err_display_(BusInput, BusOutput)
+        endif
+
+        return
+
+    case 2                                  ; Calib Picture                   
+
+        wait sec 0.0
+
+        Count = Count + 1
+
+        CurPos = cur_pos_(0, 0)
+
+        Status = bus_cmd003_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CurPos)
+        Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+
+        if Status <> OK then
+            
+            err_display_(BusInput, BusOutput)
+        endif
+
+        return
+    case 3                                   ; Calib End   
+
+        CommType01.Byte01 = 2
+
+        Status = bus_cmd002_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CommType01)
+        Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+
+        if Status <> OK then
+            
+            err_display_(BusInput, BusOutput)
+        endif
+
+        return
+
+    default
+
+        error_write_(999, "Calibration Param Err")
+    endswitch
+
+end
+
+def err_display_(BusIn : in, BusOut : in)
+    decl busin_t BusIn
+    decl busout_t BusOut
+
+    if not BusIn.SysReady then 
+
+        error_write_(901, "Software not ready")
+        return
+    endif
+
+    if BusIn.TellId <> BusOut.RobTellId then 
+
+        error_write_(902, "Software processing timeout")
+        return
+    endif
+
+    switch BusIn.ErrorId 
+    case 1
+        warn_write_(001, "An issue has been detected with the data format.")
+    case 2
+        warn_write_(002, "The camera failed to operate.")
+    case 3
+        warn_write_(003, "There was a failure in the photo capture detection process.")
+    default
+        error_write_(903, "Unknow error")
+    endswitch
+
+end

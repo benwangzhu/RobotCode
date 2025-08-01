@@ -1,0 +1,179 @@
+program lib_path
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_path
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2023 - 03 - 25
+--   Modification Data    ==   2023 - 03 - 25
+--
+-- Author: speedbot
+--
+-- Version: 1.1
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+
+-- 2023 - 03 - 26 ++ clear_path_()
+
+-- 2023 - 03 - 26 ++ copy_path_()
+
+-- 2023 - 03 - 26 ++ add_node_()
+
+-- 2023 - 03 - 26 ++ del_node_()
+
+-- 2023 - 03 - 26 ++ chg_node_()
+
+-- 2023 - 03 - 26 ++ chg_header_()
+--
+%nolockgroup
+%nobusylamp
+%nopause = tpenable + command + error
+%comment = 'Path 231129'
+
+%include include/lib_transform_t
+
+
+%include include/lib_path_t
+%include include/lib_path_h
+%include include/lib_string_h
+
+
+begin
+
+end lib_path
+
+routine clear_path_
+var 
+    PathStatus          : integer
+begin
+    PathData.PthLenght      = 0
+    PathData.PthUserByte1   = 0
+    PathData.PthUserByte2   = 0
+    PathData.PthUserBool1   = false
+    PathData.PthUserBool2   = false
+    PathData.PthUserInt1    = 0
+    PathData.PthUserInt2    = 0
+    PathData.PthUserInt3    = 0
+    PathData.PthUserReal1   = 0.0
+    PathData.PthUserReal2   = 0.0
+    PathData.PthUserReal3   = 0.0
+
+    while path_len(PathData) > 0 do  
+        delete_node(PathData, 1, PathStatus)
+        --WRITE(PathStatus, CR)
+        if PathStatus <> CC_SUCCESS then 
+            --post_err(CC_UALARM, 'Delete Path Error', 0, 1)
+            delay(16)
+        endif
+    endwhile
+end clear_path_
+
+routine copy_path_
+var 
+    PathStatus          : integer
+begin
+    copy_path(PathData, 0, 0, NewPathData, PathStatus)
+    if PathStatus <> CC_SUCCESS then 
+        post_err(CC_UALARM, 'Copy Path Error', 0, 1)
+    endif
+    PathData.PthLenght              = path_len(PathData)
+    NewPathData.PthLenght           = path_len(NewPathData)
+end copy_path_
+
+routine add_node_
+var 
+    PathStatus          : integer
+begin
+    append_node(PathData, PathStatus)
+    if PathStatus <> CC_SUCCESS then 
+        post_err(CC_UALARM, 'Append Node Error', 0, 1)
+    endif
+    PathData.PthLenght              = path_len(PathData)
+    PathData[PathData.PthLenght]    = PathNode
+end add_node_
+
+routine del_node_
+var 
+    PathStatus          : integer
+begin
+    if path_len(PathData) < NumNode then 
+        post_err(CC_UALARM, 'Len (' + int_2str_(NumNode) + ')(' + int_2str_(path_len(PathData)) + ')', 0, 1)
+    endif
+    delete_node(PathData, NumNode, PathStatus)
+    if PathStatus <> CC_SUCCESS then 
+        post_err(CC_UALARM, 'Delete Node Error', 0, 1)
+    endif
+    PathData.PthLenght              = path_len(PathData)
+end del_node_
+
+routine chg_node_
+var 
+    PathStatus          : integer
+begin
+    if path_len(PathData) < NumNode then 
+        post_err(CC_UALARM, 'Len (' + int_2str_(NumNode) + ')(' + int_2str_(path_len(PathData)) + ')', 0, 1)
+    endif
+    PathData[NumNode]               = PathNode
+    PathData.PthLenght              = path_len(PathData)
+end chg_node_
+
+routine chg_header_
+var 
+    PathStatus          : integer
+begin
+    PathData                        = PathHead
+    PathData.PthLenght              = path_len(PathData)
+end chg_header_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

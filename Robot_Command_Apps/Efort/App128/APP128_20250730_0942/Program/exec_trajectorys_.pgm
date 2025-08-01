@@ -1,0 +1,64 @@
+IF (CopyWriteArea = POINT_GLB_AREA) THEN
+	FOR PathLen := 0 TO (CopyPointNum-1) BY 1 DO
+		CALL: comutil.GetPC_EPC_G(PathLen);
+		GlbMoveId := ROUND(comutil.PC_EPC_G[PathLen].pose.x);
+		TrjMoveType := ROUND(comutil.PC_EPC_G[PathLen].pose.y);
+		TrjProcessType := ROUND(comutil.PC_EPC_G[PathLen].pose.z);
+		TrjSmoot := SZONE(comutil.PC_EPC_G[PathLen].pose.b,comutil.PC_EPC_G[PathLen].pose.b);
+		CALL: comutil.GetPC_EPJ_G(PathLen);
+		IF (TrjMoveType = MTN_MOVJ) THEN
+			KMAXJ(comutil.PC_EPC_G[PathLen].pose.c, comutil.PC_EPC_G[PathLen].pose.a);
+			FMJOINT(comutil.PC_EPJ_G[PathLen], V2000, TrjSmoot, ToolData, wobj0);
+		ELSE
+			IF (TrjMoveType = MTN_MOVL) THEN
+				KMAXT(comutil.PC_EPC_G[PathLen].pose.c, comutil.PC_EPC_G[PathLen].pose.a);
+				FMLIN(CALCPOSC(comutil.PC_EPJ_G[PathLen],ToolData,wobj0), TrjSpeed, TrjSmoot, ToolData, wobj0);
+				IF (TrjProcessType = PRC_ARC_ST) THEN
+					CALL: arcweld.ArcOn(1);
+					CALL: arcweld.WeaveOn(1);
+				END_IF;
+				IF (TrjProcessType = PRC_ARC_ED) THEN
+					CALL: arcweld.ArcOff();
+					CALL: arcweld.WeaveOff();
+				END_IF;
+			ELSE
+				MESSAGE("MoveType:", TrjMoveType);
+				ERROR(-1, "Unsupported exercise methods", 0);
+			END_IF;
+		END_IF;
+	END_FOR;
+ELSE
+	IF (CopyWriteArea = POINT_KEEP_AREA) THEN
+		FOR PathLen := 0 TO (CopyPointNum-1) BY 1 DO
+			CALL: comutil.GetPC_EPC(PathLen);
+			GlbMoveId := ROUND(comutil.PC_EPC[PathLen].pose.x);
+			TrjMoveType := ROUND(comutil.PC_EPC[PathLen].pose.y);
+			TrjProcessType := ROUND(comutil.PC_EPC[PathLen].pose.z);
+			TrjSmoot := SZONE(comutil.PC_EPC[PathLen].pose.b,SmootData);
+			CALL: comutil.GetPC_EPJ(PathLen);
+			IF (TrjMoveType = MTN_MOVJ) THEN
+				KMAXJ(comutil.PC_EPC[PathLen].pose.c, comutil.PC_EPC[PathLen].pose.a);
+				FMJOINT(comutil.PC_EPJ[PathLen], v2000, TrjSmoot, ToolData, wobj0);
+			ELSE
+				IF (TrjMoveType = MTN_MOVL) THEN
+					KMAXT(comutil.PC_EPC[PathLen].pose.c, comutil.PC_EPC[PathLen].pose.a);
+					FMLIN(CALCPOSC(comutil.PC_EPJ[PathLen],ToolData,wobj0), v2000, TrjSmoot, ToolData, wobj0);
+					IF (TrjProcessType = PRC_ARC_ST) THEN
+						CALL: arcweld.ArcOn(1);
+						CALL: arcweld.WeaveOn(1);
+					END_IF;
+					IF (TrjProcessType = PRC_ARC_ED) THEN
+						CALL: arcweld.ArcOff();
+						CALL: arcweld.WeaveOff();
+					END_IF;
+				ELSE
+					MESSAGE("MoveType:", TrjMoveType);
+					ERROR(-1, "Unsupported exercise methods", 0);
+				END_IF;
+			END_IF;
+		END_FOR;
+	ELSE
+		MESSAGE("WriteArea:", CopyWriteArea);
+		ERROR(-1, "The point area Written by software is not supported", 0);
+	END_IF;
+END_IF;

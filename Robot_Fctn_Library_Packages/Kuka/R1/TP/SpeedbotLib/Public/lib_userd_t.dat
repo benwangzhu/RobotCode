@@ -1,0 +1,96 @@
+&access RP
+&comment Lib User Dial-h 221122
+defdat  lib_userd_t public
+;***********************************************************
+;
+; Copyright 2018 - 2023 speedbot All Rights reserved.
+;
+; File Name: lib_userd_t.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 11 - 22
+;   Modification Data    ==   2022 - 11 - 22
+;
+; Author: speedbot
+;
+; Version: 1.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+
+global const int KEY_STOP               = 11        ; Stop key
+global const int KEY_RUN_FORWARD        = 12        ; Forward run key
+global const int KEY_RUN_REVERSE        = 13        ; Reverse run key
+global const int KEY_PROC_TOP           = 14        ; Process status key - topmost
+global const int KEY_UP_MID             = 15        ; Process status key - middle upper
+global const int KEY_LOW_MID            = 16        ; Process status key - middle lower
+global const int KEY_LOWEST             = 17        ; Process status key - bottommost
+global const int KEY_A1_REVERSE         = 20        ; A1 reverse movement key
+global const int KEY_A1_FORWARD         = 21        ; A1 forward movement key
+global const int KEY_A2_REVERSE         = 22        ; A2 reverse movement key
+global const int KEY_A2_FORWARD         = 23        ; A2 forward movement key
+global const int KEY_A3_REVERSE         = 24        ; A3 reverse movement key
+global const int KEY_A3_FORWARD         = 25        ; A3 forward movement key
+global const int KEY_A4_REVERSE         = 26        ; A4 reverse movement key
+global const int KEY_A4_FORWARD         = 27        ; A4 forward movement key
+global const int KEY_A5_REVERSE         = 28        ; A5 reverse movement key
+global const int KEY_A5_FORWARD         = 29        ; A5 forward movement key
+global const int KEY_A6_REVERSE         = 30        ; A6 reverse movement key
+global const int KEY_A6_FORWARD         = 31        ; A6 forward movement key  // Note: Corrected from 21 to 31
+global const int KEY_AV_REVERSE         = 90        ; Program rate decrease
+global const int KEY_AV_FORWARD         = 91        ; Program rate increase
+global const int KEY_MV_REVERSE         = 92        ; Manual rate decrease
+global const int KEY_MV_FORWARD         = 93        ; Manual rate increase
+global const int KEY_KEYBOARD           = 94        ; Screen keyboard key
+
+;***********************************************************
+; func key_pressed_
+;***********************************************************
+;     in : KeyId            * int *         * Key ID *
+; return :                  * bool *        * true if the key is pressed *
+;***********************************************************
+; Check if the teach pendant key is pressed. The Key ID is defined above.
+; 
+;***********************************************************
+extfct bool key_pressed_(int : in)
+
+;***********************************************************
+; func user_select_
+;***********************************************************
+;     in      : Msg[]        * char *    * Pop-up display message *
+;     return  : Res          * bool *    * Returns YES or NO *
+;***********************************************************
+; Pop-up Yes OR No dialog
+;***********************************************************
+extfct int user_select_(char[] : in, char[] : in, char[] : in, char[] : in, char[] : in, char[] : in, char[] : in)
+
+
+enddat

@@ -1,0 +1,842 @@
+program comm128_mtn
+--***********************************************************
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- file Name: comm128_mtn
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2022 - 05 - 14
+--   Modification Data    ==   2023 - 04 - 14
+--
+-- Author: speedbot
+--
+-- Version: 3.0
+--***********************************************************
+--
+
+%nolockgroup                -- 指定该程序段不使用锁组
+-- %system                     -- 标记为系统程序
+%nopause = error + command + tpenable
+%nobusylamp                 -- 不显示忙灯
+%comment = '控制-运动'  
+
+%include sbt_comm128_t                  -- 包含 sbt_comm128_t 类型定义
+%include include/lib_logs_t         -- 包含日志函数库类型定义
+%include include/lib_math_t         -- 包含数学类型定义
+%include include/lib_momory_t       -- 包含内存管理类型定义s
+%include include/lib_socket_t       -- 包含 socket 类型定义
+%include include/lib_busio_t        -- 包含 BUS IO 类型定义
+%include include/lib_tpe_t          -- 包含 TPE 类型定义
+%include include/lib_transform_t    -- 包含坐标变换类型定义
+%include kliotyps                   -- 包含 kliotyps 类型定义
+%include klevtpe                    -- 包含 klevtpe 类型定义
+%include sbt_comm128_global             -- 包含全局变量定义
+var  -- 定义变量
+
+    FileVar                                 : file              -- 文件句柄
+
+    CtrlPackData        from comm128_mtn      : drv_pack_t        -- 控制数据包
+    CtrlAck             from comm128_mtn      : drv_ack_t         -- 控制确认包
+    TpeOpenId                               : integer           -- TPE 打开标识
+    TpeLine                                 : integer           -- TPE 行号
+    TpeName                                 : string[24]        -- 当前打开的 TPE 程序名
+    PointId                                 : integer
+
+    -- 2025.05.06 移除
+    -- 使用 tpe_text_ 指令不需要这些数据结构
+    -- 必须有 1A05B-2600-R796 ! Ascii Program Loader 选项支持     
+    -- InstMove                                : inst_move_t       -- 运动指令
+    -- InstFrame                               : inst_frm_t        -- 坐标系指令
+    -- InstWeave                               : inst_wv_t         -- 摆动指令
+    -- InstWeld                                : inst_wd_t         -- 焊接指令
+    -- InstIo                                  : inst_io_t         -- I/O 指令
+    -- InstReg                                 : inst_reg_t        -- 寄存器指令
+    -- InstSwait                               : inst_sw_t         -- 信号等待指令
+    -- InstCall                                : inst_call_t       -- 调用指令
+
+    PackErrorId                             : integer           -- 数据包错误标识
+    Status                                  : integer           -- 状态标识
+    CurOpenIdx                              : integer           -- 当前打开索引
+
+%include include/lib_math_h                     -- 引用数学函数库
+%include include/lib_logs_h                     -- 引用日志函数库
+%include include/lib_motion_h                   -- 引用运动函数库
+%include include/lib_tp_if_h                    -- 引用 TP 接口函数库
+%include include/lib_string_h                   -- 引用字符串函数库
+%include include/lib_busio_h                    -- 引用 BUS IO 函数库
+%include include/lib_socket_h                   -- 引用 Socket 函数库
+%include include/lib_thread_h                   -- 引用 任务控制 函数库
+%include include/lib_tpe_h                      -- 引用 TPE 函数库
+%include include/lib_packages_h                 -- 引用数据包处理函数库
+
+--***********************************************************
+-- routine new_mtnctrl_
+--***********************************************************
+--     输入参数 : SockCfg       * 网络配置 *    * 网络套接字配置 *
+--             : FileVar       * 文件变量 *    * 文件变量 *
+-- 返回 :                       * 整数 *       * 返回一个整数结果，通常表示操作的状态码 *
+--***********************************************************
+-- 功能 : 这是一个通讯握手程序。
+--        用于处理与软件第一次交互握手与反馈。
+--***********************************************************
+routine new_mtnctrl_(SockCfg : sock_cfg_t; FileVar : file) : integer from comm128_mtn
+
+--***********************************************************
+-- routine new_point_
+--***********************************************************
+--     输入参数 : SockCfg       * 网络配置 *   * 网络套接字配置 *
+--              : FileVar       * 文件变量 *   * 文件变量 *
+--              : Packages      * 数据包 *    * 包含轨迹点信息的数据包 *
+-- 返回 :                     * 整数 *       * 返回一个整数结果，通常表示操作的状态码 *
+--***********************************************************
+-- 功能 : 这个程序用来接收轨迹点。
+--        通过网络与上位机进行通信，并接收轨迹点信息。
+--***********************************************************
+routine new_point_(SockCfg : sock_cfg_t; FileVar : file; Packages : drv_pnt_t) : integer from comm128_mtn
+
+--***********************************************************
+-- routine new_ack_
+--***********************************************************
+--     输入参数 : SockCfg       * 网络配置 *   * 网络套接字配置 *
+--              : FileVar       * 文件变量 *   * 文件变量 *
+--              : Packages      * 数据包 *    * 包含确认信息的数据包 *
+-- 返回 :                     * 整数 *       * 返回一个整数结果，通常表示操作的状态码 *
+--***********************************************************
+-- 功能 : 这个程序用来反馈命令消息处理状态。
+--        通过网络与上位机进行通信，并发送确认信息。
+--***********************************************************
+routine new_ack_(SockCfg : sock_cfg_t; FileVar : file; Packages : drv_ack_t) : integer from comm128_mtn
+
+--***********************************************************
+-- routine new_trajes_
+--***********************************************************
+--     输入参数 : SockCfg       * 网络配置 *   * 网络套接字配置 *
+--              : FileVar       * 文件变量 *   * 文件变量，用于读写文件 *
+--              : Packages      * 数据包 *    * 包含轨迹点信息的数据包 *
+-- 返回 :                     * 整数 *       * 返回一个整数结果，通常表示操作的状态码 *
+--***********************************************************
+-- 功能 : 这个程序用来接收所有轨迹点，并下发运动控制。
+--        通过网络与上位机进行通信，接收轨迹点信息，并根据这些信息下发相应的运动控制指令。
+--***********************************************************
+routine new_trajes_(SockCfg : sock_cfg_t; FileVar : file; Packages : drv_pack_t) : integer from comm128_mtn 
+
+--***********************************************************
+-- routine new_io_
+--***********************************************************
+--     输入参数 : SockCfg       * 网络配置 *   * 网络套接字配置 *
+--              : FileVar       * 文件变量 *   * 文件变量，用于读写文件 *
+--              : Packages      * 数据包 *    * 包含 IO 输出信息的数据包 *
+-- 返回 :                     * 整数 *       * 返回一个整数结果，通常表示操作的状态码 *
+--***********************************************************
+-- 功能 : 这个程序用来接收 IO 输出消息，并进行 IO 设置。
+--        通过网络与上位机进行通信，接收 IO 输出信息，并根据这些信息进行相应的 IO 设置。
+--***********************************************************
+routine new_io_(SockCfg : sock_cfg_t; FileVar : file; Packages : drv_pack_t) : integer from comm128_mtn 
+
+routine new_param_(SockCfg : sock_cfg_t; FileVar : file; Packages : drv_pack_t) : integer from comm128_mtn 
+
+routine new_stop_(SockCfg : sock_cfg_t; FileVar : file; Packages : drv_pack_t) : integer from comm128_mtn 
+
+routine new_pause_(SockCfg : sock_cfg_t; FileVar : file; Packages : drv_pack_t) : integer from comm128_mtn 
+
+routine new_cont_(SockCfg : sock_cfg_t; FileVar : file; Packages : drv_pack_t) : integer from comm128_mtn 
+
+--***********************************************************
+-- routine chk_point_
+--***********************************************************
+--     输入参数 : Packages       * 数据包 *    * 包含轨迹点信息的数据包 *
+-- 返回 :                     * 无返回值 *
+--***********************************************************
+-- 功能 : 这个程序用来检查上位机下发的轨迹点是否有错误，
+--        并将检查到的异常存储在 PackErrorId 变量中。
+--***********************************************************
+routine chk_point_(Packages : drv_pnt_t) from comm128_mtn
+
+--***********************************************************
+-- routine chk_io_
+--***********************************************************
+--     输入参数 : Io             * IO 数组 *   * 包含 IO 状态的字节数组 *
+--              : IoCfg          * 配置 *     * 包含 IO 配置 *
+-- 返回 :                     * 无返回值 *
+--***********************************************************
+-- 功能 : 这个程序用来检查 IO 是否正确配置，
+--        并将检查到的异常存储在 PackErrorId 变量中。
+--***********************************************************
+routine chk_io_(Io : array of byte; IoCfg : drv_io_t) from comm128_mtn
+
+--***********************************************************
+-- routine add_traj_pt_
+--***********************************************************
+--     输入参数 : OpenId        * 整数 *     * 打开的示教器程序标识符 *
+--              : Line         * 整数 *     * 示教器程序行 *
+--              : Packages      * 数据包 *   * 包含轨迹点信息的数据包 *
+--***********************************************************
+-- 功能 : 向示教器程序中写入运动点信息。
+--***********************************************************
+routine add_traj_pt_(OpenId : integer; Line : integer; Packages : drv_pnt_t) from comm128_mtn
+
+begin
+
+    TpeOpenId = -1
+    CurOpenIdx = TPE_MOV_FLG
+
+CONNECTING::    -- 通讯链接标签, 有任何通讯错误都会跳转到这个标签
+
+    log_info_('控制', '尝试进行网络链接 !') 
+    repeat
+
+        delay(TRY_CONN_TM)                              -- 延迟一段时间
+        tcp_close_(CtrlSock, FileVar)                   -- 关闭之前的 TCP 连接
+        status = tcp_connect_(CtrlSock, FileVar)        -- 尝试建立 TCP 连接，并返回状态
+
+        -- 直到链接成功
+    until(status = OK)  -- 如果连接成功，则退出循环
+
+    log_info_('控制', '已连接 !')       
+    log_info_('控制', '尝试进行握手通讯 !') 
+    status = new_mtnctrl_(CtrlSock, FileVar)  -- 执行新的运动控制握手例程，并返回状态
+    if status <> OK then  -- 如果握手失败
+
+        log_error_('控制', '握手失败 !') 
+        go to CONNECTING  -- 跳转回连接标签重新开始连接过程
+    endif
+
+    log_info_('控制', '握手成功 !')  -- 记录握手成功的消息
+PACKAGES::  -- 通讯报文读取标签，上一次报文处理结束后会跳转到这个标签
+        
+    -- 检查通讯缓存区是否有新数据
+    status = get_bits_(FileVar, CtrlSock)  -- 检查通讯缓存区是否有新数据
+    if status < 0 then
+
+        -- 通讯已经断开
+        log_error_('控制', '通讯断开 !')  -- 记录通讯断开的错误信息
+        go to CONNECTING  -- 跳转回连接标签重新开始连接过程
+    endif
+
+    if status = 0 then
+
+        -- 缓存区无数据
+        delay(16)  -- 等待一小段时间
+        go to PACKAGES  -- 跳转到处理数据包的标签
+    endif
+
+    -- 缓存区有数据，读取报文头
+    status = rpack_head_(CtrlSock, FileVar, CtrlPackData.DrvHead)  -- 读取数据包头部信息
+    if status <> OK then
+
+        -- 通讯已经断开或读取失败
+        log_error_('控制', '读取数据失败 !')  -- 记录读取数据失败的错误信息
+        go to CONNECTING  -- 跳转回连接标签重新开始连接过程
+    endif
+
+    PackErrorId = OK  -- 设置错误标识为成功
+
+    -- 根据报文命令码处理不同的事件
+    select CtrlPackData.DrvHead.Cmd of
+    case(CMD_CTRL):
+        log_info_('控制', '开始下载运动点[' + int_2str_(CtrlPackData.DrvHead.PacketCount) + '] !')
+        Status = new_trajes_(CtrlSock, FileVar, CtrlPackData)           -- 处理下载运动点的命令
+        if Status <> OK then
+
+            log_error_('控制', '轨迹下载失败 !')
+        endif
+    case(CMD_IO):
+        log_info_('控制', '设置 IO !')
+        Status = new_io_(CtrlSock, FileVar, CtrlPackData)               -- 处理设置 IO 的命令
+        if Status <> OK then
+
+            log_error_('控制', 'IO控制失败 !')
+        endif
+    case(CMD_PARAM):
+        log_info_('控制', '设置参数!')
+        Status = new_param_(CtrlSock, FileVar, CtrlPackData)            -- 处理设置参数的命令
+        if Status <> OK then
+
+            log_error_('控制', '设置参数失败 !')
+        endif
+    case(CMD_STOP):
+        log_info_('控制', '停止 !')
+        Status = new_stop_(CtrlSock, FileVar, CtrlPackData)             -- 处理停止命令
+        if Status <> OK then
+
+            log_error_('控制', '轨迹停止失败 !')
+        endif
+    case(CMD_PAUSE):
+        log_info_('控制', '暂停 !')
+        Status = new_pause_(CtrlSock, FileVar, CtrlPackData)             -- 处理暂停命令
+        if Status <> OK then
+
+            log_error_('控制', '轨迹暂停失败 !')
+        endif
+    case(CMD_CONTINUE):
+        log_info_('控制', '继续 !')
+        Status = new_cont_(CtrlSock, FileVar, CtrlPackData)             -- 处理继续命令
+        if Status <> OK then
+
+            log_error_('控制', '轨迹继续失败 !')
+        endif
+    else:
+        log_error_('控制', '无效的命令 !') 
+        go to CONNECTING  -- 跳转回连接标签重新开始连接过程
+    endselect
+
+    -- 报文反馈
+    CtrlAck.DrvHead.Head = PACK_HEADER                  -- 设置反馈报文头信息
+    CtrlAck.DrvHead.Length = 24                         -- 设置报文长度
+    CtrlAck.DrvHead.PacketCount = 1                     -- 设置报文计数
+    CtrlAck.DrvHead.Cmd = 255                           -- 设置命令码
+    CtrlAck.DrvHead.Type_ = TYPE_FANUC                  -- 设置报文类型为 FANUC 机器人
+    CtrlAck.DrvHead.Seq = CtrlPackData.DrvHead.Seq      -- 设置报文序列号与控制数据包相同
+    CtrlAck.DrvHead.VirtualRob = IsVirRobId             -- 设置虚拟机器人编号
+    CtrlAck.Ack = PackErrorId                           -- 设置反馈错误码
+    CtrlAck.DrvTail = PACK_TAIL                         -- 设置反馈报文尾信息
+    Status = new_ack_(CtrlSock, FileVar, CtrlAck)       -- 发送反馈报文
+    if Status <> OK then                                 -- 检查反馈报文发送状态
+        log_error_('控制', '反馈数据失败 !')            
+        go to CONNECTING                                 -- 跳转回连接标签重新开始连接过程
+    endif
+
+    -- 
+    go to PACKAGES  -- 跳转到处理数据包的标签
+
+end comm128_mtn
+
+routine new_mtnctrl_
+var
+    CurTimer            : integer                    -- 当前定时器值
+    Size                : integer                    -- 数据大小
+    Status              : integer                    -- 状态标识符
+    RecvAck             : integer                    -- 接收确认标识符
+    Packages1           : drv_ack_t                  -- 发送的确认数据包
+    Packages2           : drv_ack_t                  -- 接收的确认数据包
+begin
+    -- 初始化发送的确认数据包 Packages1
+    Packages1.DrvHead.Head = PACK_HEADER            -- 设置反馈报文头信息
+    Packages1.DrvHead.Length = 24                   -- 设置报文长度
+    Packages1.DrvHead.PacketCount = 1               -- 设置报文计数
+    Packages1.DrvHead.Cmd = 254                     -- 设置命令码
+    Packages1.DrvHead.Type_ = TYPE_FANUC            -- 设置报文类型为 FANUC 机器人
+    Packages1.DrvHead.Seq = 1                       -- 设置报文序列号
+    Packages1.DrvHead.VirtualRob = IsVirRobId       -- 设置虚拟机器人编号
+    Packages1.Ack = 0                               -- 设置初始确认码为 0
+    Packages1.DrvTail = PACK_TAIL                   -- 设置反馈报文尾信息
+
+    -- 初始化接收的确认数据包 Packages2
+    Packages2.DrvHead.Head = 0                      -- 设置报文头信息为初始值 0
+    Packages2.DrvHead.Length = 0                    -- 设置报文长度为初始值 0
+    Packages2.DrvHead.Cmd = 0                       -- 设置命令码为初始值 0
+    Packages2.DrvHead.Type_ = 0                     -- 设置报文类型为初始值 0
+    Packages2.DrvHead.Seq = 0                       -- 设置报文序列号为初始值 0
+    Packages2.DrvHead.VirtualRob = 0                -- 设置虚拟机器人编号为初始值 0
+    RecvAck = 0                                     -- 设置接收确认标识符为初始值 0
+    Packages2.DrvTail = 0                           -- 设置报文尾信息为初始值 0
+
+    -- 发送确认数据包的头部信息
+    status = spack_head_(SockCfg, fileVar, Packages1.DrvHead)
+    if status <> OK then
+        return(status)                              -- 如果发送头部信息失败，则返回错误状态
+    endif
+
+    -- 写入确认码 Ack
+    write fileVar(Packages1.Ack)
+    status = io_status(fileVar)
+    if status <> OK then
+        clr_io_stat(fileVar)                        -- 清除 I/O 状态
+        SockCfg.Connected = false                   -- 标记连接为断开
+        return(status)                              -- 如果 I/O 操作失败，则返回错误状态
+    endif
+
+    -- 发送确认数据包的尾部信息
+    status = spack_tail_(SockCfg, fileVar, Packages1.DrvTail)
+    if status <> OK then
+        return(status)                              -- 如果发送尾部信息失败，则返回错误状态
+    endif
+
+    -- 获取当前定时器值
+    CurTimer = $fast_clock
+
+    -- 主循环，等待接收确认数据包
+    repeat
+        -- 获取文件中可读取的字节数
+        bytes_ahead(fileVar, Size, status)
+        if status <> OK then
+            SockCfg.Connected = false               -- 如果获取字节数失败，则标记连接为断开
+            return(-abs(status))                    -- 返回负的错误状态
+        endif
+
+        -- 检查是否有足够的字节来接收完整的头部信息
+        if Size >= Packages1.DrvHead.Length then
+            -- 接收确认数据包的头部信息
+            status = rpack_head_(SockCfg, fileVar, Packages2.DrvHead)
+            if status <> OK then
+                return(status)                      -- 如果接收头部信息失败，则返回错误状态
+            endif
+
+            -- 读取确认码 Ack
+            read fileVar(RecvAck)
+            status = io_status(fileVar)
+            if status <> OK then
+                clr_io_stat(fileVar)                -- 清除 I/O 状态
+                SockCfg.Connected = false           -- 标记连接为断开
+                return(status)                      -- 如果 I/O 操作失败，则返回错误状态
+            endif
+
+            -- 接收确认数据包的尾部信息
+            status = rpack_tail_(SockCfg, fileVar, Packages2.DrvTail)
+            if status <> OK then
+                return(status)                      -- 如果接收尾部信息失败，则返回错误状态
+            endif
+
+            -- 检查接收到的命令码是否与预期相符
+            if Packages2.DrvHead.Cmd <> 254 then
+                return(NG)                          -- 如果命令码不符，则返回错误状态
+            endif
+
+            -- 如果一切正常，返回成功状态
+            return(OK)
+        endif
+
+        -- 检查是否超时
+        if $fast_clock - CurTimer >= SHAKE_TIME then
+            return(NG)                              -- 如果超时，则返回错误状态
+        endif
+
+        -- 等待一段时间后再次尝试接收
+        delay(100)                                 -- 等待 100 毫秒
+    until false                                    -- 无限循环直到 break 或 return 结束
+    return(OK)                                     -- 如果循环结束，返回成功状态
+end new_mtnctrl_
+
+routine new_point_ 
+var
+    Status          : integer       -- 状态标识符
+    TmpStr          : string[4]     -- 临时字符串缓冲区
+    i               : integer       -- 循环计数器
+begin
+    read FileVar(Packages.MoveId, TmpStr::4, Packages.Velocity, Packages.PrcoParm1, Packages.PrcoParm2, Packages.PrcoParm3)  -- 从文件中读取数据
+    Status = io_status(FileVar)     -- 获取文件操作的状态
+    if status <> OK then            -- 如果读取失败
+        clr_io_stat(FileVar)        -- 清除文件操作状态
+        SockCfg.Connected = false   
+        return(Status)              -- 返回错误状态
+    else
+        Packages.MovType = ord(TmpStr, 1)       -- 解析移动类型
+        Packages.ProcessType = ord(TmpStr, 2)   -- 解析处理类型
+        Packages.Acc = ord(TmpStr, 3)           -- 解析加速度
+        Packages.Smoot = ord(TmpStr, 4)         -- 解析平滑度
+    endif
+
+    for i = 1 to 13 do  -- 循环读取13个点的数据
+        read FileVar(Packages.Point[i])         -- 从文件中读取点位数据
+        Status = io_status(FileVar)             -- 获取文件操作的状态
+        if status <> OK then                    -- 如果读取失败
+            clr_io_stat(FileVar)                -- 清除文件操作状态
+            SockCfg.Connected = false           
+            return(Status)                      -- 返回错误状态
+        endif
+    endfor
+
+    return(OK)  -- 返回成功状态
+end new_point_  
+
+routine new_ack_
+var
+    Status          : integer
+begin
+    Status = spack_head_(SockCfg, FileVar, Packages.DrvHead)
+    if Status <> 0 then
+        return(Status)
+    endif
+
+    write FileVar(Packages.Ack)
+
+    Status = spack_tail_(SockCfg, FileVar, Packages.DrvTail)
+
+    return(Status)
+end new_ack_
+
+routine new_trajes_
+var
+    i               : integer
+    Status          : integer
+begin
+    -- 将所有的位置点取出来
+    for i = 1 to Packages.DrvHead.PacketCount do
+
+        -- 获取一个新的未知点
+        Status = new_point_(SockCfg, FileVar, Packages.Point)
+        if Status <> OK then
+
+            -- 通讯已经断开
+            log_error_('控制', '读取运动点失败 !')
+            tpe_close_(TpeOpenId)
+            return(Status)
+        endif
+
+        chk_point_(Packages.Point)
+
+        if PackErrorId = OK then
+
+            -- 没有 TPE 程序被打开时，打开一个 TPE 程序
+            if TpeOpenId < 0 then
+                
+                wait for (not flg[CurOpenIdx])
+
+                TpeName = TPE_CTRL_NM + int_2str_(CurOpenIdx)
+
+                repeat
+                    TpeOpenId = tpe_open_(TpeName, TPE_RWACC, TPE_NOREJ)
+                    if TpeOpenId < 0 then 
+
+                        post_err(CC_UALARM,  'Open ' + TpeName + ' Err ' + int_2str_(TpeOpenId), 0, 0)
+                        delay(32)
+                        tpe_close_(TpeOpenId)
+                    endif
+                until(TpeOpenId >= 0)
+
+                TpeLine = 0
+                PointId = 0
+                tpe_del_ln_(TpeOpenId, TPE_ALL_LINE)
+            endif
+
+            add_traj_pt_(TpeOpenId, TpeLine, Packages.Point)
+
+        else
+            if TpeOpenId > 0 then
+                tpe_close_(TpeOpenId)
+            endif
+        endif
+    endfor
+
+    -- 读取报文尾
+    Status = rpack_tail_(SockCfg, FileVar, Packages.DrvTail)  -- 读取数据包尾部信息
+    if Status <> OK then
+
+        tpe_close_(TpeOpenId)
+        return(Status)
+    endif
+
+    if (PackErrorId = OK) and (Packages.DrvHead.Type_ = 1) then
+                
+        tpe_close_(TpeOpenId)
+
+        flg[CurOpenIdx] = true
+
+        CurOpenIdx = tern_int_(CurOpenIdx >= TPE_MAX_FLG, TPE_MOV_FLG, CurOpenIdx + 1)
+    endif
+
+    return(OK)
+
+end new_trajes_    
+
+routine new_io_
+var
+    Status              : integer
+    TmpStr              : string[8]
+begin
+
+    read FileVar(TmpStr::8)    
+    Status = io_status(FileVar)
+    if Status <> OK then
+        log_error_('控制', '读取IO信息失败 !')
+        clr_io_stat(FileVar)
+        return(NG)
+    endif
+
+    -- 读取报文尾
+    Status = rpack_tail_(SockCfg, FileVar, Packages.DrvTail)  -- 读取数据包尾部信息
+    if Status <> OK then
+
+        return(Status)
+    endif
+
+    Packages.Io[1] = ord(TmpStr, 1)
+    Packages.Io[2] = ord(TmpStr, 2)
+    Packages.Io[3] = ord(TmpStr, 3)
+    Packages.Io[4] = ord(TmpStr, 4)
+    Packages.Io[5] = ord(TmpStr, 5)
+    Packages.Io[6] = ord(TmpStr, 6)
+    Packages.Io[7] = ord(TmpStr, 7)
+    Packages.Io[8] = ord(TmpStr, 8)
+
+    chk_io_(Packages.Io, IoMap)
+
+    if PackErrorId = OK then
+        bus_sbyte_(IoMap.OutAddr1, (Packages.Io[1]))
+        bus_sbyte_(IoMap.OutAddr2, (Packages.Io[2]))
+        bus_sbyte_(IoMap.OutAddr3, (Packages.Io[3]))
+        bus_sbyte_(IoMap.OutAddr4, (Packages.Io[4]))
+        bus_sbyte_(IoMap.OutAddr5, (Packages.Io[5]))
+        bus_sbyte_(IoMap.OutAddr6, (Packages.Io[6]))
+        bus_sbyte_(IoMap.OutAddr7, (Packages.Io[7]))
+        bus_sbyte_(IoMap.OutAddr8, (Packages.Io[8]))
+    endif
+
+    return(OK)
+end new_io_
+
+routine new_param_
+var
+    Status              : integer
+    Entry               : integer
+    i                   : integer
+begin
+    read FileVar(Packages.Params.ParamType)    
+    Status = io_status(FileVar)
+    if Status <> OK then
+        log_error_('控制', '读取参数类型失败 !')
+        clr_io_stat(FileVar)
+        return(NG)
+    endif
+
+    for i = 1 to 13 do 
+        read FileVar(Packages.Params.Params[i])    
+        Status = io_status(FileVar)
+        if Status <> OK then
+            log_error_('控制', '读取参数[' + int_2str_(i) + ']失败 !')
+            clr_io_stat(FileVar)
+            return(NG)
+        endif
+    endfor
+
+    -- 读取报文尾
+    Status = rpack_tail_(SockCfg, FileVar, Packages.DrvTail)  -- 读取数据包尾部信息
+    if Status <> OK then
+
+        return(Status)
+    endif
+
+    select Packages.Params.ParamType of
+    case(1):                -- 焊接参数
+        if not get_sys_bol_('$awscfg.$wld_prc_ena') then 
+            -- ARC START
+            set_sys_rel_('$awesch[1,1].$cmd_pulse', 1)                              -- 手动电流电压模式
+            set_sys_rel_('$awesch[1,1].$cmd_volts', Packages.Params.Params[1])      -- 焊接电流
+            set_sys_rel_('$awesch[1,1].$cmd_wfs', Packages.Params.Params[2])        -- 焊接电压
+        else
+            -- WELD START
+            set_var(Entry, 'awe1wp01', 'wpcfg.prg_cmnd', 1, Status)                                 -- 手动电流电压模式
+            if Status <> OK then
+                post_err(CC_UALARM, '设置焊接模式失败', 0, CC_ABORT)
+            endif
+            set_var(Entry, 'awe1wp01', 'sch[1].$cmd_wfs', Packages.Params.Params[1], Status)        -- 焊接电流
+            if Status <> OK then
+                post_err(CC_UALARM, '设置焊接电流失败', 0, CC_ABORT)
+            endif
+            set_var(Entry, 'awe1wp01', 'sch[1].$cmd_volts', Packages.Params.Params[2], Status)      -- 焊接电压
+            if Status <> OK then
+                post_err(CC_UALARM, '设置焊接电压失败', 0, CC_ABORT)
+            endif
+        endif
+    case(2):                -- 摆动参数
+    
+        set_sys_rel_('$wvsch[1].$frequency', Packages.Params.Params[1])   
+        set_sys_rel_('$wvsch[1].$amplitude', Packages.Params.Params[2])   
+        set_sys_rel_('$wvsch[1].$dwell_right', Packages.Params.Params[3])  
+        set_sys_rel_('$wvsch[1].$dwell_left', Packages.Params.Params[4])   
+        set_sys_rel_('$wvsch[1].$l_angle', Packages.Params.Params[5])   
+    
+    else:
+        post_err(CC_UALARM, '参数类型错误[' + int_2str_(Packages.Params.ParamType) + ']', 0, CC_ABORT)
+    endselect
+    
+
+    return(OK)
+end new_param_
+
+routine new_stop_
+begin
+
+    -- 读取报文尾
+    Status = rpack_tail_(SockCfg, FileVar, Packages.DrvTail)  -- 读取数据包尾部信息
+    if Status <> OK then
+
+        return(Status)
+    endif
+
+    -- Stop
+    StopMove = true
+
+    return(OK)
+end new_stop_
+
+routine new_pause_
+var 
+
+    Id              : integer
+begin
+
+    -- 读取报文尾
+    Status = rpack_tail_(SockCfg, FileVar, Packages.DrvTail)  -- 读取数据包尾部信息
+    if Status <> OK then
+
+        return(Status)
+    endif
+
+    flg[PAUSE_FLAG] = true
+    -- Id = thrd_pause_(($mor_grp[1].$cur_prognam))
+
+    -- pause
+
+    return(OK)
+end new_pause_
+
+routine new_cont_
+var 
+
+    Id              : integer
+begin
+
+    -- 读取报文尾
+    Status = rpack_tail_(SockCfg, FileVar, Packages.DrvTail)  -- 读取数据包尾部信息
+    if Status <> OK then
+
+        return(Status)
+    endif
+
+    flg[CONT_FLAG] = true
+    -- Id = thrd_cont_('*')
+
+    return(OK)
+end new_cont_
+
+routine chk_point_
+begin
+    if Packages.MoveId <= 0 then 
+        PackErrorId = ERR_MOVEID
+        return
+    endif
+    if not ((Packages.MovType = 6) or (Packages.MovType = 7) or (Packages.MovType = 8) or (Packages.MovType = 0)) then 
+        PackErrorId = ERR_MOVTYPE
+        return
+    endif
+    if (Packages.Acc < 20) or (Packages.Acc > 100) then 
+        PackErrorId = ERR_ACC
+        return
+    endif
+    if (Packages.Smoot < 0) or (Packages.Smoot > 100) then 
+        PackErrorId = ERR_SMOOT
+        return
+    endif
+    if (Packages.Velocity <= 0.0) or (Packages.Velocity  > speed_lim_(1)) then 
+        PackErrorId = ERR_VELOCITY
+        return
+    endif 
+end chk_point_
+
+routine chk_io_
+begin
+    if (Io[1] > 0) and (IoCfg.OutAddr1 <= 0) then PackErrorId = ERR_CFG_IO1; endif
+    if (Io[2] > 0) and (IoCfg.OutAddr2 <= 0) then PackErrorId = ERR_CFG_IO2; endif
+    if (Io[3] > 0) and (IoCfg.OutAddr3 <= 0) then PackErrorId = ERR_CFG_IO3; endif
+    if (Io[4] > 0) and (IoCfg.OutAddr4 <= 0) then PackErrorId = ERR_CFG_IO4; endif
+    if (Io[5] > 0) and (IoCfg.OutAddr5 <= 0) then PackErrorId = ERR_CFG_IO5; endif
+    if (Io[6] > 0) and (IoCfg.OutAddr6 <= 0) then PackErrorId = ERR_CFG_IO6; endif
+    if (Io[7] > 0) and (IoCfg.OutAddr7 <= 0) then PackErrorId = ERR_CFG_IO7; endif
+    if (Io[8] > 0) and (IoCfg.OutAddr8 <= 0) then PackErrorId = ERR_CFG_IO8; endif
+end chk_io_
+
+routine add_traj_pt_
+var
+    i               : integer
+    InstStr         : string[127]
+    JointPosG1      : array[9] of real
+    JointPosG2      : array[6] of real
+begin
+    InstStr = 'R[' + int_2str_(REG_MOV_ID) + ']=' + int_2str_(Packages.MoveId)
+    tpe_text_(TpeName, InstStr, Line)
+
+    -- 写入位置点
+    PointId = PointId + 1
+
+    select Packages.MovType of
+    case(6): InstStr = 'J P[' + int_2str_(PointId) + '] ' + int_2str_(trunc((Packages.Velocity  / speed_lim_(1)) * 100.0)) + '% '
+    case(7): InstStr = 'L P[' + int_2str_(PointId) + '] ' + int_2str_(trunc(Packages.Velocity)) + 'mm/sec '
+    case(8): InstStr = 'C P[' + int_2str_(PointId) + '] ' + 'P[' + int_2str_(PointId + 1) + '] ' + int_2str_(trunc(Packages.Velocity)) + 'mm/sec '
+    case(0): go to MOVEC_SKIP
+    endselect
+
+    if Packages.Smoot = 0 then 
+
+        InstStr = InstStr + 'FINE'
+    else
+
+        InstStr = InstStr + 'CNT' + int_2str_((Packages.Smoot))
+    endif
+
+    if PathCtrl then
+
+        InstStr = InstStr + ' PTH'
+    endif
+    
+    tpe_text_(TpeName, InstStr, Line)
+
+MOVEC_SKIP::
+
+    for i = 1 to NumOfRobAxis do  
+        JointPosG1[i] = Packages.Point[i]
+    endfor
+    for i = 1 to NumOfRotAxis do  
+        JointPosG2[i] = Packages.Point[NumOfRobAxis + i] -- * 180 / PI
+    endfor
+
+    tpe_s_jpos_(OpenId, 1, (PointId), trans_axis_(JointPosG1))
+
+    if NumOfRotAxis > 0 then
+        tpe_s_jpos_(OpenId, 2, (PointId), trans_axis_(JointPosG2))
+    endif
+
+    select (Packages.ProcessType)  of
+    case(PRC_ARC_ST):
+
+		if not get_sys_bol_('$awscfg.$wld_prc_ena') then 
+            -- ARC START
+            InstStr = 'ARC START[1]'
+		else
+            -- WELD START
+            InstStr = 'WELD START[1, 1]'
+		endif
+
+        tpe_text_(TpeName, InstStr, Line)
+		
+		if (get_sys_rel_('$wvsch[1].$frequency') > 0) and (get_sys_rel_('$wvsch[1].$amplitude') > 0) then
+
+            InstStr = 'WEAVE SINE[1]'
+            tpe_text_(TpeName, InstStr, Line)
+		endif
+
+    case(PRC_ARC_ED):
+	
+		if not get_sys_bol_('$awscfg.$wld_prc_ena') then 
+            -- ARC END
+            InstStr = 'ARC END[1]'
+		else
+            -- WELD END
+            InstStr = 'WELD END[1, 1]'
+		endif
+
+        tpe_text_(TpeName, InstStr, Line)
+
+		if (get_sys_rel_('$wvsch[1].$frequency') > 0) and (get_sys_rel_('$wvsch[1].$amplitude') > 0) then
+
+            InstStr = 'WEAVE END'
+            tpe_text_(TpeName, InstStr, Line)
+		endif
+		
+    case(PRC_LSR_ON):
+
+        InstStr = 'CALL comm128_inst01'
+        tpe_text_(TpeName, InstStr, Line)
+        
+    case(PRC_LSR_OF):
+    
+        InstStr = 'CALL comm128_inst02'
+        tpe_text_(TpeName, InstStr, Line)
+    else:
+        
+    endselect
+end add_traj_pt_
+
+

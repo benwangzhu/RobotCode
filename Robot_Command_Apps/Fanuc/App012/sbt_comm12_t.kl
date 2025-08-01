@@ -1,0 +1,19 @@
+--***********************************************************
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- file Name: sbt_comm128_t.kl
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2022 - 05 - 13
+--   Modification Data    ==   2022 - 05 - 28
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--
+
+const         
+    POLISH_TAG                      = 'C6:'

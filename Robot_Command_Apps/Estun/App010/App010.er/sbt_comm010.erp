@@ -1,0 +1,324 @@
+// InstParseVersion: V1.02
+Start:
+LOOP:
+--Wait{T=30}
+IF t_p.GlobalCommandId.value == 0 THEN
+    /*未知的命令*/
+    /*程序会一直阻塞在这里直到有新的命令输入*/
+    Wait{T=30}
+ELSIF t_p.GlobalCommandId.value == 1 THEN
+    /*请求工件数据*/
+    BusCmd021{BusOperation="BUSCMD_WRITE",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusData=t_p.CmdType01}
+    BusCmd148{BusOperation="BUSCMD_READ",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusData=t_p.CmdType08,BusTimeout=t_p.BusTimeout,BusResult=t_l.Status}
+    IF t_l.Status.value == 0 THEN
+        t_p.SnrDataTableMode.value = t_p.CmdType08.Byte01
+        t_p.SnrDataTableTaskNum.value = t_p.CmdType08.Int09
+        t_p.SnrDataTableArea.value = t_p.CmdType08.Byte02
+        t_p.SnrDataTablePip.value = t_p.CmdType08.Byte03
+        t_p.SnrDataTableBoxLenght.value = t_p.CmdType08.Float13
+        t_p.SnrDataTableBoxWidth.value = t_p.CmdType08.Float14
+        t_p.SnrDataTableBoxHigh.value = t_p.CmdType08.Float15
+    ELSE
+        SetRtWarning{msg="Get Data01 Failed",eid=81001}
+        t_p.GlobalResultId.value = 130
+        t_p.GlobalCommandId.value = 0
+        t_p.ToResultFlg.value = true
+        GOTO END_LOOP
+    ENDIF
+    IF t_p.SnrDataTableMode.value == 0 THEN
+        SetRtInfo{msg="Finished",eid=70001}
+        t_p.GlobalResultId.value = 0
+        t_p.GlobalCommandId.value = 0
+        t_p.ToResultFlg.value = true
+        GOTO END_LOOP
+    ENDIF
+    IF ( ( t_p.SnrDataTableMode.value == 11 ) or ( t_p.SnrDataTableMode.value == 12 ) ) == false THEN
+        SetRtToErr{msg="Unknow SensorDataTable.Mode",eid=91001}
+        t_p.GlobalResultId.value = 130
+        t_p.GlobalCommandId.value = 0
+        t_p.ToResultFlg.value = true
+        GOTO END_LOOP
+    ENDIF
+    t_l.ReqMode.value = 1
+    t_p.CmdType01.Byte01 = t_l.ReqMode.value
+    t_l.i.value = 0
+    WHILE t_l.i.value < 2 DO
+        t_l.i.value = t_l.i.value + 1
+        BusCmd022{BusOperation="BUSCMD_WRITE",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusData=t_p.CmdType01}
+        BusCmd134{BusOperation="BUSCMD_READ",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusData=t_p.CmdType09,BusTimeout=30000,BusResult=t_l.Status}
+        IF t_l.Status.value ~= 0 THEN
+            SetRtWarning{msg="Get Data01 Failed",eid=81001}
+            t_p.GlobalResultId.value = 130
+            t_p.GlobalCommandId.value = 0
+            t_p.ToResultFlg.value = true
+            GOTO END_LOOP
+        ELSE
+            GetCurCPos{P=t_l.Posn01}
+            GetCurCPos{P=t_l.Posn02}
+            t_l.Posn01.x = t_p.CmdType09.Float03
+            t_l.Posn01.y = t_p.CmdType09.Float04
+            t_l.Posn01.z = t_p.CmdType09.Float05
+            t_l.Posn01.a = t_p.CmdType09.Float06
+            t_l.Posn01.b = t_p.CmdType09.Float07
+            t_l.Posn01.c = t_p.CmdType09.Float08
+            t_l.Posn02.x = t_p.CmdType09.Float09
+            t_l.Posn02.y = t_p.CmdType09.Float10
+            t_l.Posn02.z = t_p.CmdType09.Float11
+            t_l.Posn02.a = t_p.CmdType09.Float12
+            t_l.Posn02.b = t_p.CmdType09.Float13
+            t_l.Posn02.c = t_p.CmdType09.Float14
+            IF t_p.CmdType09.Int01 == 101 THEN
+                t_p.SnrDataTablePickPos = t_l.Posn01
+            ELSIF t_p.CmdType09.Int01 == 102 THEN
+                t_p.SnrDataTablePlacePos = t_l.Posn01
+            ELSIF t_p.CmdType09.Int01 == 103 THEN
+                t_p.SnrDataTableObliPos = t_l.Posn01
+            ELSIF t_p.CmdType09.Int01 == 0 THEN
+                /*-----*/
+            ELSE
+                SetRtToErr{msg="Unknown Pos Type",eid=91002}
+                t_p.GlobalResultId.value = 130
+                t_p.GlobalCommandId.value = 0
+                t_p.ToResultFlg.value = true
+                GOTO END_LOOP
+            ENDIF
+            IF t_p.CmdType09.Int02 == 101 THEN
+                t_p.SnrDataTablePickPos = t_l.Posn02
+            ELSIF t_p.CmdType09.Int02 == 102 THEN
+                t_p.SnrDataTablePlacePos = t_l.Posn02
+            ELSIF t_p.CmdType09.Int02 == 103 THEN
+                t_p.SnrDataTableObliPos = t_l.Posn02
+            ELSIF t_p.CmdType09.Int02 == 0 THEN
+                /*-----*/
+            ELSE
+                SetRtToErr{msg="Unknown Pos Type",eid=91002}
+                t_p.GlobalResultId.value = 130
+                t_p.GlobalCommandId.value = 0
+                t_p.ToResultFlg.value = true
+                GOTO END_LOOP
+            ENDIF
+            IF t_p.SnrDataTableMode.value == 12 THEN
+                t_p.GlobalCommandId.value = 3
+                GOTO LOOP
+            ENDIF
+            IF t_p.SnrDataTableMode.value == 11 THEN
+                t_l.i.value = 3
+                t_p.GlobalCommandId.value = 3
+                GOTO LOOP
+            ENDIF
+        ENDIF
+        Wait{T=0}
+    ENDWHILE
+    --FOR t_l.i.value = 0 , t_l.i.value < 2 , t_l.i.value = t_l.i.value + 1 DO
+    --ENDFOR
+    t_p.GlobalCommandId.value = 3
+ELSIF t_p.GlobalCommandId.value == 2 THEN
+    /*请求垛上测量数据*/
+    t_l.ReqMode.value = 2
+    t_p.CmdType01.Byte01 = t_l.ReqMode.value
+    --FOR t_l.i.value = 0 , t_l.i.value < 1 , t_l.i.value = t_l.i.value + 1 DO
+    --ENDFOR
+    WHILE t_l.i.value < 1 DO
+    ENDWHILE
+    BusCmd022{BusOperation="BUSCMD_WRITE",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusData=t_p.CmdType01}
+    BusCmd134{BusOperation="BUSCMD_READ",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusData=t_p.CmdType09,BusTimeout=t_p.BusTimeout,BusResult=t_l.Status}
+    IF t_l.Status.value ~= 0 THEN
+        SetRtWarning{msg="Get Data02 Failed",eid=81003}
+        t_p.GlobalResultId.value = 130
+        t_p.GlobalCommandId.value = 0
+        t_p.ToResultFlg.value = true
+        GOTO END_LOOP
+    ELSE
+        GetCurCPos{P=t_l.Posn01}
+        GetCurCPos{P=t_l.Posn02}
+        t_l.Posn01.x = t_p.CmdType09.Float03
+        t_l.Posn01.y = t_p.CmdType09.Float04
+        t_l.Posn01.z = t_p.CmdType09.Float05
+        t_l.Posn01.a = t_p.CmdType09.Float06
+        t_l.Posn01.b = t_p.CmdType09.Float07
+        t_l.Posn01.c = t_p.CmdType09.Float08
+        t_l.Posn02.x = t_p.CmdType09.Float09
+        t_l.Posn02.y = t_p.CmdType09.Float10
+        t_l.Posn02.z = t_p.CmdType09.Float11
+        t_l.Posn02.a = t_p.CmdType09.Float12
+        t_l.Posn02.b = t_p.CmdType09.Float13
+        t_l.Posn02.c = t_p.CmdType09.Float14
+        IF t_p.CmdType09.Int01 == 101 THEN
+            t_p.SnrDataTablePickPos = t_l.Posn01
+        ELSIF t_p.CmdType09.Int01 == 102 THEN
+            t_p.SnrDataTablePlacePos = t_l.Posn01
+        ELSIF t_p.CmdType09.Int01 == 103 THEN
+            t_p.SnrDataTableObliPos = t_l.Posn01
+        ELSIF t_p.CmdType09.Int01 == 0 THEN
+            /*-----*/
+        ELSE
+            SetRtToErr{msg="Unknown Pos Type Int1",eid=91002}
+            t_p.GlobalResultId.value = 130
+            t_p.GlobalCommandId.value = 0
+            t_p.ToResultFlg.value = true
+            GOTO END_LOOP
+        ENDIF
+        IF t_p.CmdType09.Int02 == 101 THEN
+            t_p.SnrDataTablePickPos = t_l.Posn02
+        ELSIF t_p.CmdType09.Int02 == 102 THEN
+            t_p.SnrDataTablePlacePos = t_l.Posn02
+        ELSIF t_p.CmdType09.Int02 == 103 THEN
+            t_p.SnrDataTableObliPos = t_l.Posn02
+        ELSIF t_p.CmdType09.Int02 == 0 THEN
+            /*-----*/
+        ELSE
+            SetRtToErr{msg="Unknown Pos Type Int2",eid=91002}
+            t_p.GlobalResultId.value = 130
+            t_p.GlobalCommandId.value = 0
+            t_p.ToResultFlg.value = true
+            GOTO END_LOOP
+        ENDIF
+        t_p.GlobalCommandId.value = 3
+    ENDIF
+    Wait{T=0}
+ELSIF t_p.GlobalCommandId.value == 3 THEN
+    /*可达性反馈*/
+    IF t_p.SnrDataTableArea.value <= 0 or t_p.SnrDataTableArea.value > 8 THEN
+        SetRtToErr{msg="SensorDataTable.Area Error",eid=91003}
+        GOTO END_LOOP
+    ENDIF
+    IF t_p.RobDataTableWorkMode.value == 1 THEN
+        IF t_p.SnrDataTablePickPos.x > t_g.LimitUp [ 3 ] .x or t_p.SnrDataTablePickPos.x < t_g.LimitDown [ 3 ] .x THEN
+            SetRtWarning{msg="Pick Pos X Out Of Range",eid=81004}
+            t_l.CheckStatus.value = 101
+            GOTO LBL_ACK
+        ENDIF
+        IF t_p.SnrDataTablePickPos.y > t_g.LimitUp [ 3 ] .y or t_p.SnrDataTablePickPos.y < t_g.LimitDown [ 3 ] .y THEN
+            SetRtWarning{msg="Pick Pos Y Out Of Range",eid=81005}
+            t_l.CheckStatus.value = 101
+            GOTO LBL_ACK
+        ENDIF
+        IF t_p.SnrDataTablePickPos.z > t_g.LimitUp [ 3 ] .z or t_p.SnrDataTablePickPos.z < t_g.LimitDown [ 3 ] .z THEN
+            SetRtWarning{msg="Pick Pos Z Out Of Range",eid=81006}
+            t_l.CheckStatus.value = 101
+            GOTO LBL_ACK
+        ENDIF
+        IF t_l.ReqMode.value == 2 or t_p.SnrDataTableMode.value == 11 THEN
+            IF t_p.SnrDataTablePlacePos.x > t_g.LimitUp [ t_p.SnrDataTableArea.value ] .x or t_p.SnrDataTablePlacePos.x < t_g.LimitDown [ t_p.SnrDataTableArea.value ] .x THEN
+                SetRtWarning{msg="Place Pos X Out Of Range",eid=81007}
+                t_l.CheckStatus.value = 102
+                GOTO LBL_ACK
+            ENDIF
+            IF t_p.SnrDataTablePlacePos.y > t_g.LimitUp [ t_p.SnrDataTableArea.value ] .y or t_p.SnrDataTablePlacePos.y < t_g.LimitDown [ t_p.SnrDataTableArea.value ] .y THEN
+                SetRtWarning{msg="Place Pos Y Out Of Range",eid=81008}
+                t_l.CheckStatus.value = 102
+                GOTO LBL_ACK
+            ENDIF
+            IF t_p.SnrDataTablePlacePos.z > t_g.LimitUp [ t_p.SnrDataTableArea.value ] .z or t_p.SnrDataTablePlacePos.z < t_g.LimitDown [ t_p.SnrDataTableArea.value ] .z THEN
+                SetRtWarning{msg="Place Pos Z Out Of Range",eid=81009}
+                t_l.CheckStatus.value = 102
+                GOTO LBL_ACK
+            ENDIF
+            IF t_p.SnrDataTableObliPos.x > t_g.LimitUp [ t_p.SnrDataTableArea.value ] .x or t_p.SnrDataTableObliPos.x < t_g.LimitDown [ t_p.SnrDataTableArea.value ] .x THEN
+                SetRtWarning{msg="Obli Pos X Out Of Range",eid=81010}
+                t_l.CheckStatus.value = 103
+                GOTO LBL_ACK
+            ENDIF
+            IF t_p.SnrDataTableObliPos.y > t_g.LimitUp [ t_p.SnrDataTableArea.value ] .y or t_p.SnrDataTableObliPos.y < t_g.LimitDown [ t_p.SnrDataTableArea.value ] .y THEN
+                SetRtWarning{msg="Obli Pos Y Out Of Range",eid=81011}
+                t_l.CheckStatus.value = 103
+                GOTO LBL_ACK
+            ENDIF
+            IF t_p.SnrDataTableObliPos.z > t_g.LimitUp [ t_p.SnrDataTableArea.value ] .z or t_p.SnrDataTableObliPos.z < t_g.LimitDown [ t_p.SnrDataTableArea.value ] .z THEN
+                SetRtWarning{msg="Obli Pos Z Out Of Range",eid=81012}
+                t_l.CheckStatus.value = 103
+                GOTO LBL_ACK
+            ENDIF
+        ENDIF
+    ELSIF t_p.RobDataTableWorkMode.value == 2 THEN
+        IF t_p.SnrDataTablePickPos.x > t_g.LimitUp [ t_p.SnrDataTableArea.value ] .x or t_p.SnrDataTablePickPos.x < t_g.LimitDown [ t_p.SnrDataTableArea.value ] .x THEN
+            SetRtWarning{msg="Pick Pos X Out Of Range",eid=81004}
+            t_l.CheckStatus.value = 101
+            GOTO LBL_ACK
+        ENDIF
+        IF t_p.SnrDataTablePickPos.y > t_g.LimitUp [ t_p.SnrDataTableArea.value ] .y or t_p.SnrDataTablePickPos.y < t_g.LimitDown [ t_p.SnrDataTableArea.value ] .y THEN
+            SetRtWarning{msg="Pick Pos Y Out Of Range",eid=81005}
+            t_l.CheckStatus.value = 101
+            GOTO LBL_ACK
+        ENDIF
+        IF t_p.SnrDataTablePickPos.z > t_g.LimitUp [ t_p.SnrDataTableArea.value ] .z or t_p.SnrDataTablePickPos.z < t_g.LimitDown [ t_p.SnrDataTableArea.value ] .z THEN
+            SetRtWarning{msg="Pick Pos Z Out Of Range",eid=81006}
+            t_l.CheckStatus.value = 101
+            GOTO LBL_ACK
+        ENDIF
+    ELSE
+        SetRtToErr{msg="RobotDataTable.WorkMode Error",eid=91004}
+        t_p.GlobalResultId.value = 130
+        t_p.GlobalCommandId.value = 0
+        t_p.ToResultFlg.value = true
+        GOTO END_LOOP
+    ENDIF
+    LBL_ACK:
+    t_p.CmdType01.Byte01 = 201
+    t_p.CmdType01.Byte02 = t_l.CheckStatus.value
+    BusCmd026{BusOperation="BUSCMD_WRITE",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusData=t_p.CmdType01}
+    BusCmd001{BusOperation="BUSCMD_READ",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusTimeout=5000,BusResult=t_l.Status}
+    IF t_l.Status.value ~= 0 or t_l.CheckStatus.value ~= 0 THEN
+        SetRtToErr{msg="Failed process_cmd_pick_data_feek_",eid=91005}
+    ELSE
+        t_p.GlobalResultId.value = 129
+        t_p.GlobalCommandId.value = 0
+        t_p.ToResultFlg.value = true
+    ENDIF
+ELSIF t_p.GlobalCommandId.value == 4 THEN
+    /*反馈抓取成功*/
+    t_p.CmdType01.Byte01 = 202
+    t_p.CmdType01.Byte02 = 0
+    BusCmd026{BusOperation="BUSCMD_WRITE",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusData=t_p.CmdType01}
+    BusCmd001{BusOperation="BUSCMD_READ",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusTimeout=5000,BusResult=t_l.Status}
+    t_p.GlobalCommandId.value = 0
+    IF t_l.Status.value ~= 0 THEN
+        SetRtToErr{msg="Failed process_command_pick_succ_",eid=91006}
+    ENDIF
+ELSIF t_p.GlobalCommandId.value == 5 THEN
+    /*丢失反馈*/
+    t_p.CmdType01.Byte01 = 202
+    t_p.CmdType01.Byte02 = 1
+    BusCmd026{BusOperation="BUSCMD_WRITE",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusData=t_p.CmdType01}
+    BusCmd001{BusOperation="BUSCMD_READ",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusTimeout=5000,BusResult=t_l.Status}
+    t_p.GlobalCommandId.value = 0
+    IF t_l.Status.value ~= 0 THEN
+        SetRtToErr{msg="Failed process_command_miss_",eid=91007}
+    ENDIF
+ELSIF t_p.GlobalCommandId.value == 6 THEN
+    /*反馈过压*/
+    t_p.CmdType01.Byte01 = 202
+    t_p.CmdType01.Byte02 = 2
+    BusCmd026{BusOperation="BUSCMD_WRITE",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusData=t_p.CmdType01}
+    BusCmd001{BusOperation="BUSCMD_READ",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusTimeout=5000,BusResult=t_l.Status}
+    t_p.GlobalCommandId.value = 0
+    IF t_l.Status.value ~= 0 THEN
+        SetRtToErr{msg="Failed process_command_press_",eid=91008}
+    ENDIF
+ELSIF t_p.GlobalCommandId.value == 7 THEN
+    /*反馈抓取失败*/
+    t_p.CmdType01.Byte01 = 202
+    t_p.CmdType01.Byte02 = 3
+    BusCmd026{BusOperation="BUSCMD_WRITE",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusData=t_p.CmdType01}
+    BusCmd001{BusOperation="BUSCMD_READ",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusTimeout=5000,BusResult=t_l.Status}
+    t_p.GlobalCommandId.value = 0
+    IF t_l.Status.value ~= 0 THEN
+        SetRtToErr{msg="Failed process_cmd_pick_failed_",eid=91009}
+    ENDIF
+ELSIF t_p.GlobalCommandId.value == 8 THEN
+    /*反馈离开区域*/
+    t_p.CmdType01.Byte01 = 203
+    t_p.CmdType01.Byte02 = t_p.RobDataTableArea.value
+    BusCmd026{BusOperation="BUSCMD_WRITE",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusData=t_p.CmdType01}
+    BusCmd001{BusOperation="BUSCMD_READ",BusMstSel="BUSCMD_MST",BusIn=t_p.BusInput,BusOut=t_p.BusOutput,BusTimeout=5000,BusResult=t_l.Status}
+    t_p.GlobalCommandId.value = 0
+    IF t_l.Status.value ~= 0 THEN
+        SetRtToErr{msg="Failed process_command_area_",eid=91010}
+    ENDIF
+ELSE
+    --SetRtToErr{msg="Unknow Command",eid=91011}
+    t_p.GlobalCommandId.value = 0
+ENDIF
+GOTO LOOP
+END_LOOP:
+End;

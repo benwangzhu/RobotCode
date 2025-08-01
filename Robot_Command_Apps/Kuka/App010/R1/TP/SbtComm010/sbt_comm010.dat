@@ -1,0 +1,40 @@
+&ACCESS RP
+&comment Sbt Comm010
+DEFDAT sbt_comm010
+;***********************************************************
+;
+; Copyright 2025 - 2025 speedbot All Rights reserved.
+;
+; file Name: sbt_comm010.dat
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2025 - 05 - 08
+;   Modification Data    ==   2025 - 05 - 08
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+;
+
+
+decl state_t State
+decl int Offset = 0
+decl int j, k
+decl char Msg[128]
+
+decl cmd_typ01_t CmdType01 = {Byte01 0, Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}
+decl cmd_typ08_t CmdType08 = {Byte01 0, Byte02 0, Byte03 0, Byte04 0, Short05 0, Short06 0, Short07 0, Short08 0, Int09 0, Int10 0, Int11 0, Int12 0, Float13 0.0, Float14 0.0, Float15 0.0, Float16 0.0}
+decl cmd_typ09_t CmdType09 = {Int01 0, Int02 0, Float03 0.0, Float04 0.0, Float05 0.0, Float06 0.0, Float07 0.0, Float08 0.0, Float09 0.0, Float10 0.0, Float11 0.0, Float12 0.0, Float13 0.0, Float14 0.0}
+
+decl int ReqMode = 0
+
+decl int Status = 0
+
+decl int CheckStatus = "'H00'" 
+
+decl e6pos Posn01 = {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+decl e6pos Posn02 = {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+
+ENDDAT

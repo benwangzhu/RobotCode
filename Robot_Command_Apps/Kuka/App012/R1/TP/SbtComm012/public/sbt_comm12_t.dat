@@ -1,0 +1,107 @@
+&ACCESS RV2
+defdat sbt_comm12_t public
+;***********************************************************
+;
+; file Name: sbt_comm12_t.dat
+;
+; Copyright 2025 - 2025 speedbot All Rights reserved.
+;
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2025 - 05 - 08
+;   Modification Data    ==   2025 - 05 - 08
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+;
+
+decl global const int INTR_RESUME = 11
+decl global const int INTR_ALARM = 4
+
+decl global const real ManualGrindingSpeed[4]        ; Max Grinding Head Speed
+ManualGrindingSpeed[1] = 1000.0
+ManualGrindingSpeed[2] = 1000.0
+ManualGrindingSpeed[3] = 1000.0
+ManualGrindingSpeed[4] = 1000.0
+
+
+global struc grind_head_t bool Enable, int DoutputAddr, DinputAddr, int BindToolNum, real MaxGrindingSpeed, int ErrorId
+
+global enum polish_action_t HEAD_STARTING, HEAD_STOPPED, HEAD_RELEASE, HEAD_CLAMP, DOOR_OPEN, DOOR_CLOSE
+
+decl global const int O_ADR_ENABLE          = 0       
+decl global const int O_ADR_REMOTE          = 1
+decl global const int O_ADR_HEARTBEAT       = 7
+decl global const int O_ADR_HEAD_SPEED      = 16
+decl global const int O_ADR_HEAD_START      = 32
+decl global const int O_ADR_HEAD_CLAMP      = 48
+decl global const int O_ADR_HEAD_RELEASE    = 49
+decl global const int O_ADR_DOOR_OPEN       = 50
+decl global const int O_ADR_DOOR_CLOSE      = 51
+
+decl global const int I_ADR_READY           = 0       
+decl global const int I_ADR_HEARTBEAT       = 7
+decl global const int I_ADR_HEAD_START      = 16
+decl global const int I_ADR_HEAD_CLAMP      = 32
+decl global const int I_ADR_HEAD_RELEASE    = 33
+decl global const int I_ADR_DOOR_OPEN       = 34
+decl global const int I_ADR_DOOR_CLOSE      = 35
+decl global const int I_ADR_HEAD_DETE01     = 48
+decl global const int I_ADR_HEAD_DETE02     = 49
+decl global const int I_ADR_HEAD_DETE03     = 50
+decl global const int I_ADR_HEAD_DETE04     = 51
+decl global const int I_ADR_HEAD_DETE05     = 52
+decl global const int I_ADR_ERR_E01         = 64
+decl global const int I_ADR_ERR_E02         = 65
+decl global const int I_ADR_ERR_E03         = 66
+decl global const int I_ADR_ERR_E04         = 67
+decl global const int I_ADR_ERR_E05         = 68
+decl global const int I_ADR_ERR_E06         = 69
+decl global const int I_ADR_ERR_E07         = 70
+decl global const int I_ADR_ERR_E08         = 71
+decl global const int I_ADR_ERR_E09         = 72
+decl global const int I_ADR_ERR_E10         = 73
+decl global const int I_ADR_ERR_E11         = 74
+decl global const int I_ADR_ERR_E12         = 75
+decl global const int I_ADR_ERR_E13         = 76
+decl global const int I_ADR_ERR_E14         = 77
+decl global const int I_ADR_ERR_E15         = 78
+decl global const int I_ADR_ERR_E16         = 79
+
+decl global const char E_BIT01_MSG[70]
+E_BIT01_MSG[] = "Grinding Head Emergency Stop Alarm.[Head ID:%d]"
+decl global const char E_BIT02_MSG[70]
+E_BIT02_MSG[] = "Grinding Head Air Pressure Alarm.[Head ID:%d]"
+decl global const char E_BIT03_MSG[70]
+E_BIT03_MSG[] = "Grinding Head Chiller Alarm.[Head ID:%d]"
+decl global const char E_BIT04_MSG[70]
+E_BIT04_MSG[] = "Grinding Head Spindle Collision Alarm.[Head ID:%d]"
+decl global const char E_BIT05_MSG[70]
+E_BIT05_MSG[] = "Unknown  Alarm.[Head ID:%d]"
+decl global const char E_BIT06_MSG[70]
+E_BIT06_MSG[] = "Unknown Alarm.[Head ID:%d]"
+decl global const char E_BIT07_MSG[70]
+E_BIT07_MSG[] = "Unknown Alarm.[Head ID:%d]"
+decl global const char E_BIT08_MSG[70]
+E_BIT08_MSG[] = "Unknown Alarm.[Head ID:%d]"
+decl global const char E_BIT09_MSG[70]
+E_BIT09_MSG[] = "Unknown Alarm.[Head ID:%d]"
+decl global const char E_BIT10_MSG[70]
+E_BIT10_MSG[] = "Unknown Alarm.[Head ID:%d]"
+decl global const char E_BIT11_MSG[70]
+E_BIT11_MSG[] = "Unknown Alarm.[Head ID:%d]"
+decl global const char E_BIT12_MSG[70]
+E_BIT12_MSG[] = "Unknown Alarm.[Head ID:%d]"
+decl global const char E_BIT13_MSG[70]
+E_BIT13_MSG[] = "Unknown Alarm.[Head ID:%d]"
+decl global const char E_BIT14_MSG[70]
+E_BIT14_MSG[] = "Unknown Alarm.[Head ID:%d]"
+decl global const char E_BIT15_MSG[70]
+E_BIT15_MSG[] = "Unknown Alarm.[Head ID:%d]"
+decl global const char E_BIT16_MSG[70]
+E_BIT16_MSG[] = "Unknown Alarm.[Head ID:%d]"
+
+enddat

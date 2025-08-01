@@ -1,0 +1,499 @@
+program sbt_network
+--***********************************************************
+--
+-- file Name: sbt_network
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2024 - 07 - 04
+--   Modification Data    ==   2024 - 07 - 04
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+-- 用于后台通讯，处理前台的指令
+--
+%nolockgroup
+%nobusylamp
+%system
+%comment = '焊接-后台通讯'
+%nopause = error + command + tpenable
+-- %noabort = error + command
+%include include/lib_math_t
+%include sbt_Comm011_t
+%include sbt_Comm011_global
+%include include/lib_transform_t
+
+var
+    InstFile                    : file
+    Status                      : integer
+    CurRobG1Pos                 : xyzwprext
+    RobG1Pos                    : xyzwprext
+    VolGoIndex                  : integer
+    CurGoIndex                  : integer
+    VolGiIndex                  : integer
+    CurGiIndex                  : integer
+    i                           : integer
+%include include/lib_logs_h
+%include include/lib_thread_h
+%include include/lib_socket_h
+%include include/lib_math_h
+%include include/lib_tp_if_h
+%include include/lib_motion_h
+%include include/lib_tpe_h
+%include include/lib_packages_h
+%include include/lib_string_h
+
+routine net_spack_(SockCfg : sock_cfg_t; FileVar : file; Packages : pk_realtm_t) : integer from sbt_network
+routine net_rpack_(SockCfg : sock_cfg_t; FileVar : file; Packages : pk_tarje_t) : integer from sbt_network
+routine net_rtraje_(SockCfg : sock_cfg_t; FileVar : file; Packages : pk_tarje_t) : integer from sbt_network
+begin
+
+-- CONNECTING::                -- 通讯链接标签, 有任何通讯错误都会跳转到这个标签
+
+    -- -- 通讯链接操作
+    -- log_info_('', '尝试进行网络链接 !')
+    -- repeat
+
+    --     delay(500)
+    --     tcp_close_(RelTmSockCfg, InstFile)
+    --     status = tcp_connect_(RelTmSockCfg, InstFile)
+
+    --     -- 直到链接成功
+    -- until(status = OK)
+    
+    -- 进行链接后的首次握手
+    -- 
+
+    -- 获取配置的输出电流电压 GO[*] 地址
+    VolGoIndex = get_sys_int_('$aweprr[1].$wfs_cmd.$port_num')
+    CurGoIndex = get_sys_int_('$aweprr[1].$voltage_cmd.$port_num')
+
+    -- 获取配置的输入电流电压 GI[*] 地址
+    VolGiIndex = get_sys_int_('$aweprr[1].$voltage_fbk.$port_num')
+    CurGiIndex = get_sys_int_('$aweprr[1].$current_fbk.$port_num')
+
+    file_init_(InstFile, RelTmSockCfg)
+
+    status = file_ofd_(InstFile, RelTmSockCfg)
+    if status <> OK then
+
+        post_err(CC_UALARM, '通讯通道打开失败', 0, CC_ABORT)         
+    endif
+
+    -- log_info_('', '已连接 !')
+    PackRealTime.Header.Head = PACK_HEADER              
+    PackRealTime.Header.Length = 96                     -- 报文长度
+    PackRealTime.Header.PacketCount = 1                 -- 报文数量
+    PackRealTime.Header.Cmd = 0                         -- 实时状态推送命令码
+    PackRealTime.Header.Type_ = 0
+    PackRealTime.Header.Seq = 0
+    PackRealTime.Header.VirtualRob = 0
+
+    for i = 1 to 13 do PackRealTime.Pos[i] = 0.0; endfor
+
+    -- 实时状态数据初始化
+    PackRealTime.ProcessPrm01 = 0.0
+    PackRealTime.ProcessPrm02 = 0.0
+    PackRealTime.ProcessPrm03 = 0.0
+    PackRealTime.ProcessPrm04 = 0.0
+    for i = 1 to 8 do PackRealTime.Reversed[i] = 0; endfor
+
+    PackRealTime.Tail = PACK_TAIL
+
+    if uninit(GlbCommannd) then GlbCommannd = 0; endif
+
+COMM::
+        
+    -- 发送报文
+    status = net_spack_(RelTmSockCfg, InstFile, PackRealTime)
+    if Status <> OK then
+        post_err(CC_UALARM, '发送报文失败', 0, CC_ABORT)
+        -- ('', '发送报文失败 !')
+        -- go to CONNECTING
+    endif
+        
+    -- 机器人请求命令码 > 0 时，软件才反馈
+    if PackRealTime.Header.Cmd > 0 then
+        -- 接收报文
+        status = net_rpack_(RelTmSockCfg, InstFile, PackTajeInst)
+        if Status <> OK then
+            post_err(CC_UALARM, '读取报文失败', 0, CC_ABORT)
+            -- log_error_('', '读取报文失败 !')
+            -- go to CONNECTING
+        endif
+    else
+
+        delay(24)
+    endif
+
+    if not ShutdownReq then
+        
+        go to COMM
+    endif
+
+    file_cfd_(InstFile)
+
+end sbt_network
+
+
+routine net_spack_
+var
+    status              : integer
+    CurJointG2          : array[9] of real 
+    i                   : integer
+begin
+
+    Packages.Header.Cmd  = GlbCommannd
+    -- 报文 ID 累加
+    Packages.Header.Seq = tern_int_(Packages.Header.Seq < 255, Packages.Header.Seq + 1, 1)
+
+    select GlbCommannd of
+    case(INST_ADD_TH):      -- 添加示教点
+        decom_pos2_(TeachParam.PosG1, Packages.Pos)
+    else:
+        -- 获取当前组直角位置
+        decom_pos2_(c_mulgp_ps_(0, 0, 1), Packages.Pos)
+        -- 存在组二信息，则采集组二的关节位置
+        if NumOfRotAxis > 0 then
+
+            decom_axis2_(c_mulgp_jps_(2), CurJointG2)
+            for i = 1 to NumOfRotAxis do Packages.Pos[NumOfRobAxis + i] = CurJointG2[i]; endfor 
+        endif
+    endselect
+    
+    -- 发送报文头
+    status = spack_head_(SockCfg, FileVar, Packages.Header)
+    if Status <> OK then
+        --log_error_('', '发送报文头失败 !')
+        return(status)
+    endif
+
+    for i = 1 to 13 do write FileVar(Packages.Pos[i]); endfor
+
+    select GlbCommannd of
+    case(INST_ADD_TH):      -- 添加示教点
+        Packages.ProcessPrm01 = TeachParam.Flag
+    else:
+        Packages.ProcessPrm01 = GlbSlodId
+    endselect
+
+    -- 读取出实时命令电流电压
+    -- Packages.ProcessPrm02 = gin[CurGiIndex] / get_sys_rel_('$aweprr[1].$current_fbk.$slope')
+    -- Packages.ProcessPrm03 = gin[VolGiIndex] / get_sys_rel_('$aweprr[1].$voltage_fbk.$slope')
+
+    write FileVar(Packages.ProcessPrm01)
+    write FileVar(Packages.ProcessPrm02)
+    write FileVar(Packages.ProcessPrm03)
+    write FileVar(Packages.ProcessPrm04)
+    for i = 1 to 8 do write FileVar(chr((Packages.Reversed[i]))::1); endfor
+    -- 发送报文尾
+    status = spack_tail_(SockCfg, FileVar, Packages.Tail)
+    if Status <> OK then
+        --log_error_('', '发送报文尾失败 !')
+        return(status)
+    endif
+
+    return(OK)
+end net_spack_
+
+routine net_rpack_
+var
+    status              : integer
+    i, j                : integer
+    CurJointG2          : array[9] of real 
+begin
+
+    -- status = get_bits_(FileVar, SockCfg)
+    -- if status < 0 then
+
+    --     return(status)
+    -- endif
+
+    -- if status = 0 then
+
+    --     --
+    --     -- 休眠指定的时间
+    --     -- 不能注释，也不能为 0，否则将会占用所有的 CPU ，导致机器人死机
+    --     --   
+    --     delay(24)
+    --     return(OK)
+    -- endif
+
+    status = rpack_head_(SockCfg, FileVar, Packages.Header)
+    if Status <> OK then
+        --log_error_('', '读取报文头失败 !')
+        return(Status)
+    endif
+
+    select Packages.Header.Cmd of
+    case(INST_PATH):            -- 添加焊接轨迹及信息
+        --
+        CurRobG1Pos = c_mulgp_ps_(($mnuframenum[1]), ($mnutoolnum[1]), 1)
+        --
+        for i = 1 to Packages.Header.PacketCount do
+
+            status = net_rtraje_(SockCfg, FileVar, Packages)
+            if Status <> OK then
+                --
+                -- log_error_('', '读取报文头失败 !')
+                return(Status)
+            endif
+        
+            if TpeOpenId <= 0 then
+
+                TpeOpenId = tpe_open_(TpeProgName, TPE_RWACC, TPE_NOREJ)
+                if TpeOpenId <= 0 then
+
+                    post_err(CC_UALARM, '打开轨迹程序失败', 0, CC_ABORT)
+                endif
+            endif
+
+
+            InstMove.PointNo = InstMove.PointNo + 1
+            if Packages.ProcessPrm04 > 1.0 then
+                InstMove.Speed = trunc(Packages.ProcessPrm04)       -- 软件输入焊接速度
+            else
+                InstMove.Speed = trunc(GlbSpeed)                    -- 程序传参输入焊接速度
+            endif
+
+            -- 写入参数一
+            select GlbWeldMode of
+            case(MODE_NORMAL):
+                -- TODO
+
+            case(MODE_ADAP): -- 取焊缝宽度
+                InstReg.RegType = LM_REG
+                InstReg.RegNo = REG_SLOD_GAP
+                InstReg.Val = Packages.ProcessPrm01
+                tpe_it_reg_(TpeOpenId, InstReg, TrajeTpeLine)
+
+                if InstMove.PointNo = 1 then
+                    -- 记录起始焊缝宽度
+                    set_rreg_(REG_SLOD_GAP, Packages.ProcessPrm01)
+                endif
+            case(MODE_ADAP2):   -- 摆动幅度 电流 电压 
+                InstReg.RegType = LM_REG
+
+                InstReg.RegNo = REG_SOLD_AMP
+                InstReg.Val = Packages.ProcessPrm01
+                tpe_it_reg_(TpeOpenId, InstReg, TrajeTpeLine)
+
+                InstReg.RegNo = REG_SOLD_CUR
+                InstReg.Val = Packages.ProcessPrm02
+                tpe_it_reg_(TpeOpenId, InstReg, TrajeTpeLine)
+
+                InstReg.RegNo = REG_SOLD_VOL
+                InstReg.Val = Packages.ProcessPrm03
+                tpe_it_reg_(TpeOpenId, InstReg, TrajeTpeLine)
+
+                if InstMove.PointNo = 1 then
+                    --
+                    -- 记录起始焊缝宽度
+                    --
+                    set_rreg_(REG_SOLD_AMP, Packages.ProcessPrm01)
+                    set_rreg_(REG_SOLD_CUR, Packages.ProcessPrm02)
+                    set_rreg_(REG_SOLD_VOL, Packages.ProcessPrm03)
+                    --
+                endif
+            else:
+                post_err(CC_UALARM, '焊接模式错误', 0, CC_ABORT)
+            endselect
+            
+            tpe_it_mov_(TpeOpenId, InstMove, TrajeTpeLine)
+
+            RobG1Pos = trans_pos_(Packages.Pos)
+
+            -- 使用机器人当前姿态
+            -- RobG1Pos.w = CurRobG1Pos.w
+            -- RobG1Pos.p = CurRobG1Pos.p
+            -- RobG1Pos.r = CurRobG1Pos.r
+            -- RobG1Pos.ext1 = CurRobG1Pos.ext1
+            -- RobG1Pos.ext2 = CurRobG1Pos.ext2
+            -- RobG1Pos.ext3 = CurRobG1Pos.ext3
+
+            -- 直角坐标情况
+            tpe_s_cpos_(TpeOpenId, 1, (InstMove.PointNo), RobG1Pos)
+            --
+            -- 存在组 2 的情况
+            if NumOfRotAxis > 0 then
+
+                for j = 1 to NumOfRotAxis do CurJointG2[j] = Packages.Pos[NumOfRobAxis + j]; endfor 
+
+
+                -- 焊接点屏蔽组2
+                -- tpe_s_jpos_(TpeOpenId, 2, (InstMove.PointNo), trans_axis_(CurJointG2))
+            endif
+            
+            --
+            if InstMove.PointNo = 1 then
+
+                -- 写入起始点
+                s_mulgp_pr_(PR_START_POS, 1, RobG1Pos)
+
+                -- 存在组 2 的情况
+                if NumOfRotAxis > 0 then
+
+                    for j = 1 to NumOfRotAxis do CurJointG2[j] = Packages.Pos[NumOfRobAxis + j]; endfor 
+                
+                    -- tpe_s_jpos_(TpeOpenId, 2, (InstMove.PointNo), trans_axis_(CurJointG2))
+
+                        -- 写入起始点
+                        -- s_mulgp_jpr_(PR_START_POS, 2, trans_axis_(CurJointG2))
+                        s_mulgp_jpr_(PR_START_POS, 2, curjpos(0,0,2))
+                        s_mulgp_jpr_(PR_START_POS, 3, curjpos(0,0,3))
+                endif
+            endif
+            if (i = Packages.Header.PacketCount) and (Packages.Header.Type_ = 1) then
+
+                -- 写入结束点
+                s_mulgp_pr_(PR_STOP_POS, 1, RobG1Pos)
+                -- 存在组 2 的情况
+                if NumOfRotAxis > 0 then
+
+                    for j = 1 to NumOfRotAxis do CurJointG2[j] = Packages.Pos[NumOfRobAxis + j]; endfor 
+                
+                    -- tpe_s_jpos_(TpeOpenId, 2, (InstMove.PointNo), trans_axis_(CurJointG2))
+
+                        -- 写入起始点
+                        -- s_mulgp_jpr_(PR_STOP_POS, 2, trans_axis_(CurJointG2))
+                        s_mulgp_jpr_(PR_STOP_POS, 2, curjpos(0,0,2))
+                        s_mulgp_jpr_(PR_STOP_POS, 3, curjpos(0,0,3))
+                endif
+
+                tpe_close_(TpeOpenId)
+                --
+                GlbCommannd = 0
+                post_semas_(SemRltAck, 1)
+
+                log_info_('', '获取轨迹完成[N:' + int_2str_((InstMove.PointNo)) + ']')
+            endif
+        endfor
+    case(INST_2D_ST):           -- 2D 拍照开始
+        GlbCommannd = 0
+        post_semas_(SemRltAck, 1)
+        log_info_('', '2D 拍照开始')
+    case(INST_2D_ED):           -- 2D 拍照结束
+        GlbCommannd = 0
+        post_semas_(SemRltAck, 1)
+        log_info_('', '2D 拍照结束')
+    case(INST_3D_ST):           -- 3D 拍照开始
+        GlbCommannd = 0
+        post_semas_(SemRltAck, 1)
+        log_info_('', '3D 拍照开始')
+    case(INST_3D_ED):           -- 3D 拍照结束
+        GlbCommannd = 0
+        post_semas_(SemRltAck, 1)
+        log_info_('', '3D 拍照结束')
+    case(INST_LS_ST):           -- 激光 拍照开始
+        GlbCommannd = 0
+        post_semas_(SemRltAck, 1)
+        log_info_('', '激光 拍照开始')
+    case(INST_LS_ED):           -- 激光 拍照结束
+        GlbCommannd = 0
+        post_semas_(SemRltAck, 1)
+        log_info_('', '激光 拍照结束')
+    case(INST_PRM_ST):          -- 实时修正焊接参数
+        status = net_rtraje_(SockCfg, FileVar, Packages)
+        if Status <> OK then
+            --
+            -- log_error_('', '读取报文头失败 !')
+            return(Status)
+        endif
+        
+        if (Packages.ProcessPrm02 > 0) then
+
+            gout[CurGoIndex] = round(Packages.ProcessPrm02 * get_sys_rel_('$aweprr[1].$voltage_cmd.$slope'))
+        endif
+        if (Packages.ProcessPrm03 > 0) then
+
+            gout[VolGoIndex] = round(Packages.ProcessPrm03 * get_sys_rel_('$aweprr[1].$wfs_cmd.$slope'))
+        endif
+    case(INST_PRM_ED):          -- 实时修正焊接参数结束
+        GlbCommannd = 0
+        post_semas_(SemRltAck, 1)
+        log_info_('', '实时修正焊接参数结束')
+        
+    case(INST_ADD_TH):          -- 发送示教参数结束
+        GlbCommannd = 0
+        post_semas_(SemRltAck, 1)
+        log_info_('', '发送示教参数结束')        
+    else:
+    endselect
+
+    status = rpack_tail_(SockCfg, FileVar, Packages.Tail)
+    if Status <> OK then
+        --log_error_('', '读取报文头失败 !')
+        return(Status)
+    endif
+
+    return(OK)
+end net_rpack_
+
+routine net_rtraje_
+var
+    status              : integer
+    i                   : integer
+    TmpStr              : string[24]
+begin
+    for i = 1 to 13 do
+        read FileVar(Packages.Pos[i])
+        status = io_status(FileVar)
+        if status <> OK then 
+            return(status)
+        endif
+    endfor
+
+    read FileVar(Packages.ProcessPrm01, Packages.ProcessPrm02, Packages.ProcessPrm03, Packages.ProcessPrm04)
+    status = io_status(FileVar)
+    if status <> OK then 
+        return(status)
+    endif
+
+    read FileVar(TmpStr::8)
+    status = io_status(FileVar)
+    if status <> OK then 
+        return(status)
+    else
+        Packages.Reversed[1] = ord(TmpStr, 1)
+        Packages.Reversed[2] = ord(TmpStr, 2)
+        Packages.Reversed[3] = ord(TmpStr, 3)
+        Packages.Reversed[4] = ord(TmpStr, 4)
+        Packages.Reversed[5] = ord(TmpStr, 5)
+        Packages.Reversed[6] = ord(TmpStr, 6)
+        Packages.Reversed[7] = ord(TmpStr, 7)
+        Packages.Reversed[8] = ord(TmpStr, 8)
+    endif
+
+    return(OK)
+end net_rtraje_

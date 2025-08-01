@@ -1,0 +1,5 @@
+// 变量声明格式(中英文说明)：
+// 变量用途(Usage) 存储方式_作用域(Attributes) 变量类型(Type) 变量名称(Name) 数组(Array) 初始值(InitValue) 描述(Comment)
+Routine VAR_LOCAL DINT PathLen null 0 null
+Routine VAR_LOCAL DINT SpeedData null 0 null
+Routine VAR_LOCAL DINT SmootData null 0 null

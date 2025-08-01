@@ -1,0 +1,79 @@
+&ACCESS RVO
+&COMMENT Stack Main
+&REL 7
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\SbtComm010Stack
+DEF StackMain( )
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+;FOLD Config
+Comm010Config()
+;ENDFOLD
+;FOLD SbtComm010.Init IN Mode: STACK ;%{PE}
+Comm010WorkMode = 1
+ProcessComm010Init()
+;ENDFOLD
+;FOLD CHECK INIT
+if Comm010ResultId <> COMM010_RESULT_OK then  
+   RETURN
+endif
+;ENDFOLD
+;FOLD SbtComm010.ReqData ;%{PE}
+ProcessComm010Data()
+;ENDFOLD
+loop
+;FOLD WAIT FOR NEW TASK
+CONTINUE
+wait for Comm010ResultFlg
+if Comm010ResultId <> COMM010_RESULT_OK then  
+   EXIT
+endif
+Comm010CopyTable = Comm010SensorTable
+;ENDFOLD
+;FOLD PICK
+StackPick01()
+;ENDFOLD
+;FOLD Measurement Mode
+   if Comm010CopyTable.Mode == COMM010_MODE_TWO then
+   
+      CONTINUE
+      wait for Comm010ResultFlg
+      if Comm010ResultId <> COMM010_RESULT_OK then  
+   		Offset = 0
+   		str_clear_(Msg[])
+   		swrite(Msg[], State, Offset, "Failed Mode Two![Comm010ResultId:%d]", Comm010ResultId)
+   		log_error_(Msg[])
+      endif
+      Comm010CopyTable = Comm010SensorTable
+   endif
+;ENDFOLD
+;FOLD PLACE
+SWITCH Comm010CopyTable.Area
+CASE "'H02'"
+StackPlace02()
+CASE "'H03'"
+StackPlace03()
+CASE "'H04'"
+StackPlace04()
+CASE "'H05'"
+StackPlace05()
+DEFAULT
+Offset = 0
+str_clear_(Msg[])
+swrite(Msg[], State, Offset, "Unknow Area Id To Place![Mode:%s, TaskId:%d]", "STACK", Comm010CopyTable.TaskNum)
+log_error_(Msg[])
+ENDSWITCH
+;ENDFOLD       
+endloop
+END

@@ -1,0 +1,47 @@
+&ACCESS  R
+&COMMENT Sbt Comm011
+DEFDAT  SBT_COMM011
+;***********************************************************
+; 
+; Copyright 2025 - 2025 speedbot All Rights reserved.
+; 
+; file Name: sbt_comm011.dat
+; 
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2025 - 05 - 08
+;   Modification Data    ==   2025 - 05 - 08
+; 
+; Author: speedbot
+; 
+; Version: 1.0
+;***********************************************************
+; 
+;GLOBAL CONST INT OK=0
+;GLOBAL CONST INT NG=-1
+;GLOBAL CONST INT SOCK_SUCCESS=0
+;GLOBAL CONST INT SOCK_COM_ERR=800005
+;GLOBAL CONST INT PACK_HEADER=232425
+;GLOBAL CONST INT PACK_TAIL=485868
+;GLOBAL CONST CHAR XML_TAG_NAME[24]
+;XML_TAG_NAME[]="Buffer"
+
+;GLOBAL STRUC pack_head_t INT Head,Length,PacketCount,CHAR Cmd,Type_,Seq,VirtualRob
+
+;GLOBAL STRUC pack_tail_t INT Tail
+
+;GLOBAL STRUC sock_cfg_t BOOL Connected,CHAR SockXmlName[24],INT ActFlagNo,INT RecvFlagNo,INT NByte,INT RecvTimeout
+
+
+DECL REAL Pose13=0.0
+
+DECL INT Status
+DECL INT TempInt=227
+
+DECL stArcDat_T Wp1={WdatId[] "Wp1",Info {Version 305040530}}
+DECL stArcDat_T Wdat1
+
+DECL FDAT FP01={TOOL_NO 1,BASE_NO 0,IPO_FRAME #BASE,POINT2[] " "}
+DECL LDAT LCPDAT01={VEL 0.500000,ACC 100.000,APO_DIST 100.000,APO_FAC 50.0000,AXIS_VEL 100.000,AXIS_ACC 100.000,ORI_TYP #VAR,CIRC_TYP #BASE,JERK_FAC 50.0000,GEAR_JERK 100.000,EXAX_IGN 0,CB {AUX_PT {ORI #CONSIDER,E1 #CONSIDER,E2 #CONSIDER,E3 #CONSIDER,E4 #CONSIDER,E5 #CONSIDER,E6 #CONSIDER},TARGET_PT {ORI #INTERPOLATE,E1 #INTERPOLATE,E2 #INTERPOLATE,E3 #INTERPOLATE,E4 #INTERPOLATE,E5 #INTERPOLATE,E6 #INTERPOLATE}}}
+
+ENDDAT

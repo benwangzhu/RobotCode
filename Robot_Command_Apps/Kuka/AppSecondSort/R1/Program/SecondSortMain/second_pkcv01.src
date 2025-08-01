@@ -1,0 +1,238 @@
+&ACCESS RVP
+&REL 53
+&COMMENT Conveyor Pick01
+&PARAM DISKPATH = KRC:\R1\Program\SecondSortMain
+def second_pkcv01()
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: second_pkcv01.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 27
+;   Modification Data    ==   2024 - 10 - 25
+;
+; Author: speedbot
+;
+; Version: 1.1
+;***********************************************************
+
+;FOLD INT
+;FOLD basistech ini
+global interrupt decl 3 when $stopmess == true do ir_stopm()
+interrupt on 3
+bas (#initmov,0 )
+;ENDFOLD (basistech ini)
+;FOLD user ini
+;Make your modifications here
+;ENDFOLD (user ini)
+;ENDFOLD (ini)
+
+
+;FOLD Basic.Frame OUT Frame Dir: ToolUpOffs, IN x: 0, IN y: 0, IN z: -150, IN a: 0 deg, IN b: 0 deg, IN c: 0 deg ;%{PE}
+ToolUpOffs = set_frame_(0, 0, -150, 0, 0, 0)
+;ENDFOLD
+;FOLD Basic.Frame OUT Frame Dir: ToolRUpOffs, IN x: 0, IN y: 0, IN z: -150, IN a: 0 deg, IN b: 0 deg, IN c: 0 deg ;%{PE}
+ToolRUpOffs = set_frame_(0, 0, -150, 0, 0, 0)
+;ENDFOLD
+;FOLD Basic.Frame OUT Frame Dir: ToolUpTrans, IN x: 0, IN y: 0, IN z: 0, IN a: 0 deg, IN b: 0 deg, IN c: 0 deg ;%{PE}
+ToolUpTrans = set_frame_(0, 0, 0, 0, 0, 0)
+;ENDFOLD
+
+;FOLD SKIP QUEUE
+continue
+if $flag[FLAG_CONV_QUE_ACQ[1]] then  
+    
+    ; Skip queue retrieval when queue already retrieved
+    goto DAT_DIST
+endif
+;ENDFOLD
+
+;FOLD SecondSort.GetQueue IN Conveyer Id: LinConveyor1, IN SleepTime: 100 ms, OUT Status: Status ;%{PE}
+second_getq(1, 100, Status)
+;ENDFOLD
+if Status <> OK then  
+    goto SKIP_PKCV
+endif
+
+; Successfully retrieved the queue
+continue
+$flag[FLAG_CONV_QUE_ACQ[1]] = true
+PartData = CurQueue[1]
+
+DAT_DIST:
+
+;FOLD SecondSort.CalcWaitPos IN Conveyer Id: LinConveyor1, IN Ref Point Dir: PickPos, IN Distance: 300, OUT Wait Point Dir: WaitPos, OUT Pkcv Dicision: PkcvDicision ;%{PE}
+second_wpos(1, XPickPos, 300, XWaitPos , PkcvDicision)
+;ENDFOLD
+if PkcvDicision == #DCSN_WAIT then
+    ;
+    ; The component has not yet reached the upstream boundary
+    goto SKIP_PKCV
+endif
+if PartData.TaskId < 0 then  
+    ;
+    ; Do not pick up
+    goto ACK_FAIL
+endif
+if PkcvDicision == #DCSN_SKIP then
+    ; 
+    ; Has moved past the downstream boundary of the conveyor
+    ; gripper abandoned pickup
+    goto ACK_FAIL
+endif
+
+servo01_ctrl_(#MOVING, PartData.ServoDist)
+
+; Cannot track the conveyor line in T1 mode
+continue
+wait for not $t1
+
+ToolUpOffs.a = PartData.PkcvOfs.a * (-1)
+ToolRUpOffs.a = PartData.PkcvOfs.a * (-1)
+ToolUpTrans = ToolUpOffs
+PartData.PkcvOfs.a = 0.0
+    
+;FOLD SecondSort.MoveToWaitPos IN Conveyer Id: LinConveyor1, IN Pkcv Dicision: PkcvDicision, IN Wait Point Dir: WaitPos, IN ToolOffs: ToolUpOffs, IN Limit: WaitPosLimit, OUT Status: Status ;%{PE}
+second_mov_wpos(1, PkcvDicision, XWaitPos, ToolUpOffs, WaitPosLimit, Status)
+;ENDFOLD
+if Status <> OK then  
+    goto ACK_FAIL
+endif
+
+continue
+$advance = 1
+; Activate the conveyor line tracking coordinate system
+bas(#base, CONV_BASE_INDEX[1])
+bas(#tool, 1)
+
+;FOLD Part Rz >= 170
+if (abs(ToolUpOffs.a) >= 170) and (PkcvDicision == #DCSN_PICK) then
+   ToolUpTrans = ToolUpOffs
+   ToolUpTrans.A = ToolUpTrans.A / 2
+
+;FOLD SecondSort.SyncLin IN Sync Dir: PickPos, IN Queue Data: PartData, IN ToolOffs: ToolUpTrans, IN Sync Vel: 1.5 m/s, IN Sync Apo: 100 ;%{PE}
+move_l_(ufrm_offs_(XPickPos, PartData.PkcvOfs.X, PartData.PkcvOfs.Y, PartData.PkcvOfs.Z) : ToolUpTrans, 1.5 * 1000.0, 100)
+;ENDFOLD
+endif
+;ENDFOLD
+
+;FOLD SecondSort.SyncLin IN Sync Dir: PickPos, IN Queue Data: PartData, IN ToolOffs: ToolUpOffs, IN Sync Vel: 1.5 m/s, IN Sync Apo: 100 ;%{PE}
+move_l_(ufrm_offs_(XPickPos, PartData.PkcvOfs.X, PartData.PkcvOfs.Y, PartData.PkcvOfs.Z) : ToolUpOffs, 1.5 * 1000.0, 100)
+;ENDFOLD
+;FOLD SecondSort.CalcWaitPos IN Conveyer Id: LinConveyor1, IN Ref Point Dir: PickPos, IN Distance: 200, OUT Wait Point Dir: WaitPos, OUT Pkcv Dicision: PkcvDicision ;%{PE}
+second_wpos(1, XPickPos, 200, XWaitPos , PkcvDicision)
+;ENDFOLD
+if PkcvDicision == #DCSN_SKIP then
+    ; 
+    ; Has moved past the downstream boundary of the conveyor
+    ; gripper abandoned pickup
+    goto ACK_FAIL
+endif
+
+ToolUpOffs.z = 0.0
+
+;FOLD SecondSort.SyncLin IN Sync Dir: PickPos, IN Queue Data: PartData, IN ToolOffs: ToolUpOffs, IN Sync Vel: 1.5 m/s, IN Sync Apo: 1 ;%{PE}
+move_l_(ufrm_offs_(XPickPos, PartData.PkcvOfs.X, PartData.PkcvOfs.Y, PartData.PkcvOfs.Z) : ToolUpOffs, 1.5 * 1000.0, 1)
+;ENDFOLD
+
+mag_tool_forc_ctrl_(#ON, 500)
+
+;FOLD SecondSort.SyncLin IN Sync Dir: PickPos, IN Queue Data: PartData, IN ToolOffs: ToolRUpOffs, IN Sync Vel: 1.5 m/s, IN Sync Apo: 100 ;%{PE}
+move_l_(ufrm_offs_(XPickPos, PartData.PkcvOfs.X, PartData.PkcvOfs.Y, PartData.PkcvOfs.Z) : ToolRUpOffs, 1.5 * 1000.0, 100)
+;ENDFOLD
+
+; Pickup successful
+ACK_SUCC:
+
+conv_quit(1, false)
+if PartData.Num == 1 then
+    conv_reset_sen_prea(1)
+    Status = conv_delete_wps(1, 1, Status)
+    conv_part_nbr[conv_get_machine_index(1)] = 1
+    FirstPicking[1] = true
+endif
+continue
+$flag[FLAG_CONV_QUE_ACQ[1]] = false
+GlbPartData = CurQueue[1]
+continue
+$flag[FLAG_CONV_PKSU] = true
+
+;FOLD SecondSort.Feedback [IN] Conveyer Id: LinConveyor1, [IN] Pick State: Success ;%{PE}
+second_fdbk(1, #PICK_SUCC)
+;ENDFOLD
+
+goto SKIP_PKCV
+
+; Pickup failed
+ACK_FAIL:
+conv_quit(1, false)
+if PartData.Num == 1 then
+    conv_reset_sen_prea(1)
+    Status = conv_delete_wps(1, 1, Status)
+    if FirstPicking[1] == true then
+      conv_part_nbr[conv_get_machine_index(1)] = 1
+    else
+      conv_part_nbr[conv_get_machine_index(1)] = 0
+    endif
+endif
+continue
+$flag[FLAG_CONV_QUE_ACQ[1]] = false
+
+;FOLD SecondSort.Feedback [IN] Conveyer Id: LinConveyor1, [IN] Pick State: Fail ;%{PE}
+second_fdbk(1, #PICK_FAIL)
+;ENDFOLD
+RETURN
+
+SKIP_PKCV:
+
+end
+
+;FOLD CONV_QUIT
+def conv_quit(Z_CONV_NBR:IN, B_STOP_AFTER_LEAVING:IN)
+int Z_CONV_NBR
+bool B_STOP_AFTER_LEAVING
+int Z_ADVANCE_OLD
+
+Z_ADVANCE_OLD=$ADVANCE
+
+if (B_QUIT_BECAUSE_EMS OR B_QUIT_BECAUSE_MAX_DIST) then
+    ;********************************************
+    ;Strategy for the robot to leave the conveyor
+    ;if there was an EMS or MAX_DIST reached
+    ;while synchronising.
+    ;********************************************
+    switch z_conv_nbr
+    case 1
+    $base=$nullframe
+    lin_rel {z 0.0}
+    case 2
+    $base=$nullframe
+    lin_rel {z 0.0}
+    case 3
+    $base=$nullframe
+    lin_rel {z 0.0}
+    case 4
+    $base=$nullframe
+    lin_rel {z 0.0}
+    case 5
+    $base=$nullframe
+    lin_rel {z 0.0}
+    endswitch
+    
+    if B_STOP_AFTER_LEAVING then
+    ;*****************************
+    ;* Robot Stopped because of  *
+    ;* error while synchronising *
+    ;* EMS or MAX_DIST reached   *
+    ;*****************************
+    loop
+        halt
+    endloop
+    endif
+endif
+$advance=Z_ADVANCE_OLD
+end
+;ENDFOLD

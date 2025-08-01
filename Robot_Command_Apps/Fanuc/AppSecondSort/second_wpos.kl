@@ -1,0 +1,75 @@
+program second_wpos
+--***********************************************************
+--
+-- file Name: second_wpos.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 09 - 03
+--   Modification Data    ==   2023 - 07 - 03
+--
+-- Author: speedbot
+--
+-- Version: 5.0
+--***********************************************************
+--   
+%comment = 'Snd WaitPos V5.0'
+%nolockgroup
+%nobusylamp
+%nopause = error + tpenable + command
+%include second_t
+%include second_global
+
+var 
+    DistInConv                          : real
+    DistBound1                          : real
+    DistBound2                          : real
+
+    RefPkPos                            : xyzwprext
+    WaitPos                             : xyzwprext
+
+
+
+%include include\lib_logs_h
+%include include\lib_motion_h
+%include include\lib_string_h
+%include include\lib_tp_if_h
+
+begin
+
+    DistInConv = get_sys_rel_('$vr[' + int_to_str_(PkPlCfg.PkCvCfg[get_iparm_(1)].VReg) + '].$offset.$x') + &
+                        (get_sys_int_('$enc_stat['  +int_to_str_(PkPlCfg.PkCvCfg[get_iparm_(1)].EncId) + '].$enc_count') -&
+	                    get_sys_int_('$vr[' + int_to_str_(PkPlCfg.PkCvCfg[get_iparm_(1)].VReg) + '].$enc_count'))/&
+	                    get_sys_rel_('$lnsch[' + int_to_str_(PkPlCfg.PkCvCfg[get_iparm_(1)].LnSchNo) + '].$scale') 
+
+	DistBound1 = get_sys_rel_('$lnsch[' + int_to_str_(PkPlCfg.PkCvCfg[get_iparm_(1)].LnSchNo) + '].$bound1[1]') - DistInConv
+	DistBound2 = get_sys_rel_('$lnsch[' + int_to_str_(PkPlCfg.PkCvCfg[get_iparm_(1)].LnSchNo) + '].$bound2[1]') - DistInConv
+
+    RefPkPos = get_preg_(get_iparm_(3))
+
+    WaitPos         = RefPkPos
+    WaitPos.X       = get_sys_rel_('$lnsch[' + int_to_str_(PkPlCfg.PkCvCfg[get_iparm_(1)].LnSchNo) + '].$bound1[1]')
+    WaitPos.Y       = WaitPos.Y + get_sys_rel_('$vr[' + int_to_str_(PkPlCfg.PkCvCfg[get_iparm_(1)].VReg) + '].$offset.$y')
+    WaitPos         = get_sys_pos_('$lnsch[' + int_to_str_(PkPlCfg.PkCvCfg[get_iparm_(1)].LnSchNo) + '].$trk_frame') : WaitPos
+    WaitPos.Ext1    = RefPkPos.Ext1
+
+    set_preg_(get_iparm_(5), WaitPos)
+
+    set_rreg_(get_iparm_(6), DistBound2)
+
+    if DistBound1 > 2 * abs(get_sys_rel_('$lnsch[' + int_to_str_(PkPlCfg.PkCvCfg[get_iparm_(1)].LnSchNo) + '].$bound2[1]')) then 
+        set_ireg_(get_iparm_(4), -1)
+        return
+    endif
+
+    if DistBound1 >= 2 * abs(get_rparm_(2)) then ; delay(300) ; set_ireg_(get_iparm_(4), 1) ; return ; endif
+
+    if (DistBound1 >= abs(get_rparm_(2))) and (DistBound1 <= 2 * abs(get_rparm_(2))) then ; set_ireg_(get_iparm_(4), 2) ; return ; endif
+
+    if (DistBound1 < abs(get_rparm_(2))) and (DistBound2 > 0) then ; set_ireg_(get_iparm_(4), 3) ; return ; endif
+
+    set_ireg_(get_iparm_(4),-1)
+
+end second_wpos

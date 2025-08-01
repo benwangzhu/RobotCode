@@ -1,0 +1,44 @@
+&ACCESS RVO1
+defdat MixSort_global public
+;***********************************************************
+;
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+;
+; file Name: MixSort_global
+;
+; Description:
+;   Language             ==   KRL for KUKA ROBOT
+;   Date                 ==   2024 - 09 - 21
+;   Modification Data    ==   2022 - 09 - 21
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+
+
+ 
+decl global mix_cfg_t MixPkCfg = {EyeInHand false, BoxOrConv true, RobotId 1, NumPlPoint 4, NumAxis 6, ExtCfg {E7Coordinate 1, E7UpLim 0.0, E7DwLim 0.0}, PictCfg {RefPictPos {X 1765.00,Y 0.0,Z 1784.00,A 0.0,B 90.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}, PtRlE7Pos 0.0, PtMinDist 0.0, PtMaxData {x 0.0, y 0.0, z 0.0}, PtMinData {x 0.0, y 0.0, z 0.0}}, PickCfg {PickToolNo 1, PkMaxData {x 0.0, y 0.0, z 0.0}, PkMinData {x 0.0, y 0.0, z 0.0}}}
+decl global conv_cfg_t ConvCfg[4]
+ConvCfg[1] = {PlOrtMode 1, PlMaxOfsOrt 200, PlMinOfsOrt -200}
+ConvCfg[2] = {PlOrtMode 1, PlMaxOfsOrt 200, PlMinOfsOrt -200}
+ConvCfg[3] = {PlOrtMode 1, PlMaxOfsOrt 200, PlMinOfsOrt -200}
+ConvCfg[4] = {PlOrtMode 1, PlMaxOfsOrt 200, PlMinOfsOrt -200}
+decl global box_cfg_t BoxCfg[8]
+BoxCfg[1] = {PlaceToolNo 1, PlaceUpDst 0.0, PlaceE7Pos 0.0, PlMaxData {x 0.0, y 0.0, z 0.0}, PlMinData {x 0.0, y 0.0, z 0.0}}
+BoxCfg[2] = {PlaceToolNo 1, PlaceUpDst 0.0, PlaceE7Pos 0.0, PlMaxData {x 0.0, y 0.0, z 0.0}, PlMinData {x 0.0, y 0.0, z 0.0}}
+BoxCfg[3] = {PlaceToolNo 1, PlaceUpDst 0.0, PlaceE7Pos 0.0, PlMaxData {x 0.0, y 0.0, z 0.0}, PlMinData {x 0.0, y 0.0, z 0.0}}
+BoxCfg[4] = {PlaceToolNo 1, PlaceUpDst 0.0, PlaceE7Pos 0.0, PlMaxData {x 0.0, y 0.0, z 0.0}, PlMinData {x 0.0, y 0.0, z 0.0}}
+BoxCfg[5] = {PlaceToolNo 1, PlaceUpDst 0.0, PlaceE7Pos 0.0, PlMaxData {x 0.0, y 0.0, z 0.0}, PlMinData {x 0.0, y 0.0, z 0.0}}
+BoxCfg[6] = {PlaceToolNo 1, PlaceUpDst 0.0, PlaceE7Pos 0.0, PlMaxData {x 0.0, y 0.0, z 0.0}, PlMinData {x 0.0, y 0.0, z 0.0}}
+BoxCfg[7] = {PlaceToolNo 1, PlaceUpDst 0.0, PlaceE7Pos 0.0, PlMaxData {x 0.0, y 0.0, z 0.0}, PlMinData {x 0.0, y 0.0, z 0.0}}
+BoxCfg[8] = {PlaceToolNo 1, PlaceUpDst 0.0, PlaceE7Pos 0.0, PlMaxData {x 0.0, y 0.0, z 0.0}, PlMinData {x 0.0, y 0.0, z 0.0}}
+
+decl global bool ToRobotFlg = false
+decl global MIXSORT_TYPE ToRobotAck = #TO_TP_HOME
+decl global agt_data_t AgentData = {PictData {IsUnrefId 0, PictVec {x 0, y 0, z 0}, PictPos {X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}}, PartData {IsUnrefId 0, FromRobId 0, PartLen 0, PlaceId 0, MagPip[] " ", OfsOrt 0, OfsRz 0, GripDist1 0, GripDist2 0, Thickness 0, Weight 0, PkPos {X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}, PlPos {X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}}}
+decl global int GlobalTaskId = 0
+
+decl global int SEMixSortKey = 0
+
+enddat

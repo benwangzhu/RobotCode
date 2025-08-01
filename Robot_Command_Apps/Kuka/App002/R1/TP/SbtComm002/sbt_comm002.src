@@ -1,0 +1,179 @@
+&ACCESS RVEO
+def sbt_comm002()
+;***********************************************************
+;
+; file Name: sbt_comm002
+;
+; Description:
+;   Language             ==   KRL for KUKA ROBOT
+;   Date                 ==   2024 - 06 - 03
+;   Modification Data    ==   2022 - 06 - 03
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+end
+
+global def sbt_comm002_(Command : in, Pid :in, PictureId : in)
+    decl int Command
+    decl char Pid
+    decl char PictureId
+    decl E6AXIS CurE6JointPos
+    decl E6POS  CurE6Posint
+
+    switch (Command)
+    case 1                                                 ; CMD_VPARM 初始化工件ID与VIN码
+
+       bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+
+        ;FOLD PID & VIN
+        if (varstate("Pid") == #initialized) then
+            CmdType03.Byte01 = Pid
+        else
+            CmdType03.Byte01 = 0
+        endif
+                
+        CmdType03.Byte02 = 0
+        CmdType03.Byte03 = 0
+        CmdType03.Byte04 = 0
+        CmdType03.Byte05 = 0
+        CmdType03.Byte06 = 0
+        CmdType03.Byte07 = 0
+        CmdType03.Byte08 = 0
+        CmdType03.Byte09 = 0
+        CmdType03.Byte10 = 0
+        CmdType03.Byte11 = 0
+        CmdType03.Byte12 = 0
+        CmdType03.Byte13 = 0
+        CmdType03.Byte14 = 0
+        CmdType03.Byte15 = 0
+        CmdType03.Byte16 = 0
+        CmdType03.Byte17 = 0
+        CmdType03.Byte18 = 0
+
+    
+        ;ENDFOLD
+
+        Status = bus_cmd137_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CmdType03)
+        Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+
+        if Status == OK then
+
+            return
+        else
+            err_display_(BusInput, BusOutput)
+
+        endif
+
+    case 2,3,4                                             ;CMD_TRIG, CMD_SCANSRT, CMD_SCANSTP   
+
+        wait sec 0.0
+
+        switch (Command)
+        case 2
+            BusOutput.JobId = 1
+        case 3
+            BusOutput.JobId = 2
+        case 4
+            BusOutput.JobId = 3
+        endswitch
+                
+        if (varstate("PictureId") == #initialized) then
+
+            BusOutput.RobotId = PictureId
+
+        else 
+
+            BusOutput.RobotId = 0
+
+        endif
+
+        CurPos = cur_pos_(0,0)
+
+        CurJointPos = cur_jpos_()
+
+        Status = bus_cmd129_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CurPos,0)
+        Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+
+        Status = bus_cmd130_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CurJointPos,0)
+        Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+
+        if Status == OK then
+
+        ELSE
+            err_display_(BusInput, BusOutput)
+
+        endif
+
+        RETURN
+
+ 
+    case 5                                               ; CMD_RESULT  流程结束
+
+        wait sec 0.0
+
+        BusOutput.JobId = 101
+
+        if (varstate("PictureId") == #initialized) then
+
+            BusOutput.RobotId = PictureId
+
+        else 
+
+            BusOutput.RobotId = 0
+
+        endif
+
+        CurJointPos = cur_jpos_()
+
+        Status = bus_cmd130_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CurJointPos,0)
+        Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+
+        if Status == OK then
+            
+        else
+
+            err_display_(BusInput, BusOutput)
+        endif
+        return
+
+    default
+
+        error_write_(999,"Calibration Param Err")
+       
+        
+    endswitch
+
+end
+
+def err_display_(BusIn : in,BusOut : in)
+    
+    decl busin_t BusIn
+    decl busout_t BusOut
+
+    if not BusIn.SysReady then 
+
+        error_write_(901,"Software not ready")
+        return
+    endif
+
+    if BusIn.TellId <> BusOut.RobTellId then 
+
+        error_write_(902,"Software processing timeout")
+        return
+    endif
+
+    switch BusIn.ErrorId 
+    case 1
+        warn_write_(001,"Repeat open detection")
+    case 2
+        warn_write_(002,"Order cannot recognition")
+    case 3
+        warn_write_(003,"Failed to obtain camera data")
+
+    default
+        error_write_(903,"Unknow error")
+    endswitch
+
+end

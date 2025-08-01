@@ -1,0 +1,104 @@
+&access RP
+&comment Lib Bus I/O 230704
+defdat  lib_buscmd_t public
+;***********************************************************
+;
+; Copyright 2018 - 2023 speedbot All Rights reserved.
+;
+; File Name: lib_buscmd_t.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2023 - 07 - 04
+;   Modification Data    ==   2023 - 07 - 04
+;
+; Author: speedbot
+;
+; Version: 1.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+
+global struc cmd_typ01_t char Byte01, Byte02, int Short03, Short04, Int05, Int06, real Float07, Float08
+
+global struc cmd_typ02_t real Float01, Float02, Float03, Float04, Float05, Float06
+
+global struc cmd_typ03_t char Byte01, Byte02, Byte03, Byte04, Byte05, Byte06, Byte07, Byte08, Byte09, Byte10, Byte11, Byte12, Byte13, Byte14, Byte15, Byte16, Byte17, Byte18
+
+global struc cmd_typ04_t char Byte01, int Short02, Short03, Short04, char Byte05, Byte06, Byte07, Byte08, Byte09, Byte10, Byte11, Byte12, int Short13, Short14, char Byte15, Byte16, Byte17
+
+global struc cmd_typ05_t int Int01, char Byte02, Byte03, int Short04, Int05, Short06, Short07, char Byte08, Byte09, Byte10
+
+global struc cmd_typ06_t char Byte01, int Short02, Short03, Short04, real Float05, Float06
+
+global struc cmd_typ07_t real Float01, Float02, Float03, Float04, Float05, Float06, Float07, Float08, Float09, Float10, Float11, Float12, int Int13, Int14
+
+global struc cmd_typ08_t char Byte01, Byte02, Byte03, Byte04, int Short05, Short06, Short07, Short08, Int09, Int10, Int11, Int12, real Float13, Float14, Float15, Float16
+
+global struc cmd_typ09_t int Int01, Int02, real Float03, Float04, Float05, Float06, Float07, Float08, Float09, Float10, Float11, Float12, Float13, Float14
+
+
+global enum CMD_RW_T BUSCMD_WRITE, BUSCMD_READ
+
+global enum CMD_SM_T BUSCMD_MST, BUSCMD_SLE
+
+extfct int bus_cmd001_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, int : in)
+extfct int bus_cmd002_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ01_t : out, int : in)
+extfct int bus_cmd003_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, pos : out, int : in)
+extfct int bus_cmd009_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, pos : out, int : in)
+extfct int bus_cmd010_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, pos : out, int : in)
+extfct int bus_cmd011_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, pos : out, int : in)
+extfct int bus_cmd012_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ01_t : out, int : in)
+extfct int bus_cmd013_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ01_t : out, int : in)
+extfct int bus_cmd014_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ01_t : out, int : in)
+extfct int bus_cmd017_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ07_t : out, int : in)
+extfct int bus_cmd018_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ07_t : out, int : in)
+extfct int bus_cmd020_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, pos : out, int : in)
+extfct int bus_cmd021_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ01_t : out, int : in)
+extfct int bus_cmd022_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ01_t : out, int : in)
+extfct int bus_cmd026_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ01_t : out, int : in)
+extfct int bus_cmd027_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ08_t : out, int : in)
+extfct int bus_cmd129_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, pos : out, int : in)
+extfct int bus_cmd130_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, axis : out, int : in)
+extfct int bus_cmd131_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ02_t : out, int : in)
+extfct int bus_cmd132_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ07_t : out, int : in)
+extfct int bus_cmd133_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ07_t : out, int : in)
+extfct int bus_cmd134_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ09_t : out, int : in)
+extfct int bus_cmd137_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ03_t : out, int : in)
+extfct int bus_cmd145_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ01_t : out, int : in)
+extfct int bus_cmd148_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ08_t : out, int : in)
+extfct int bus_cmd151_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ06_t : out, int : in)
+extfct int bus_cmd254_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ07_t : out, int : in)
+extfct int bus_cmd255_(CMD_RW_T : in, CMD_SM_T : in,  busin_t : out, busout_t : out, cmd_typ07_t : out, int : in)
+
+
+
+
+enddat

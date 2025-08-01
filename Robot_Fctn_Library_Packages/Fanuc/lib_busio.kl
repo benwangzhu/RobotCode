@@ -1,0 +1,847 @@
+program lib_busio
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_busio
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2023 - 06 - 28
+--   Modification Data    ==   2023 - 10 - 13
+--
+-- Author: speedbot
+--
+-- Version: 1.1
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+-- 2023 - 06 - 30 ++ bus_sbyte_() 
+--
+-- 2023 - 06 - 30 ++ bus_ssint_() 
+--
+-- 2023 - 06 - 30 ++ bus_susint_() 
+--
+-- 2023 - 06 - 30 ++ bus_sint_() 
+--
+-- 2023 - 06 - 30 ++ bus_sfloat_() 
+--
+-- 2023 - 06 - 30 ++ bus_sfloat2_() 
+--
+-- 2023 - 06 - 30 ++ bus_sjoint_() 
+--
+-- 2023 - 06 - 30 ++ bus_scartp_() 
+--
+-- 2023 - 06 - 30 ++ bus_gbyte_() ==> integer
+--
+-- 2023 - 06 - 30 ++ bus_gsint_() ==> integer 
+--
+-- 2023 - 06 - 30 ++ bus_gusint_() ==> integer 
+--
+-- 2023 - 06 - 30 ++ bus_gint_() ==> integer 
+--
+-- 2023 - 06 - 30 ++ bus_gfloat_() ==> real 
+--
+-- 2023 - 06 - 30 ++ bus_gfloat2_() ==> real
+--
+-- 2023 - 06 - 30 ++ bus_gjoint_() ==> jointpos
+--
+-- 2023 - 06 - 30 ++ bus_gcartp_() ==> xyzwprext
+--
+-- 2023 - 06 - 30 ++ bus_uptin_() 
+--
+-- 2023 - 06 - 30 ++ bus_uptout_() 
+--
+-- 2023 - 06 - 30 ++ bus_init_() 
+--
+-- 2023 - 06 - 30 ++ bus_wtell_() ==> integer 
+--
+-- 2023 - 06 - 30 ++ bus_ftell_() 
+--
+-- 2023 - 06 - 30 ++ bus_ntell_() ==> integer 
+--
+%nolockgroup
+%nobusylamp
+%nopause = tpenable + command + error
+%comment = 'Bus I/O 231129'
+
+%include kliotyps
+%include klevccdf
+%include include/lib_transform_t
+%include include/lib_busio_t
+%include include/lib_busio_h
+
+--routine heartbead_(BusOut : busout_t)
+
+begin
+
+end lib_busio
+
+routine bus_sbyte_
+var 
+    CopyVal             : integer
+    UptStatus           : integer
+begin
+    if StAddr <= 0 then return; endif
+    if uninit(Val) then CopyVal = 0; else CopyVal = Val; endif
+
+    if (CopyVal < 0) or (CopyVal > 255) then 
+
+        post_err(CC_UALARM, 'Value Is Not BYTE', 0, CC_ABORT)
+    endif  
+
+    -- dout[StAddr + 0] = (CopyVal and 1) > 0
+    -- dout[StAddr + 1] = (CopyVal and 2) > 0
+    -- dout[StAddr + 2] = (CopyVal and 4) > 0
+    -- dout[StAddr + 3] = (CopyVal and 8) > 0
+    -- dout[StAddr + 4] = (CopyVal and 16) > 0
+    -- dout[StAddr + 5] = (CopyVal and 32) > 0
+    -- dout[StAddr + 6] = (CopyVal and 64) > 0
+    -- dout[StAddr + 7] = (CopyVal and 128) > 0
+    set_bndl_io(IO_DOUT, StAddr, 8, CopyVal, UptStatus)
+    if UptStatus <> CC_SUCCESS then 
+        post_err(CC_UALARM, 'SEND BYTE ERROR', 0, CC_ABORT)
+    endif   
+end bus_sbyte_
+
+routine bus_ssint_
+var 
+    CopyVal             : integer
+    ByteVal             : array[2] of byte
+begin
+    if uninit(Val) then CopyVal = 0; else CopyVal = Val; endif
+
+    if (CopyVal < -32768) or (CopyVal > 32767) then 
+
+        post_err(CC_UALARM, 'Value Is Not SINT', 0, CC_ABORT)
+    endif   
+
+    ByteVal[1] = (((CopyVal) and 255)       div 1)      and (255)
+    ByteVal[2] = (((CopyVal) and (-256))    div 256)    and (255)
+
+    bus_sbyte_(StAddr + 0,  (ByteVal[1]))
+    bus_sbyte_(StAddr + 8,  (ByteVal[2]))
+end bus_ssint_
+
+routine bus_susint_
+var 
+    CopyVal             : integer
+    ByteVal             : array[2] of byte
+begin
+    if uninit(Val) then CopyVal = 0; else CopyVal = Val; endif
+
+    if (CopyVal < 0) or (CopyVal > 65535) then 
+
+        post_err(CC_UALARM, 'Value Is Not USINT', 0, CC_ABORT)
+    endif   
+
+    ByteVal[1] = (((CopyVal) and 255)   div 1)      and (255)
+    ByteVal[2] = (((CopyVal) and 65280) div 256)    and (255)
+
+    bus_sbyte_(StAddr + 0,  (ByteVal[1]))
+    bus_sbyte_(StAddr + 8,  (ByteVal[2]))
+end bus_susint_
+
+routine bus_sint_
+var 
+    CopyVal             : integer
+    ByteVal             : array[4] of byte
+begin
+    if uninit(Val) then CopyVal = 0; else CopyVal = Val; endif
+
+    ByteVal[1] = ((CopyVal and 255)           div 1)          and (255)
+    ByteVal[2] = ((CopyVal and 65280)         div 256)        and (255)
+    ByteVal[3] = ((CopyVal and 16711680)      div 65536)      and (255)
+    ByteVal[4] = ((CopyVal and (-16777216))   div 16777216)   and (255)
+
+    bus_sbyte_(StAddr + 0,  (ByteVal[1]))
+    bus_sbyte_(StAddr + 8,  (ByteVal[2]))
+    bus_sbyte_(StAddr + 16, (ByteVal[3]))
+    bus_sbyte_(StAddr + 24, (ByteVal[4]))
+end bus_sint_
+
+routine bus_sfloat_
+var 
+    CopyVal             : real
+    ByteVal             : array[4] of byte
+begin
+    if uninit(Val) then CopyVal = 0.0; else CopyVal = Val; endif
+
+    if put_real_abt(CopyVal, ByteVal, 1) <> CC_SUCCESS then ; post_err(CC_UALARM, 'Cnv Byte To Real Error', 0, CC_ABORT); endif 
+
+    bus_sbyte_(StAddr + 0,  (ByteVal[1]))
+    bus_sbyte_(StAddr + 8,  (ByteVal[2]))
+    bus_sbyte_(StAddr + 16, (ByteVal[3]))
+    bus_sbyte_(StAddr + 24, (ByteVal[4]))
+end bus_sfloat_
+
+routine bus_sfloat2_
+var 
+    CopyVal             : real
+    IntVal              : integer
+    DecVal              : integer
+begin
+    if uninit(Val) then CopyVal = 0.0; else CopyVal = Val; endif
+
+    IntVal = trunc(CopyVal)
+    DecVal = round((CopyVal - IntVal) * 10000.0)
+    --WRITE(IntVal, DecVal, cr)
+    bus_ssint_(StAddr + 0, IntVal)
+    bus_ssint_(StAddr + 16, DecVal)
+end bus_sfloat2_
+
+routine bus_sjoint_
+var 
+    JointAry            : array[9] of real
+    I                   : integer
+    CnvStatus           : integer
+    IntVal              : integer
+    DecVal              : integer
+begin
+    cnv_jpos_rel(Val, JointAry, CnvStatus)
+    if CnvStatus <> CC_SUCCESS then post_err(CnvStatus, '', 0, CC_ABORT); endif
+    for I = 1 to NumOfAxis do
+        bus_sfloat2_(StAddr + (I - 1) * 32, JointAry[I])
+    endfor
+end bus_sjoint_
+
+routine bus_scartp_
+var 
+    CartAry             : array[9] of real
+    I                   : integer
+    IntVal              : integer
+    DecVal              : integer
+begin
+    if NumOfAxis >= 1 then CartAry[1] = Val.X; endif
+    if NumOfAxis >= 2 then CartAry[2] = Val.Y; endif
+    if NumOfAxis >= 3 then CartAry[3] = Val.Z; endif
+    if NumOfAxis >= 4 then CartAry[4] = Val.W; endif
+    if NumOfAxis >= 5 then CartAry[5] = Val.P; endif
+    if NumOfAxis >= 6 then CartAry[6] = Val.R; endif
+    if NumOfAxis >= 7 then CartAry[7] = Val.EXT1; endif
+    if NumOfAxis >= 8 then CartAry[8] = Val.EXT2; endif
+    if NumOfAxis >= 9 then CartAry[9] = Val.EXT3; endif
+    for I = 1 to NumOfAxis do
+        bus_sfloat2_(StAddr + (I - 1) * 32, CartAry[I])
+    endfor
+end bus_scartp_
+
+routine bus_gbyte_
+var
+    ByteVal             : integer
+    UptStatus           : integer
+begin
+    if StAddr <= 0 then return(0); endif
+    ByteVal = 0
+
+    -- if PortType = IO_DOUT then 
+    --     if dout[StAddr + 0] then ByteVal = ByteVal or 1;    endif
+    --     if dout[StAddr + 1] then ByteVal = ByteVal or 2;    endif
+    --     if dout[StAddr + 2] then ByteVal = ByteVal or 4;    endif
+    --     if dout[StAddr + 3] then ByteVal = ByteVal or 8;    endif
+    --     if dout[StAddr + 4] then ByteVal = ByteVal or 16;   endif
+    --     if dout[StAddr + 5] then ByteVal = ByteVal or 32;   endif
+    --     if dout[StAddr + 6] then ByteVal = ByteVal or 64;   endif
+    --     if dout[StAddr + 7] then ByteVal = ByteVal or 128;  endif
+    -- endif
+
+    -- if PortType = IO_DIN then 
+    --     if din[StAddr + 0] then ByteVal = ByteVal or 1;    endif
+    --     if din[StAddr + 1] then ByteVal = ByteVal or 2;    endif
+    --     if din[StAddr + 2] then ByteVal = ByteVal or 4;    endif
+    --     if din[StAddr + 3] then ByteVal = ByteVal or 8;    endif
+    --     if din[StAddr + 4] then ByteVal = ByteVal or 16;   endif
+    --     if din[StAddr + 5] then ByteVal = ByteVal or 32;   endif
+    --     if din[StAddr + 6] then ByteVal = ByteVal or 64;   endif
+    --     if din[StAddr + 7] then ByteVal = ByteVal or 128;  endif
+    -- endif
+    get_bndl_io(PortType, StAddr, 8, ByteVal, UptStatus)
+
+    if UptStatus <> CC_SUCCESS then 
+
+        post_err(CC_UALARM, 'RECV BYTE ERROR', 0, CC_ABORT)
+    endif   
+    
+    if uninit(ByteVal) then ByteVal = 0; endif
+
+    if (ByteVal < 0) or (ByteVal > 255) then 
+
+        post_err(CC_UALARM, 'Value Is Not BYTE', 0, CC_ABORT)
+    endif   
+
+    return(ByteVal)
+end bus_gbyte_
+
+routine bus_gsint_
+var
+    ByteVal             : array[2] of byte
+    ShortVal            : integer
+begin
+
+    ByteVal[1]  = bus_gbyte_(PortType, StAddr + 0)
+    ByteVal[2]  = bus_gbyte_(PortType, StAddr + 8)
+
+    ShortVal    = (((ByteVal[1] and (255)) * 1)   and (255)) + &
+                  (((ByteVal[2] and (255)) * 256) and (65280))
+
+    if ShortVal > 32767 then ShortVal = ShortVal - 65536; endif
+
+    if (ShortVal < -32768) or (ShortVal > 32767) then 
+
+        post_err(CC_UALARM, 'Value Is Not SINT', 0, CC_ABORT)
+    endif   
+    return(ShortVal)
+end bus_gsint_
+
+routine bus_gusint_
+var
+    ByteVal             : array[2] of byte
+    ShortVal            : integer
+begin
+
+    ByteVal[1]  = bus_gbyte_(PortType, StAddr + 0)
+    ByteVal[2]  = bus_gbyte_(PortType, StAddr + 8)
+
+    ShortVal    = (((ByteVal[1] and (255)) * 1)   and (255)) + &
+                  (((ByteVal[2] and (255)) * 256) and (65280))
+
+    if (ShortVal < 0) or (ShortVal > 65535) then 
+
+        post_err(CC_UALARM, 'Value Is Not USINT', 0, CC_ABORT)
+    endif   
+
+    return(ShortVal)
+end bus_gusint_
+
+routine bus_gint_
+var
+    ByteVal             : array[4] of byte
+begin
+
+    ByteVal[1] = bus_gbyte_(PortType, StAddr + 0)
+    ByteVal[2] = bus_gbyte_(PortType, StAddr + 8)
+    ByteVal[3] = bus_gbyte_(PortType, StAddr + 16)
+    ByteVal[4] = bus_gbyte_(PortType, StAddr + 24)
+
+    return((((ByteVal[1] and (255)) * 1)          and (255))        + &
+           (((ByteVal[2] and (255)) * 256)        and (65280))      + &
+           (((ByteVal[3] and (255)) * 65536)      and (16711680))   + &
+           (((ByteVal[4] and (255)) * 16777216)   and (-16777216)))
+end bus_gint_
+
+routine bus_gfloat_
+var
+    ByteVal             : array[4] of byte
+    RealVal             : real
+begin
+
+    ByteVal[1] = bus_gbyte_(PortType, StAddr + 0)
+    ByteVal[2] = bus_gbyte_(PortType, StAddr + 8)
+    ByteVal[3] = bus_gbyte_(PortType, StAddr + 16)
+    ByteVal[4] = bus_gbyte_(PortType, StAddr + 24)
+
+    if get_real_abt(RealVal, ByteVal, 1) <> CC_SUCCESS then ; post_err(CC_UALARM, 'Cnv Real To Byte Error', 0, CC_ABORT); endif 
+
+    return(RealVal)
+end bus_gfloat_
+
+routine bus_gfloat2_
+var
+    IntVal              : integer
+    DecVal              : integer
+begin
+
+    IntVal  = bus_gsint_(PortType, StAddr + 0)
+    DecVal  = bus_gsint_(PortType, StAddr + 16)
+    --WRITE(IntVal, DecVal, CR)
+
+    return(IntVal + DecVal / 10000.0)
+end bus_gfloat2_
+
+routine bus_gjoint_
+var
+    JointAry            : array[9] of real
+    I                   : integer
+    JointVal            : jointpos
+    CnvStatus           : integer
+begin
+    
+    for I = 1 to NumOfAxis do  
+        JointAry[I] = bus_gfloat2_(PortType, StAddr + (I - 1) * 32)
+    endfor
+    for I = (NumOfAxis + 1) to 9 do  
+        JointAry[I] = 0.0
+    endfor
+    cnv_rel_jpos(JointAry, JointVal, CnvStatus)
+    if CnvStatus <> CC_SUCCESS then ; post_err(CnvStatus, '', 0, CC_ABORT) ; endif
+    return(JointVal)
+end bus_gjoint_
+
+routine bus_gcartp_
+var
+    CartAry             : array[9] of real
+    I                   : integer
+    CartVal             : xyzwprext
+    CnvStat             : integer
+begin
+    CartVal = curpos(0, 0)
+
+    for I = 1 to NumOfAxis do  
+        CartAry[I] = bus_gfloat2_(PortType, StAddr + (I - 1) * 32)
+    endfor
+    if NumOfAxis >= 1 then CartVal.X    = CartAry[1]; else CartVal.X    = 0.0; endif
+    if NumOfAxis >= 2 then CartVal.Y    = CartAry[2]; else CartVal.y    = 0.0; endif
+    if NumOfAxis >= 3 then CartVal.Z    = CartAry[3]; else CartVal.Z    = 0.0; endif
+    if NumOfAxis >= 4 then CartVal.W    = CartAry[4]; else CartVal.W    = 0.0; endif
+    if NumOfAxis >= 5 then CartVal.P    = CartAry[5]; else CartVal.P    = 0.0; endif
+    if NumOfAxis >= 6 then CartVal.R    = CartAry[6]; else CartVal.R    = 0.0; endif
+    if NumOfAxis >= 7 then CartVal.EXT1 = CartAry[7]; else CartVal.EXT1 = 0.0; endif
+    if NumOfAxis >= 8 then CartVal.EXT2 = CartAry[8]; else CartVal.EXT2 = 0.0; endif
+    if NumOfAxis >= 9 then CartVal.EXT3 = CartAry[9]; else CartVal.EXT3 = 0.0; endif
+    return(CartVal)
+end bus_gcartp_
+
+routine bus_uptin_
+begin
+    BusIn.SysReady      = din[BusIn.BusIoSt + 0]
+    BusIn.SysInited     = din[BusIn.BusIoSt + 1]
+    BusIn.StopMov       = din[BusIn.BusIoSt + 2]
+    BusIn.OnMeasure     = din[BusIn.BusIoSt + 3]
+    BusIn.MeasuerOver   = din[BusIn.BusIoSt + 4]
+    BusIn.ResultOk      = din[BusIn.BusIoSt + 5]
+    BusIn.ResultNG      = din[BusIn.BusIoSt + 6]
+    BusIn.Finished      = din[BusIn.BusIoSt + 7]
+
+    BusIn.DeviceId      = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 8)
+    BusIn.JobId         = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 16)
+    BusIn.ErrorId       = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 24)
+    BusIn.AgentTellId   = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 32)
+    BusIn.AgentMsgType  = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 40)
+    BusIn.TellId        = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 48)
+    BusIn.MsgType       = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 56)
+
+end bus_uptin_
+
+routine bus_uptout_
+begin
+    dout[BusOut.BusIoSt + 0]        = BusOut.SysEnable
+    dout[BusOut.BusIoSt + 1]        = BusOut.SysInit
+    dout[BusOut.BusIoSt + 2]        = BusOut.RobMoving
+    dout[BusOut.BusIoSt + 3]        = BusOut.MeasuerSt
+    dout[BusOut.BusIoSt + 4]        = BusOut.MeasuerEd
+    dout[BusOut.BusIoSt + 5]        = BusOut.Reserverd1
+    dout[BusOut.BusIoSt + 6]        = BusOut.Reserverd2
+    dout[BusOut.BusIoSt + 7]        = BusOut.CycleEnd
+
+    bus_sbyte_(BusOut.BusIoSt + 8, BusOut.RobotId)
+    bus_sbyte_(BusOut.BusIoSt + 16, BusOut.JobId)
+    bus_sbyte_(BusOut.BusIoSt + 24, BusOut.ProtocolId)
+    bus_sbyte_(BusOut.BusIoSt + 32, BusOut.TellId)
+    bus_sbyte_(BusOut.BusIoSt + 40, BusOut.MsgType)
+    bus_sbyte_(BusOut.BusIoSt + 48, BusOut.RobTellId)
+    bus_sbyte_(BusOut.BusIoSt + 56, BusOut.RobMsgType)
+end bus_uptout_
+
+routine bus_init_
+begin
+    --bus_uptin_(BusIn)
+
+    -- BusIoClock = 0
+
+    if dout[BusOut.BusIoSt + 1] then 
+
+        dout[BusOut.BusIoSt + 1] = false
+
+        delay(200)
+    endif
+
+    BusOut.SysEnable        = true
+    BusOut.SysInit          = true
+    BusOut.RobMoving        = false
+    BusOut.MeasuerSt        = false
+    BusOut.MeasuerEd        = false
+    BusOut.Reserverd1       = false
+    BusOut.Reserverd2       = false
+    BusOut.CycleEnd         = false
+    BusOut.RobotId          = RonId
+
+    -- Code Modified on 2025.06.17
+    -- 不初始化 JobId, 以免 lib_buscmd 函数传参受到影响 
+    if uninit(BusOut.JobId) then
+        BusOut.JobId            = 0
+    endif
+    --
+    
+    BusOut.ProtocolId       = ProtId
+    BusOut.RobTellId        = 0
+
+    -- Code Modified on 2025.05.01
+    -- 不初始化 RobMsgType, 以免 lib_buscmd 函数传参受到影响 
+    if uninit(BusOut.RobMsgType) then
+        BusOut.RobMsgType   = 0
+    endif
+    --
+
+    bus_uptout_(BusOut)
+
+    delay(200)
+    
+    -- --BusOut.TellId           = BusIn.AgentTellId
+    --BusOut.MsgType          = BusIn.AgentMsgType
+    --repeat
+
+    -- if not (BusOut.ProtocolId = PTC_LN_PL) or (BusOut.ProtocolId = PTC_ST_PK) then
+        repeat
+            bus_uptin_(BusIn)
+            if (BusIn.TellId <> 0) or (BusIn.SysInited = false) then
+                delay(100)
+            endif
+        until (BusIn.TellId = 0) and (BusIn.SysInited = true)
+    -- endif
+    --delay(500)
+    --until (BusIn.TellId = 0) and (BusIn.SysInited) and (BusIn.SysReady)
+    bus_uptin_(BusIn)
+
+    BusOut.TellId           = BusIn.AgentTellId
+    BusOut.MsgType          = BusIn.AgentMsgType
+
+    BusOut.SysInit          = false
+
+
+    bus_uptout_(BusOut)
+
+	-- purge condition[BUS_INTE_NO]
+	-- condition[BUS_INTE_NO]: with $scan_time = 64
+	-- 	when (BusIoClock >= 500) and (dout[BusOut.BusIoSt + 5] = false) do
+    --         dout[BusOut.BusIoSt + 5] = true
+    --         BusIoClock = 0
+    --         enable condition[BUS_INTE_NO]
+	-- 	when (BusIoClock >= 500) and (dout[BusOut.BusIoSt + 5] = true) do
+    --         dout[BusOut.BusIoSt + 5] = false
+    --         BusIoClock = 0
+    --         enable condition[BUS_INTE_NO]
+	-- endcondition
+
+    -- enable condition[BUS_INTE_NO]
+
+    -- connect timer to BusIoClock
+    
+
+    --wait for din[BusIn.BusIoSt]
+end bus_init_
+
+routine bus_wtell_
+var
+    UptStatus           : integer
+    ClockVar            : integer
+    --InitUpd             : boolean
+begin
+
+    -- 读取初始系统时间
+    ClockVar        = $fast_clock
+    --InitUpd         = false
+
+    repeat 
+        -- 读取旧的的 TELL ID
+        BusOut.TellId       = bus_gbyte_(IO_DOUT, BusOut.BusIoSt + 32)
+
+        -- 读取新的 AGENT TELL ID
+        BusIn.AgentTellId   = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 32)
+
+        --if (BusOut.TellId = 0) and (not InitUpd) then 
+
+            -- 之前的 TELL ID 是 0, 代表程序才重启。重新刷新的一次旧的 TELL ID
+        --    BusIn.AgentMsgType  = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 40)
+        --    BusOut.TellId       = BusIn.AgentMsgType
+        --    BusOut.MsgType      = BusIn.AgentTellId
+        --    bus_sbyte_(BusOut.BusIoSt + 32, BusOut.TellId)
+        --    bus_sbyte_(BusOut.BusIoSt + 40, BusOut.MsgType)
+        --    InitUpd             = true
+        --endif
+
+        -- 只有变化且不为0的 TELL ID 输入时，才返回
+        if (BusIn.AgentTellId = 0) or (BusOut.TellId = BusIn.AgentTellId) then 
+            if Timeout = 0 then 
+                
+                write tpdisplay(chr(CC_FGCOLOR), chr(CC_RED), &
+                                $fast_clock, ' Wtell Bus Null Data', &
+                                chr(CC_FGCOLOR), chr(CC_DFCOLOR), cr)
+                return(-3)
+            endif
+
+            -- 延迟一段时间避免死机
+            delay(8) 
+        else 
+
+            BusIn.JobId         = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 16)
+            BusIn.ErrorId       = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 24)
+            BusIn.AgentMsgType  = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 40)
+            return(BusIn.ErrorId)
+        endif
+
+        -- 检查双方的就绪信号
+        BusIn.SysReady      = din[BusIn.BusIoSt]
+        BusOut.SysEnable    = dout[BusOut.BusIoSt]
+        BusOut.SysInit      = dout[BusOut.BusIoSt + 1]
+
+        -- 防止可能是程序暂停导致的超时
+        -- 
+        if ($fast_clock - ClockVar) > Timeout then
+            BusOut.TellId       = bus_gbyte_(IO_DOUT, BusOut.BusIoSt + 32)
+            BusIn.AgentTellId   = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 32)
+        endif
+
+    until ((($fast_clock - ClockVar) > Timeout) and (Timeout > 0) and (BusOut.TellId = BusIn.AgentTellId)) or &
+          (not BusIn.SysReady) or &
+          (not BusOut.SysEnable) or &
+          (BusOut.SysInit)
+
+    -- 错误返回
+    if (not BusIn.SysReady) or (not BusOut.SysEnable) or (BusOut.SysInit) then 
+        
+        delay(100)
+        write tpdisplay(chr(CC_FGCOLOR), chr(CC_RED), &
+                        $fast_clock, ' Wtell Bus Not Enb', &
+                        chr(CC_FGCOLOR), chr(CC_DFCOLOR), cr)
+        return(-2)
+    endif
+    -- 超时返回
+    write tpdisplay(chr(CC_FGCOLOR), chr(CC_RED), &
+                    $fast_clock, ' Wtell Bus Timeout', &
+                    chr(CC_FGCOLOR), chr(CC_DFCOLOR), cr)
+    return(-1)
+end bus_wtell_
+
+routine bus_ftell_
+var
+    UptStatus           : integer
+begin
+    
+    -- 机器人成功接收数据后反馈相同的 TELL ID 进行反馈
+
+    -- 读取新的 TELL ID
+    BusIn.AgentTellId   = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 32)
+    BusIn.AgentMsgType  = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 40) 
+    BusOut.TellId       = BusIn.AgentTellId
+    BusOut.MsgType      = BusIn.AgentMsgType
+
+    -- 反馈新的 TELL ID 代表已经成功接收数据
+    bus_sbyte_(BusOut.BusIoSt + 40, BusOut.MsgType)
+    bus_sbyte_(BusOut.BusIoSt + 32, BusOut.TellId)
+end bus_ftell_
+
+routine bus_ntell_
+var
+    ClockVar            : integer
+begin
+    -- 读取初始系统时间
+    ClockVar            = $fast_clock
+
+    -- 读取上一次的 TELL ID
+    BusIn.TellId        = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 48) 
+
+    -- TELL ID 自增 1 
+    BusOut.RobTellId    = BusIn.TellId + 1
+
+    -- 最大 1 个字节
+    if BusOut.RobTellId > 255 then BusOut.RobTellId = 1; endif
+
+    -- 通知对方数据已经更新
+    bus_sbyte_(BusOut.BusIoSt + 8, BusOut.RobotId)
+    bus_sbyte_(BusOut.BusIoSt + 16, BusOut.JobId)
+    bus_sbyte_(BusOut.BusIoSt + 56, BusOut.RobMsgType)
+    bus_sbyte_(BusOut.BusIoSt + 48, BusOut.RobTellId)
+
+    repeat 
+
+        -- 等待对方已经成功接收新的数据或者超时
+        BusIn.TellId = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 48) 
+
+        if (BusOut.RobTellId = BusIn.TellId) then 
+
+            BusIn.JobId         = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 16)
+            BusIn.ErrorId       = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 24)
+            BusIn.MsgType       = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 56) 
+            return(BusIn.ErrorId) 
+        else 
+            if Timeout = 0 then 
+                
+                write tpdisplay(chr(CC_FGCOLOR), chr(CC_RED), &
+                                $fast_clock, ' Ntell Bus Null Data', &
+                                chr(CC_FGCOLOR), chr(CC_DFCOLOR), cr)
+                return(-3)
+            endif
+
+            -- 延迟一段时间避免死机
+            delay(8)
+        endif
+
+        -- 检查双方的就绪信号
+        BusIn.SysReady      = din[BusIn.BusIoSt]
+        BusOut.SysEnable    = dout[BusOut.BusIoSt]
+        BusOut.SysInit      = dout[BusOut.BusIoSt + 1]
+        -- -- 防止可能是程序暂停导致的超时
+        -- -- 
+        -- if ($fast_clock - ClockVar) > Timeout then
+        --     BusIn.TellId = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 48) 
+        -- endif
+    until ((($fast_clock - ClockVar) > Timeout) and (Timeout > 0) and (BusOut.RobTellId <> BusIn.TellId)) or &
+          (not BusIn.SysReady) or &
+          (not BusOut.SysEnable) or &
+          (BusOut.SysInit)
+
+    -- 防止可能是程序暂停导致的超时
+    -- 
+
+    BusIn.TellId = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 48) 
+    
+    if (BusOut.RobTellId = BusIn.TellId) then 
+
+        BusIn.JobId         = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 16)
+        BusIn.ErrorId       = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 24)
+        BusIn.MsgType       = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 56) 
+        return(BusIn.ErrorId) 
+    endif 
+
+    -- 错误返回
+    if (not BusIn.SysReady) or (not BusOut.SysEnable) or (BusOut.SysInit) then 
+        
+        delay(100)
+        write tpdisplay(chr(CC_FGCOLOR), chr(CC_RED), &
+                        $fast_clock, ' Ntell Bus Not Enb', &
+                        chr(CC_FGCOLOR), chr(CC_DFCOLOR), cr)
+        return(-2)
+    endif
+    -- 超时返回
+    write tpdisplay(chr(CC_FGCOLOR), chr(CC_RED), &
+                    $fast_clock, ' Ntell Bus Timeout', &
+                    chr(CC_FGCOLOR), chr(CC_DFCOLOR), cr)
+    return(-1)
+end bus_ntell_
+
+routine bus_stell_
+begin
+    -- 读取上一次的 TELL ID
+    BusIn.TellId        = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 48) 
+    BusOut.RobTellId    = bus_gbyte_(IO_DOUT, BusOut.BusIoSt + 48) 
+    BusOut.SysEnable    = dout[BusOut.BusIoSt]
+
+    -- Code Modified on 2025.05.16
+    -- 修复当机器人没有使能 SysEnable 信号时，重新进行初始化
+    if (BusIn.TellId <> BusOut.RobTellId) or (BusOut.SysEnable = false) then
+        bus_init_(BusIn, BusOut, BusOut.RobotId, PTC_GEN_CMD)
+    endif
+    --
+
+    -- TELL ID 自增 1 
+    BusOut.RobTellId    = BusIn.TellId + 1
+
+    -- 最大 1 个字节
+    if BusOut.RobTellId > 255 then BusOut.RobTellId = 1; endif
+
+    -- 通知对方数据已经更新
+    bus_sbyte_(BusOut.BusIoSt + 8, BusOut.RobotId)
+    bus_sbyte_(BusOut.BusIoSt + 16, BusOut.JobId)
+    bus_sbyte_(BusOut.BusIoSt + 56, BusOut.RobMsgType)
+    bus_sbyte_(BusOut.BusIoSt + 48, BusOut.RobTellId)
+
+end bus_stell_
+
+
+routine bus_rtell_
+var
+    ClockVar            : integer
+begin
+    -- 读取初始系统时间
+    ClockVar            = $fast_clock
+
+    BusOut.RobTellId    = bus_gbyte_(IO_DOUT, BusOut.BusIoSt + 48) 
+
+    repeat 
+
+        -- 等待对方已经成功接收新的数据或者超时
+        BusIn.TellId = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 48) 
+
+        if (BusOut.RobTellId = BusIn.TellId) then 
+
+            BusIn.JobId         = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 16)
+            BusIn.ErrorId       = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 24)
+            BusIn.MsgType       = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 56) 
+            return(BusIn.ErrorId) 
+        else 
+            if Timeout = 0 then 
+                
+                write tpdisplay(chr(CC_FGCOLOR), chr(CC_RED), &
+                                $fast_clock, ' Ntell Bus Null Data', &
+                                chr(CC_FGCOLOR), chr(CC_DFCOLOR), cr)
+                return(-3)
+            endif
+
+            -- 延迟一段时间避免死机
+            delay(8)
+        endif
+
+        -- 检查双方的就绪信号
+        BusIn.SysReady      = din[BusIn.BusIoSt]
+        BusOut.SysEnable    = dout[BusOut.BusIoSt]
+
+    until ((($fast_clock - ClockVar) > Timeout) and (Timeout > 0) and (BusOut.RobTellId <> BusIn.TellId)) or &
+          (not BusIn.SysReady) or &
+          (not BusOut.SysEnable) or &
+          (BusOut.SysInit)
+
+    -- 防止可能是程序暂停导致的超时
+    -- 
+
+    BusIn.TellId = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 48) 
+    
+    if (BusOut.RobTellId = BusIn.TellId) then 
+
+        BusIn.JobId         = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 16)
+        BusIn.ErrorId       = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 24)
+        BusIn.MsgType       = bus_gbyte_(IO_DIN, BusIn.BusIoSt + 56) 
+        return(BusIn.ErrorId) 
+    endif 
+
+    -- 错误返回
+    if (not BusIn.SysReady) or (not BusOut.SysEnable) or (BusOut.SysInit) then 
+        
+        delay(100)
+        write tpdisplay(chr(CC_FGCOLOR), chr(CC_RED), &
+                        $fast_clock, ' Ntell Bus Not Enb', &
+                        chr(CC_FGCOLOR), chr(CC_DFCOLOR), cr)
+        return(-2)
+    endif
+    -- 超时返回
+    write tpdisplay(chr(CC_FGCOLOR), chr(CC_RED), &
+                    $fast_clock, ' Ntell Bus Timeout', &
+                    chr(CC_FGCOLOR), chr(CC_DFCOLOR), cr)
+    return(-1)
+end bus_rtell_

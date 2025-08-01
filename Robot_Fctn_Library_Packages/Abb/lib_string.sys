@@ -1,0 +1,758 @@
+module lib_string(sysmodule, noview)
+!***********************************************************
+!
+! Copyright 2018 - 2024 speedbot All Rights reserved.
+!
+! File Name: lib_string
+!
+! Description:
+!   Language             ==   Rapid for ABB ROBOT
+!   Date                 ==   2021 - 09 - 03
+!   Modification Data    ==   2023 - 03 - 13
+!
+! Author: speedbot
+!
+! Version: 1.0
+!*********************************************************************************************************!
+!                                                                                                         !
+!                                                      .^^^                                               !
+!                                               .,~<c+{{{{{{t,                                            ! 
+!                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          !
+!                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        !
+!                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       !
+!                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    !
+!                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  !
+!                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                !
+!                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              !
+!                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             !
+!                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             !
+!                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             !
+!                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              !
+!                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              !
+!                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               !
+!                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               !
+!                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                !
+!                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                !
+!                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 !
+!                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 !
+!                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  !
+!                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  !
+!                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    !                         
+!                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         !
+!                                         ^!{{{{{{{{t!",^`                                                !
+!                                                                                                         !
+!*********************************************************************************************************!
+!
+! 2021 - 09 - 03 ++ num_to_str_() ==> string
+
+! 2021 - 09 - 03 ++ pos_to_str_() ==> string
+
+! 2021 - 09 - 03 ++ ais_to_str_() ==> string
+
+! 2021 - 09 - 03 ++ str_to_num_() ==> num
+
+! 2021 - 09 - 03 ++ str_to_pos_() ==> robtarget
+
+! 2021 - 09 - 03 ++ str_to_ais_() ==> jointtarget
+
+! 2022 - 09 - 30 ++ decode_data_() ==> bool
+
+! 2022 - 09 - 30 ++ sprintf_() ==> string
+
+! 2023 - 03 - 13 ++ num_2str_() ==> string
+
+! 2023 - 03 - 13 ++ num_2bin_() ==> string
+
+! 2023 - 03 - 13 ++ num_2hex_() ==> string
+
+! 2023 - 03 - 13 ++ pos_2str_() ==> string
+
+! 2023 - 03 - 13 ++ axis_2str_() ==> string
+
+!***********************************************************
+! func chr_()
+!***********************************************************
+!     输入参数 : Val            * 字节 *       * 字节值 *
+! 返回 :                     * 字符串 *     * 对应的字符 *
+!***********************************************************
+! 功能 : 将字节值转换为对应的字符。
+!***********************************************************
+func string chr_(byte Val)
+    return(bytetostr(Val \CHAR));
+endfunc
+
+!***********************************************************
+! func ord_()
+!***********************************************************
+!     输入参数 : Val            * 字节 *       * 字节值 *
+! 返回 :                     * 字符串 *     * 对应的字符 *
+!***********************************************************
+! 功能 : 将字节值转换为对应的字符。
+!***********************************************************
+func byte ord_(string Val, \num Index)
+    var num CopyIndex := 1;
+
+    if present(Index) 
+        CopyIndex := Index;
+    return(strtobyte(strpart(Val, CopyIndex, 1) \CHAR));
+endfunc
+
+
+
+!***********************************************************
+! func num_to_str_()
+!***********************************************************
+!     输入参数 : NumVal         * 数字 *       * 要转换的数值 *
+!     输入参数 : \switch INTEGER* 可选开关 *    * 是否转换为整数格式 *
+! 返回 :                     * 字符串 *     * 转换后的字符串 *
+!***********************************************************
+! 功能 : 将数字转换为字符串。
+!        如果提供了 INTEGER 开关，则转换为整数格式。
+!        否则，默认保留三位小数。
+!***********************************************************
+func string num_to_str_(num NumVal, \switch INTEGER)
+    if present(INTEGER) then return(numtostr(NumVal, 0)); else return(numtostr(NumVal, 3)); endif
+endfunc
+
+!***********************************************************
+! func pos_to_str_()
+!***********************************************************
+!     输入参数 : PosVal         * 机器人目标 *   * 位置和姿态值 *
+! 返回 :                     * 字符串 *     * 位置和姿态的字符串表示 *
+!***********************************************************
+! 功能 : 将位置和姿态信息转换为字符串。
+!        转换顺序为：位置 X, Y, Z 和欧拉角 Z, Y, X。
+!        每个坐标值都被转换为字符串并拼接成一个字符串。
+!***********************************************************
+func string pos_to_str_(robtarget PosVal)
+    var num PosReal{6};
+    var string PosStr{6};
+    var num I;
+    PosReal{1} := PosVal.Trans.X;
+    PosReal{2} := PosVal.Trans.Y;
+    PosReal{3} := PosVal.Trans.Z;
+    PosReal{4} := eulerzyx(\Z, PosVal.Rot);
+    PosReal{5} := eulerzyx(\Y, PosVal.Rot);
+    PosReal{6} := eulerzyx(\X, PosVal.Rot);
+    for I from 1 to 6 do PosStr{I} := num_to_str_(PosReal{I}); endfor
+    return(PosStr{1} + "," + PosStr{2} + "," + PosStr{3} + "," + PosStr{4} + "," + PosStr{5} + "," + PosStr{6});
+endfunc
+
+!***********************************************************
+! func ais_to_str_()
+!***********************************************************
+!     输入参数 : AxisVal        * 关节目标 *   * 关节角度值 *
+! 返回 :                     * 字符串 *     * 关节角度的字符串表示 *
+!***********************************************************
+! 功能 : 将关节角度信息转换为字符串。
+!        转换顺序为：关节轴 1, 2, 3, 4, 5, 6。
+!        每个关节角度值都被转换为字符串并拼接成一个字符串。
+!***********************************************************
+func string ais_to_str_(jointtarget AxisVal)
+    var num AxisReal{6};
+    var string AxisStr{6};
+    var num I;
+    AxisReal{1} := AxisVal.Robax.Rax_1;
+    AxisReal{2} := AxisVal.Robax.Rax_2;
+    AxisReal{3} := AxisVal.Robax.Rax_3;
+    AxisReal{4} := AxisVal.Robax.Rax_4;
+    AxisReal{5} := AxisVal.Robax.Rax_5;
+    AxisReal{6} := AxisVal.Robax.Rax_6;
+    for I from 1 to 6 do AxisStr{I} := num_to_str_(AxisReal{I}); endfor
+    return(AxisStr{1} + "," + AxisStr{2} + "," + AxisStr{3} + "," + AxisStr{4} + "," + AxisStr{5} + "," + AxisStr{6});
+endfunc
+
+!***********************************************************
+! func str_to_num_()
+!***********************************************************
+!     输入参数 : NumStr         * 字符串 *     * 要转换的数字字符串 *
+! 返回 :                     * 数字 *       * 转换后的数字值 *
+!***********************************************************
+! 功能 : 将字符串转换为数字。
+!        如果转换失败，则记录错误并退出函数。
+!***********************************************************
+func num str_to_num_(string NumStr)
+    var num RtnNum;
+    if not strtoval(NumStr, RtnNum) then
+        errwrite "str_to_num_ error", "Check Parm1";
+        exit;                     
+    endif
+    return(RtnNum);
+endfunc
+
+!***********************************************************
+! func str_to_pos_()
+!***********************************************************
+!     输入参数 : PosStr         * 字符串 *     * 包含位置和姿态信息的字符串 *
+! 返回 :                     * 机器人目标 *   * 转换后的位置和姿态值 *
+!***********************************************************
+! 功能 : 将表示位置和姿态信息的字符串转换为机器人目标对象。
+!        字符串应包含六个值，分别对应位置 X, Y, Z 和欧拉角 Z, Y, X。
+!        如果转换失败，则记录错误并退出函数。
+!***********************************************************
+func robtarget str_to_pos_(string PosStr)
+    var string CnvString;
+    var num PosReal{6};
+    var robtarget RtnPos;
+    CnvString := "[" + PosStr + "]";
+    if not strtoval(CnvString, PosReal) then
+        errwrite "str_to_pos_ error", "Check Parm1";
+        exit;                     
+    endif
+    RtnPos := crobt();
+    RtnPos.Trans.X := PosReal{1};
+    RtnPos.Trans.Y := PosReal{2};
+    RtnPos.Trans.Z := PosReal{3};
+    RtnPos.Rot := orientzyx(PosReal{4}, PosReal{5}, PosReal{6});
+    return(RtnPos);
+endfunc
+
+!***********************************************************
+! func str_to_ais_()
+!***********************************************************
+!	  in : AxisVal 		    * string *		* 字符串 *
+! return : 					* jointtarget *	* 关节坐标 *
+!***********************************************************
+! 将有效的关节坐标类型字符串转化为关节坐标类型
+!***********************************************************
+func jointtarget str_to_ais_(string AxisStr)
+    var string CnvString;
+    var num AxisReal{6};
+    var jointtarget RtnAxis;
+    CnvString := "[" + AxisStr + "]";
+    if not strtoval(CnvString, AxisReal) then
+        errwrite "str_to_ais_ error", "Check Parm1";
+        exit;                     
+    endif
+    RtnAxis := cjointt();
+    RtnAxis.Robax.Rax_1 := AxisReal{1};
+    RtnAxis.Robax.Rax_2 := AxisReal{2};
+    RtnAxis.Robax.Rax_3 := AxisReal{3};
+    RtnAxis.Robax.Rax_4 := AxisReal{4};
+    RtnAxis.Robax.Rax_5 := AxisReal{5};
+    RtnAxis.Robax.Rax_6 := AxisReal{6};
+    return(RtnAxis);
+endfunc
+
+!***********************************************************
+! func decode_data_()
+!***********************************************************
+!	  in : Str 		        * string *		* 待解析的字符串 *
+!     in : Separator        * string *      * 分隔符 *
+!    out : Data{*}          * string *      * 解析出来的数据 *
+! return : 					* bool *	    * 返回 TRUE 代表成功解析 *
+!***********************************************************
+! 将如下实例的字符串进行解析
+! eg:       "#11#22#33#44#55#" or "11#22#33#44#55#"
+!***********************************************************
+func bool decode_data_(string Str, string Separator, inout string Data{*})
+    var num StartingPos;
+    var num EndPos;
+    var bool Res        := true;
+    var num I           := 0;
+
+    if strmatch(Str, 1, Separator) > strlen(Str) return(false);
+    if strpart(Str, 1, strlen(Separator)) = Separator then
+        StartingPos :=0 ;
+        EndPos :=2 ;
+        while Res do
+            StartingPos := strmatch(Str, EndPos - 1, Separator);
+            EndPos := strmatch(Str, StartingPos + 1, Separator);
+            if EndPos > strlen(Str) then
+                if StartingPos + strlen(Separator) < strlen(Str) Data{1 * I} := strpart(Str, StartingPos + strlen(Separator), strlen(Str) - StartingPos - strlen(Separator) + 1);
+                Res := false;
+            else
+                incr I;
+                Data{1 * I} := strpart(Str, StartingPos + strlen(Separator), EndPos - StartingPos - strlen(Separator));
+            endif
+        endwhile
+    else
+        StartingPos := 1;
+        EndPos := 0;
+        while Res do
+            EndPos := strmatch(Str, StartingPos, Separator);
+            if EndPos > strlen(Str) then
+                if StartingPos < strlen(Str) Data{1 * I} := strpart(Str, StartingPos, EndPos - StartingPos);
+                Res := false;
+            else
+                incr I;
+                Data{1*I} := strpart(Str, StartingPos, EndPos - StartingPos);
+                StartingPos := EndPos + strlen(Separator);
+            endif
+        endwhile
+    endif
+    return(true);
+endfunc
+
+!***********************************************************
+! func sprintf_()
+!***********************************************************
+!     输入参数 : FormatStr      * 字符串 *     * 格式化字符串 *
+!     输入参数 : I1             * 整数 *       * 整数参数 1 *
+!     输入参数 : I2             * 整数 *       * 整数参数 2 *
+!     输入参数 : R1             * 实数 *       * 实数参数 1 *
+!     输入参数 : R2             * 实数 *       * 实数参数 2 *
+!     输入参数 : S1             * 字符串 *     * 字符串参数 1 *
+!     输入参数 : S2             * 字符串 *     * 字符串参数 2 *
+!     输入参数 : P1             * 位置 *       * 位置参数 1 *
+!     输入参数 : P2             * 位置 *       * 位置参数 2 *
+!     输入参数 : A1             * 关节位置 *   * 关节位置参数 1 *
+!     输入参数 : A2             * 关节位置 *   * 关节位置参数 2 *
+!     输入参数 : B1             * 布尔值 *     * 布尔值参数 1 *
+!     输入参数 : B2             * 布尔值 *     * 布尔值参数 2 *
+! 返回 :                     * 字符串 *     * 格式化后的字符串 *
+!***********************************************************
+! 功能 : 根据格式化字符串生成格式化后的字符串。
+!        支持整数、实数、字符串、位置、关节位置和布尔值的格式化。
+!        使用类似 C 语言的格式化规则。
+!***********************************************************
+func string sprintf_(string FormatStr, \num         I1, \num            I2,
+                                       \num         R1, \num            R2,
+                                       \string      S1, \string         S2,
+                                       \robtarget   P1, \robtarget      P2,
+                                       \jointtarget A1, \jointtarget    A2,
+                                       \bool        B1, \bool           B2)
+
+    var string RtnString;
+    var num I           := 1;
+    var num NumOfI      := 0;
+    var num NumOfR      := 0;
+    var num NumOfS      := 0;
+    var num NumOfP      := 0;
+    var num NumOfA      := 0;
+    var num NumOfB      := 0;
+
+    RtnString := "";
+
+    if strlen(FormatStr) = 0 return(RtnString);
+
+    while I <= strlen(FormatStr) do
+
+        if strpart(FormatStr, I, 1) = "%" then
+
+            if I = strlen(FormatStr) then  
+
+                RtnString := RtnString + strpart(FormatStr, I, 1);
+            elseif (strpart(FormatStr, I + 1, 1) = "d") or (strpart(FormatStr, I + 1, 1) = "D") then  
+
+                incr NumOfI;
+
+                test NumOfI
+
+                case(1):
+
+                    if present(I1) then 
+
+                        RtnString := RtnString + num_to_str_(I1 \INTEGER);
+                    elseif present(I2) then 
+
+                        RtnString := RtnString + num_to_str_(I2 \INTEGER);
+                        incr NumOfI;
+                    endif
+                case(2):
+
+                    if present(I2) RtnString := RtnString + num_to_str_(I2 \INTEGER); 
+
+                endtest
+
+            elseif (strpart(FormatStr, I + 1, 1) = "f") or (strpart(FormatStr, I + 1, 1) = "F")   then  
+
+                incr NumOfR;
+
+                test NumOfR
+
+                case(1):
+
+                    if present(R1) then 
+
+                        RtnString := RtnString + num_to_str_(R1);
+                    elseif present(R2) then 
+
+                        RtnString := RtnString + num_to_str_(R2);
+                        incr NumOfR;
+                    endif
+                case(2):
+
+                    if present(R2) RtnString := RtnString + num_to_str_(R2); 
+
+                endtest
+
+            elseif (strpart(FormatStr, I + 1, 1) = "s") or (strpart(FormatStr, I + 1, 1) = "S")  then  
+
+                incr NumOfS;
+
+                test NumOfS
+
+                case(1):
+
+                    if present(S1) then 
+
+                        RtnString := RtnString + S1;
+                    elseif present(S2) then 
+
+                        RtnString := RtnString + S2;
+                        incr NumOfS;
+                    endif
+                case(2):
+
+                    if present(S2) RtnString := RtnString + S2; 
+
+                endtest
+
+            elseif (strpart(FormatStr, I + 1, 1) = "p") or (strpart(FormatStr, I + 1, 1) = "P")  then  
+
+                incr NumOfP;
+
+                test NumOfP
+
+                case(1):
+
+                    if present(P1) then 
+
+                        RtnString := RtnString + pos_to_str_(P1);
+                    elseif present(P2) then 
+
+                        RtnString := RtnString + pos_to_str_(P2);
+                        incr NumOfP;
+                    endif
+                case(2):
+
+                    if present(P2) RtnString := RtnString + pos_to_str_(P2); 
+
+                endtest
+
+            elseif (strpart(FormatStr, I + 1, 1) = "a") or (strpart(FormatStr, I + 1, 1) = "A")  then  
+
+                incr NumOfA;
+
+                test NumOfA
+
+                case(1):
+
+                    if present(A1) then 
+
+                        RtnString := RtnString + ais_to_str_(A1);
+                    elseif present(A2) then 
+
+                        RtnString := RtnString + ais_to_str_(A2);
+                        incr NumOfA;
+                    endif
+                case(2):
+
+                    if present(A2) RtnString := RtnString + ais_to_str_(A2); 
+
+                endtest
+
+            elseif (strpart(FormatStr, I + 1, 1) = "b") or (strpart(FormatStr, I + 1, 1) = "B")  then  
+
+                incr NumOfB;
+
+                test NumOfB
+
+                case(1):
+
+                    if present(B1) then 
+
+                        if B1 then RtnString := RtnString + "true"; else RtnString := RtnString + "false"; endif
+                           
+                    elseif present(B2) then 
+
+                        if B2 then RtnString := RtnString + "true"; else RtnString := RtnString + "false"; endif
+                        incr NumOfB;
+                    endif
+                case(2):
+
+                    if present(B2) then  
+
+                        if B2 then RtnString := RtnString + "true"; else RtnString := RtnString + "false"; endif
+
+                    endif
+                    
+                endtest
+
+            else
+
+                RtnString := RtnString + strpart(FormatStr, I, 2);
+            endif
+
+            incr I;
+        else
+
+            RtnString := RtnString + strpart(FormatStr, I, 1);
+        endif
+
+        incr I;
+    endwhile
+
+    return(RtnString);
+endfunc
+
+!***********************************************************
+! func num_2str_()
+!***********************************************************
+!	  in : NumVal 		    * num *     * 实数型 *
+!     in : \switch INTEGER 		        * 指定此参数时为整数 *
+! return : 					* string *  * 返回字符串 *
+!***********************************************************
+! 将实数转化为字符串表达形式, 与 num_to_str_ 功能一致
+!***********************************************************
+func string num_2str_(num NumVal, \switch INTEGER)
+
+    if present(INTEGER) then return(numtostr(NumVal, 0)); else return(numtostr(NumVal, 3)); endif
+endfunc
+
+!***********************************************************
+! func num_2bin_()
+!***********************************************************
+!	  in : NumVal 		    * num *     * 实数型 *
+!     in : \switch INTEGER 		        * 指定此参数时为整数 *
+! return : 					* string *  * 返回字符串 *
+!***********************************************************
+! 将实数转化为二进制字符串表达形式
+!***********************************************************
+func string num_2bin_(num NumVal, \switch INTEGER)
+    var rawbytes Raws;
+    var byte ByteData{4}    := [0, 0, 0, 0];
+    var string StrVal       := "0b";
+    var num I;
+
+    clearrawbytes Raws;
+    if present(INTEGER) then 
+
+        packrawbytes NumVal, Raws, 1 \IntX := DINT;
+    else
+
+        packrawbytes NumVal, Raws, 1 \Float4 ;
+    endif
+
+    for I from 1 to 4 do 
+        unpackrawbytes Raws, 4 - I + 1, ByteData{I} \ASCII := 1;
+        StrVal := StrVal + bytetostr(ByteData{I}, \BIN); 
+    endfor
+
+    return(StrVal);
+endfunc
+
+!***********************************************************
+! func num_2hex_()
+!***********************************************************
+!	  in : NumVal 		    * num *     * 实数型 *
+!     in : \switch INTEGER 		        * 指定此参数时为整数 *
+! return : 					* string *  * 返回字符串 *
+!***********************************************************
+! 将实数转化为十六进制字符串表达形式
+!***********************************************************
+func string num_2hex_(num NumVal, \switch INTEGER)
+    var rawbytes Raws;
+    var byte ByteData{4}    := [0, 0, 0, 0];
+    var string StrVal       := "0x";
+    var num I;
+
+    clearrawbytes Raws;
+    if present(INTEGER) then 
+
+        packrawbytes NumVal, Raws, 1 \IntX := DINT;
+    else
+
+        packrawbytes NumVal, Raws, 1 \Float4 ;
+    endif
+
+    for I from 1 to 4 do 
+        unpackrawbytes Raws, 4 - I + 1, ByteData{I} \ASCII := 1;
+        StrVal := StrVal + bytetostr(ByteData{I}, \HEX); 
+    endfor
+
+    return(StrVal);
+endfunc
+
+!***********************************************************
+! func pos_2str_()
+!***********************************************************
+!     输入参数 : PosVal         * 机器人目标 *   * 位置和姿态值 *
+!     输入参数 : IndexVal       * 数字 *       * 要包含的元素数量 *
+!     输入参数 : Sep            * 字符串 *     * 分隔符 *
+!     输入参数 : \switch EULER  * 可选开关 *    * 是否使用欧拉角 *
+!     输入参数 : \switch QUATERNION  * 可选开关 * * 是否使用四元数 *
+! 返回 :                     * 字符串 *     * 位置和姿态的字符串表示 *
+!***********************************************************
+! 功能 : 将位置和姿态信息转换为字符串。
+!        支持指定要包含的元素数量、分隔符、欧拉角或四元数表示。
+!        如果指定了 EULER 开关，则将姿态表示为欧拉角；
+!        如果指定了 QUATERNION 开关，则将姿态表示为四元数。
+!        默认情况下，位置信息使用 XYZ，姿态信息使用四元数。
+!***********************************************************
+func string pos_2str_(robtarget PosVal, \num IndexVal, \string Sep, \switch EULER | switch QUATERNION)
+    var string Sep__        := ",";
+    var num IndexVal__      := 6;
+    var num PosArray{13}    := [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]; 
+    var string StrVal       := "";
+    var num I;
+
+    if present(IndexVal)                                    IndexVal__  := IndexVal;
+    if present(Sep)                                         Sep__       := Sep;
+    if (present(QUATERNION)) and (not present(IndexVal))    IndexVal__ := 7;
+
+    if IndexVal__ >= 1 then 
+     
+        PosArray{1} := PosVal.Trans.X;
+    endif
+    if IndexVal__ >= 2 then 
+     
+        PosArray{2} := PosVal.Trans.Y;
+    endif
+    if IndexVal__ >= 3 then 
+     
+        PosArray{3} := PosVal.Trans.Z;
+    endif
+    if IndexVal__ >= 4 then 
+     
+        if present(EULER) then 
+            
+            PosArray{4} := eulerzyx(\Z, PosVal.Rot);
+        else
+
+            PosArray{4} := PosVal.Rot.Q1;
+        endif
+    endif
+    
+    if IndexVal__ >= 5 then 
+     
+        if present(EULER) then 
+            
+            PosArray{5} := eulerzyx(\Y, PosVal.Rot);
+        else
+
+            PosArray{5} := PosVal.Rot.Q2;
+        endif
+    endif
+
+    if IndexVal__ >= 6 then 
+     
+        if present(EULER) then 
+            
+            PosArray{6} := eulerzyx(\X, PosVal.Rot);
+        else
+
+            PosArray{6} := PosVal.Rot.Q3;
+        endif
+    endif
+
+    if IndexVal__ >= 7 then 
+     
+        if present(EULER) then 
+            
+            PosArray{7} := PosVal.Extax.Eax_a;
+        else
+
+            PosArray{7} := PosVal.Rot.Q4;
+        endif
+    endif
+
+    if IndexVal__ >= 8 then 
+     
+        if present(EULER) then 
+            
+            PosArray{8} := PosVal.Extax.Eax_b;
+        else
+
+            PosArray{8} := PosVal.Extax.Eax_a;
+        endif
+    endif
+
+    if IndexVal__ >= 9 then 
+     
+        if present(EULER) then 
+            
+            PosArray{9} := PosVal.Extax.Eax_c;
+        else
+
+            PosArray{9} := PosVal.Extax.Eax_b;
+        endif
+    endif
+
+    if IndexVal__ >= 10 then 
+     
+        if present(EULER) then 
+            
+            PosArray{10} := PosVal.Extax.Eax_d;
+        else
+
+            PosArray{10} := PosVal.Extax.Eax_c;
+        endif
+    endif
+
+    if IndexVal__ >= 11 then 
+     
+        if present(EULER) then 
+            
+            PosArray{11} := PosVal.Extax.Eax_e;
+        else
+
+            PosArray{11} := PosVal.Extax.Eax_d;
+        endif
+    endif
+
+    if IndexVal__ >= 12 then 
+     
+        if present(EULER) then 
+            
+            PosArray{12} := PosVal.Extax.Eax_f;
+        else
+
+            PosArray{12} := PosVal.Extax.Eax_e;
+        endif
+    endif
+
+    if IndexVal__ >= 13 then 
+     
+        if present(QUATERNION) PosArray{13} := PosVal.Extax.Eax_f;
+    endif
+
+    for I from 1 to (IndexVal__ - 1) do StrVal := StrVal + num_2str_(PosArray{I}) + Sep__; endfor
+
+    StrVal := StrVal + num_2str_(PosArray{IndexVal__});
+
+    return(StrVal);
+endfunc
+
+!***********************************************************
+! func axis_2str_()
+!***********************************************************
+!	  in : PosVal 		    * jointtarget * * 需要转化的关节坐标 *
+!     in : \IndexVal 		* num *         * 指定需要转化的轴数 默认为 6 *
+!     in : \Sep 		    * string *      * 指定分隔符，默认为 “，” *
+! return : 					* string *      * 返回字符串 *
+!***********************************************************
+! 将关节坐标位置转化为字符串形式
+!***********************************************************
+func string axis_2str_(jointtarget PosVal, \num IndexVal, \string Sep)
+    var string Sep__        := ",";
+    var num IndexVal__      := 6;
+    var num PosArray{12}    := [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]; 
+    var string StrVal       := "";
+    var num I;
+
+    if present(IndexVal)                                    IndexVal__  := IndexVal;
+    if present(Sep)                                         Sep__       := Sep;
+
+    if IndexVal__ >= 1  PosArray{1}     := PosVal.Robax.Rax_1;
+    if IndexVal__ >= 2  PosArray{2}     := PosVal.Robax.Rax_2;
+    if IndexVal__ >= 3  PosArray{3}     := PosVal.Robax.Rax_3;
+    if IndexVal__ >= 4  PosArray{4}     := PosVal.Robax.Rax_4;
+    if IndexVal__ >= 5  PosArray{5}     := PosVal.Robax.Rax_5;
+    if IndexVal__ >= 6  PosArray{6}     := PosVal.Robax.Rax_6;
+    if IndexVal__ >= 7  PosArray{7}     := PosVal.Extax.Eax_a;
+    if IndexVal__ >= 8  PosArray{8}     := PosVal.Extax.Eax_b;
+    if IndexVal__ >= 9  PosArray{9}     := PosVal.Extax.Eax_c;
+    if IndexVal__ >= 10 PosArray{10}    := PosVal.Extax.Eax_d;
+    if IndexVal__ >= 11 PosArray{11}    := PosVal.Extax.Eax_e;
+    if IndexVal__ >= 12 PosArray{12}    := PosVal.Extax.Eax_f;
+     
+    for I from 1 to (IndexVal__ - 1) do StrVal := StrVal + num_2str_(PosArray{I}) + Sep__; endfor
+
+    StrVal := StrVal + num_2str_(PosArray{IndexVal__});
+
+    return(StrVal);
+endfunc
+
+endmodule

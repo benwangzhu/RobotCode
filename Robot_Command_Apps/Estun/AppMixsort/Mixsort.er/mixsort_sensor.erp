@@ -1,0 +1,330 @@
+// InstParseVersion: V1.02
+Start:
+/**********************************/
+/*分拣后台通讯程序*/
+/**********************************/
+LOOP:
+t_p.BusOutput.RobMsgType = 0
+IF t_p.GlobalToSensorCmd.value == 0 THEN
+	/*等待前台任务输入新的命令码*/
+	Wait{T=10}
+ELSIF t_p.GlobalToSensorCmd.value == 1 THEN
+	/*粗定位拍照，此版本已经不再使用*/
+	t_p.BusOutput.RobMsgType = t_p.BusOutput.RobMsgType + 1
+	t_p.BusOutput.JobId = 1
+	BusNewTell{BusIn=t_p.BusInput,BusOut=t_p.BusOutput,Timeout=t_p.BusTimeout,Result=t_l.MixStatus}
+	IF t_l.MixStatus.value ~= 0 THEN
+		/*粗定位拍照失败，程序退出*/
+		SetRtWarning{msg="Failed Edg Picture",eid=81001}
+		GOTO ENDLOOP
+	ELSE
+		t_p.GlobalToSensorCmd.value = 0
+		t_p.GlobalToRobotCmd.value = 1
+		t_p.GlobalToRobotFlg.value = true
+	ENDIF
+ELSIF t_p.GlobalToSensorCmd.value == 2 THEN
+    /*获取拍照位置*/
+    t_p.BusOutput.RobMsgType = t_p.BusOutput.RobMsgType + 1
+    t_p.BusOutput.JobId = 2
+    BusNewTell{BusIn=t_p.BusInput,BusOut=t_p.BusOutput,Timeout=t_p.BusTimeout,Result=t_l.MixStatus}
+    IF t_l.MixStatus.value ~= 0 THEN
+        /*获取拍照位置失败，结束程序*/
+        SetRtWarning{msg="Failed Get Picture Pos",eid=81002}
+        GOTO ENDLOOP
+    ELSE
+        BusUpdateIN{BusIn=t_p.BusInput}
+        IF t_p.BusInput.Finished ~= true THEN
+            /*所有任务完成，程序退出*/
+            SetRtInfo{msg="All Finished",eid=71001}
+            GOTO ENDLOOP
+        ELSE
+            /*获取拍照位置*/
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 8
+            BusGetPOS{Type="CPOS",IoType="IO_DIN",StAddrInt=t_l.InputAddr,NumOfAxis=6,Cpos=t_p.SnrPictVec}
+            /*拍照位置 = 基准位置 + 偏移*/
+            t_l.PosTrans = t_p.CfgRefPictPos
+            t_l.PosTrans.x = t_l.PosTrans.x + t_p.SnrPictVec.x
+            t_l.PosTrans.x = t_l.PosTrans.x + t_p.SnrPictVec.y
+            t_p.SnrPictPos.z = t_p.SnrPictPos.z + t_p.SnrPictVec.z
+            CnvCpos2Cpos{E7CoordMode=t_p.CfgE7Coordinate,MaxExt=t_p.CfgE7UpLim,MinExt=t_p.CfgPtMinDist,MixDist=t_p.CfgPtMinDist,RlE7Pos=t_p.CfgPtRlE7Pos,InCpos=t_l.PosTrans,OutCpos=t_p.SnrPictPos}
+            /*检查拍照位置是否可达*/
+            CheckCposXYZ{P=t_p.SnrPictPos,E7CoordMode=t_p.CfgE7Coordinate,LimUp=t_p.CfgPtMaxData,LimDown=t_p.CfgPtMinData,Res=t_l.PtRefStatus}
+            IF t_l.MixStatus.value ~= 0 THEN
+                /*拍照位置不可达*/
+                t_l.PtRefStatus.value = 1
+            ENDIF
+            /*反馈可达性*/
+            t_l.OutputAddr.value = t_p.BusOutput.BusIoSt + 8
+            BusSetNUM{Type="UINT8",StAddrInt=t_l.OutputAddr,Int=t_l.PtRefStatus}
+            t_p.BusOutput.RobMsgType = t_p.BusOutput.RobMsgType + 1
+            BusNewTell{BusIn=t_p.BusInput,BusOut=t_p.BusOutput,Timeout=3000,Result=t_l.MixStatus}
+            IF t_l.MixStatus.value ~= 0 THEN
+                /*可达性反馈失败，结束程序*/
+                SetRtWarning{msg="Falied Ack Picture Pos",eid=81003}
+                GOTO ENDLOOP
+            ENDIF
+            IF t_l.PtRefStatus.value ~= 0 THEN
+                /*不可达时继续请求下一个任务*/
+				t_p.GlobalToSensorCmd.value = 255
+                Wait{T=500}
+            ELSE
+                /*可达时通知前台执行任务*/
+                t_p.GlobalToSensorCmd.value = 0
+                t_p.GlobalToRobotCmd.value = 2
+                t_p.GlobalToRobotFlg.value = true
+            ENDIF
+        ENDIF
+    ENDIF
+ELSIF t_p.GlobalToSensorCmd.value == 3 THEN
+/*精定位拍照*/
+t_p.BusOutput.RobMsgType = t_p.BusOutput.RobMsgType + 1
+t_p.BusOutput.JobId = 3
+GetCurAPos{P=t_l.CurJpos}
+APosToCPos{OP=t_l.CurJpos,TP=t_l.CurLpos,Tool=t_s.nullTool,Coor=t_s.World}
+t_l.OutputAddr.value = t_p.BusOutput.BusIoSt + 8
+/*把当前位置发送给上位机*/
+BusSetPOS{Type="CPOS",StAddrInt=t_l.OutputAddr,NumOfAxis=6,Cpos=t_l.CurLpos}
+BusNewTell{BusIn=t_p.BusInput,BusOut=t_p.BusOutput,Timeout=t_p.BusTimeout,Result=t_l.MixStatus}
+IF t_l.MixStatus.value ~= 0 THEN
+    /*精定位拍照失败，程序退出*/
+    SetRtWarning{msg="Failed Ltn Picture",eid=81003}
+    GOTO ENDLOOP
+ELSE
+    t_p.GlobalToSensorCmd.value = 0
+    t_p.GlobalToRobotCmd.value = 1
+    t_p.GlobalToRobotFlg.value = true
+ENDIF
+ELSIF t_p.GlobalToSensorCmd.value == 4 THEN
+    /*获取抓取数据*/
+    t_p.BusInput.Finished = false
+    t_l.MixStatus.value = 0
+    IF t_p.IsPicking.value == true THEN
+        t_l.OutputAddr.value = t_p.BusOutput.BusIoSt + 8
+        BusSetNUM{Type="UINT8",StAddrInt=t_l.OutputAddr,Int=1}
+    ELSE
+        t_l.OutputAddr.value = t_p.BusOutput.BusIoSt + 8
+        BusSetNUM{Type="UINT8",StAddrInt=t_l.OutputAddr,Int=0}
+    ENDIF
+    t_p.BusOutput.JobId = 4
+    WHILE ( t_l.MixStatus.value == 0 ) and ( t_p.BusInput.Finished ~= true ) and ( t_p.BusOutput.RobMsgType < 3 ) DO
+        t_p.BusOutput.RobMsgType = t_p.BusOutput.RobMsgType + 1
+        BusNewTell{BusIn=t_p.BusInput,BusOut=t_p.BusOutput,Timeout=t_p.BusTimeout,Result=t_l.MixStatus}
+        IF t_p.BusOutput.RobMsgType == 1 THEN
+            /*获取工件数据*/
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 8
+            BusGetNUM{Type="UINT8",IoType="IO_DIN",StAddrInt=t_l.InputAddr,Int=t_p.SnrFromRobId}
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 9
+            BusGetNUM{Type="INT16",IoType="IO_DIN",StAddrInt=t_l.InputAddr,Int=t_l.Temp}
+            t_p.SnrPartLen.value = t_l.Temp.value / 10
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 11
+            BusGetNUM{Type="INT16",IoType="IO_DIN",StAddrInt=t_l.InputAddr,Int=t_l.Temp}
+            t_p.SnrOfsOrt.value = t_l.Temp.value / 10
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 13
+            BusGetNUM{Type="INT16",IoType="IO_DIN",StAddrInt=t_l.InputAddr,Int=t_l.Temp}
+            t_p.SnrOfsRz.value = t_l.Temp.value / 10
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 15
+            BusGetNUM{Type="UINT8",IoType="IO_DIN",StAddrInt=t_l.InputAddr,Int=t_p.SnrMagPip01}
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 16
+            BusGetNUM{Type="UINT8",IoType="IO_DIN",StAddrInt=t_l.InputAddr,Int=t_p.SnrMagPip02}
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 17
+            BusGetNUM{Type="UINT8",IoType="IO_DIN",StAddrInt=t_l.InputAddr,Int=t_p.SnrMagPip03}
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 18
+            BusGetNUM{Type="UINT8",IoType="IO_DIN",StAddrInt=t_l.InputAddr,Int=t_p.SnrMagPip04}
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 19
+            BusGetNUM{Type="UINT8",IoType="IO_DIN",StAddrInt=t_l.InputAddr,Int=t_p.SnrMagPip05}
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 20
+            BusGetNUM{Type="UINT8",IoType="IO_DIN",StAddrInt=t_l.InputAddr,Int=t_p.SnrMagPip06}
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 21
+            BusGetNUM{Type="UINT8",IoType="IO_DIN",StAddrInt=t_l.InputAddr,Int=t_p.SnrMagPip07}
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 22
+            BusGetNUM{Type="UINT8",IoType="IO_DIN",StAddrInt=t_l.InputAddr,Int=t_p.SnrMagPip08}
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 23
+            BusGetNUM{Type="INT16",IoType="IO_DIN",StAddrInt=t_l.InputAddr,Int=t_l.Temp}
+            t_p.SnrGripDist1.value = t_l.Temp.value / 10
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 25
+            BusGetNUM{Type="INT16",IoType="IO_DIN",StAddrInt=t_l.InputAddr,Int=t_l.Temp}
+            t_p.SnrThickness.value = t_l.Temp.value / 10
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 27
+            BusGetNUM{Type="INT16",IoType="IO_DIN",StAddrInt=t_l.InputAddr,Int=t_l.Temp}
+            t_p.SnrWeight.value = t_l.Temp.value / 10
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 29
+            BusGetNUM{Type="UINT8",IoType="IO_DIN",StAddrInt=t_l.InputAddr,Int=t_p.SnrPlaceId}
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 30
+            BusGetNUM{Type="INT16",IoType="IO_DIN",StAddrInt=t_l.InputAddr,Int=t_l.Temp}
+            t_p.SnrGripDist2.value = t_l.Temp.value / 10
+        ELSIF t_p.BusOutput.RobMsgType == 2 THEN
+            /*获取抓取坐标*/
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 8
+            BusGetPOS{Type="CPOS",IoType="IO_DIN",StAddrInt=t_l.InputAddr,NumOfAxis=6,Cpos=t_l.PosTrans2}
+            t_l.PosTrans2.a7 = 0
+        ELSE
+            /*获取码垛坐标*/
+            t_l.InputAddr.value = t_p.BusInput.BusIoSt + 8
+            BusGetPOS{Type="CPOS",IoType="IO_DIN",StAddrInt=t_l.InputAddr,NumOfAxis=6,Cpos=t_p.SnrPlacePos}
+            t_p.SnrPlacePos.a7 = 0
+        ENDIF
+        BusUpdateIN{BusIn=t_p.BusInput}
+    ENDWHILE
+    IF t_l.MixStatus.value ~= 0 THEN
+        /*获取数据失败，程序退出*/
+        SetRtWarning{msg="Failed Get Data",eid=81001}
+        t_p.GlobalToSensorCmd.value = 0
+        GOTO ENDLOOP
+    ENDIF
+    IF t_p.BusInput.Finished == true THEN
+        /*当前任务抓取完成*/
+        IF t_p.CfgEyeInHand.value == true THEN
+            /*眼在手上的情况继续获取下一个任务*/
+            t_p.GlobalToSensorCmd.value = 2
+            GOTO LOOP
+        ELSE
+            /*眼在手外时直接结束任务*/
+            t_g.ID.value = t_g.ID.value + 1
+            SetRtWarning{msg="Finished  Work",eid=81001}
+            t_p.GlobalToRobotCmd.value = 4
+            GOTO ENDLOOP
+        ENDIF
+    ENDIF
+    CnvCpos2Cpos{E7CoordMode=t_p.CfgE7Coordinate,MaxExt=t_p.CfgE7UpLim,MinExt=t_p.CfgE7DwLim,MixDist=t_p.CfgPtMinDist,RlE7Pos=t_p.CfgPtRlE7Pos,InCpos=t_l.PosTrans2,OutCpos=t_p.SnrPickPos}
+    CnvCpos2Cpos{E7CoordMode=t_p.CfgE7Coordinate,MaxExt=t_p.CfgE7UpLim,MinExt=t_p.CfgE7DwLim,MixDist=t_p.CfgPtMinDist2,RlE7Pos=t_p.CfgPtRlE7Pos,InCpos=t_p.SnrPlacePos,OutCpos=t_p.CopyPlacePos}
+    IF t_p.SnrPlaceId.value > t_p.CfgNumPlPoint.value THEN
+        /*码放编号不正确*/
+        SetRtWarning{msg="Unkonwn Box Id",eid=81001}
+        t_l.PkRefStatus.value = 1
+        GOTO PICK_ACK
+    ENDIF
+    CheckCposXYZ{P=t_p.SnrPickPos,E7CoordMode=t_p.CfgE7Coordinate,LimUp=t_p.CfgPkMaxData,LimDown=t_p.CfgPkMinData,Res=t_l.PkRefStatus}
+    IF t_l.PkRefStatus.value ~= 0 THEN
+        /*抓取数据不可达*/
+        t_l.PkRefStatus.value = 2
+        t_g.REAL_1.value = t_p.SnrPickPos.x
+        t_g.REAL_2.value = t_p.SnrPickPos.y
+        t_g.REAL_3.value = t_p.SnrPickPos.z
+        GOTO PICK_ACK
+    ENDIF
+    IF t_p.CfgBoxOrConv.value == true THEN
+        /*检查码垛数据是否可达*/
+        IF t_p.CfgNumAxis.value > 6 THEN
+            /*存在地轨轴时，将预设的地轨位置给码垛坐标*/
+            --t_p.SnrPlacePos.a7 = t_p.CfgBoxPlaceE7Pos.value [ t_p.SnrPlaceId.value ]
+        ENDIF
+        /*不能进行数组坐标赋值，只能一个个赋值*/
+        IF t_p.SnrPlaceId.value == 1 THEN
+            t_l.PosTrans3.x = t_g.CfgBoxLimitUp [ 1 ] .x
+            t_l.PosTrans3.y = t_g.CfgBoxLimitUp [ 1 ] .y
+            t_l.PosTrans3.z = t_g.CfgBoxLimitUp [ 1 ] .z
+            t_l.PosTrans4.x = t_g.CfgBoxLimitDown [ 1 ] .x
+            t_l.PosTrans4.y = t_g.CfgBoxLimitDown [ 1 ] .y
+            t_l.PosTrans4.z = t_g.CfgBoxLimitDown [ 1 ] .z
+        ELSIF t_p.SnrPlaceId.value == 2 THEN
+            t_l.PosTrans3.x = t_g.CfgBoxLimitUp [ 2 ] .x
+            t_l.PosTrans3.y = t_g.CfgBoxLimitUp [ 2 ] .y
+            t_l.PosTrans3.z = t_g.CfgBoxLimitUp [ 2 ] .z
+            t_l.PosTrans4.x = t_g.CfgBoxLimitDown [ 2 ] .x
+            t_l.PosTrans4.y = t_g.CfgBoxLimitDown [ 2 ] .y
+            t_l.PosTrans4.z = t_g.CfgBoxLimitDown [ 2 ] .z
+        ELSIF t_p.SnrPlaceId.value == 3 THEN
+            t_l.PosTrans3.x = t_g.CfgBoxLimitUp [ 3 ] .x
+            t_l.PosTrans3.y = t_g.CfgBoxLimitUp [ 3 ] .y
+            t_l.PosTrans3.z = t_g.CfgBoxLimitUp [ 3 ] .z
+            t_l.PosTrans4.x = t_g.CfgBoxLimitDown [ 3 ] .x
+            t_l.PosTrans4.y = t_g.CfgBoxLimitDown [ 3 ] .y
+            t_l.PosTrans4.z = t_g.CfgBoxLimitDown [ 3 ] .z
+        ELSIF t_p.SnrPlaceId.value == 4 THEN
+            t_l.PosTrans3.x = t_g.CfgBoxLimitUp [ 4 ] .x
+            t_l.PosTrans3.y = t_g.CfgBoxLimitUp [ 4 ] .y
+            t_l.PosTrans3.z = t_g.CfgBoxLimitUp [ 4 ] .z
+            t_l.PosTrans4.x = t_g.CfgBoxLimitDown [ 4 ] .x
+            t_l.PosTrans4.y = t_g.CfgBoxLimitDown [ 4 ] .y
+            t_l.PosTrans4.z = t_g.CfgBoxLimitDown [ 4 ] .z
+        ELSIF t_p.SnrPlaceId.value == 6 THEN
+            t_l.PosTrans3.x = t_g.CfgBoxLimitUp [ 5 ] .x
+            t_l.PosTrans3.y = t_g.CfgBoxLimitUp [ 5 ] .y
+            t_l.PosTrans3.z = t_g.CfgBoxLimitUp [ 5 ] .z
+            t_l.PosTrans4.x = t_g.CfgBoxLimitDown [ 5 ] .x
+            t_l.PosTrans4.y = t_g.CfgBoxLimitDown [ 5 ] .y
+            t_l.PosTrans4.z = t_g.CfgBoxLimitDown [ 5 ] .z
+        ELSIF t_p.SnrPlaceId.value == 6 THEN
+            t_l.PosTrans3.x = t_g.CfgBoxLimitUp [ 6 ] .x
+            t_l.PosTrans3.y = t_g.CfgBoxLimitUp [ 6 ] .y
+            t_l.PosTrans3.z = t_g.CfgBoxLimitUp [ 6 ] .z
+            t_l.PosTrans4.x = t_g.CfgBoxLimitDown [ 6 ] .x
+            t_l.PosTrans4.y = t_g.CfgBoxLimitDown [ 6 ] .y
+            t_l.PosTrans4.z = t_g.CfgBoxLimitDown [ 6 ] .z
+        ELSIF t_p.SnrPlaceId.value == 7 THEN
+            t_l.PosTrans3.x = t_g.CfgBoxLimitUp [ 7 ] .x
+            t_l.PosTrans3.y = t_g.CfgBoxLimitUp [ 7 ] .y
+            t_l.PosTrans3.z = t_g.CfgBoxLimitUp [ 7 ] .z
+            t_l.PosTrans4.x = t_g.CfgBoxLimitDown [ 7 ] .x
+            t_l.PosTrans4.y = t_g.CfgBoxLimitDown [ 7 ] .y
+            t_l.PosTrans4.z = t_g.CfgBoxLimitDown [ 7 ] .z
+        ELSIF t_p.SnrPlaceId.value == 8 THEN
+            t_l.PosTrans3.x = t_g.CfgBoxLimitUp [ 8 ] .x
+            t_l.PosTrans3.y = t_g.CfgBoxLimitUp [ 8 ] .y
+            t_l.PosTrans3.z = t_g.CfgBoxLimitUp [ 8 ] .z
+            t_l.PosTrans4.x = t_g.CfgBoxLimitDown [ 8 ] .x
+            t_l.PosTrans4.y = t_g.CfgBoxLimitDown [ 8 ] .y
+            t_l.PosTrans4.z = t_g.CfgBoxLimitDown [ 8 ] .z
+        ENDIF
+        CheckCposXYZ{P=t_p.SnrPlacePos,E7CoordMode=t_p.CfgE7Coordinate,LimUp=t_l.PosTrans3,LimDown=t_l.PosTrans4,Res=t_l.PkRefStatus}
+        IF t_l.PkRefStatus.value ~= 0 THEN
+            /*码垛数据不可达*/
+            t_l.PkRefStatus.value = 3
+            t_g.REAL_4.value = t_p.SnrPlacePos.x
+            t_g.REAL_5.value = t_p.SnrPlacePos.y
+            t_g.REAL_6.value = t_p.SnrPlacePos.z
+            GOTO PICK_ACK
+        ENDIF
+    ENDIF
+    /*反馈可达性*/
+    PICK_ACK:
+    t_l.OutputAddr.value = t_p.BusOutput.BusIoSt + 8
+    BusSetNUM{Type="UINT8",StAddrInt=t_l.OutputAddr,Int=t_l.PkRefStatus}
+    t_p.BusOutput.RobMsgType = t_p.BusOutput.RobMsgType + 1
+    BusNewTell{BusIn=t_p.BusInput,BusOut=t_p.BusOutput,Timeout=3000,Result=t_l.MixStatus}
+    IF t_l.MixStatus.value ~= 0 THEN
+        /*反馈可达性失败*/
+        SetRtWarning{msg="Failed Ack Pick Pos Ref ",eid=81001}
+        GOTO ENDLOOP
+    ENDIF
+    IF t_l.PkRefStatus.value ~= 0 THEN
+        /*不可达时继续请求下一个任务*/
+        t_p.GlobalToSensorCmd.value = 255
+        Wait{T=500}
+    ELSE
+        /*可达时通知前台执行任务*/
+        t_p.GlobalToSensorCmd.value = 0
+        t_p.GlobalToRobotCmd.value = 3
+        t_p.GlobalToRobotFlg.value = true
+    ENDIF
+ELSIF t_p.GlobalToSensorCmd.value == 255 THEN
+    /*获取任务*/
+    t_p.BusOutput.RobMsgType = t_p.BusOutput.RobMsgType + 1
+    t_p.BusOutput.JobId = 255
+    BusNewTell{BusIn=t_p.BusInput,BusOut=t_p.BusOutput,Timeout=t_p.BusTimeout,Result=t_l.MixStatus}
+    IF t_l.MixStatus.value ~= 0 THEN
+        /*获取任务失败，结束程序*/
+        SetRtWarning{msg="Failed Get Task",eid=81255}
+        GOTO ENDLOOP
+    ELSE
+        t_p.GlobalTaskId.value = t_p.BusInput.JobId
+        IF t_p.GlobalTaskId.value == 1 THEN
+            t_p.GlobalToSensorCmd.value = 2
+        ELSIF t_p.GlobalTaskId.value == 2 THEN
+            t_p.GlobalToSensorCmd.value = 4
+        ELSE
+            /*无效的任务，结束程序*/
+            SetRtWarning{msg="Failed Get Task",eid=81255}
+            GOTO ENDLOOP
+        ENDIF
+    ENDIF
+ELSE
+    SetRtToErr{msg="Unknow GlobalToSensorCmd ",eid=91011}
+    t_p.GlobalToSensorCmd.value = 0
+ENDIF
+GOTO LOOP
+ENDLOOP:
+t_p.GlobalToRobotCmd.value = 4
+t_p.GlobalToRobotFlg.value = true
+t_p.GlobalToSensorCmd.value = 0
+End;

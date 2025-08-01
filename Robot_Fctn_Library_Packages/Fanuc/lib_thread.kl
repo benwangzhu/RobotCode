@@ -1,0 +1,182 @@
+program lib_thread
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_thread
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2022 - 11 - 02
+--   Modification Data    ==   2022 - 11 - 02
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+-- 2022 - 11 - 02 ++ thrd_create_() ==> integer
+
+-- 2022 - 11 - 02 ++ thrd_pause_() ==> integer
+
+-- 2022 - 11 - 02 ++ thrd_cont_() ==> integer
+
+-- 2022 - 11 - 02 ++ thrd_end_()
+
+-- 2022 - 11 - 02 ++ task_status_() ==> integer
+
+-- 2022 - 11 - 02 ++ post_semas_()
+
+-- 2022 - 11 - 02 ++ clear_sema_()
+
+-- 2022 - 11 - 02 ++ pead_sema_() ==> boolean
+
+-- 2022 - 11 - 02 ++ sema_count_() ==> integer
+
+--
+
+%nolockgroup
+%nobusylamp
+%nopause = tpenable + command + error
+%comment = 'Thread 221129'
+
+%include include/lib_transform_t
+
+	
+%include include/lib_thread_h
+
+begin
+
+end lib_thread
+
+routine thrd_create_
+var
+    RunStat             : integer
+    TaskNo				: integer
+    IntVal				: integer
+    StrVal				: string[24]
+begin
+    run_task(TaskName, RunLine, NoShftPause, false, 0, RunStat)
+    if RunStat <> CC_SUCCESS then ; return(-abs(RunStat)); endif
+    get_tsk_info(TaskName, TaskNo, TSK_STATUS, IntVal, StrVal, RunStat)
+    if RunStat <> CC_SUCCESS then ; return(-abs(RunStat)); endif
+    return(TaskNo)
+end thrd_create_ 
+
+routine thrd_pause_
+var
+    PasueStat    : integer  
+    ThisTask	 : string[16]  
+    TaskNo				: integer
+    IntVal				: integer
+    StrVal				: string[24]
+begin
+    ThisTask = TaskName
+    if ThisTask = '*' then ; ThisTask = '*ALL*' ; endif
+    pause_task(TaskName, false, false, PasueStat)
+    if PasueStat <> CC_SUCCESS then ; return(-abs(PasueStat)); endif
+    get_tsk_info(TaskName, TaskNo, TSK_STATUS, IntVal, StrVal, PasueStat)
+    if PasueStat <> CC_SUCCESS then ; return(-abs(PasueStat)); endif
+    return(TaskNo)
+end thrd_pause_ 
+
+routine thrd_cont_
+var
+    ContStat    : integer
+    TaskNo				: integer
+    IntVal				: integer
+    StrVal				: string[24]
+begin
+    cont_task(TaskName, ContStat)
+    if ContStat <> CC_SUCCESS then ; return(-abs(ContStat)); endif
+    get_tsk_info(TaskName, TaskNo, TSK_STATUS, IntVal, StrVal, ContStat)
+    if ContStat <> CC_SUCCESS then ; return(-abs(ContStat)); endif
+    return(TaskNo)
+end thrd_cont_ 
+
+routine thrd_end_
+var                                                    
+    AbortStat    : integer  
+    ThisTask	 : string[16]  
+begin
+    ThisTask = TaskName
+    if ThisTask = '*' then ; ThisTask = '*ALL*' ; endif
+    abort_task(ThisTask, false, true, AbortStat)
+    if AbortStat <> CC_SUCCESS then ; abort_task(ThisTask, false, true, AbortStat) ; endif
+end thrd_end_
+
+routine task_status_
+
+var
+    TaskNo				: integer
+    IntVal				: integer
+    StrVal				: string[24]
+    GetStatus			: integer
+
+begin
+
+    get_tsk_info(TaskName, TaskNo, TSK_STATUS, IntVal, StrVal, GetStatus)
+
+    if GetStatus <> CC_SUCCESS then ; return(-abs(GetStatus)) ; endif
+
+    return(IntVal)
+
+end task_status_
+
+
+routine post_semas_
+var
+    I                   : integer
+begin
+    for I = 1 to SemNum do ; post_sema(SemId); endfor
+end post_semas_
+
+routine clear_sema_
+begin
+    clear_sema(SemId)
+end clear_sema_
+
+routine pead_sema_
+var 
+    IsTimeout           : boolean
+    MaxTime             : integer
+begin
+    MaxTime = abs(WaitMaxTime)
+    if MaxTime = 0 then ; MaxTime = -1; endif
+    pend_sema(SemId, MaxTime, IsTimeout)
+    return(IsTimeout)
+end pead_sema_
+
+routine sema_count_
+begin
+
+    return(sema_count(SemId))
+end sema_count_

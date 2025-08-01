@@ -1,0 +1,25 @@
+program weld_stop
+--***********************************************************
+--
+-- file Name: weld_start
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2022 - 03 - 09
+--   Modification Data    ==   2022 - 03 - 10
+--
+-- Author: 
+--
+-- Version: 1.0
+%comment = 'WELD_STOP 1103'
+%nolockgroup
+%nopause = error + command + tpenable
+-- %include include/robot_helper_t
+
+%include include/lib_tp_if_h
+
+routine weld_start_ from weld_start
+routine weld_stop_ from weld_start
+begin 
+    weld_stop_
+end weld_stop

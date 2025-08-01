@@ -1,0 +1,460 @@
+--***********************************************************
+--
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
+-- file Name: lib_packages_h
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2024 - 09 - 12
+--   Modification Data    ==   2025 - 05 - 06
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+--***********************************************************
+-- func spack_head_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : Header        * pack_head_t *		* 写入Head数据的变量 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议写入Head数据
+--***********************************************************
+routine spack_head_(ThisSock : sock_cfg_t; ThisFile : file; Header : pack_head_t) : integer from lib_packages
+
+--***********************************************************
+-- func spack_body_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : Bodyer        * busout_t *		    * 写入Body数据的变量 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议写入Body数据
+--***********************************************************
+routine spack_body_(ThisSock : sock_cfg_t; ThisFile : file; Bodyer : busout_t) : integer from lib_packages
+
+--***********************************************************
+-- func spack_tail_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : Tail          * pack_tail_t *		* 写入Tail数据的变量 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议写入Tail数据
+--***********************************************************
+routine spack_tail_(ThisSock : sock_cfg_t; ThisFile : file; Tail : pack_tail_t) : integer from lib_packages
+
+--***********************************************************
+-- func rpack_head_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : Header        * pack_head_t *		* 读取Head数据的变量 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议读取Head数据
+--***********************************************************
+routine rpack_head_(ThisSock : sock_cfg_t; ThisFile : file; Header : pack_head_t) : integer from lib_packages
+
+--***********************************************************
+-- func rpack_body_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--    out : Bodyer        * busin_t *		    * 读取Body数据的变量 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议读取Body数据
+--***********************************************************
+routine rpack_body_(ThisSock : sock_cfg_t; ThisFile : file; Bodyer : busin_t) : integer from lib_packages
+
+--***********************************************************
+-- func rpack_tail_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--    out : Tail          * pack_tail_t *		* 读取Tail数据的变量 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议读取Tail数据
+--***********************************************************
+routine rpack_tail_(ThisSock : sock_cfg_t; ThisFile : file; Tail : pack_tail_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd002_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ01_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd002协议处理
+--***********************************************************
+routine pack_cmd002_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ01_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd003_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * xyzwprext *		    * 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd003协议处理
+--***********************************************************
+routine pack_cmd003_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : xyzwprext) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd009_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * xyzwprext *		    * 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd009协议处理
+--***********************************************************
+routine pack_cmd009_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : xyzwprext) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd010_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * xyzwprext *		    * 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd010协议处理
+--***********************************************************
+routine pack_cmd010_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : xyzwprext) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd011_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * xyzwprext *		    * 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd011协议处理
+--***********************************************************
+routine pack_cmd011_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : xyzwprext) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd012_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ01_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd012协议处理
+--***********************************************************
+routine pack_cmd012_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ01_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd013_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ01_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd013协议处理
+--***********************************************************
+routine pack_cmd013_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ01_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd014_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ01_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd014协议处理
+--***********************************************************
+routine pack_cmd014_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ01_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd017_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ07_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd017协议处理
+--***********************************************************
+routine pack_cmd017_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ07_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd018_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ07_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd018协议处理
+--***********************************************************
+routine pack_cmd018_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ07_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd020_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * xyzwprext *		    * 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd020协议处理
+--***********************************************************
+routine pack_cmd020_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : xyzwprext) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd021_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ01_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd021协议处理
+--***********************************************************
+routine pack_cmd021_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ01_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd022_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ01_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd022协议处理
+--***********************************************************
+routine pack_cmd022_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ01_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd026_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ01_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd026协议处理
+--***********************************************************
+routine pack_cmd026_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ01_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd027_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ08_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd027协议处理
+--***********************************************************
+routine pack_cmd027_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ08_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd129_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * xyzwprext *		    * 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd129协议处理
+--***********************************************************
+routine pack_cmd129_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : xyzwprext) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd130_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * jointpos *		    * 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd130协议处理
+--***********************************************************
+routine pack_cmd130_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : jointpos) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd131_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ02_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd131协议处理
+--***********************************************************
+routine pack_cmd131_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ02_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd132_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ07_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd132协议处理
+--***********************************************************
+routine pack_cmd132_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ07_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd133_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ07_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd133协议处理
+--***********************************************************
+routine pack_cmd133_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ07_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd137_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ03_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd137协议处理
+--***********************************************************
+routine pack_cmd137_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ03_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd145_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ01_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd145协议处理
+--***********************************************************
+routine pack_cmd145_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ01_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd148_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ08_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd148协议处理
+--***********************************************************
+routine pack_cmd148_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ08_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd151_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ06_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd151协议处理
+--***********************************************************
+routine pack_cmd151_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ06_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd254_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ07_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd254协议处理
+--***********************************************************
+routine pack_cmd254_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ07_t) : integer from lib_packages
+
+--***********************************************************
+-- func pack_cmd255_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ07_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd255协议处理
+--***********************************************************
+routine pack_cmd255_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ07_t) : integer from lib_packages
+
+
+
+
+
+
+

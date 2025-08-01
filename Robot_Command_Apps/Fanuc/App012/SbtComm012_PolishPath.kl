@@ -1,0 +1,49 @@
+program SbtPoliPath
+--***********************************************************
+--
+-- file Name: SbtPoliPath
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 05 - 06
+--
+-- Author: 
+--
+-- Version: 1.0
+%comment = 'SBT POLISH PATH 250507'
+%nolockgroup
+%nobusylamp
+%nopause = error + command + tpenable
+
+%include include/lib_logs_t
+%include include/lib_inst_t
+%include include/lib_socket_t
+%include include/lib_transform_t
+%include sbt_comm12_t
+%include sbt_comm12_global
+
+var
+    JobId                               : integer 
+    PointType                           : integer 
+    ProcNum                             : integer 
+    PointLen                            : real 
+    TpeProgram                          : string[30]     
+    Status                              : integer            
+
+%include include/lib_inst_h
+%include include/lib_tp_if_h
+%include include/lib_string_h
+
+begin 
+    JobId       = get_iparm_(1)             --任务编号
+    PointType   = get_iparm_(2)             --获取点位请求类型
+    ProcNum     = get_iparm_(3)             --获取路径编号
+    PointLen    = get_rparm_(4)             --获取点位生成间距
+    TpeProgram  = get_sparm_(5)             --获取轨迹所生成在的TPE程序名
+
+    Status = f004_it01_(PolishSock, TpeProgram, JobId, PointType, ProcNum, PointLen)
+    if Status <> OK then  
+        post_err(CC_UALARM, '打磨轨迹获取失败![Status:' + int_to_str_(Status) + ']', 0, CC_ABORT)
+    endif 
+end SbtPoliPath

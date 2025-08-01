@@ -1,0 +1,1294 @@
+module lib_plc_if(sysmodule, noview)
+!***********************************************************
+!
+! Copyright 2018 - 2024 speedbot All Rights reserved.
+!
+! File Name: lib_plc_if
+!
+! Description:
+!   Language             ==   Rapid for ABB ROBOT
+!   Date                 ==   2021 - 10 - 14
+!   Modification Data    ==   2024 - 03 - 30
+!
+! Author: speedbot
+!
+! Version: 2.0
+!*********************************************************************************************************!
+!                                                                                                         !
+!                                                      .^^^                                               !
+!                                               .,~<c+{{{{{{t,                                            ! 
+!                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          !
+!                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        !
+!                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       !
+!                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    !
+!                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  !
+!                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                !
+!                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              !
+!                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             !
+!                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             !
+!                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             !
+!                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              !
+!                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              !
+!                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               !
+!                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               !
+!                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                !
+!                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                !
+!                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 !
+!                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 !
+!                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  !
+!                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  !
+!                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    !                         
+!                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         !
+!                                         ^!{{{{{{{{t!",^`                                                !
+!                                                                                                         !
+!*********************************************************************************************************!
+!
+! 2021 - 10 - 14 ++ plc_io_define_()
+
+! 2021 - 10 - 14 ++ zone_ctrl_()
+
+! 2021 - 04 - 29 ++ home_io_()
+
+! 2021 - 04 - 29 ++ at_home_()
+
+
+! robot input
+local const string IO_DI_MOTORS_OFF         := "In1";
+local const string IO_DI_MOTORS_ON          := "In2";
+local const string IO_DI_QUICK_STOP         := "In3";
+local const string IO_DI_STOP               := "In4";
+local const string IO_DI_RESET_FAULT        := "In5";
+local const string IO_DI_START_MAIN         := "In6";
+local const string IO_DI_START              := "In7";
+local const string IO_DI_PP_MAIN            := "In8";
+local const string IO_DI_RESET_ESTOP        := "In17";
+local const string IO_DI_SYS_RESTART        := "In18";
+
+local const string IO_DI_ZONE1_READY        := "In21";
+local const string IO_DI_ZONE2_READY        := "In22";
+local const string IO_DI_ZONE3_READY        := "In23";
+local const string IO_DI_ZONE4_READY        := "In24";
+local const string IO_DI_ZONE5_READY        := "In25";
+local const string IO_DI_ZONE6_READY        := "In26";
+local const string IO_DI_ZONE7_READY        := "In27";
+local const string IO_DI_ZONE8_READY        := "In28";
+local const string IO_DI_ZONE9_READY        := "In29";
+local const string IO_DI_ZONE10_READY       := "In30";
+local const string IO_DI_ZONE11_READY       := "In31";
+local const string IO_DI_ZONE12_READY       := "In32";
+
+local const string IO_DI_ENDOFSEGMENT       := "In41";
+local const string IO_DI_RESERVED42         := "In42"; 
+local const string IO_DI_RESERVED43         := "In43"; 
+local const string IO_DI_RESERVED44         := "In44"; 
+
+local const string IO_DI_TOOL_ECHO01        := "In45"; 
+local const string IO_DI_TOOL_ECHO02        := "In46"; 
+local const string IO_DI_TOOL_ECHO03        := "In47"; 
+local const string IO_DI_TOOL_ECHO04        := "In48"; 
+local const string IO_DI_TOOL_ECHO05        := "In49"; 
+local const string IO_DI_TOOL_ECHO06        := "In50"; 
+local const string IO_DI_TOOL_ECHO07        := "In51"; 
+local const string IO_DI_TOOL_ECHO08        := "In52"; 
+local const string IO_DI_TOOL_ECHO09        := "In53"; 
+local const string IO_DI_TOOL_ECHO10        := "In54"; 
+local const string IO_DI_TOOL_ECHO11        := "In55"; 
+local const string IO_DI_TOOL_ECHO12        := "In56"; 
+local const string IO_DI_EXT_AXIS1ECHO      := "In57"; 
+local const string IO_DI_EXT_AXIS2ECHO      := "In58"; 
+local const string IO_DI_EXT_AXIS3ECHO      := "In59"; 
+local const string IO_DI_RESERVED60         := "In60"; 
+local const string IO_DI_RESERVED61         := "In61"; 
+local const string IO_DI_RESERVED62         := "In62"; 
+local const string IO_DI_RESERVED63         := "In63"; 
+local const string IO_DI_RESERVED64         := "In64"; 
+local const string IO_DI_RESERVED65         := "In65"; 
+local const string IO_DI_RESERVED66         := "In66"; 
+local const string IO_DI_RESERVED67         := "In67"; 
+local const string IO_DI_CARME1_PICT        := "In68"; 
+local const string IO_DI_CARME2_PICT        := "In69"; 
+local const string IO_DI_CARME3_PICT        := "In70"; 
+local const string IO_DI_LASER1_ON          := "In71"; 
+local const string IO_DI_LASER2_ON          := "In72"; 
+local const string IO_DI_EXT_DEV_ECHO01     := "In73"; 
+local const string IO_DI_EXT_DEV_ECHO02     := "In74"; 
+local const string IO_DI_EXT_DEV_ECHO03     := "In75"; 
+local const string IO_DI_EXT_DEV_ECHO04     := "In76"; 
+local const string IO_DI_EXT_DEV_ECHO05     := "In77"; 
+local const string IO_DI_EXT_DEV_ECHO06     := "In77"; 
+local const string IO_DI_EXT_DEV_ECHO07     := "In79"; 
+local const string IO_DI_EXT_DEV_ECHO08     := "In80"; 
+local const string IO_DI_EXT_DEV_ECHO09     := "In81"; 
+local const string IO_DI_EXT_DEV_ECHO10     := "In82"; 
+local const string IO_DI_EXT_DEV_ECHO11     := "In83"; 
+local const string IO_DI_EXT_DEV_ECHO12     := "In84"; 
+local const string IO_DI_RESERVED85         := "In85"; 
+local const string IO_DI_RESERVED86         := "In86"; 
+local const string IO_DI_RESERVED87         := "In87"; 
+local const string IO_DI_RESERVED88         := "In88"; 
+local const string IO_DI_RESERVED89         := "In89"; 
+local const string IO_DI_RESERVED90         := "In90"; 
+local const string IO_DI_RESERVED91         := "In91"; 
+local const string IO_DI_RESERVED92         := "In92"; 
+local const string IO_DI_RESERVED93         := "In93"; 
+local const string IO_DI_RESERVED94         := "In94"; 
+local const string IO_DI_RESERVED95         := "In95"; 
+local const string IO_DI_RESERVED96         := "In96"; 
+
+
+local const string IO_GI_PROGNO             := "Gi1";
+local const string IO_GI_DICISIONCODE       := "Gi2";
+local const string IO_GI_JOB_INFO01         := "Gi3";
+local const string IO_GI_JOB_INFO02         := "Gi4";
+local const string IO_GI_JOB_INFO03         := "Gi5";
+local const string IO_GI_JOB_INFO04         := "Gi6";
+local const string IO_GI_AXIS01             := "Gi11";
+
+
+! robot output
+local const string IO_DO_MOTOR_OFF          := "Out1";
+local const string IO_DO_MOTOR_ON           := "Out2";
+local const string IO_DO_TASK_EXEC          := "Out3";
+local const string IO_DO_MOT_OFF_STA        := "Out4";
+local const string IO_DO_MOT_ON_STA         := "Out5";
+local const string IO_DO_EXEC_ERROR         := "Out6";
+local const string IO_DO_AT_HOME            := "Out7";
+local const string IO_DO_IN_AUTO            := "Out8";
+local const string IO_DO_E_STOP             := "Out9";
+local const string IO_DO_IN_BUSY            := "Out10";
+local const string IO_DO_CYCLE_ON           := "Out19";
+
+local const string IO_DO_REQ_ZONE1          := "Out21";
+local const string IO_DO_REQ_ZONE2          := "Out22";
+local const string IO_DO_REQ_ZONE3          := "Out23";
+local const string IO_DO_REQ_ZONE4          := "Out24";
+local const string IO_DO_REQ_ZONE5          := "Out25";
+local const string IO_DO_REQ_ZONE6          := "Out26";
+local const string IO_DO_REQ_ZONE7          := "Out27";
+local const string IO_DO_REQ_ZONE8          := "Out28";
+local const string IO_DO_REQ_ZONE9          := "Out29";
+local const string IO_DO_REQ_ZONE10         := "Out30";
+local const string IO_DO_REQ_ZONE11         := "Out31";
+local const string IO_DO_REQ_ZONE12         := "Out32";
+
+local const string IO_DO_ENDOFSEGMENTREQ    := "Out41";
+local const string IO_DO_RESERVED42         := "Out42"; 
+local const string IO_DO_RESERVED43         := "Out43"; 
+local const string IO_DO_RESERVED44         := "Out44"; 
+local const string IO_DO_TOOL_CTRL01        := "Out45"; 
+local const string IO_DO_TOOL_CTRL02        := "Out46"; 
+local const string IO_DO_TOOL_CTRL03        := "Out47"; 
+local const string IO_DO_TOOL_CTRL04        := "Out48"; 
+local const string IO_DO_TOOL_CTRL05        := "Out49"; 
+local const string IO_DO_TOOL_CTRL06        := "Out50"; 
+local const string IO_DO_TOOL_CTRL07        := "Out51"; 
+local const string IO_DO_TOOL_CTRL08        := "Out52"; 
+local const string IO_DO_TOOL_CTRL09        := "Out53"; 
+local const string IO_DO_TOOL_CTRL10        := "Out54"; 
+local const string IO_DO_TOOL_CTRL11        := "Out55"; 
+local const string IO_DO_TOOL_CTRL12        := "Out56"; 
+local const string IO_DO_EXT_AXIS1CTRL      := "Out57"; 
+local const string IO_DO_EXT_AXIS2CTRL      := "Out58"; 
+local const string IO_DO_EXT_AXIS3CTRL      := "Out59"; 
+local const string IO_DO_RESERVED60         := "Out60"; 
+local const string IO_DO_RESERVED61         := "Out61"; 
+local const string IO_DO_RESERVED62         := "Out62"; 
+local const string IO_DO_RESERVED63         := "Out63"; 
+local const string IO_DO_RESERVED64         := "Out64"; 
+local const string IO_DO_RESERVED65         := "Out65"; 
+local const string IO_DO_RESERVED66         := "Out66"; 
+local const string IO_DO_RESERVED67         := "Out67"; 
+local const string IO_DO_CARME1_PICT        := "Out68"; 
+local const string IO_DO_CARME2_PICT        := "Out69"; 
+local const string IO_DO_CARME3_PICT        := "Out70"; 
+local const string IO_DO_LASER1_ON          := "Out71"; 
+local const string IO_DO_LASER2_ON          := "Out72"; 
+local const string IO_DO_EXT_DEV_CTRL01     := "Out73"; 
+local const string IO_DO_EXT_DEV_CTRL02     := "Out74"; 
+local const string IO_DO_EXT_DEV_CTRL03     := "Out75"; 
+local const string IO_DO_EXT_DEV_CTRL04     := "Out76"; 
+local const string IO_DO_EXT_DEV_CTRL05     := "Out77"; 
+local const string IO_DO_EXT_DEV_CTRL06     := "Out77"; 
+local const string IO_DO_EXT_DEV_CTRL07     := "Out79"; 
+local const string IO_DO_EXT_DEV_CTRL08     := "Out80"; 
+local const string IO_DO_EXT_DEV_CTRL09     := "Out81"; 
+local const string IO_DO_EXT_DEV_CTRL10     := "Out82"; 
+local const string IO_DO_EXT_DEV_CTRL11     := "Out83"; 
+local const string IO_DO_EXT_DEV_CTRL12     := "Out84"; 
+local const string IO_DO_RESERVED85         := "Out85"; 
+local const string IO_DO_RESERVED86         := "Out86"; 
+local const string IO_DO_RESERVED87         := "Out87"; 
+local const string IO_DO_RESERVED88         := "Out88"; 
+local const string IO_DO_RESERVED89         := "Out89"; 
+local const string IO_DO_RESERVED90         := "Out90"; 
+local const string IO_DO_RESERVED91         := "Out91"; 
+local const string IO_DO_RESERVED92         := "Out92"; 
+local const string IO_DO_RESERVED93         := "Out93"; 
+local const string IO_DO_RESERVED94         := "Out94"; 
+local const string IO_DO_RESERVED95         := "Out95"; 
+local const string IO_DO_RESERVED96         := "Out96"; 
+local const string IO_DO_IN_ZONE01          := "Out241"; 
+local const string IO_DO_IN_ZONE02          := "Out242"; 
+local const string IO_DO_IN_ZONE03          := "Out243"; 
+local const string IO_DO_IN_ZONE04          := "Out244"; 
+local const string IO_DO_IN_ZONE05          := "Out245"; 
+local const string IO_DO_IN_ZONE06          := "Out246"; 
+local const string IO_DO_IN_ZONE07          := "Out247"; 
+local const string IO_DO_IN_ZONE08          := "Out248"; 
+local const string IO_DO_IN_ZONE09          := "Out249"; 
+local const string IO_DO_IN_ZONE10          := "Out250"; 
+local const string IO_DO_IN_ZONE11          := "Out251"; 
+local const string IO_DO_IN_ZONE12          := "Out252"; 
+
+local const string IO_GO_PROG_NO            := "Go1";
+local const string IO_GO_PATHSEGMENT        := "Go2";
+local const string IO_GO_JOB_INFO01         := "Go3";
+local const string IO_GO_JOB_INFO02         := "Go4";
+local const string IO_GO_JOB_INFO03         := "Go5";
+local const string IO_GO_JOB_INFO04         := "Go6";
+local const string IO_GO_CHANNEL01          := "Go7";
+local const string IO_GO_CHANNEL02          := "Go8";
+local const string IO_GO_CHANNEL03          := "Go9";
+local const string IO_GO_CHANNEL04          := "Go10";
+local const string IO_GO_AXIS01             := "Go11";
+
+local var wzstationary HomeZone;
+
+!***********************************************************
+! func plc_io_define_()
+!***********************************************************
+! 
+!***********************************************************
+proc plc_io_define_()
+    aliasio IO_GI_PROGNO,       GiProgNo;
+    aliasio IO_GI_DICISIONCODE, GiDicisionCode;
+    aliasio IO_GI_JOB_INFO01,   GiJobInfo01;
+    aliasio IO_GI_JOB_INFO02,   GiJobInfo02;
+    aliasio IO_GI_JOB_INFO03,   GiJobInfo03;
+    aliasio IO_GI_JOB_INFO04,   GiJobInfo04;
+    aliasio IO_GI_AXIS01,       GiAxis01;
+
+    aliasio IO_GO_PROG_NO,      GoProgNo;
+    aliasio IO_GO_PATHSEGMENT,  GoPathSegment;
+    aliasio IO_GO_JOB_INFO01,   GoJobInfo01;
+    aliasio IO_GO_JOB_INFO02,   GoJobInfo02;
+    aliasio IO_GO_JOB_INFO03,   GoJobInfo03;
+    aliasio IO_GO_JOB_INFO04,   GoJobInfo04;
+    aliasio IO_GO_CHANNEL01,    GoChannel01;
+    aliasio IO_GO_CHANNEL02,    GoChannel02;
+    aliasio IO_GO_CHANNEL03,    GoChannel03;
+    aliasio IO_GO_CHANNEL04,    GoChannel04;
+    aliasio IO_GO_AXIS01,       GoAxis01;
+
+    aliasio IO_DI_MOTORS_OFF,   DiMotorOffReq;
+    aliasio IO_DI_MOTORS_ON,    DiMotorOnReq;
+    aliasio IO_DI_QUICK_STOP,   DiQuickStopReq;
+    aliasio IO_DI_STOP,         DiStopReq;
+    aliasio IO_DI_RESET_FAULT,  DiRstExecErrReq;
+    aliasio IO_DI_START_MAIN,   DiStartAtMainReq;
+    aliasio IO_DI_START,        DiStartReq;
+    aliasio IO_DI_PP_MAIN,      DiPpToMainReq;
+    aliasio IO_DI_RESET_ESTOP,  DiEStopReq;
+    aliasio IO_DI_SYS_RESTART,  DiSysRestartReq;
+
+    aliasio IO_DI_ZONE1_READY,  DiZone1Ready;
+    aliasio IO_DI_ZONE2_READY,  DiZone2Ready;
+    aliasio IO_DI_ZONE3_READY,  DiZone3Ready;
+    aliasio IO_DI_ZONE4_READY,  DiZone4Ready;
+    aliasio IO_DI_ZONE5_READY,  DiZone5Ready;
+    aliasio IO_DI_ZONE6_READY,  DiZone6Ready;
+    aliasio IO_DI_ZONE7_READY,  DiZone7Ready;
+    aliasio IO_DI_ZONE8_READY,  DiZone8Ready;
+    aliasio IO_DI_ZONE9_READY,  DiZone9Ready;
+    aliasio IO_DI_ZONE10_READY, DiZone10Ready;
+    aliasio IO_DI_ZONE11_READY, DiZone11Ready;
+    aliasio IO_DI_ZONE12_READY, DiZone12Ready;
+    aliasio IO_DI_ENDOFSEGMENT, DiEndOfSegMent;
+    aliasio IO_DI_RESERVED42,   DiReserved42; 
+    aliasio IO_DI_RESERVED43,   DiReserved43; 
+    aliasio IO_DI_RESERVED44,   DiReserved44; 
+    aliasio IO_DI_TOOL_ECHO01,  DiToolEcho01; 
+    aliasio IO_DI_TOOL_ECHO02,  DiToolEcho02; 
+    aliasio IO_DI_TOOL_ECHO03,  DiToolEcho03; 
+    aliasio IO_DI_TOOL_ECHO04,  DiToolEcho04; 
+    aliasio IO_DI_TOOL_ECHO05,  DiToolEcho05; 
+    aliasio IO_DI_TOOL_ECHO06,  DiToolEcho06; 
+    aliasio IO_DI_TOOL_ECHO07,  DiToolEcho07; 
+    aliasio IO_DI_TOOL_ECHO08,  DiToolEcho08; 
+    aliasio IO_DI_TOOL_ECHO09,  DiToolEcho09; 
+    aliasio IO_DI_TOOL_ECHO10,  DiToolEcho10; 
+    aliasio IO_DI_TOOL_ECHO11,  DiToolEcho11; 
+    aliasio IO_DI_TOOL_ECHO12,  DiToolEcho12; 
+    aliasio IO_DI_EXT_AXIS1ECHO,  DiExtAxis1Echo; 
+    aliasio IO_DI_EXT_AXIS2ECHO,  DiExtAxis2Echo; 
+    aliasio IO_DI_EXT_AXIS3ECHO,  DiExtAxis3Echo; 
+    aliasio IO_DI_RESERVED60,  DiReserved60; 
+    aliasio IO_DI_RESERVED61,  DiReserved61; 
+    aliasio IO_DI_RESERVED62,  DiReserved62; 
+    aliasio IO_DI_RESERVED63,  DiReserved63; 
+    aliasio IO_DI_RESERVED64,  DiReserved64; 
+    aliasio IO_DI_RESERVED65,  DiReserved65; 
+    aliasio IO_DI_RESERVED66,  DiReserved66; 
+    aliasio IO_DI_RESERVED67,  DiReserved67; 
+    aliasio IO_DI_CARME1_PICT,  DiCarme1Pict; 
+    aliasio IO_DI_CARME2_PICT,  DiCarme2Pict; 
+    aliasio IO_DI_CARME3_PICT,  DiCarme3Pict; 
+    aliasio IO_DI_LASER1_ON,  DiLaser1On; 
+    aliasio IO_DI_LASER2_ON,  DiLaser2On; 
+    aliasio IO_DI_EXT_DEV_ECHO01,  DiExtDevEcho01; 
+    aliasio IO_DI_EXT_DEV_ECHO02,  DiExtDevEcho02; 
+    aliasio IO_DI_EXT_DEV_ECHO03,  DiExtDevEcho03; 
+    aliasio IO_DI_EXT_DEV_ECHO04,  DiExtDevEcho04; 
+    aliasio IO_DI_EXT_DEV_ECHO05,  DiExtDevEcho05; 
+    aliasio IO_DI_EXT_DEV_ECHO06,  DiExtDevEcho06; 
+    aliasio IO_DI_EXT_DEV_ECHO07,  DiExtDevEcho07; 
+    aliasio IO_DI_EXT_DEV_ECHO08,  DiExtDevEcho08; 
+    aliasio IO_DI_EXT_DEV_ECHO09,  DiExtDevEcho09; 
+    aliasio IO_DI_EXT_DEV_ECHO10,  DiExtDevEcho10; 
+    aliasio IO_DI_EXT_DEV_ECHO11,  DiExtDevEcho11; 
+    aliasio IO_DI_EXT_DEV_ECHO12,  DiExtDevEcho12; 
+    aliasio IO_DI_RESERVED85,  DiReserved85; 
+    aliasio IO_DI_RESERVED86,  DiReserved86; 
+    aliasio IO_DI_RESERVED87,  DiReserved87; 
+    aliasio IO_DI_RESERVED88,  DiReserved88; 
+    aliasio IO_DI_RESERVED89,  DiReserved89; 
+    aliasio IO_DI_RESERVED90,  DiReserved90; 
+    aliasio IO_DI_RESERVED91,  DiReserved91; 
+    aliasio IO_DI_RESERVED92,  DiReserved92; 
+    aliasio IO_DI_RESERVED93,  DiReserved93; 
+    aliasio IO_DI_RESERVED94,  DiReserved94; 
+    aliasio IO_DI_RESERVED95,  DiReserved95; 
+    aliasio IO_DI_RESERVED96,  DiReserved96; 
+
+    aliasio IO_DO_MOTOR_OFF,    DoMotorOff;
+    aliasio IO_DO_MOTOR_ON,     DoMotorOn;
+    aliasio IO_DO_TASK_EXEC,    DoTaskExecuting;
+    aliasio IO_DO_MOT_OFF_STA,  DoMotorOffState;
+    aliasio IO_DO_MOT_ON_STA,   DoMotorOnState;
+    aliasio IO_DO_EXEC_ERROR,   DoExecutionError;
+    aliasio IO_DO_AT_HOME,      DoAtHome;
+    aliasio IO_DO_IN_AUTO,      DoInAuto;
+    aliasio IO_DO_E_STOP,       DoEStop;
+    aliasio IO_DO_IN_BUSY,      DoSysInBusy;
+    aliasio IO_DO_CYCLE_ON,     DoCycleOn;
+
+    aliasio IO_DO_REQ_ZONE1,    DoReqZone1;
+    aliasio IO_DO_REQ_ZONE2,    DoReqZone2;
+    aliasio IO_DO_REQ_ZONE3,    DoReqZone3;
+    aliasio IO_DO_REQ_ZONE4,    DoReqZone4;
+    aliasio IO_DO_REQ_ZONE5,    DoReqZone5;
+    aliasio IO_DO_REQ_ZONE6,    DoReqZone6;
+    aliasio IO_DO_REQ_ZONE7,    DoReqZone7;
+    aliasio IO_DO_REQ_ZONE8,    DoReqZone8;
+    aliasio IO_DO_REQ_ZONE9,    DoReqZone9;
+    aliasio IO_DO_REQ_ZONE10,   DoReqZone10;
+    aliasio IO_DO_REQ_ZONE11,   DoReqZone11;
+    aliasio IO_DO_REQ_ZONE12,   DoReqZone12;
+    aliasio IO_DO_ENDOFSEGMENTREQ, DoEndOfSegMentReq;
+    aliasio IO_DO_RESERVED42,   DoReserved42; 
+    aliasio IO_DO_RESERVED43,   DoReserved43; 
+    aliasio IO_DO_RESERVED44,   DoReserved44; 
+    aliasio IO_DO_TOOL_CTRL01,  DoToolCtrl01; 
+    aliasio IO_DO_TOOL_CTRL02,  DoToolCtrl02; 
+    aliasio IO_DO_TOOL_CTRL03,  DoToolCtrl03; 
+    aliasio IO_DO_TOOL_CTRL04,  DoToolCtrl04; 
+    aliasio IO_DO_TOOL_CTRL05,  DoToolCtrl05; 
+    aliasio IO_DO_TOOL_CTRL06,  DoToolCtrl06; 
+    aliasio IO_DO_TOOL_CTRL07,  DoToolCtrl07; 
+    aliasio IO_DO_TOOL_CTRL08,  DoToolCtrl08; 
+    aliasio IO_DO_TOOL_CTRL09,  DoToolCtrl09; 
+    aliasio IO_DO_TOOL_CTRL10,  DoToolCtrl10; 
+    aliasio IO_DO_TOOL_CTRL11,  DoToolCtrl11; 
+    aliasio IO_DO_TOOL_CTRL12,  DoToolCtrl12; 
+    aliasio IO_DO_EXT_AXIS1CTRL, DoExtAxis1Ctrl; 
+    aliasio IO_DO_EXT_AXIS2CTRL, DoExtAxis2Ctrl; 
+    aliasio IO_DO_EXT_AXIS3CTRL, DoExtAxis3Ctrl; 
+    aliasio IO_DO_RESERVED60,   DoReserved60; 
+    aliasio IO_DO_RESERVED61,   DoReserved61; 
+    aliasio IO_DO_RESERVED62,   DoReserved62; 
+    aliasio IO_DO_RESERVED63,   DoReserved63; 
+    aliasio IO_DO_RESERVED64,   DoReserved64; 
+    aliasio IO_DO_RESERVED65,   DoReserved65; 
+    aliasio IO_DO_RESERVED66,   DoReserved66; 
+    aliasio IO_DO_RESERVED67,   DoReserved67; 
+    aliasio IO_DO_CARME1_PICT,  DoCarme1Pict; 
+    aliasio IO_DO_CARME2_PICT,  DoCarme2Pict; 
+    aliasio IO_DO_CARME3_PICT,  DoCarme3Pict; 
+    aliasio IO_DO_LASER1_ON,    DoLaser1On; 
+    aliasio IO_DO_LASER2_ON,    DoLaser2On; 
+    aliasio IO_DO_EXT_DEV_CTRL01, DoExtDevCtrl01; 
+    aliasio IO_DO_EXT_DEV_CTRL02, DoExtDevCtrl01; 
+    aliasio IO_DO_EXT_DEV_CTRL03, DoExtDevCtrl01; 
+    aliasio IO_DO_EXT_DEV_CTRL04, DoExtDevCtrl01; 
+    aliasio IO_DO_EXT_DEV_CTRL05, DoExtDevCtrl01; 
+    aliasio IO_DO_EXT_DEV_CTRL06, DoExtDevCtrl01; 
+    aliasio IO_DO_EXT_DEV_CTRL07, DoExtDevCtrl01; 
+    aliasio IO_DO_EXT_DEV_CTRL08, DoExtDevCtrl01; 
+    aliasio IO_DO_EXT_DEV_CTRL09, DoExtDevCtrl01; 
+    aliasio IO_DO_EXT_DEV_CTRL10, DoExtDevCtrl01; 
+    aliasio IO_DO_EXT_DEV_CTRL11, DoExtDevCtrl01; 
+    aliasio IO_DO_EXT_DEV_CTRL12, DoExtDevCtrl01; 
+    aliasio IO_DO_RESERVED85,   DoReserved85; 
+    aliasio IO_DO_RESERVED86,   DoReserved86; 
+    aliasio IO_DO_RESERVED87,   DoReserved87; 
+    aliasio IO_DO_RESERVED88,   DoReserved88; 
+    aliasio IO_DO_RESERVED89,   DoReserved89; 
+    aliasio IO_DO_RESERVED90,   DoReserved90; 
+    aliasio IO_DO_RESERVED91,   DoReserved91; 
+    aliasio IO_DO_RESERVED92,   DoReserved92; 
+    aliasio IO_DO_RESERVED93,   DoReserved93; 
+    aliasio IO_DO_RESERVED94,   DoReserved94; 
+    aliasio IO_DO_RESERVED95,   DoReserved95; 
+    aliasio IO_DO_RESERVED96,   DoReserved96; 
+    aliasio IO_DO_IN_ZONE01,    DoInZone01; 
+    aliasio IO_DO_IN_ZONE02,    DoInZone02; 
+    aliasio IO_DO_IN_ZONE03,    DoInZone03; 
+    aliasio IO_DO_IN_ZONE04,    DoInZone04; 
+    aliasio IO_DO_IN_ZONE05,    DoInZone05; 
+    aliasio IO_DO_IN_ZONE06,    DoInZone06; 
+    aliasio IO_DO_IN_ZONE07,    DoInZone07; 
+    aliasio IO_DO_IN_ZONE08,    DoInZone08; 
+    aliasio IO_DO_IN_ZONE09,    DoInZone09; 
+    aliasio IO_DO_IN_ZONE10,    DoInZone10; 
+    aliasio IO_DO_IN_ZONE11,    DoInZone11; 
+    aliasio IO_DO_IN_ZONE12,    DoInZone12; 
+	
+	!error
+	! error
+	! errwrite "Aliasio Error", "Please Check Plc Io Config "; 
+	! stop;
+endproc
+
+
+!***********************************************************
+! func echo_channel_()
+!***********************************************************
+!	  in :  		* iodev *       *  *
+!     in :  		* num *         *  *
+!***********************************************************
+! 
+!***********************************************************
+proc echo_channel_(\byte channel1, \byte channel2, \byte channel3, \byte channel4)
+
+    if present(channel1) then setgo GoChannel01, channel1; else setgo GoChannel01, 0; endif
+    if present(channel2) then setgo GoChannel02, channel2; else setgo GoChannel02, 0; endif
+    if present(channel3) then setgo GoChannel03, channel3; else setgo GoChannel03, 0; endif
+    if present(channel4) then setgo GoChannel04, channel4; else setgo GoChannel04, 0; endif
+
+    !error
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        plc_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "echo_channel_", "Unknow Error !!!";
+        stop;
+    endif
+endproc
+
+!***********************************************************
+! func echo_job_info_()
+!***********************************************************
+!	  in :  		* iodev *       *  *
+!     in :  		* num *         *  *
+!***********************************************************
+! 
+!***********************************************************
+proc echo_job_info_(\byte Info1, \byte Info2, \byte Info3, \byte Info4)
+
+    if present(Info1) then setgo GoJobInfo01, Info1; else setgo GoJobInfo01, 0; endif
+    if present(Info2) then setgo GoJobInfo02, Info2; else setgo GoJobInfo02, 0; endif
+    if present(Info3) then setgo GoJobInfo03, Info3; else setgo GoJobInfo03, 0; endif
+    if present(Info4) then setgo GoJobInfo04, Info4; else setgo GoJobInfo04, 0; endif
+
+    !error
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        plc_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "echo_channel_", "Unknow Error !!!";
+        stop;
+    endif
+endproc
+
+!***********************************************************
+! func servo01_ctrl_()
+!***********************************************************
+!	  in : Tag 		    * string *      *  *
+!     in : Msg 		    * string *      *  *
+!***********************************************************
+! 
+!***********************************************************
+proc servo01_ctrl_(\switch MOVING | switch WAITING, \num Dist)
+
+    if present(MOVING) then 
+        if present(Dist) then setgo GoAxis01, round(Dist); else setgo GoAxis01, 0; endif
+        pulsedo \PLength := 0.5, DoExtAxis1Ctrl;
+        return;
+    endif
+
+
+    if present(WAITING) then 
+        waituntil dinput(DiExtAxis1Echo) = 1 \MaxTime := 3;
+        return; 
+    endif
+
+    errwrite "tool_servo_ctrl_", "Parm 1 Error !!!";
+    stop;
+
+    !error
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        plc_io_define_;
+        skipwarn;
+        retry;
+    else    
+        if errno = ERR_WAIT_MAXTIME then
+
+            resetretrycount;
+            pulsedo \PLength := 0.5, DoExtAxis1Ctrl;
+            retry;
+        else
+
+            errwrite "tool_servo_ctrl_", "Unknow Error !!!";
+            stop;
+        endif
+    endif
+
+endproc
+
+
+!***********************************************************
+! func tool_ctrl_()
+!***********************************************************
+! 
+!***********************************************************
+proc mag_tool_ctrl_(\switch ON | switch OFF | switch WON | switch WOFF, \num Timeout, \num SleepTime, \inout bool Success)
+    
+    if present(ON) then 
+        
+        setdo DoToolCtrl01, 1; setdo DoToolCtrl02, 0; 
+        if present(SleepTime) waittime (SleepTime / 1000.0);
+        if present(Success) Success := true;
+        return;
+    endif
+
+    if present(OFF) then 
+        
+        setdo DoToolCtrl01, 0; setdo DoToolCtrl02, 1; 
+        if present(SleepTime) waittime (SleepTime / 1000.0);
+        if present(Success) Success := true;
+        return;
+    endif
+
+    if present(WON) then 
+        
+        setdo DoToolCtrl01, 1; setdo DoToolCtrl02, 0; 
+        if present(Timeout) then 
+            waituntil (dinput(DiToolEcho01) = 1) and (dinput(DiToolEcho02) = 0) \MaxTime := (Timeout / 1000.0);
+        else
+            waituntil (dinput(DiToolEcho01) = 1) and (dinput(DiToolEcho02) = 0),
+            \Visualize \Header :="MAG ON" \Message:= "Waiting For Mag Off !!!" ;
+        endif
+        setdo DoToolCtrl01, 0; setdo DoToolCtrl02, 0; 
+        if present(SleepTime) waittime (SleepTime / 1000.0);
+        if present(Success) Success := true;
+        return;
+    endif
+
+    if present(WOFF) then 
+        
+        setdo DoToolCtrl01, 0; setdo DoToolCtrl02, 1; 
+        if present(Timeout) then 
+            waituntil (dinput(DiToolEcho01) = 0) and (dinput(DiToolEcho02) = 1) \MaxTime := (Timeout / 1000.0);
+        else
+            waituntil (dinput(DiToolEcho01) = 0) and (dinput(DiToolEcho02) = 1),
+            \Visualize \Header :="MAG ON" \Message:= "Waiting For Mag Off !!!" ;
+        endif
+        setdo DoToolCtrl01, 0; setdo DoToolCtrl02, 0; 
+        if present(SleepTime) waittime (SleepTime / 1000.0);
+        if present(Success) Success := true;
+        return;
+    endif
+
+    errwrite "mag_tool_ctrl_", "Parm 1 Error !!!";
+    stop;
+    
+    !error
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        plc_io_define_;
+        skipwarn;
+        retry;
+    else
+
+        setdo DoToolCtrl01, 0; setdo DoToolCtrl02, 0; 
+        if present(Success) Success := false;
+        return;
+    endif
+endproc
+
+!***********************************************************
+! func tool_forc_ctrl_()
+!***********************************************************
+!***********************************************************
+! 
+!***********************************************************
+proc mag_tool_forc_ctrl_(\switch ON | switch OFF, \num SleepTime)
+
+    if present(ON) then 
+        
+        pulsedo \PLength := 1,  DoToolCtrl03; setdo DoToolCtrl04, 0; 
+        if present(SleepTime) waittime (SleepTime / 1000.0);
+        return;
+    endif
+
+    if present(OFF) then 
+        
+        pulsedo \PLength := 1, DoToolCtrl04; setdo DoToolCtrl03, 0; 
+        if present(SleepTime) waittime (SleepTime / 1000.0);
+        return;
+    endif
+
+    !error
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        plc_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "mag_tool_forc_ctrl_", "Unknow Error !!!";
+        stop;
+    endif
+endproc
+
+
+!***********************************************************
+! func zone_ctrl_()
+!***********************************************************
+!	  in : Tag 		    * string *      *  *
+!     in : Msg 		    * string *      *  *
+!***********************************************************
+! 
+!***********************************************************
+proc zone_ctrl_(\switch I_ENTER | switch I_EXIT, 
+                \switch ZONE1 | switch ZONE2 | switch ZONE3 | switch ZONE4 | 
+                 switch ZONE5 | switch ZONE6 | switch ZONE7 | switch ZONE8 |
+                 switch ZONE9 | switch ZONE10 | switch ZONE11 | switch ZONE12)
+    ! Zone1
+    if present(ZONE1) then 
+        if present(I_EXIT) then 
+            setdo DoReqZone1, 1; 
+            setdo DoInZone01, 0; 
+        else 
+            setdo DoReqZone1, 0; 
+            waitdi DiZone1Ready, 1, \Visualize \Header :="Robot Enter Zone1" \Message:= "Waiting For Zone1 Ready !!!" \Icon := iconInfo; 
+            setdo DoInZone01, 1; 
+        endif 
+        
+        return;
+    endif
+
+    ! Zone2
+    if present(ZONE2) then
+        if present(I_EXIT) then 
+            setdo DoReqZone2, 1; 
+            setdo DoInZone02, 0; 
+        else 
+            setdo DoReqZone2, 0; 
+            waitdi DiZone2Ready, 1, \Visualize \Header :="Robot Enter Zone2" \Message:= "Waiting For Zone2 Ready !!!" \Icon := iconInfo; 
+            setdo DoInZone02, 1; 
+        endif 
+        
+        return;
+    endif
+
+    ! Zone3
+    if present(ZONE3) then
+        if present(I_EXIT) then 
+            setdo DoReqZone3, 1; 
+            setdo DoInZone03, 0; 
+        else 
+            setdo DoReqZone3, 0; 
+            waitdi DiZone3Ready, 1, \Visualize \Header :="Robot Enter Zone3" \Message:= "Waiting For Zone3 Ready !!!" \Icon := iconInfo; 
+            setdo DoInZone03, 1; 
+        endif 
+        
+        return;
+    endif
+
+    ! Zone4
+    if present(ZONE4) then
+        if present(I_EXIT) then 
+            setdo DoReqZone4, 1; 
+            setdo DoInZone04, 0; 
+        else 
+            setdo DoReqZone4, 0; 
+            waitdi DiZone4Ready, 1, \Visualize \Header :="Robot Enter Zone4" \Message:= "Waiting For Zone4 Ready !!!" \Icon := iconInfo; 
+            setdo DoInZone04, 1; 
+        endif 
+        
+        return;
+    endif
+
+    ! Zone5
+    if present(ZONE5) then
+        if present(I_EXIT) then 
+            setdo DoReqZone5, 1; 
+            setdo DoInZone05, 0; 
+        else 
+            setdo DoReqZone5, 0; 
+            waitdi DiZone5Ready, 1, \Visualize \Header :="Robot Enter Zone5" \Message:= "Waiting For Zone5 Ready !!!" \Icon := iconInfo; 
+            setdo DoInZone05, 1; 
+        endif 
+        
+        return;
+    endif
+
+    ! Zone6
+    if present(ZONE6) then
+        if present(I_EXIT) then 
+            setdo DoReqZone6, 1; 
+            setdo DoInZone06, 0; 
+        else 
+            setdo DoReqZone6, 0; 
+            waitdi DiZone6Ready, 1, \Visualize \Header :="Robot Enter Zone6" \Message:= "Waiting For Zone6 Ready !!!" \Icon := iconInfo; 
+            setdo DoInZone06, 1; 
+        endif 
+        
+        return;
+    endif
+
+    ! Zone7
+    if present(ZONE7) then
+        if present(I_EXIT) then 
+            setdo DoReqZone7, 1; 
+            setdo DoInZone07, 0; 
+        else 
+            setdo DoReqZone7, 0; 
+            waitdi DiZone7Ready, 1, \Visualize \Header :="Robot Enter Zone7" \Message:= "Waiting For Zone7 Ready !!!" \Icon := iconInfo; 
+            setdo DoInZone07, 1; 
+        endif 
+        
+        return;
+    endif
+
+    ! Zone8
+    if present(ZONE8) then
+        if present(I_EXIT) then 
+            setdo DoReqZone8, 1; 
+            setdo DoInZone08, 0; 
+        else 
+            setdo DoReqZone8, 0; 
+            waitdi DiZone8Ready, 1, \Visualize \Header :="Robot Enter Zone8" \Message:= "Waiting For Zone8 Ready !!!" \Icon := iconInfo; 
+            setdo DoInZone08, 1; 
+        endif 
+        
+        return;
+    endif
+
+    ! Zone9
+    if present(ZONE9) then
+        if present(I_EXIT) then 
+            setdo DoReqZone9, 1; 
+            setdo DoInZone09, 0; 
+        else 
+            setdo DoReqZone9, 0; 
+            waitdi DiZone9Ready, 1, \Visualize \Header :="Robot Enter Zone9" \Message:= "Waiting For Zone9 Ready !!!" \Icon := iconInfo; 
+            setdo DoInZone09, 1; 
+        endif 
+        
+        return;
+    endif
+
+    ! Zone10
+    if present(ZONE10) then
+        if present(I_EXIT) then 
+            setdo DoReqZone10, 1; 
+            setdo DoInZone10, 0; 
+        else 
+            setdo DoReqZone10, 0; 
+            waitdi DiZone10Ready, 1, \Visualize \Header :="Robot Enter Zone10" \Message:= "Waiting For Zone10 Ready !!!" \Icon := iconInfo; 
+            setdo DoInZone10, 1; 
+        endif 
+        
+        return;
+    endif
+
+    ! Zone11
+    if present(ZONE11) then
+        if present(I_EXIT) then 
+            setdo DoReqZone11, 1; 
+            setdo DoInZone11, 0; 
+        else 
+            setdo DoReqZone11, 0; 
+            waitdi DiZone11Ready, 1, \Visualize \Header :="Robot Enter Zone11" \Message:= "Waiting For Zone11 Ready !!!" \Icon := iconInfo; 
+            setdo DoInZone11, 1; 
+        endif 
+        
+        return;
+    endif
+
+    ! Zone12
+    if present(ZONE12) then
+        if present(I_EXIT) then 
+            setdo DoReqZone12, 1; 
+            setdo DoInZone12, 0; 
+        else 
+            setdo DoReqZone12, 0; 
+            waitdi DiZone12Ready, 1, \Visualize \Header :="Robot Enter Zone12" \Message:= "Waiting For Zone12 Ready !!!" \Icon := iconInfo; 
+            setdo DoInZone12, 1; 
+        endif 
+        
+        return;
+    endif
+
+    errwrite "zone_ctrl_", "Parm 2 Error !!!";
+    stop;
+
+    !error
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        plc_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "zone_ctrl_", "Unknow Error !!!";
+        stop;
+    endif
+
+endproc
+
+
+!***********************************************************
+! func home_io_()
+!***********************************************************
+!***********************************************************
+! 
+!***********************************************************
+proc home01_io_()
+
+    waittime \INPOS, 0.0;
+
+    waitdo DoAtHome, 1,\Visualize \Header := "Waiting for At Home01" \Icon := iconWarning;
+
+    setgo GoProgNo, 0;
+    setgo GoPathSegment, 0;
+    setdo DoEndOfSegMentReq, 0;
+
+    setdo DoReqZone1, 1;
+    setdo DoReqZone2, 1;
+    setdo DoReqZone3, 1;
+    setdo DoReqZone4, 1;
+    setdo DoReqZone5, 1;
+    setdo DoReqZone6, 1;
+    setdo DoReqZone7, 1;
+    setdo DoReqZone8, 1;
+    setdo DoReqZone9, 1;
+    setdo DoReqZone10, 1;
+    setdo DoReqZone11, 1;
+    setdo DoReqZone12, 1;
+    setdo DoInZone01, 0; 
+    setdo DoInZone02, 0; 
+    setdo DoInZone03, 0; 
+    setdo DoInZone04, 0; 
+    setdo DoInZone05, 0; 
+    setdo DoInZone06, 0; 
+    setdo DoInZone07, 0; 
+    setdo DoInZone08, 0; 
+    setdo DoInZone09, 0; 
+    setdo DoInZone10, 0; 
+    setdo DoInZone11, 0; 
+    setdo DoInZone12, 0; 
+
+    !error
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        plc_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "home_io_", "Unknow Error !!!";
+        stop;
+    endif
+endproc
+
+!***********************************************************
+! func at_home_()
+!***********************************************************
+!***********************************************************
+! 
+!***********************************************************
+proc at_home_(jointtarget RobHomePos, jointtarget DeltaPos)
+    var shapedata JointSpace;
+
+    wzhomejointdef \Inside, JointSpace, RobHomePos, DeltaPos;
+    wzdoset \Stat, HomeZone \Inside, JointSpace, DoAtHome, 1;
+
+    !error
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        plc_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "at_home_", "Unknow Error !!!";
+        stop;
+    endif
+endproc
+
+!***********************************************************
+! func echo_prog_num_()
+!***********************************************************
+!***********************************************************
+!	  in : ProgramNum 		   * byte *      *  *
+!***********************************************************
+proc echo_prog_num_(byte ProgramNum)
+    setgo GoProgNo, ProgramNum;
+
+    !error
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        plc_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "echo_prog_num_", "Unknow Error !!!";
+        stop;
+    endif
+endproc
+
+!***********************************************************
+! func get_prog_num_()
+!***********************************************************
+!***********************************************************
+!	  in : ProgramNum 		   * num *      *  *
+!***********************************************************
+proc get_prog_num_(inout byte ProgramNum)
+    var byte UserKey := 0;
+
+    if (opmode() <> 1) or (dinput(DiStartAtMainReq) = 0) then
+
+        tpreadnum UserKey, "Manual Program Num ?";
+        ProgramNum := UserKey;
+    else  
+        ProgramNum := ginput(GiProgNo);
+    endif
+
+    !error
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        plc_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "get_prog_num_", "Unknow Error !!!";
+        stop;
+    endif
+endproc
+
+!***********************************************************
+! func path_segment_()
+!***********************************************************
+!***********************************************************
+!	  in : Segment 		    * num *      *  *
+!***********************************************************
+proc path_segment_(byte Segment)
+    setgo GoPathSegment, Segment;
+    setdo DoEndOfSegMentReq, 0;
+    !error
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        plc_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "path_segment_", "Unknow Error !!!";
+        stop;
+    endif
+endproc
+
+!***********************************************************
+! func req_to_continue_()
+!***********************************************************
+!***********************************************************
+!	  
+!***********************************************************
+proc req_to_continue_()
+    
+    !waittime \InPos,0.0;
+
+    setdo DoEndOfSegMentReq, 0;
+    waitdi DiEndOfSegMent, 0, \Visualize \Header :="REQUEST TO CONTINUE" \Message:= "Waiting For End Seg Clr" \Icon := iconInfo;
+    setdo DoEndOfSegMentReq,1;
+    waitdi DiEndOfSegMent, 1, \Visualize \Header :="REQUEST TO CONTINUE" \Message:= "Waiting For End Seg " + num_to_str_(goutput(GoPathSegment)) \Icon := iconInfo;
+    ContDicitionCode := ginput(GiDicisionCode);
+
+    !error
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        plc_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "req_to_continue_", "Unknow Error !!!";
+        stop;
+    endif
+endproc
+
+!***********************************************************
+! func space_home01_()
+!***********************************************************
+!***********************************************************
+!	  
+!***********************************************************
+proc space_home01_()
+    var shapedata JointSpace;
+    var jointtarget DeltaPos := [[ 1, 1, 1, 1, 1, 1], [ 2, 2, 2, 2, 2, 2]];
+
+    wzhomejointdef \Inside, JointSpace, HomePos01, DeltaPos;
+    wzdoset \Stat, HomeZone \Inside, JointSpace, DoAtHome, 1;
+
+    !error
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        plc_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "space_home01_", "Unknow Error !!!";
+        stop;
+    endif
+endproc
+
+!***********************************************************
+! func space_home02_()
+!***********************************************************
+!***********************************************************
+!	  
+!***********************************************************
+proc space_home02_()
+    var shapedata JointSpace;
+    var jointtarget DeltaPos := [[ 1, 1, 1, 1, 1, 1], [ 2, 2, 2, 2, 2, 2]];
+
+    wzhomejointdef \Inside, JointSpace, HomePos02, DeltaPos;
+    wzdoset \Stat, HomeZone \Inside, JointSpace, DoAtHome, 1;
+
+    !error
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        plc_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "space_home02_", "Unknow Error !!!";
+        stop;
+    endif
+endproc
+
+!***********************************************************
+! func space_home03_()
+!***********************************************************
+!***********************************************************
+!	  
+!***********************************************************
+proc space_home03_()
+    var shapedata JointSpace;
+    var jointtarget DeltaPos := [[ 1, 1, 1, 1, 1, 1], [ 2, 2, 2, 2, 2, 2]];
+
+    wzhomejointdef \Inside, JointSpace, HomePos03, DeltaPos;
+    wzdoset \Stat, HomeZone \Inside, JointSpace, DoAtHome, 1;
+
+    !error
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        plc_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "space_home03_", "Unknow Error !!!";
+        stop;
+    endif
+endproc
+
+!***********************************************************
+! func space_home04_()
+!***********************************************************
+!***********************************************************
+!	  
+!***********************************************************
+proc space_home04_()
+    var shapedata JointSpace;
+    var jointtarget DeltaPos := [[ 1, 1, 1, 1, 1, 1], [ 2, 2, 2, 2, 2, 2]];
+
+    wzhomejointdef \Inside, JointSpace, HomePos04, DeltaPos;
+    wzdoset \Stat, HomeZone \Inside, JointSpace, DoAtHome, 1;
+
+    !error
+    error
+    if errno = ERR_NO_ALIASIO_DEF then 
+        plc_io_define_;
+        skipwarn;
+        retry;
+    else
+        errwrite "space_home04_", "Unknow Error !!!";
+        stop;
+    endif
+endproc
+
+!***********************************************************
+! func check_home01_()
+!***********************************************************
+!***********************************************************
+!	  
+!***********************************************************
+proc check_home01_()
+    var jointtarget JointPos;
+    var bool AtHomePos := true;
+
+    waittime \INPOS, 0.0;
+
+    JointPos := cjointt();
+
+    if (abs(JointPos.robax.rax_1 - HomePos01.robax.rax_1) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_2 - HomePos01.robax.rax_2) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_3 - HomePos01.robax.rax_3) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_4 - HomePos01.robax.rax_4) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_5 - HomePos01.robax.rax_5) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_6 - HomePos01.robax.rax_6) > 1)     AtHomePos := false;
+
+    if (abs(JointPos.extax.eax_a - HomePos01.extax.eax_a) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_b - HomePos01.extax.eax_b) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_c - HomePos01.extax.eax_c) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_d - HomePos01.extax.eax_d) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_e - HomePos01.extax.eax_e) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_f - HomePos01.extax.eax_f) > 1)     AtHomePos := false;
+
+
+    if (not AtHomePos) then
+
+        errwrite "check_home01_", "Robot Not At Home01 !!!";
+        stop;
+    endif
+
+    waitdo DoAtHome, 1,\Visualize \Header := "Waiting for At Home01" \Icon := iconWarning;
+endproc
+
+!***********************************************************
+! func check_home02_()
+!***********************************************************
+!***********************************************************
+!	  
+!***********************************************************
+proc check_home02_()
+    var jointtarget JointPos;
+    var bool AtHomePos := true;
+
+    waittime \INPOS, 0.0;
+
+    JointPos := cjointt();
+
+    if (abs(JointPos.robax.rax_1 - HomePos02.robax.rax_1) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_2 - HomePos02.robax.rax_2) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_3 - HomePos02.robax.rax_3) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_4 - HomePos02.robax.rax_4) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_5 - HomePos02.robax.rax_5) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_6 - HomePos02.robax.rax_6) > 1)     AtHomePos := false;
+
+    if (abs(JointPos.extax.eax_a - HomePos02.extax.eax_a) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_b - HomePos02.extax.eax_b) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_c - HomePos02.extax.eax_c) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_d - HomePos02.extax.eax_d) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_e - HomePos02.extax.eax_e) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_f - HomePos02.extax.eax_f) > 1)     AtHomePos := false;
+
+
+    if (not AtHomePos) then
+
+        errwrite "check_home02_", "Robot Not At Home01 !!!";
+        stop;
+    endif
+
+    waitdo DoAtHome, 1,\Visualize \Header := "Waiting for At Home02" \Icon := iconWarning;
+endproc
+
+!***********************************************************
+! func check_home03_()
+!***********************************************************
+!***********************************************************
+!	  
+!***********************************************************
+proc check_home03_()
+    var jointtarget JointPos;
+    var bool AtHomePos := true;
+
+    waittime \INPOS, 0.0;
+
+    JointPos := cjointt();
+
+    if (abs(JointPos.robax.rax_1 - HomePos03.robax.rax_1) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_2 - HomePos03.robax.rax_2) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_3 - HomePos03.robax.rax_3) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_4 - HomePos03.robax.rax_4) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_5 - HomePos03.robax.rax_5) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_6 - HomePos03.robax.rax_6) > 1)     AtHomePos := false;
+
+    if (abs(JointPos.extax.eax_a - HomePos03.extax.eax_a) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_b - HomePos03.extax.eax_b) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_c - HomePos03.extax.eax_c) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_d - HomePos03.extax.eax_d) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_e - HomePos03.extax.eax_e) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_f - HomePos03.extax.eax_f) > 1)     AtHomePos := false;
+
+
+    if (not AtHomePos) then
+
+        errwrite "check_home03_", "Robot Not At Home01 !!!";
+        stop;
+    endif
+
+    waitdo DoAtHome, 1,\Visualize \Header := "Waiting for At Home03" \Icon := iconWarning;
+endproc
+
+!***********************************************************
+! func check_home04_()
+!***********************************************************
+!***********************************************************
+!	  
+!***********************************************************
+proc check_home04_()
+    var jointtarget JointPos;
+    var bool AtHomePos := true;
+
+    waittime \INPOS, 0.0;
+
+    JointPos := cjointt();
+
+    if (abs(JointPos.robax.rax_1 - HomePos04.robax.rax_1) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_2 - HomePos04.robax.rax_2) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_3 - HomePos04.robax.rax_3) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_4 - HomePos04.robax.rax_4) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_5 - HomePos04.robax.rax_5) > 1)     AtHomePos := false;
+    if (abs(JointPos.robax.rax_6 - HomePos04.robax.rax_6) > 1)     AtHomePos := false;
+
+    if (abs(JointPos.extax.eax_a - HomePos04.extax.eax_a) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_b - HomePos04.extax.eax_b) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_c - HomePos04.extax.eax_c) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_d - HomePos04.extax.eax_d) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_e - HomePos04.extax.eax_e) > 1)     AtHomePos := false;
+    if (abs(JointPos.extax.eax_f - HomePos04.extax.eax_f) > 1)     AtHomePos := false;
+
+
+    if (not AtHomePos) then
+
+        errwrite "check_home04_", "Robot Not At Home01 !!!";
+        stop;
+    endif
+
+    waitdo DoAtHome, 1,\Visualize \Header := "Waiting for At Home04" \Icon := iconWarning;
+endproc
+
+endmodule

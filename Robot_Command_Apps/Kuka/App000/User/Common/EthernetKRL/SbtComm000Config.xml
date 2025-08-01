@@ -1,0 +1,22 @@
+<ETHERNETKRL>
+	<CONFIGURATION>
+		<EXTERNAL>
+            <IP>192.168.0.1</IP>                                   
+            <PORT>12003</PORT>                                   
+		</EXTERNAL>
+		<INTERNAL>
+            <ENVIRONMENT>Program</ENVIRONMENT>			       
+            <BUFFERING Limit="512"/>                            
+            <TIMEOUT Connect="3000"/>                           
+            <BUFFERSIZE Limit="65534"/>                      
+            <ALIVE Set_Flag="12" Ping="1"/>                    
+            <Messages Display="disabled" Logging="disabled"/>   
+        </INTERNAL>
+	</CONFIGURATION>
+	<RECEIVE>
+		<RAW>
+            <ELEMENT Tag="Buffer" Type="BYTE" Set_Flag="13" Size = "470"/>          
+		</RAW>
+	</RECEIVE>
+	<SEND/>
+</ETHERNETKRL>

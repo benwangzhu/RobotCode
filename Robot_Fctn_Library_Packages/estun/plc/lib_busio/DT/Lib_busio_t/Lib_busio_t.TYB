@@ -1,0 +1,50 @@
+TYPE 
+
+	busin_t:
+	STRUCT
+		BusIoSt				: UINT;
+		SysReady			: BOOL;
+		SysInited			: BOOL;
+		StopMov				: BOOL;
+		OnMeasure			: BOOL;
+		MeasureOver			: BOOL;
+		ResultOk			: BOOL;
+		ResultNg			: BOOL;
+		Finished			: BOOL;
+		DeviceId			: BYTE;
+		JobId				: BYTE;
+		ErrorId				: BYTE;
+		AgentTellId			: BYTE;
+		AgentMsgType		: BYTE;
+		TellId				: BYTE;
+		MsgType				: BYTE;
+	END_STRUCT;
+
+	busout_t:
+	STRUCT
+		BusIoSt				: UINT;
+		SysEnable			: BOOL;
+		SysInit				: BOOL;
+		RobMoving			: BOOL;
+		MeasuerSt			: BOOL;
+		MeasuerEd			: BOOL;
+		Reserverd1			: BOOL;
+		Reserverd2			: BOOL;
+		CycleEnd			: BOOL;
+		RobotId				: BYTE;
+		JobId				: BYTE;
+		ProtocolId			: BYTE;
+		TellId				: BYTE;
+		MsgType				: BYTE;
+		RobTellId			: BYTE;
+		RobMsgType			: BYTE;
+	END_STRUCT;
+
+	busbyte2_t				: ARRAY [0..1] OF BYTE;
+
+	busbyte4_t				: ARRAY [0..3] OF BYTE;
+
+	busbyte256_t 			: ARRAY [0..255] OF BYTE;
+	
+END_TYPE
+

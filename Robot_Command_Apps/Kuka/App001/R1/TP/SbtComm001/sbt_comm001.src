@@ -1,0 +1,143 @@
+&ACCESS RP
+&comment GeneralCmd
+def sbt_comm001()
+;***********************************************************
+;
+; file Name: sbt_comm001.src
+;
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+;
+;
+; Description:
+;   Language             ==   KRL for KUKA ROBOT
+;   Date                 ==   2024 - 06 - 03
+;   Modification Data    ==   2025 - 03 - 04
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+end
+
+global def SbtComm001Event(EventPrm1 : in, EventPrm2 : in, EventPrm3 : in, EventPrm4 : in, EventPrm5 : in, EventPrm6 : in, EventPrm7 : in, EventPrm8 : in)
+    decl int EventPrm1, EventPrm2
+    decl real EventPrm3, EventPrm4, EventPrm5, EventPrm6, EventPrm7, EventPrm8
+    
+    CurPos = cur_pos_(0, 0)
+    CommType07.Float01 = CurPos.x
+    CommType07.Float02 = CurPos.y
+    CommType07.Float03 = CurPos.z
+    CommType07.Float04 = CurPos.a
+    CommType07.Float05 = CurPos.b
+    CommType07.Float06 = CurPos.c
+    CommType07.Float07 = EventPrm3
+    CommType07.Float08 = EventPrm4
+    CommType07.Float09 = EventPrm5
+    CommType07.Float10 = EventPrm6
+    CommType07.Float11 = EventPrm7
+    CommType07.Float12 = EventPrm8
+    CommType07.Int13 = EventPrm1
+    CommType07.Int14 = EventPrm2
+
+    Status = bus_cmd132_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CommType07)
+    Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+
+    if Status == OK then
+        
+        return
+    endif
+
+
+end
+
+global def SbtComm001Event2(EventPrm1 : in, EventPrm2 : in, EventPrm3 : in, EventPrm4 : in, EventPrm5 : in, EventPrm6 : in, EventPrm7 : in, EventPrm8 : in, OutputPrm1 : out, OutputPrm2 : out, OutputPose1 : out, OutputPose2 : out)
+    decl int EventPrm1, EventPrm2
+    decl real EventPrm3, EventPrm4, EventPrm5, EventPrm6, EventPrm7, EventPrm8
+    decl int OutputPrm1, OutputPrm2
+    decl e6pos OutputPose1, OutputPose2
+    
+    CurPos = cur_pos_(0, 0)
+    CommType07.Float01 = CurPos.x
+    CommType07.Float02 = CurPos.y
+    CommType07.Float03 = CurPos.z
+    CommType07.Float04 = CurPos.a
+    CommType07.Float05 = CurPos.b
+    CommType07.Float06 = CurPos.c
+    CommType07.Float07 = EventPrm3
+    CommType07.Float08 = EventPrm4
+    CommType07.Float09 = EventPrm5
+    CommType07.Float10 = EventPrm6
+    CommType07.Float11 = EventPrm7
+    CommType07.Float12 = EventPrm8
+    CommType07.Int13 = EventPrm1
+    CommType07.Int14 = EventPrm2
+
+    OutputPrm1 = 0
+    OutputPrm2 = 0
+    OutputPose1 = {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+    OutputPose2 = {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+
+    Status = bus_cmd132_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CommType07)
+    Status = bus_cmd132_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, CommType07, BusTimeout)
+
+    if Status == OK then
+        OutputPose1 = cur_pos_(0, 0)
+        OutputPose2 = cur_pos_(0, 0)
+        OutputPose1.x = CommType07.Float01
+        OutputPose1.y = CommType07.Float02
+        OutputPose1.z = CommType07.Float03
+        OutputPose1.a = CommType07.Float04
+        OutputPose1.b = CommType07.Float05
+        OutputPose1.c = CommType07.Float06
+        OutputPose2.x = CommType07.Float07
+        OutputPose2.y = CommType07.Float08
+        OutputPose2.z = CommType07.Float09
+        OutputPose2.a = CommType07.Float10
+        OutputPose2.b = CommType07.Float11
+        OutputPose2.c = CommType07.Float12
+
+        OutputPrm1 = CommType07.Int13
+        OutputPrm2 = CommType07.Int14
+
+        return
+    endif
+
+
+end
+
+global def SbtComm001Request(InputType : in, OutputPrm1 : out, OutputPrm2 : out, OutputPose1 : out, OutputPose2 : out)
+    decl cmd_typ01_t InputType
+    decl int OutputPrm1, OutputPrm2
+    decl e6pos OutputPose1, OutputPose2
+
+    OutputPrm1 = 0
+    OutputPrm2 = 0
+    OutputPose1 = {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+    OutputPose2 = {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+
+    Status = bus_cmd145_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, InputType)
+    Status = bus_cmd132_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, CommType07, BusTimeout)
+
+    if Status == OK then
+        OutputPose1 = cur_pos_(0, 0)
+        OutputPose2 = cur_pos_(0, 0)
+        OutputPose1.x = CommType07.Float01
+        OutputPose1.y = CommType07.Float02
+        OutputPose1.z = CommType07.Float03
+        OutputPose1.a = CommType07.Float04
+        OutputPose1.b = CommType07.Float05
+        OutputPose1.c = CommType07.Float06
+        OutputPose2.x = CommType07.Float07
+        OutputPose2.y = CommType07.Float08
+        OutputPose2.z = CommType07.Float09
+        OutputPose2.a = CommType07.Float10
+        OutputPose2.b = CommType07.Float11
+        OutputPose2.c = CommType07.Float12
+
+        OutputPrm1 = CommType07.Int13
+        OutputPrm2 = CommType07.Int14
+
+        return
+    endif
+
+end

@@ -1,0 +1,22 @@
+CALL: comm128_comm_cfig_();
+PcTellId := comutil.PC_INT[1];
+PcCmd := comutil.PC_INT[2];
+PcSep := comutil.PC_INT[3];
+PcPointNum := comutil.PC_INT[4];
+PcType := comutil.PC_INT[5];
+RobotTellId := 0;
+RobotCmd := 128;
+RobotSep := 0;
+RobotAck := 0;
+InformData[0].j1 := ROBOT_AXIS;
+InformData[0].j2 := EXT_AXIS;
+CALL: comutil.SetPC_POINTJ(1, InformData[0]);
+GlbMoveId := 0;
+CopyTellId := 0;
+KMAXT(500, 500, 500)
+KMAXJ(50, 50, 50)
+//INTRDENY(IntrStopMove);
+//INTRDEL(IntrStopMove);
+//INTRSET(IntrStopMove, new_stop_());
+//INTRCOND(IntrStopMove, ((PcTellId <> RobotTellId) AND (PcCmd = CMD_STOP) AND (PcTellId <> 0)));
+//INTRENA(IntrStopMove);

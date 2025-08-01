@@ -1,0 +1,648 @@
+&ACCESS RO
+&comment Lib Logs 240227
+def lib_logs ()
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: lib_logs.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2021 - 10 - 20
+;   Modification Data    ==   2024 - 02 - 27
+;
+; Author: speedbot
+;
+; Version: 2.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+; 2024 - 02 - 27 ++ err_write_()
+
+; 2021 - 10 - 20 ++ signal_in_msg_()
+
+; 2021 - 10 - 20 ++ log_info_() 
+    
+; 2021 - 10 - 20 ++ log_warn_() 
+
+; 2021 - 10 - 20 ++ log_error_() 
+
+; 2022 - 04 - 28 ++ open_file_() ==> int 
+
+; 2022 - 04 - 28 ++ file_writeln_() 
+
+; 2022 - 04 - 28 ++ file_puts_() 
+
+; 2022 - 11 - 21 ++ file_getc_() ==> int  
+
+; 2022 - 11 - 21 ++ file_gets_() ==> int  
+
+; 2022 - 11 - 21 ++ file_seek_() 
+
+; 2022 - 04 - 28 ++ close_file_() 
+
+; 2022 - 04 - 28 ++ delete_file_() 
+
+; 2022 - 04 - 28 ++ get_file_size_() ==> int 
+
+; 2022 - 04 - 28 ++ file_created_() ==> bool 
+
+; 2022 - 04 - 28 ++ rename_file_() 
+
+; 2022 - 04 - 28 ++ logs_() 
+
+; 2022 - 11 - 22 ++ pth_2jntfile_()
+
+end
+
+;FOLD ERROR WRITE
+global def err_write_(ThisMod[] : in, ErrMsg[] : in, Kill : in)
+    decl char ThisMod[]
+    decl char ErrMsg[]
+    decl KrlMsg_T Msg 
+    decl KrlMsgPar_T MsgPar[3]
+    decl KrlMsgOpt_T MsgOpt
+    decl int Handle
+    decl bool Kill
+
+    if (varstate("Kill") <> #initialized) then
+
+        Kill = false
+    endif
+
+    Msg.MODUL[] = ThisMod[]  
+    Msg.NR = 2024
+    Msg.MSG_TXT[] = ErrMsg[]
+
+    loop
+        Handle = set_krlmsg(#QUIT, Msg, MsgPar[], MsgOpt)        
+        if Kill == true then
+            halt
+        else
+            while (exists_krlmsg(Handle)) 
+                wait sec 0.1
+            endwhile
+            exit
+        endif
+    endloop
+end
+;ENDFOLD
+
+;FOLD TP SIGNAL
+global def signal_in_msg_(Msg[] : in, InSignal : in)
+    decl krlmsg_t TpMessage
+    decl krlmsgpar_t Parameter[3]
+    decl krlmsgopt_t Option
+    decl int Handle
+    decl bool R1
+    decl char Msg[]
+    decl int InSignal
+    continue
+    if not $in[InSignal] then
+        TpMessage.MODUL[] = "Signal"
+        TpMessage.NR = 5
+        TpMessage.MSG_TXT[] = Msg[]
+        Handle = set_krlmsg(#WAITING, TpMessage, Parameter[], Option)
+        continue
+        wait for $in[InSignal] 
+        R1 = clear_krlmsg(Handle)
+    endif
+end
+;ENDFOLD
+
+;FOLD LOGS INFO
+global def log_info_(Msg[] : in)
+    decl krlmsg_t ShowMsg
+    decl krlmsgpar_t Parameter[3]
+    decl krlmsgopt_t Option
+    decl int Handle
+    decl char Msg[]
+    ShowMsg.MODUL[] = "Info"
+    ShowMsg.NR = 1
+    ShowMsg.MSG_TXT[] = Msg[] 
+
+    Handle = set_krlmsg(#NOTIFY, ShowMsg, Parameter[], Option)
+end
+;ENDFOLD
+
+;FOLD LOGS WARN
+global def log_warn_(Msg[] : in)
+    decl krlmsg_t ShowMsg
+    decl krlmsgpar_t Parameter[3]
+    decl krlmsgopt_t Option
+    decl int Handle
+    decl char Msg[]
+    ShowMsg.MODUL[] = "Warn"
+    ShowMsg.NR = 2
+    ShowMsg.MSG_TXT[] = Msg[] 
+
+    Handle = set_krlmsg(#STATE, ShowMsg, Parameter[], Option)
+end
+;ENDFOLD
+
+;FOLD LOGS ERROR
+global def log_error_(Msg[] : in)
+    decl krlmsg_t ShowMsg
+    decl krlmsgpar_t Parameter[3]
+    decl krlmsgopt_t Option
+    decl int Handle
+    decl char Msg[]
+    ShowMsg.MODUL[] = "Error"
+    ShowMsg.NR = 3
+    ShowMsg.MSG_TXT[] = Msg[] 
+
+    while true
+        Handle = set_krlmsg(#QUIT, ShowMsg, Parameter[], Option)
+        while (exists_krlmsg(Handle) ) 
+            wait sec 0.1
+        endwhile
+    endwhile
+end
+;ENDFOLD
+
+;FOLD ERROR WRITE
+global def error_write_(ErrCode : in, Msg[] : in)
+    decl krlmsg_t ShowMsg
+    decl krlmsgpar_t Parameter[3]
+    decl krlmsgopt_t Option
+    decl int Handle
+    decl char Msg[]
+    decl int ErrCode
+
+    ShowMsg.MODUL[] = "Error"
+    ShowMsg.NR = ErrCode
+    ShowMsg.MSG_TXT[] = Msg[] 
+
+    Handle = set_krlmsg(#QUIT, ShowMsg, Parameter[], Option)
+    while (exists_krlmsg(Handle) ) 
+        wait sec 0.1
+    endwhile
+end
+;ENDFOLD
+
+;FOLD WARN WRITE
+global def warn_write_(ErrCode : in, Msg[] : in)
+    decl krlmsg_t ShowMsg
+    decl krlmsgpar_t Parameter[3]
+    decl krlmsgopt_t Option
+    decl int Handle
+    decl char Msg[]
+    decl int ErrCode
+
+    ShowMsg.MODUL[] = "Warn"
+    ShowMsg.NR = ErrCode
+    ShowMsg.MSG_TXT[] = Msg[] 
+
+    Handle = set_krlmsg(#STATE, ShowMsg, Parameter[], Option)
+end
+;ENDFOLD
+
+;FOLD INFO WRITE
+global def info_write_(ErrCode : in, Msg[] : in)
+    decl krlmsg_t ShowMsg
+    decl krlmsgpar_t Parameter[3]
+    decl krlmsgopt_t Option
+    decl int Handle
+    decl char Msg[]
+    decl int ErrCode
+    
+    ShowMsg.MODUL[] = "Info"
+    ShowMsg.NR = ErrCode
+    ShowMsg.MSG_TXT[] = Msg[] 
+
+    Handle = set_krlmsg(#NOTIFY, ShowMsg, Parameter[], Option)
+end
+;ENDFOLD
+
+;FOLD OPEN FILE
+global deffct int open_file_(FileName[] : in, OpenMode : in)
+    decl char FileName[]
+    decl open_mode_t OpenMode
+    decl char OpenTag[3]
+    decl int FileHandle 
+    decl state_t Stat 
+    decl modus_t Mode
+    FileHandle = 0
+
+    switch OpenMode 
+
+    case #STR_READ
+        OpenTag[] = "r+"
+    case #STR_RW
+        OpenTag[] = "w+"
+    case #STR_AP
+        OpenTag[] = "a+"    
+    case #BIN_READ
+        OpenTag[] = "rb+"    
+    case #BIN_RW
+        OpenTag[] = "wb+"    
+    case #BIN_AP
+        OpenTag[] = "ab+"    
+    endswitch
+    cwrite($fct_call, Stat, Mode, "krl_fopen", FileName[], OpenTag[], FileHandle)
+    if Stat.Msg_No <> 0 then
+        FileHandle = -abs(Stat.Msg_No)
+    endif
+
+    return(FileHandle)
+endfct
+;ENDFOLD
+
+;FOLD WRITE CR
+global def file_writeln_(FileHandle : in, NumOfLn : in)
+    decl state_t Stat 
+    decl modus_t Mode
+    decl int FileHandle
+    decl int NumOfLn
+    decl int K
+    if (varstate("NumOfLn") <> #initialized) then
+
+        NumOfLn = 1
+    endif
+    for K = 1 to NumOfLn
+        cwrite($fct_call, Stat, Mode, "krl_fwriteln", FileHandle, " ")
+    endfor
+end
+;ENDFOLD
+
+;FOLD WRITE MSG
+global def file_puts_(FileHandle : in , Msg[] : in, Ln : in)
+    decl int FileHandle
+    decl char Msg[]
+    decl bool Ln
+    decl state_t Stat 
+    decl modus_t Mode
+    if (varstate("Ln") <> #initialized) then
+
+        Ln = true
+    endif
+    cwrite($fct_call, Stat, Mode, "krl_fputs", FileHandle, Msg[])
+    if Ln then
+        file_writeln_(FileHandle, 1) 
+    endif  
+    cwrite($fct_call, Stat, Mode, "krl_fflush", FileHandle)  
+end
+;ENDFOLD
+
+;FOLD READ CHAR
+global deffct int file_getc_(FileHandle : in , Msg : out)
+    decl int FileHandle
+    decl char Msg
+    decl state_t Stat 
+    decl modus_t Mode
+    cwrite($fct_call, Stat, Mode, "krl_fgetc", FileHandle, Msg)
+
+    if Stat.Msg_No <> 0 then  
+        return(-abs(Stat.Msg_No))
+    endif
+
+    return(1)
+endfct
+;ENDFOLD
+
+;FOLD READ STRING
+global deffct int file_gets_(FileHandle : in , Msg[] : out, Len : in, EolChar : in)
+    decl int FileHandle
+    decl char Msg[]
+    decl state_t Stat 
+    decl modus_t Mode
+    decl int Len 
+    decl char EolChar
+    decl int Read
+    if (varstate("Len") <> #initialized) then
+
+        Len = 255
+    endif
+
+    Read = 0
+    
+    if (varstate("EolChar") <> #initialized) then
+
+        cwrite($fct_call, Stat, Mode, "krl_fgets", FileHandle, Msg[], Len, Read)
+    else
+
+        cwrite($fct_call, Stat, Mode, "krl_fgets", FileHandle, Msg[], Len, Read, EolChar)
+    endif
+
+    if Stat.Msg_No <> 0 then  
+        return(-abs(Stat.Msg_No))
+    endif
+
+    return(Read)
+endfct
+;ENDFOLD
+
+;FOLD FILE SEEK
+global def file_seek_(FileHandle : in, SeekMode : in, Offset : in)
+    decl int FileHandle
+    decl seek_mode_t SeekMode
+    decl int Offset
+    decl state_t Stat 
+    decl modus_t Mode
+    if (varstate("SeekMode") <> #initialized) then
+
+        SeekMode = #SEEK_END
+    endif
+    if (varstate("Offset") <> #initialized) then
+
+        Offset = 0
+    endif
+
+    cwrite($fct_call, Stat, Mode, "krl_fseek", FileHandle, SeekMode, Offset)
+end
+;ENDFOLD
+
+;FOLD CKECK IN EOF
+global deffct bool file_eof_(FileHandle : in)
+    decl int FileHandle
+    decl state_t Stat 
+    decl modus_t Mode
+    decl bool PointerPos
+    PointerPos = false
+
+    cwrite($fct_call, Stat, Mode, "krl_feof", FileHandle, PointerPos)
+
+    return((PointerPos) or (Stat.Msg_No <> 0))
+endfct
+;ENDFOLD
+
+;FOLD CLOSE FILE
+global def close_file_(FileHandle : in)
+    decl int FileHandle
+    decl state_t Stat 
+    decl modus_t Mode
+    cwrite($fct_call, Stat, Mode, "krl_fclose", FileHandle)
+    if Stat.Msg_No <> 0 then
+        cwrite($fct_call, Stat, Mode, "krl_fclose", FileHandle)
+    endif
+end
+;ENDFOLD
+
+;FOLD DELETE FILE
+global def delete_file_(FileName[] : in)
+    decl char FileName[]
+    decl state_t Stat 
+    decl modus_t Mode
+    cwrite($fct_call, Stat, Mode, "krl_remove", FileName[])
+    if Stat.Msg_No <> 0 then
+        cwrite($fct_call, Stat, Mode, "krl_remove", FileName[])
+    endif
+end
+;ENDFOLD
+
+;FOLD GET FILE SIZE
+global deffct int get_file_size_(FileName[] : in)
+    decl char FileName[]
+    decl state_t Stat 
+    decl modus_t Mode
+    decl int Size
+    decl int FileHandle
+    Size = 0    
+    FileHandle = open_file_(FileName[], #STR_READ)
+    cwrite($fct_call, Stat, Mode, "krl_fsizeget", FileHandle, Size)
+    if Stat.Msg_No <> 0 then
+        Size = -abs(Stat.Msg_No)
+    endif
+    close_file_(FileHandle)
+    return(Size)
+endfct
+;ENDFOLD
+
+;FOLD CHECK FILE IS CREATED
+global deffct bool file_created_(FileName[] : in)
+    decl int FileHandle
+    decl char FileName[]
+    FileHandle = open_file_(FileName[], #STR_READ)
+    close_file_(FileHandle)
+    return(FileHandle > 0)
+endfct
+;ENDFOLD
+
+;FOLD FILE RENAME
+global def rename_file_(FileName[] : in, NewFileName[] : in)
+    decl char FileName[]
+    decl char NewFileName[]
+    decl state_t Stat 
+    decl modus_t Mode
+    if file_created_(NewFileName[]) then
+        delete_file_(NewFileName[])
+    endif
+    cwrite($fct_call, Stat, Mode, "krl_rename", FileName[], NewFileName[])
+end
+;ENDFOLD
+
+;FOLD LOGS
+global def logs_(FileName[] : in, Msg[] : in)
+    decl char FileName[]
+    decl char Msg[]
+    decl char NewFileName[65]
+    decl char FileEtnName[15]
+    decl char UserMsg[512]
+    decl int FileHandle
+    decl int IntVal
+    decl bool BoolVal
+    decl state_t Stat 
+    decl int K
+    decl int Offset
+    BoolVal = strclear(NewFileName[])
+    BoolVal = strclear(FileEtnName[])
+    BoolVal = strclear(UserMsg[])
+    IntVal = strfind(1, FileName[], ".", #NOT_CASE_SENS)
+
+    if IntVal > 0 then
+        for K = 1 to (IntVal - 1)
+            NewFileName[K] = FileName[K]
+        endfor
+        for K = 1 to (strlen(FileName[]) - IntVal + 1)
+            FileEtnName[K] = FileName[IntVal + K - 1]
+        endfor
+        IntVal = stradd(NewFileName[] , "_old")
+        IntVal = stradd(NewFileName[] , FileEtnName[])
+    else
+        BoolVal = strcopy(NewFileName[] , FileName[K])
+        IntVal = stradd(NewFileName[] , "_old")
+    endif
+    if get_file_size_(FileName[]) > LOGS_MAX_SIZE then
+        rename_file_(FileName[], NewFileName[]) 
+    endif
+    Offset = 0
+    swrite(UserMsg[], stat, Offset,"%D-%D-%D %D:%D:%D   ", ($date_host.year), ($date_host.month), ($date_host.day), ($date_host.hour), ($date_host.min), ($date_host.sec))
+    IntVal = stradd(UserMsg[] , Msg[])
+    FileHandle = open_file_(FileName[], #STR_AP)
+    file_puts_(FileHandle, UserMsg[], true)
+    close_file_(FileHandle)
+end
+;ENDFOLD
+
+;FOLD PATH .DAT FILE TO JOINT FILE
+global def pth_2jntfile_(FromFileName[] : in, ToFileName[]: in)
+    decl char FromFileName[], ToFileName[]
+    decl int FromFileHandle
+    decl int ToFileHandle
+    decl char Buff[256], FileMsg[256]
+    decl int CurWobjNo, CurToolNo, PointId
+    decl state_t State
+    decl int StringLen
+    decl e6pos LineE6Pos
+    decl e6axis LineE6Axis
+    decl bool BoolVal
+    CurToolNo = 0
+    CurWobjNo = 0
+
+    if file_created_(ToFileName[]) then  
+
+        delete_file_(ToFileName[])
+    endif
+
+    FromFileHandle = open_file_(FromFileName[], #STR_READ)
+    ToFileHandle   = open_file_(ToFileName[],   #STR_AP)
+
+    while (FromFileHandle > 0) and (ToFileHandle > 0)
+        
+        BoolVal = strclear(Buff[])
+        Buff[] = " "
+        StringLen = file_gets_(FromFileHandle, Buff[], , " ")
+        if StringLen < 0 then 
+            
+            exit 
+        endif
+
+        if strcomp(Buff[], "FDAT", #NOT_CASE_SENS) then  
+            
+            StringLen = file_gets_(FromFileHandle, Buff[], , "{")
+            if StringLen < 0 then 
+    
+                exit 
+            endif
+
+            StringLen = file_gets_(FromFileHandle, Buff[], , " ")
+            if StringLen < 0 then 
+    
+                exit 
+            endif
+
+            if strcomp(Buff[], "TOOL_NO", #NOT_CASE_SENS) then  
+
+                StringLen = file_gets_(FromFileHandle, Buff[], , ",")
+                if StringLen < 0 then 
+        
+                    exit 
+                endif
+
+                CurToolNo = str_2int_(sub_str_(Buff[], 1, strlen(Buff[])))
+
+                StringLen = file_gets_(FromFileHandle, Buff[], , " ")
+                if StringLen < 0 then 
+        
+                    exit 
+                endif
+        
+                if strcomp(Buff[], "BASE_NO", #NOT_CASE_SENS) then
+                    
+                    StringLen = file_gets_(FromFileHandle, Buff[], , ",")
+                    if StringLen < 0 then 
+            
+                        exit 
+                    endif
+
+                    CurWobjNo = str_2int_(sub_str_(Buff[], 1, strlen(Buff[])))
+                endif
+
+            endif
+
+        endif
+
+        if strcomp(Buff[], "E6POS", #NOT_CASE_SENS) then
+
+            StringLen = file_gets_(FromFileHandle, Buff[], , "=")
+            if StringLen <= 0 then 
+    
+                exit 
+            endif
+            
+            PointId = str_2int_(sub_str_(Buff[], 3, strlen(Buff[]) - 2))
+
+            StringLen = file_gets_(FromFileHandle, Buff[], , "{")
+            if StringLen < 0 then 
+    
+                exit 
+            endif
+            
+            file_seek_(FromFileHandle, #SEEK_CUR, -1)
+
+            StringLen = file_gets_(FromFileHandle, Buff[])
+            if StringLen < 0 then 
+    
+                exit 
+            endif
+            
+            if strtoe6pos(Buff[], LineE6Pos) then
+                
+                if CurWobjNo == 0 then
+                    continue
+                    $base = $nullframe
+                else
+                    continue
+                    $base = base_data[CurWobjNo]
+                endif
+            
+                if CurToolNo == 0 then
+                    continue
+                    $tool = $nullframe
+                else
+                    continue
+                    $tool = tool_data[CurToolNo]
+                endif
+                            
+                if cart_2jnt_(LineE6Pos, CurWobjNo, CurToolNo, LineE6Axis) then  
+
+                    StringLen = 0
+                    
+                    BoolVal = strclear(FileMsg[])
+                    swrite(FileMsg[], State, StringLen, "%.3f, %.3f, %.3f, %.3f, %.3f, %.3f //P%d", LineE6Axis.A1, LineE6Axis.A2, LineE6Axis.A3, LineE6Axis.A4, LineE6Axis.A5, LineE6Axis.A6, PointId)
+                    file_puts_(ToFileHandle, FileMsg[], true)
+                endif
+
+            endif
+
+        endif
+
+        if file_eof_(FromFileHandle) then  
+
+            exit
+        endif
+
+    endwhile
+
+    close_file_(FromFileHandle)
+    close_file_(ToFileHandle)
+end
+;ENDFOLD

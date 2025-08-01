@@ -1,0 +1,12 @@
+(*
+T: FUNCTION_BLOCK bus_uptout
+FW: NO
+CI#: 38
+QSL: 3
+QVE: 3
+QVPC: 3
+QPar: 2
+QFBI: 0
+*)
+BusOut	@IV 3	@TYP:1025	VAR_INPUT
+Enable	@IV 1	@TYP:1	VAR_INPUT

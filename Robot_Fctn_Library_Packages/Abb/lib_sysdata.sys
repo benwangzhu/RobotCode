@@ -1,0 +1,196 @@
+module lib_sysdata(sysmodule, noview)
+!***********************************************************
+!
+! Copyright 2018 - 2024 speedbot All Rights reserved.
+!
+! File Name: lib_sysdata
+!
+! Description:
+!   Language             ==   Rapid for ABB ROBOT
+!   Date                 ==   2023 - 01 - 14
+!   Modification Data    ==   2023 - 01 - 14
+!
+! Author: speedbot
+!
+! Version: 2.0
+!*********************************************************************************************************!
+!                                                                                                         !
+!                                                      .^^^                                               !
+!                                               .,~<c+{{{{{{t,                                            ! 
+!                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          !
+!                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        !
+!                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       !
+!                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    !
+!                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  !
+!                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                !
+!                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              !
+!                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             !
+!                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             !
+!                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             !
+!                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              !
+!                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              !
+!                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               !
+!                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               !
+!                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                !
+!                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                !
+!                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 !
+!                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 !
+!                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  !
+!                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  !
+!                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    !                         
+!                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         !
+!                                         ^!{{{{{{{{t!",^`                                                !
+!                                                                                                         !
+!*********************************************************************************************************!
+!
+! 2023 - 01 - 14 ++ get_axis_lim_()
+
+! 2023 - 01 - 14 ++ get_lan_ip_() ==> string
+
+! 2023 - 01 - 14 ++ get_robot_type_() ==> string
+
+! 2023 - 02 - 10 ++ override_()
+
+!***********************************************************
+! proc get_axis_lim_()
+!***********************************************************
+!     输入输出参数 : Upper        * 数字数组 *   * 上限关节角度 *
+!     输入输出参数 : Lower        * 数字数组 *   * 下限关节角度 *
+!***********************************************************
+! 功能 : 获取机器人的关节角度限制。
+!        如果提供了上限数组，则填充上限关节角度。
+!        如果提供了下限数组，则填充下限关节角度。
+!        支持多个关节的角度限制获取。
+!***********************************************************
+proc get_axis_lim_(\inout num Upper{*}, \inout num Lower{*})
+    var num AttrVal;
+    var num I;
+    var string UnitName;
+
+    if present(Upper) then  
+
+        for I from 1 to 6 do
+
+            readcfgdata "/moc/arm/rob1_" + valtostr(I), "upper_joint_bound", AttrVal;
+
+            if (dim(Upper, 1) >= I) Upper{I} := AttrVal / PI * 180.0;
+        endfor
+
+        readcfgdata "/moc/joint/M7DM1", "use_drive_system", UnitName;
+        if not (UnitName = "") then  
+
+            readcfgdata "/moc/arm/" + UnitName, "upper_joint_bound", AttrVal;
+            if (dim(Upper, 1) >= 7) Upper{7} := AttrVal * 1000.0;
+        endif
+    endif
+
+    if present(Lower) then  
+
+        for I from 1 to 6 do
+
+            readcfgdata "/moc/arm/rob1_" + valtostr(I), "lower_joint_bound", AttrVal;
+
+            if (dim(Lower, 1) >= I) Lower{I} := AttrVal / PI * 180.0;
+        endfor
+
+        readcfgdata "/moc/joint/M7DM1", "use_drive_system", UnitName;
+        if not (UnitName = "") then  
+
+            readcfgdata "/moc/arm/" + UnitName, "lower_joint_bound", AttrVal;
+            if (dim(Upper, 1) >= 7) Lower{7} := AttrVal * 1000.0;
+        endif
+    endif
+
+    !error
+    error
+    AttrVal := 0.0;
+    UnitName := "";
+    trynext;
+endproc
+
+!***********************************************************
+! func get_lan_ip_()
+!***********************************************************
+! 返回 :                     * 字符串 *     * 局域网 IP 地址 *
+!***********************************************************
+! 功能 : 获取系统的局域网 IP 地址。
+!***********************************************************
+func string get_lan_ip_()
+
+    return(getsysinfo(\LanIp));
+endfunc
+
+!***********************************************************
+! func get_robot_type_()
+!***********************************************************
+! 返回 :                     * 字符串 *     * 机器人类型 *
+!***********************************************************
+! 功能 : 获取机器人的类型信息。
+!***********************************************************
+func string get_robot_type_()
+
+    return(getsysinfo(\RobotType));
+endfunc  
+
+!***********************************************************
+! proc override_()
+!***********************************************************
+!     输入参数 : SpeedCorr      * 可选数字 * * 速度修正系数 *
+! 功能 : 设置速度修正。
+!        如果提供了速度修正系数，则使用提供的值。
+!        否则使用默认值 10。
+!        如果刷新速度时遇到限制错误，则修正速度修正系数并在范围内重试。
+!***********************************************************
+proc override_(\num SpeedCorr)
+    var num ChangeSpeed := 10;
+
+    if present(SpeedCorr) ChangeSpeed := SpeedCorr;
+    speedrefresh ChangeSpeed;
+
+    !error
+    error
+    if errno = ERR_SPEED_REFRESH_LIM then
+
+        ChangeSpeed := min(ChangeSpeed, 100);
+
+        ChangeSpeed := max(ChangeSpeed, 0);
+
+        retry;
+
+    endif
+
+
+endproc
+
+!***********************************************************
+! func is_vir_rob_()
+!***********************************************************
+! 返回 :                     * 布尔值 *     * 是否为虚拟机器人 *
+!***********************************************************
+! 功能 : 检查是否为虚拟机器人。
+!        如果不是真实机器人操作系统，则返回真。
+!***********************************************************
+func bool is_vir_rob_()
+
+    return(not robos());
+endfunc
+
+!***********************************************************
+! func alias_do_()
+!***********************************************************
+! 返回 :                     * 布尔值 *     * 是否为虚拟机器人 *
+!***********************************************************
+! 功能 : 检查是否为虚拟机器人。
+!        如果不是真实机器人操作系统，则返回真。
+!***********************************************************
+func errnum alias_do_(string IoName, var signaldo SigDo)
+    aliasio IoName, SigDo;
+    if validio(SigDo) return OK; 
+    return NG;
+
+    !error
+	error
+    return -abs(errno);
+endfunc
+
+endmodule

@@ -1,0 +1,262 @@
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_buscmd_h
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2023 - 09 - 25
+--   Modification Data    ==   2023 - 09 - 25
+--
+-- Author: speedbot
+--
+-- Version: 1.1
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+
+routine bus_cmd001_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusTimeout : integer) : integer         from lib_buscmd
+
+routine bus_cmd002_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ01_t;
+                    BusTimeout : integer) : integer         from lib_buscmd       
+
+routine bus_cmd003_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : xyzwprext;
+                    BusTimeout : integer) : integer         from lib_buscmd       
+
+routine bus_cmd009_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : xyzwprext;
+                    BusTimeout : integer) : integer         from lib_buscmd       
+
+routine bus_cmd010_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : xyzwprext;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd011_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : xyzwprext;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd012_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ01_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+
+routine bus_cmd013_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ01_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd014_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ01_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+
+routine bus_cmd017_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ07_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd018_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ07_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+
+routine bus_cmd020_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : xyzwprext;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd021_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ01_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd022_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ01_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd026_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ01_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd027_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ08_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd129_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : xyzwprext;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd130_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : jointpos;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd131_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ02_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd132_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ07_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd133_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ07_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd134_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ09_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd137_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ03_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd145_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ01_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd148_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ08_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd151_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ06_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd254_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ07_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+routine bus_cmd255_(BusOperation : integer;
+                    BusMstSel: integer;
+                    BusIn : busin_t;
+                    BusOut : busout_t;
+                    BusData : cmd_typ07_t;
+                    BusTimeout : integer) : integer         from lib_buscmd 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

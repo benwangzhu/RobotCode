@@ -1,0 +1,6 @@
+C:\ProgramData\PHOENIX CONTACT Software\MULTIPROG Express\5_50_10228\plc\FW_LIB\ecatfwl\ecatfwl.DLL
+C:\ProgramData\PHOENIX CONTACT Software\MULTIPROG Express\5_50_10228\plc\FW_LIB\GetTickTime\GetTickTime.DLL
+C:\ProgramData\PHOENIX CONTACT Software\MULTIPROG Express\5_50_10228\plc\FW_LIB\pointer\pointer.DLL
+C:\ProgramData\PHOENIX CONTACT Software\MULTIPROG Express\5_50_10228\plc\FW_LIB\PROCONOS\PROCONOS.DLL
+C:\ProgramData\PHOENIX CONTACT Software\MULTIPROG Express\5_50_10228\plc\FW_LIB\TCP_IP_Lib\TCP_IP_lib.DLL
+C:\ProgramData\PHOENIX CONTACT Software\MULTIPROG Express\5_50_10228\plc\FW_LIB\ModbusTCP_Lib\ModbusTCP_Lib.DLL

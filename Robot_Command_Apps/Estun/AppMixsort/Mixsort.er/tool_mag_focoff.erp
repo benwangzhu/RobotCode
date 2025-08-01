@@ -1,0 +1,10 @@
+// InstParseVersion: V1.02
+Start:
+/**********************************/
+/*强制所有磁点通道退磁*/
+/**********************************/
+Wait{T=200}
+PulseSimDo{StAddrInt=48,Val=1,Time=1500,InterEnable=0}
+BusSetNUM{Type="BIT",StAddrInt=47,Int=0}
+Wait{T=1000}
+End;

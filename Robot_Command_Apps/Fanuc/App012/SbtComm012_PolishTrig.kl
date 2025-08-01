@@ -1,0 +1,46 @@
+program SbtPoliTrig
+--***********************************************************
+--
+-- file Name: SbtPoliTrig
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 05 - 06
+--
+-- Author: 
+--
+-- Version: 1.0
+%comment = 'SBT POLISH TRIG 250507'
+%nolockgroup
+%nobusylamp
+%nopause = error + command + tpenable
+
+%include include/lib_socket_t
+%include include/lib_logs_t
+%include include/lib_transform_t
+%include sbt_comm12_t
+%include sbt_comm12_global                
+
+var
+    PhotoPint                           : xyzwprext
+    CamerNum                            : integer 
+    PointNum                            : integer 
+    Status                              : integer 
+
+%include include/lib_motion_h
+%include include/lib_inst_h
+%include include/lib_tp_if_h
+%include include/lib_string_h
+
+begin 
+    CamerNum = get_iparm_(1)             --获取相机编号
+    PointNum = get_iparm_(2)             --获取拍照点位编号
+
+    PhotoPint = cur_pos_(0, 0)
+
+    Status = f001_it01_(PolishSock, PhotoPint, CamerNum, PointNum)
+    if Status <> OK then  
+        post_err(CC_UALARM, '打磨相机拍照失败![Status:' + int_to_str_(Status) + ']', 0, CC_ABORT)
+    endif
+end SbtPoliTrig

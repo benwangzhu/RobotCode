@@ -1,0 +1,576 @@
+&ACCESS RO2
+&COMMENT Sbt Comm011
+def  sbt_comm011 ( )
+   ;***********************************************************
+   ;
+   ; Copyright 2025 - 2025 speedbot All Rights reserved.
+   ;
+   ; file Name: sbt_comm011.dat
+   ;
+   ; Description:
+   ;   Language             ==   Krl for KUKA ROBOT
+   ;   Date                 ==   2025 - 05 - 08
+   ;   Modification Data    ==   2025 - 05 - 08
+   ;
+   ; Author: speedbot
+   ;
+   ; Version: 1.0
+   ;***********************************************************
+end
+
+global def VW_Sbt_Scan(WELD_SCAN:in,WeldNo:in)
+   decl WELD_SCAN_T WELD_SCAN
+   decl int WeldNo
+   
+   switch WELD_SCAN
+      case #TCP_OPEN
+         sbtcomm011_open_()
+      case #SCAN_ST
+         sbtcomm011_2dScanStart_(WeldNo)
+      case #SCAN_SP
+         sbtcomm011_2dScanStop_()
+      case #GET_PATH
+         sbtcomm011_getPath_(WeldNo)
+      case #MOV_PATH
+         ;mutil_move_(50)
+      case #TCP_CLOSE
+         sbtcomm011_close_()
+      default
+         
+   endswitch
+   
+end
+
+global def sbtcomm011_open_()
+   GlbPackRealTime.Header = {Head 0, Length 780, PacketCount 1, Cmd 0, Type_ 0, Seq 0, VirtualRob 0}
+   GlbPackRealTime.Header.Head = PACK_HEADER
+   GlbPackRealTime.Tail.Tail = PACK_TAIL
+   
+   GlbSlodId = 0
+   GlbCommandId = INST_UNKNOWN
+   Status = NG
+   
+   while Status <> OK
+      Status = csock_conn_(GlbSocketCfg)
+      if Status <> OK then
+         log_error_ ("Failed sbtcomm011_open_ ErrId = 101")
+      endif
+   endwhile
+   global interrupt decl COMM011_INTE_NO when $timer[FLG_COMM011] > 0 do scan_handler_()   
+   interrupt on COMM011_INTE_NO
+   
+   $timer[FLG_COMM011] = -abs(COMM011_FREQ)
+   $timer_stop[FLG_COMM011] = false
+   
+   wait sec 0.012
+end
+
+global def sbtcomm011_close_()
+   interrupt off COMM011_INTE_NO
+   wait sec 0.012
+   sock_dconn_ (GlbSocketCfg)
+end
+
+global def sbtcomm011_mutMove_(Wdat : in, ApoDist : in)
+   decl int j
+   decl stArcDat_T Wdat
+   decl real ApoDist
+   
+   FP01.TOOL_NO = $ACT_TOOL
+   FP01.BASE_NO = $ACT_BASE
+   
+   $ADVANCE=3
+   
+   if GlbTrajectoryLen <= 1 then 
+      
+      log_error_("GlbTrajectoryLen <= 1")
+   endif
+   
+   Wdat1 = Wdat
+   for j = 2 to (GlbTrajectoryLen - 1) step 1
+      
+      $BWDSTART = FALSE
+      LDAT_ACT = LCPDAT01
+      LDAT_ACT.APO_DIST = ApoDist
+      FDAT_ACT = FP01
+      BAS(#CP_PARAMS, gArcBasVelDefinition)
+      SET_CD_PARAMS (0)
+      TRIGGER WHEN DISTANCE = 1 DELAY = 0 DO ArcMainNG(#ArcSwiMoveStd, Wdat1, Wp1) PRIO = -1
+      ArcMainNG(#ArcSwiBeforeMoveStd, Wdat1, Wp1)
+      LIN GlbTrajectoryPoint[j] C_VEL
+      ArcMainNG(#ArcSwiAfterMoveStd, Wdat1, Wp1)
+   endfor
+   
+end
+
+global def sbtcomm011_getPath_(SoldId:in)
+   decl int SoldId
+   if (varstate("SoldId") <> #initialized) then
+      GlbSlodId = 0
+   else
+      GlbSlodId = SoldId
+   endif
+   wait sec 0.0
+   GlbTrajectoryLen = 0
+   GlbCommandId = INST_PATH
+   
+   wait for ((GlbCommandId == INST_UNKNOWN) and (FlagRltAck == true))
+end
+
+global def sbtcomm011_2dScanStop_()
+   wait sec 0.0
+   FlagRltAck = false    
+   GlbCommandId = INST_2D_ED
+   
+   wait for ((GlbCommandId == INST_UNKNOWN) and (FlagRltAck == true))
+end
+
+global def sbtcomm011_2dScanStart_(SoldId:in)
+   decl int SoldId
+   FlagRltAck = false 
+   
+   if (varstate("SoldId") <> #initialized) then
+      GlbSlodId = 0
+   else
+      GlbSlodId = SoldId
+   endif
+   
+   GlbCommandId = INST_2D_ST
+   
+   wait for ((GlbCommandId == INST_UNKNOWN) and (FlagRltAck == true))
+end
+
+global def sbtcomm011_getStart_(P : out)
+   decl e6pos P
+   
+   if GlbTrajectoryLen <= 1 then 
+      
+      log_error_("GlbTrajectoryLen <= 1")
+   endif
+   
+   P = GlbTrajectoryPoint[1]
+end
+
+global def sbtcomm011_getEnd_(P : out)
+   decl e6pos P
+   
+   if GlbTrajectoryLen <= 1 then 
+      
+      log_error_("GlbTrajectoryLen <= 1")
+   endif
+   
+   P = GlbTrajectoryPoint[GlbTrajectoryLen]
+end
+
+def scan_handler_()
+   DECL int Temp
+   GlbPackRealTime.Header.Cmd = GlbCommandId
+   
+   TempInt = GlbPackRealTime.Header.Seq
+   
+   TempInt = tern_int_(TempInt < 255, TempInt + 1, 1)
+   
+   GlbPackRealTime.Header.Seq = TempInt
+   
+   continue
+   GlbPackRealTime.Point = cur_pos_($ACT_BASE, $ACT_TOOL)
+   GlbPackRealTime.ProcessPrm01 = GlbSlodId
+   GlbPackRealTime.ProcessPrm02 = 0.0
+   GlbPackRealTime.ProcessPrm03 = 0.0
+   GlbPackRealTime.ProcessPrm04 = 0.0
+   GlbPackRealTime.Reversed1 = 0
+   GlbPackRealTime.Reversed2 = 0
+   GlbPackRealTime.Reversed3 = 0
+   GlbPackRealTime.Reversed4 = 0
+   GlbPackRealTime.Reversed5 = 0
+   GlbPackRealTime.Reversed6 = 0
+   GlbPackRealTime.Reversed7 = 0
+   GlbPackRealTime.Reversed8 = 0
+   
+   Status = net_spack_(GlbSocketCfg,GlbPackRealTime)
+   Temp = GlbPackRealTime.Header.Cmd
+   if Temp > 0 then 
+      
+      Status = net_rpack_(GlbSocketCfg, GlbPackTrajeInst)
+   endif
+   
+   if Status == OK then
+      continue   
+      $timer[FLG_COMM011] = -abs(COMM011_FREQ)
+   else
+      
+      log_error_ ("Failed scan_handler_ErrId := 102")
+   endif
+end
+
+deffct int net_spack_(Sock:out, DataTable:in)
+   decl sock_cfg_t Sock
+   decl pk_realtm_t DataTable
+   decl int Offset
+   decl char Packages[1024] 
+   
+   pack_head_(Packages[], DataTable.Header,Offset)
+   cast_to(Packages[],Offset,GlbPackRealTime.Point.X,GlbPackRealTime.Point.Y,GlbPackRealTime.Point.Z,GlbPackRealTime.Point.A,GlbPackRealTime.Point.B,GlbPackRealTime.Point.C)
+   cast_to(Packages[],Offset,GlbPackRealTime.Point.E1,GlbPackRealTime.Point.E2,GlbPackRealTime.Point.E3,GlbPackRealTime.Point.E4,GlbPackRealTime.Point.E5,GlbPackRealTime.Point.E6)
+   cast_to(Packages[],Offset,Pose13)
+   cast_to(Packages[],Offset,DataTable.ProcessPrm01,DataTable.ProcessPrm02,DataTable.ProcessPrm03,DataTable.ProcessPrm04)
+   cast_to(Packages[],Offset,DataTable.Reversed1,DataTable.Reversed2,DataTable.Reversed3,DataTable.Reversed4,DataTable.Reversed5,DataTable.Reversed6,DataTable.Reversed7,DataTable.Reversed8)
+   pack_tail_ (Packages[], DataTable.Tail,Offset)
+   return(sock_write_(Sock, Packages[]))
+endfct
+
+deffct int net_rpack_(Sock:out,DataTable:out)
+   decl sock_cfg_t Sock
+   decl pk_tarje_t DataTable
+   decl int Res
+   decl int i
+   decl char Packages[1024]
+   decl int Offset
+   decl pack_head_t Head_Temp
+   decl int Temp
+   
+   Res = OK
+   
+   Res = sock_read_(Sock, Packages[]);
+   if Res < 0 then
+      return(NG)
+   endif
+   
+   Res = unpack_head_ (Packages[], DataTable.Header,Offset)
+   
+   log_info_(str_add_("DataTable.Header.Cmd:",int_2str_(DataTable.Header.Cmd)))
+   switch (DataTable.Header.Cmd)
+      case INST_PATH
+         if DataTable.Header.PacketCount > 0 then
+            for i= 1 to DataTable.Header.PacketCount
+               GlbTrajectoryLen = GlbTrajectoryLen + 1
+               
+               continue
+               GlbTrajectoryPoint[GlbTrajectoryLen] = cur_pos_($ACT_BASE, $ACT_TOOL)
+               CAST_FROM(Packages[],Offset,GlbTrajectoryPoint[GlbTrajectoryLen].X,GlbTrajectoryPoint[GlbTrajectoryLen].Y,GlbTrajectoryPoint[GlbTrajectoryLen].Z,GlbTrajectoryPoint[GlbTrajectoryLen].A,GlbTrajectoryPoint[GlbTrajectoryLen].B,GlbTrajectoryPoint[GlbTrajectoryLen].C)
+               CAST_FROM(Packages[],Offset,GlbTrajectoryPoint[GlbTrajectoryLen].E1,GlbTrajectoryPoint[GlbTrajectoryLen].E2,GlbTrajectoryPoint[GlbTrajectoryLen].E3,GlbTrajectoryPoint[GlbTrajectoryLen].E4,GlbTrajectoryPoint[GlbTrajectoryLen].E5,GlbTrajectoryPoint[GlbTrajectoryLen].E6)
+               CAST_FROM(Packages[],Offset,Pose13)
+               CAST_FROM(Packages[],Offset,DataTable.ProcessPrm01,DataTable.ProcessPrm02,DataTable.ProcessPrm03,DataTable.ProcessPrm04)
+               CAST_FROM(Packages[],Offset,DataTable.Reversed1,DataTable.Reversed2,DataTable.Reversed3,DataTable.Reversed4,DataTable.Reversed5,DataTable.Reversed6,DataTable.Reversed7,DataTable.Reversed8)
+            endfor
+         endif
+         Head_Temp = DataTable.Header
+         Temp = Head_Temp.Type_
+         if (Temp  == 1) then
+            if GlbTrajectoryLen > 0 then
+               ;GlbStartPosn = GlbTrajectoryPoint[1]
+               ;GlbEndPosn = GlbTrajectoryPoint[GlbTrajectoryLen]
+            endif
+            GlbCommandId = INST_UNKNOWN
+            FlagRltAck = true
+         endif
+      case INST_2D_ST
+         GlbCommandId = INST_UNKNOWN
+         FlagRltAck = true
+      case INST_2D_ED
+         GlbCommandId = INST_UNKNOWN
+         FlagRltAck = true
+      case INST_3D_ST
+         GlbCommandId = INST_UNKNOWN
+         FlagRltAck = true
+      case INST_3D_ED
+         GlbCommandId = INST_UNKNOWN
+         FlagRltAck = true
+      case INST_LS_ST
+         GlbCommandId = INST_UNKNOWN
+         FlagRltAck = true
+      case INST_LS_ED
+         GlbCommandId = INST_UNKNOWN
+         FlagRltAck = true
+      case INST_PRM_ST
+      case INST_PRM_ED
+      default
+         log_error_("Invalid control command ")
+   endswitch
+   ;Offset = STRLEN(Packages[]) - 4
+   Res = unpack_tail_ (Packages[], DataTable.Tail,Offset)
+   
+   return(Res)
+endfct
+
+;FOLD SOCKET CONNECT
+   ;global deffct int csock_conn_(ThisSock : out)
+   ;decl eki_status EkiRet
+   ;decl sock_cfg_t ThisSock 
+   ;
+   ;continue
+   ;$flag[ThisSock.ActFlagNo] = false
+   ;continue
+   ;$flag[ThisSock.RecvFlagNo] = false
+   ;ThisSock.Connected = false
+   ;
+   ;EkiRet = eki_clear(ThisSock.SockXmlName[])
+   ;EkiRet = eki_init(ThisSock.SockXmlName[])
+   ;EkiRet = eki_open(ThisSock.SockXmlName[])
+   ;EkiRet = eki_clearbuffer(ThisSock.SockXmlName[], XML_TAG_NAME[])
+   ;continue   
+   ;ThisSock.Connected = ($flag[ThisSock.ActFlagNo] == true)
+   ;return(-abs(EkiRet.Msg_No))  
+   ;endfct
+   ;
+;ENDFOLD
+
+;FOLD LOGS ERROR
+   ;global def log_error_(Msg[] : in)
+   ;decl krlmsg_t ShowMsg
+   ;decl krlmsgpar_t Parameter[3]
+   ;decl krlmsgopt_t Option
+   ;decl int Handle
+   ;decl char Msg[]
+   ;ShowMsg.MODUL[] = "Error"
+   ;ShowMsg.NR = 3
+   ;ShowMsg.MSG_TXT[] = Msg[] 
+   ;
+   ;Handle = set_krlmsg(#QUIT, ShowMsg, Parameter[], Option)
+   ;end
+   ;
+;ENDFOLD
+
+;FOLD ERROR WRITE
+   ;global def error_write_(ErrCode : in, Msg[] : in)
+   ;decl krlmsg_t ShowMsg
+   ;decl krlmsgpar_t Parameter[3]
+   ;decl krlmsgopt_t Option
+   ;decl int Handle
+   ;decl char Msg[]
+   ;decl int ErrCode
+   ;
+   ;ShowMsg.MODUL[] = "Error"
+   ;ShowMsg.NR = ErrCode
+   ;ShowMsg.MSG_TXT[] = Msg[] 
+   ;
+   ;Handle = set_krlmsg(#QUIT, ShowMsg, Parameter[], Option)
+   ;end
+   ;
+;ENDFOLD
+
+;FOLD SOCKET DISCONNECT
+   ;global def sock_dconn_(ThisSock : out)
+   ;decl sock_cfg_t ThisSock
+   ;decl eki_status EkiRet
+   ;
+   ;continue
+   ;if $flag[ThisSock.ActFlagNo] then
+   ;
+   ;EkiRet = eki_clearbuffer(ThisSock.SockXmlName[], XML_TAG_NAME[])
+   ;EkiRet = eki_close(ThisSock.SockXmlName[])
+   ;if EkiRet.Msg_No <> SOCK_SUCCESS then
+   ;EkiRet = eki_close(ThisSock.SockXmlName[])
+   ;endif
+   ;endif
+   ;EkiRet = eki_clear(ThisSock.SockXmlName[])
+   ;continue
+   ;$flag[ThisSock.ActFlagNo] = false
+   ;ThisSock.Connected = false 
+   ;end
+   ;
+;ENDFOLD
+
+;FOLD TERN INT
+   ;global deffct int tern_int_(Exprsn : in, Val1 : in, Val2 : in)
+   ;decl bool Exprsn
+   ;decl int Val1
+   ;decl int Val2 
+   ;if Exprsn then 
+   ;
+   ;return(Val1)
+   ;endif
+   ;
+   ;return(Val2)
+   ;endfct
+   ;
+;ENDFOLD
+
+;FOLD PACKAGE HEADER
+   ;global def pack_head_(Packages[] : out, Header : in, Offset : out)
+   ;decl char Packages[]
+   ;decl pack_head_t Header
+   ;decl int Offset
+   ;
+   ;Offset = 0
+   ;Packages[Offset + 1] = (trunc_((Header.Head b_and 255)           / 1))           b_and 255
+   ;Packages[Offset + 2] = (trunc_((Header.Head b_and (65280))       / 256))         b_and 255
+   ;Packages[Offset + 3] = (trunc_((Header.Head b_and (16711680))    / 65535))       b_and 255
+   ;Packages[Offset + 4] = (trunc_((Header.Head b_and (-16777216))   / 16777216))    b_and 255
+   ;Packages[Offset + 5] = (trunc_((Header.Length b_and 255)           / 1))           b_and 255
+   ;Packages[Offset + 6] = (trunc_((Header.Length b_and (65280))       / 256))         b_and 255
+   ;Packages[Offset + 7] = (trunc_((Header.Length b_and (16711680))    / 65535))       b_and 255
+   ;Packages[Offset + 8] = (trunc_((Header.Length b_and (-16777216))   / 16777216))    b_and 255
+   ;Packages[Offset + 9] = (trunc_((Header.PacketCount b_and 255)           / 1))           b_and 255
+   ;Packages[Offset + 10] = (trunc_((Header.PacketCount b_and (65280))       / 256))         b_and 255
+   ;Packages[Offset + 11] = (trunc_((Header.PacketCount b_and (16711680))    / 65535))       b_and 255
+   ;Packages[Offset + 12] = (trunc_((Header.PacketCount b_and (-16777216))   / 16777216))    b_and 255
+   ;Packages[Offset + 13] = Header.Cmd
+   ;Packages[Offset + 14] = Header.Type_
+   ;Packages[Offset + 15] = Header.Seq
+   ;Packages[Offset + 16] = Header.VirtualRob
+   ;
+   ;Offset = 16
+   ;end
+   ;
+;ENDFOLD
+
+;FOLD PACKAGE TAILER
+   ;global def pack_tail_(Packages[] : out, Tailer : in, Offset : out)
+   ;decl char Packages[]
+   ;decl pack_tail_t Tailer
+   ;decl int Offset
+   ;
+   ;Packages[Offset + 1] = (trunc_((Tailer.Tail b_and 255)           / 1))           b_and 255
+   ;Packages[Offset + 2] = (trunc_((Tailer.Tail b_and (65280))       / 256))         b_and 255
+   ;Packages[Offset + 3] = (trunc_((Tailer.Tail b_and (16711680))    / 65535))       b_and 255
+   ;Packages[Offset + 4] = (trunc_((Tailer.Tail b_and (-16777216))   / 16777216))    b_and 255
+   ;
+   ;Offset = Offset + 4
+   ;end
+   ;
+;ENDFOLD
+
+;FOLD SOCKET READ
+   ;global deffct int sock_read_(ThisSock : out, Msg[] : out)
+   ;decl sock_cfg_t ThisSock
+   ;decl char Msg[]
+   ;
+   ;decl eki_status EkiRet
+   ;decl int TimerIndex, BuffLens
+   ;
+   ;Msg[] = " "
+   ;continue
+   ;TimerIndex = $rob_timer
+   ;
+   ;if ThisSock.RecvTimeout > 0 then
+   ;continue
+   ;wait for ($flag[ThisSock.RecvFlagNo]) or (($rob_timer - TimerIndex) > abs(ThisSock.RecvTimeout)) or (not $flag[ThisSock.ActFlagNo])      
+   ;else
+   ;continue
+   ;wait for ($flag[ThisSock.RecvFlagNo]) and ( $flag[ThisSock.ActFlagNo])
+   ;endif
+   ;
+   ;continue
+   ;if $flag[ThisSock.RecvFlagNo] then
+   ;continue
+   ;$flag[ThisSock.RecvFlagNo] = false
+   ;EkiRet = eki_getstring(ThisSock.SockXmlName[], XML_TAG_NAME[], Msg[])
+   ;ThisSock.Connected = (EkiRet.Msg_No == 0)
+   ;if EkiRet.Msg_No <> SOCK_SUCCESS then 
+   ;return(-abs(EkiRet.Msg_No))
+   ;endif
+   ;
+   ;return(SOCK_SUCCESS)
+   ;endif
+   ;
+   ;continue
+   ;if not $flag[ThisSock.ActFlagNo] then
+   ;ThisSock.Connected = false
+   ;return(-abs(SOCK_COM_ERR))
+   ;endif
+   ;
+   ;return(-abs(ThisSock.RecvTimeout))
+   ;endfct
+   ;
+;ENDFOLD
+
+;FOLD SOCKET WRITE
+   ;global deffct int sock_write_(ThisSock : out, Msg[] : in, Len : in)
+   ;decl sock_cfg_t ThisSock
+   ;decl int Len
+   ;decl char Msg[]
+   ;decl eki_status EkiRet
+   ;if (varstate("Len") <> #initialized) then
+   ;
+   ;Len = strlen(Msg[])
+   ;endif
+   ;continue
+   ;if not $flag[ThisSock.ActFlagNo] then
+   ;ThisSock.Connected = false
+   ;return(-abs(SOCK_COM_ERR))
+   ;endif
+   ;EkiRet = eki_send(ThisSock.SockXmlName[], Msg[])
+   ;ThisSock.Connected = (EkiRet.Msg_No == 0)
+   ;return(-abs(EkiRet.Msg_No))
+   ;endfct
+   ;
+;ENDFOLD
+
+;FOLD UNPACKAGE HEADER
+   ;global deffct int unpack_head_(Packages[] : in, Header : out, Offset : out)
+   ;decl char Packages[]
+   ;decl pack_head_t Header
+   ;decl int Offset
+   ;
+   ;Offset = 0
+   ;
+   ;Header.Head = 0             + (((Packages[Offset + 1] b_and 255) * 1)          b_and 255) 
+   ;Header.Head = Header.Head   + (((Packages[Offset + 2] b_and 255) * 256)        b_and 65280) 
+   ;Header.Head = Header.Head   + (((Packages[Offset + 3] b_and 255) * 65536)      b_and 16711680) 
+   ;Header.Head = Header.Head   + (((Packages[Offset + 4] b_and 255) * 16777216)   b_and (-16777216))
+   ;
+   ;Header.Length = 0               + (((Packages[Offset + 5] b_and 255) * 1)          b_and 255) 
+   ;Header.Length = Header.Length   + (((Packages[Offset + 6] b_and 255) * 256)        b_and 65280) 
+   ;Header.Length = Header.Length   + (((Packages[Offset + 7] b_and 255) * 65536)      b_and 16711680) 
+   ;Header.Length = Header.Length   + (((Packages[Offset + 8] b_and 255) * 16777216)   b_and (-16777216))
+   ;
+   ;Header.PacketCount = 0                  + (((Packages[Offset + 9] b_and 255) * 1)          b_and 255) 
+   ;Header.PacketCount = Header.PacketCount + (((Packages[Offset + 10] b_and 255) * 256)        b_and 65280) 
+   ;Header.PacketCount = Header.PacketCount + (((Packages[Offset + 11] b_and 255) * 65536)      b_and 16711680) 
+   ;Header.PacketCount = Header.PacketCount + (((Packages[Offset + 12] b_and 255) * 16777216)   b_and (-16777216))
+   ;
+   ;Header.Cmd = Packages[Offset + 13]
+   ;Header.Type_ = Packages[Offset + 14]
+   ;Header.Seq = Packages[Offset + 15]
+   ;Header.VirtualRob = Packages[Offset + 16]
+   ;
+   ;Offset = 16
+   ;
+   ;if Header.Head <> PACK_HEADER then 
+   ;
+   ;error_write_(0, "Packet Header Check Error")
+   ;return(NG)
+   ;endif
+   ;
+   ;return(OK)
+   ;endfct
+   ;
+;ENDFOLD
+
+;FOLD UNPACKAGE TAILER
+   ;global deffct int unpack_tail_(Packages[] : in, Tailer : out, Offset : out)
+   ;decl char Packages[]
+   ;decl pack_tail_t Tailer
+   ;decl int Offset
+   ;
+   ;Tailer.Tail = 0             + (((Packages[Offset + 1] b_and 255) * 1)          b_and 255) 
+   ;Tailer.Tail = Tailer.Tail   + (((Packages[Offset + 2] b_and 255) * 256)        b_and 65280) 
+   ;Tailer.Tail = Tailer.Tail   + (((Packages[Offset + 3] b_and 255) * 65536)      b_and 16711680) 
+   ;Tailer.Tail = Tailer.Tail   + (((Packages[Offset + 4] b_and 255) * 16777216)   b_and (-16777216))
+   ;
+   ;Offset = Offset + 4 
+   ;
+   ;if Tailer.Tail <> PACK_TAIL then 
+   ;
+   ;error_write_(0, "Packet Trailer Check Error")
+   ;return(NG)
+   ;endif
+   ;
+   ;return(OK)
+   ;endfct
+   ;
+;ENDFOLD
+
+;deffct int trunc_(RelVal : in)
+;decl real RelVal
+;if RelVal > 0.0 then  
+;
+;return(RelVal - 0.5)
+;endif
+;if RelVal < 0.0 then  
+;
+;return(RelVal + 0.5)
+;endif
+;return(0)
+;endfct

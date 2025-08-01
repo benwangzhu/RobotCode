@@ -1,0 +1,25 @@
+--***********************************************************
+--
+-- file Name: mixsort_global.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 11 - 25
+--   Modification Data    ==   2021 - 11 - 25
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--   
+
+var
+
+    BusInput    in cmos from mixsort_t          : busin_t
+    BusOutput   in cmos from mixsort_t          : busout_t
+    BusTimeout  in cmos from mixsort_t          : integer
+    MixPkCfg    in cmos from mixsort_t          : mix_cfg_t
+    CfgChecked  in cmos from mixsort_t          : boolean
+	ShutDownReq         from mixsort_t		    : boolean

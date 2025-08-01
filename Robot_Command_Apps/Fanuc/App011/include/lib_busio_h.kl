@@ -1,0 +1,128 @@
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_busio_h
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2023 - 06 - 28
+--   Modification Data    ==   2023 - 06 - 28
+--
+-- Author: speedbot
+--
+-- Version: 1.1
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+
+routine bus_sbyte_(StAddr : integer;
+                   Val : integer)                           from lib_busio
+
+routine bus_ssint_(StAddr : integer;
+                   Val : integer)                           from lib_busio
+
+routine bus_susint_(StAddr : integer;
+                    Val : integer)                          from lib_busio
+
+routine bus_sint_(StAddr : integer;
+                  Val : integer)                            from lib_busio
+
+routine bus_sfloat_(StAddr : integer;
+                    Val : real)                             from lib_busio
+
+routine bus_sfloat2_(StAddr : integer;
+                     Val : real)                            from lib_busio
+
+
+routine bus_sjoint_(StAddr : integer;
+                    Val : jointpos;
+                    NumOfAxis : integer)                    from lib_busio
+
+routine bus_scartp_(StAddr : integer;
+                    Val : xyzwprext;
+                    NumOfAxis : integer)                    from lib_busio
+
+
+routine bus_gbyte_(PortType : integer;
+                   StAddr : integer) : integer              from lib_busio
+
+routine bus_gsint_(PortType : integer;
+                   StAddr : integer) : integer              from lib_busio
+
+routine bus_gusint_(PortType : integer;
+                    StAddr : integer) : integer             from lib_busio
+
+routine bus_gint_(PortType : integer;
+                  StAddr : integer) : integer               from lib_busio
+
+routine bus_gfloat_(PortType : integer;
+                    StAddr : integer) : real                from lib_busio
+
+routine bus_gfloat2_(PortType : integer;
+                     StAddr : integer) : real               from lib_busio
+
+routine bus_gjoint_(PortType : integer;
+                    StAddr : integer;
+                    NumOfAxis : integer) : jointpos         from lib_busio
+
+routine bus_gcartp_(PortType : integer;
+                    StAddr : integer; 
+                    NumOfAxis : integer) : xyzwprext        from lib_busio
+
+
+
+
+routine bus_uptin_(BusIn : busin_t)                         from lib_busio
+
+routine bus_uptout_(BusOut : busout_t)                      from lib_busio
+
+routine bus_init_(BusIn : busin_t;
+                  BusOut : busout_t;
+                  RonId : integer;
+                  ProtId : integer)                         from lib_busio
+
+routine bus_wtell_(BusIn : busin_t; 
+                   BusOut : busout_t;
+                   Timeout : integer) : integer             from lib_busio
+
+routine bus_ftell_(BusIn : busin_t;
+                   BusOut : busout_t)                       from lib_busio
+
+routine bus_ntell_(BusIn : busin_t; 
+                   BusOut : busout_t;
+                   Timeout : integer) : integer             from lib_busio
+
+routine bus_stell_(BusIn : busin_t; 
+                   BusOut : busout_t)                       from lib_busio
+
+routine bus_rtell_(BusIn : busin_t; 
+                   BusOut : busout_t
+                   Timeout : integer) : integer             from lib_busio

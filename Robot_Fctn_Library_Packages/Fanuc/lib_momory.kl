@@ -1,0 +1,484 @@
+program lib_momory
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_momory
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2023 - 04 - 13
+--   Modification Data    ==   2023 - 04 - 13
+--
+-- Author: speedbot
+--
+-- Version: 1.1
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+-- 2023 - 04 - 13 ++ byte_2real_() ==> real  
+
+-- 2023 - 04 - 13 ++ byte_2int_() ==> integer  
+
+-- 2023 - 04 - 13 ++ byte_2short_() ==> integer 
+
+-- 2023 - 04 - 13 ++ byte_2str_() ==> string  
+
+-- 2023 - 04 - 13 ++ real_2byte_() ==> byte4_t  
+
+-- 2023 - 04 - 13 ++ int_2byte_() ==> byte4_t  
+
+-- 2023 - 04 - 13 ++ short_2byte_() ==> byte4_t 
+
+-- 2023 - 04 - 13 ++ str_2byte_() ==> byte4_t
+
+-- 2023 - 04 - 13 ++ raw_clear_()
+
+-- 2023 - 04 - 13 ++ raw_pkr_()
+
+-- 2023 - 04 - 13 ++ raw_pkdi_()
+
+-- 2023 - 04 - 13 ++ raw_pki_()
+
+-- 2023 - 04 - 13 ++ raw_pks_()
+
+-- 2023 - 04 - 13 ++ raw_pkra_()
+
+-- 2023 - 04 - 13 ++ raw_pkdia_()
+
+-- 2023 - 04 - 13 ++ raw_pkia_()
+
+-- 2023 - 04 - 13 ++ raw_unpkr_()
+
+-- 2023 - 04 - 13 ++ raw_unpkdi_()
+
+-- 2023 - 04 - 13 ++ raw_unpks_()
+
+-- 2023 - 04 - 13 ++ raw_unpkra_()
+
+-- 2023 - 04 - 13 ++ raw_unpkdia_()
+
+-- 2023 - 04 - 13 ++ raw_unpkia_()
+
+-- 2023 - 04 - 19 ++ b_shl_()
+
+-- 2023 - 04 - 19 ++ b_shr_()
+
+--
+%nolockgroup
+%nobusylamp
+%nopause = tpenable + command + error
+%comment = 'Momory 231129'
+
+%include include/lib_transform_t
+%include include/lib_math_t
+
+%include include/lib_momory_t
+%include include/lib_momory_h
+%include include/lib_math_h
+
+begin
+
+end lib_momory
+
+routine byte_2real_
+var
+    RealVal         : real
+    CopyByteVal     : byte4_t
+begin
+
+    if Reversed then 
+
+        CopyByteVal[1] = ByteVal[4]
+        CopyByteVal[2] = ByteVal[3]
+        CopyByteVal[3] = ByteVal[2]
+        CopyByteVal[4] = ByteVal[1]
+    else
+
+        CopyByteVal = ByteVal
+    endif
+    if get_real_abt(RealVal, CopyByteVal, 1) <> CC_SUCCESS then ; post_err(CC_UALARM, 'Cnv Real To Byte Error', 0, CC_ABORT); endif 
+    
+    return(RealVal)
+end byte_2real_
+
+routine byte_2int_
+var
+    IntVal          : integer
+    CopyByteVal     : byte4_t
+begin
+
+    if not Reversed then 
+
+        CopyByteVal[1] = ByteVal[4]
+        CopyByteVal[2] = ByteVal[3]
+        CopyByteVal[3] = ByteVal[2]
+        CopyByteVal[4] = ByteVal[1]
+    else
+
+        CopyByteVal = ByteVal
+    endif
+    IntVal = ((CopyByteVal[1] and (255)) * 1)          and (255)        + &
+             ((CopyByteVal[2] and (255)) * 256)        and (65280)      + &
+             ((CopyByteVal[3] and (255)) * 65536)      and (16711680)   + &
+             ((CopyByteVal[4] and (255)) * 16777216)   and (-16777216)
+    
+    return(IntVal)
+end byte_2int_
+
+--***********************************************************
+-- routine byte_2short_
+--***********************************************************
+-- 输入参数 : ByteVal          * 字节值 *     * 输入的两个字节组成的数组 *
+-- 输入参数 : Reversed         * 布尔值 *     * 是否需要反转字节顺序 *
+-- 返回 :                     * 整数值 *     * 转换后的短整数值 *
+--***********************************************************
+-- 功能 : 将两个字节转换成一个短整数。
+--        如果不需要反转字节顺序，则交换两个字节的位置。
+--        否则直接使用输入的字节值。
+--        计算短整数值并返回。
+--***********************************************************
+routine byte_2short_
+var
+    ShortVal        : integer
+    CopyByteVal     : byte2_t
+begin
+
+    if not Reversed then 
+
+        CopyByteVal[1] = ByteVal[2]
+        CopyByteVal[2] = ByteVal[1]
+    else
+
+        CopyByteVal = ByteVal
+    endif
+    ShortVal = ((CopyByteVal[1] and (255)) * 1)   and (255)    + &
+               ((CopyByteVal[2] and (255)) * 256) and (65280)
+    
+    return(ShortVal)
+end byte_2short_
+
+--***********************************************************
+-- routine byte_2str_
+--***********************************************************
+-- 输入参数 : ByteVal          * 字节值 *     * 输入的字节数组 *
+-- 返回 :                     * 字符串 *     * 转换后的字符串 *
+--***********************************************************
+-- 功能 : 将字节数组转换成字符串。
+--        遍历每个字节，并将其转换成字符，拼接成字符串。
+--        返回转换后的字符串。
+--***********************************************************
+routine byte_2str_
+var
+    I               : integer
+    StrVal          : string[254]
+begin
+    StrVal = ''
+    for I = 1 to Lens do StrVal = StrVal + chr((ByteVal[I])); endfor
+    return(StrVal)
+end byte_2str_
+
+routine real_2byte_
+var
+    ByteVal         : byte4_t
+    CopyByteVal     : byte4_t
+begin
+
+    if put_real_abt(RealVal, ByteVal, 1) <> CC_SUCCESS then ; post_err(CC_UALARM, 'Cnv Byte To Real Error', 0, CC_ABORT); endif 
+    
+    if Reversed then 
+
+        CopyByteVal[1] = ByteVal[4]
+        CopyByteVal[2] = ByteVal[3]
+        CopyByteVal[3] = ByteVal[2]
+        CopyByteVal[4] = ByteVal[1]
+    else
+
+        CopyByteVal = ByteVal
+    endif
+    
+    return(CopyByteVal)
+end real_2byte_
+
+routine int_2byte_
+var
+    ByteVal         : byte4_t
+    CopyByteVal     : byte4_t
+begin
+
+    ByteVal[1] = ((IntVal and 255)           div 1)          and (255)
+    ByteVal[2] = ((IntVal and 65280)         div 256)        and (255)
+    ByteVal[3] = ((IntVal and 16711680)      div 65536)      and (255)
+    ByteVal[4] = ((IntVal and (-16777216))   div 16777216)   and (255)
+    
+    if not Reversed then 
+
+        CopyByteVal[1] = ByteVal[4]
+        CopyByteVal[2] = ByteVal[3]
+        CopyByteVal[3] = ByteVal[2]
+        CopyByteVal[4] = ByteVal[1]
+    else
+
+        CopyByteVal = ByteVal
+    endif
+    
+    return(CopyByteVal)
+end int_2byte_
+
+routine short_2byte_
+var
+    ByteVal         : byte2_t
+    CopyByteVal     : byte2_t
+begin
+
+    ByteVal[1] = (((ShortVal) and 255)      div 1)      and (255)
+    ByteVal[2] = (((ShortVal) and 65280)    div 256)    and (255)
+    if not Reversed then 
+
+        CopyByteVal[1] = ByteVal[2]
+        CopyByteVal[2] = ByteVal[1]
+    else
+
+        CopyByteVal = ByteVal
+    endif
+    
+    return(CopyByteVal)
+end short_2byte_
+
+routine str_2byte_
+var
+    I               : integer
+    CopyByteVal     : byte254_t
+begin
+    for I = 1 to Lens do CopyByteVal[I] = ord(StrVal, I); endfor
+    return(CopyByteVal)
+end str_2byte_
+
+routine raw_clear_
+var
+    I               : integer
+begin
+    for I = 1 to array_len(Rawbyte) do Rawbyte[I] = 0; endfor     
+end raw_clear_
+
+routine raw_pkr_
+var
+    ByteAry         : byte4_t
+begin
+    ByteAry = real_2byte_(Val, Reversed)
+    Rawbyte[offset + 1]  = ByteAry[1]
+    Rawbyte[offset + 2]  = ByteAry[2]
+    Rawbyte[offset + 3]  = ByteAry[3]
+    Rawbyte[offset + 4]  = ByteAry[4]
+    offset = offset + 4
+end raw_pkr_
+
+routine raw_pkdi_
+var
+    ByteAry         : byte4_t
+begin
+    ByteAry = int_2byte_(Val, Reversed)
+    Rawbyte[offset + 1]  = ByteAry[1]
+    Rawbyte[offset + 2]  = ByteAry[2]
+    Rawbyte[offset + 3]  = ByteAry[3]
+    Rawbyte[offset + 4]  = ByteAry[4]
+    offset = offset + 4
+end raw_pkdi_
+
+routine raw_pki_
+var
+    ByteAry         : byte2_t
+begin
+    ByteAry = short_2byte_(Val, Reversed)
+    Rawbyte[offset + 1]  = ByteAry[1]
+    Rawbyte[offset + 2]  = ByteAry[2]
+    offset = offset + 2
+end raw_pki_
+
+routine raw_pks_
+var
+    I               : integer
+    ByteAry         : byte254_t
+begin
+    ByteAry = str_2byte_(Val, Lens)
+    for I = 1 to Lens do Rawbyte[offset + I] = ByteAry[I]; endfor
+    offset = offset + Lens
+end raw_pks_
+
+routine raw_pkra_
+var
+    I               : integer
+    ByteAry         : byte4_t
+begin
+    for I = 1 to Lens do  
+        ByteAry = real_2byte_(Val[I], Reversed)
+        Rawbyte[offset + 1]  = ByteAry[1]
+        Rawbyte[offset + 2]  = ByteAry[2]
+        Rawbyte[offset + 3]  = ByteAry[3]
+        Rawbyte[offset + 4]  = ByteAry[4]
+        offset = offset + 4
+    endfor
+end raw_pkra_
+
+routine raw_pkdia_
+var
+    I               : integer
+    ByteAry         : byte4_t
+begin
+    for I = 1 to Lens do  
+        ByteAry = int_2byte_(Val[I], Reversed)
+        Rawbyte[offset + 1]  = ByteAry[1]
+        Rawbyte[offset + 2]  = ByteAry[2]
+        Rawbyte[offset + 3]  = ByteAry[3]
+        Rawbyte[offset + 4]  = ByteAry[4]
+        offset = offset + 4
+    endfor
+end raw_pkdia_
+
+routine raw_pkia_
+var
+    I               : integer
+    ByteAry         : byte2_t
+begin
+    for I = 1 to Lens do  
+        ByteAry = short_2byte_(Val[I], Reversed)
+        Rawbyte[offset + 1]  = ByteAry[1]
+        Rawbyte[offset + 2]  = ByteAry[2]
+        offset = offset + 2
+    endfor
+end raw_pkia_
+
+---
+
+routine raw_unpkr_
+var
+    ByteAry         : byte4_t
+begin
+    ByteAry[1] = Rawbyte[offset + 1] 
+    ByteAry[2] = Rawbyte[offset + 2] 
+    ByteAry[3] = Rawbyte[offset + 3] 
+    ByteAry[4] = Rawbyte[offset + 4] 
+    offset = offset + 4
+
+    Val = byte_2real_(ByteAry, Reversed)
+end raw_unpkr_
+
+routine raw_unpkdi_
+var
+    ByteAry         : byte4_t
+begin
+    ByteAry[1] = Rawbyte[offset + 1] 
+    ByteAry[2] = Rawbyte[offset + 2] 
+    ByteAry[3] = Rawbyte[offset + 3] 
+    ByteAry[4] = Rawbyte[offset + 4] 
+    offset = offset + 4
+
+    Val = byte_2int_(ByteAry, Reversed)
+end raw_unpkdi_
+
+routine raw_unpki_
+var
+    ByteAry         : byte2_t
+begin
+    ByteAry[1] = Rawbyte[offset + 1] 
+    ByteAry[2] = Rawbyte[offset + 2] 
+    offset = offset + 2
+
+    Val = byte_2short_(ByteAry, Reversed)
+end raw_unpki_
+
+routine raw_unpks_
+var
+    I               : integer
+    ByteAry         : byte254_t
+begin
+    for I = 1 to Lens do ByteAry[I] = Rawbyte[offset + I]; endfor
+    offset = offset + Lens
+
+    Val = byte_2str_(ByteAry, Lens)
+end raw_unpks_
+
+routine raw_unpkra_
+var
+    I               : integer
+    ByteAry         : byte4_t
+begin
+    for I = 1 to Lens do  
+        ByteAry[1] = Rawbyte[offset + 1] 
+        ByteAry[2] = Rawbyte[offset + 2] 
+        ByteAry[3] = Rawbyte[offset + 3] 
+        ByteAry[4] = Rawbyte[offset + 4] 
+        offset = offset + 4
+
+        Val[I] = byte_2real_(ByteAry, Reversed)
+    endfor
+end raw_unpkra_
+
+routine raw_unpkdia_
+var
+    I               : integer
+    ByteAry         : byte4_t
+begin
+    for I = 1 to Lens do  
+        ByteAry[1] = Rawbyte[offset + 1] 
+        ByteAry[2] = Rawbyte[offset + 2] 
+        ByteAry[3] = Rawbyte[offset + 3] 
+        ByteAry[4] = Rawbyte[offset + 4] 
+        offset = offset + 4
+
+        Val[I] = byte_2int_(ByteAry, Reversed)
+    endfor
+end raw_unpkdia_
+
+routine raw_unpkia_
+var
+    I               : integer
+    ByteAry         : byte2_t
+begin
+    for I = 1 to Lens do  
+        ByteAry[1] = Rawbyte[offset + 1] 
+        ByteAry[2] = Rawbyte[offset + 2] 
+        offset = offset + 2
+
+        Val[I] = byte_2short_(ByteAry, Reversed)
+    endfor
+end raw_unpkia_
+
+routine b_shl_
+
+begin
+    return(trunc(IntVal * pow2_(Bits)))
+end b_shl_
+
+routine b_shr_
+
+begin
+    return(trunc(IntVal / pow2_(Bits)))
+end b_shr_

@@ -1,0 +1,322 @@
+&ACCESS RVEO
+def sbt_comm004()
+;***********************************************************
+;
+; file Name: sbt_comm004
+;
+; Description:
+;   Language             ==   KRL for KUKA ROBOT
+;   Date                 ==   2024 - 08 - 22
+;   Modification Data    ==   2022 - 08 - 22
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+end
+
+global def sbt_comm004_(Command : in, Pid :in, SpeedL : in,DelayL : in, CameraNo :in, Uframe :in, Utool :in,ThisPos : out)
+    decl int Command
+    decl char Pid,CameraNo,Uframe,Utool
+    decl pos ThisPos,PicturePose,CommandPose,SendPose
+    decl E6POS NowE6Pos,GuideE6Pose
+    decl int Count
+    decl real SpeedL,DelayL
+
+
+    Count = 0
+
+    while true
+
+        switch (Command)
+        case 1                                                 ; #CMD_VPARM 初始化工件ID与VIN码
+    
+           bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+    
+            ;FOLD PID & VIN
+            if (varstate("Pid") == #initialized) then
+                CmdType03.Byte01 = Pid
+            else
+                CmdType03.Byte01 = 0
+            endif
+                    
+            CmdType03.Byte02 = 0
+            CmdType03.Byte03 = 0
+            CmdType03.Byte04 = 0
+            CmdType03.Byte05 = 0
+            CmdType03.Byte06 = 0
+            CmdType03.Byte07 = 0
+            CmdType03.Byte08 = 0
+            CmdType03.Byte09 = 0
+            CmdType03.Byte10 = 0
+            CmdType03.Byte11 = 0
+            CmdType03.Byte12 = 0        
+            CmdType03.Byte13 = 0        
+            CmdType03.Byte14 = 0
+            CmdType03.Byte15 = 0       
+            CmdType03.Byte16 = 0    
+            CmdType03.Byte17 = 0
+            CmdType03.Byte18 = 0
+
+            ;ENDFOLD
+    
+            Status = bus_cmd137_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CmdType03)
+            Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+    
+            if Status == OK then
+
+                return
+            else
+
+                err_display_(BusInput, BusOutput)
+    
+            endif
+    
+        case 2                                                 ; #CMD_VGIDE
+
+            CmdType01.Byte01 = 100
+            CmdType01.Byte02 = 0
+            CmdType01.Short03 = 0
+            CmdType01.Short04 = 0
+            CmdType01.Int05 = 0
+            CmdType01.Int06 = 0
+            CmdType01.Float07 = 0.0
+            CmdType01.Float08 = 0.0
+
+            Status = bus_cmd145_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CmdType01, 0)
+            Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+
+            Count = Count + 1
+            BusOutput.JobId = Count
+
+            NowE6Pos = cur_pos_(0,0)
+            PicturePose.x = NowE6Pos.x
+            PicturePose.y = NowE6Pos.y
+            PicturePose.z = NowE6Pos.z
+            PicturePose.a = NowE6Pos.a
+            PicturePose.b = NowE6Pos.b
+            PicturePose.c = NowE6Pos.c
+            
+            Status = bus_cmd009_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, PicturePose, 0)
+            Status = bus_cmd129_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, ThisPos, BusTimeout)
+
+            if  Status == OK then
+
+                return
+            else
+
+                err_display_(BusInput, BusOutput)
+                bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+                Count = Count - 1
+
+            endif
+
+        case 3                                                 ; #CMD_SEDPOS
+
+            CmdType01.Byte01 = 103
+            CmdType01.Byte02 = 0
+            CmdType01.Short03 = 0
+            CmdType01.Short04 = 0
+            CmdType01.Int05 = 0
+            CmdType01.Int06 = 0
+            CmdType01.Float07 = 0.0
+            CmdType01.Float08 = 0.0
+
+            Status = bus_cmd145_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CmdType01, 0)
+            Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, 5000)
+
+            SendPose = cur_pos_(Uframe,Utool)
+
+            Status = bus_cmd009_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, SendPose, 0)
+            Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, BusTimeout )
+
+            if  Status == OK then
+
+                return
+            else
+
+                err_display_(BusInput, BusOutput)
+                bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+
+            endif
+
+        case 4                                                 ; #CMD_CAMERA
+
+            CmdType01.Byte01 = 104
+            CmdType01.Byte02 = CameraNo
+            CmdType01.Short03 = 0
+            CmdType01.Short04 = 0
+            CmdType01.Int05 = 0
+            CmdType01.Int06 = 0
+            CmdType01.Float07 = 0.0
+            CmdType01.Float08 = 0.0
+
+            Status = bus_cmd145_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CmdType01, 0)
+            Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, 5000)
+
+            SendPose = cur_pos_(Uframe,Utool)
+
+            Status = bus_cmd009_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, SendPose, 0)
+            Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, BusTimeout )
+
+            if  Status == OK then
+
+                return
+            else
+
+                err_display_(BusInput, BusOutput)
+                bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+
+            endif
+
+        case 5,6                                               ; #CMD_VASMB, #CMD_DQMONI
+
+            if Count == 0 then
+
+                if (varstate("MaxCorr.x") <>  #initialized) then
+                    MaxCorr.x = 10
+                endif
+                if (varstate("MaxCorr.y") <>  #initialized) then
+                    MaxCorr.y = 10
+                endif
+                if (varstate("MaxCorr.z") <>  #initialized) then
+                    MaxCorr.z = 10
+                endif
+
+                switch (Command)
+                case 5                                 ;#CMD_VASMB
+
+                    CmdType01.Byte01 = 101
+                    CmdType01.Byte02 = 0
+                    CmdType01.Short03 = 0
+                    CmdType01.Short04 = 0
+                    CmdType01.Int05 = 0
+                    CmdType01.Int06 = 0
+                    CmdType01.Float07 = 0.0
+                    CmdType01.Float08 = 0.0
+
+                case 6                                 ;#CMD_DQMONI
+                
+                    CmdType01.Byte01 = 102
+                    CmdType01.Byte02 = 0
+                    CmdType01.Short03 = 0
+                    CmdType01.Short04 = 0
+                    CmdType01.Int05 = 0
+                    CmdType01.Int06 = 0
+                    CmdType01.Float07 = 0.0
+                    CmdType01.Float08 = 0.0
+
+                endswitch
+
+                Status = bus_cmd145_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, CmdType01, 0)
+                Status = bus_cmd001_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+            endif
+
+            Count = tern_int_(Count >= 254, 1, Count + 1)
+
+            BusOutput.JobId = Count
+
+            continue
+            NowE6Pos = $pos_act_mes
+            PicturePose.x = NowE6Pos.x
+            PicturePose.y = NowE6Pos.y
+            PicturePose.z = NowE6Pos.z
+            PicturePose.a = NowE6Pos.a
+            PicturePose.b = NowE6Pos.b
+            PicturePose.c = NowE6Pos.c
+
+            Status = bus_cmd009_(#BUSCMD_WRITE, #BUSCMD_MST, BusInput, BusOutput, PicturePose, 0)
+            Status = bus_cmd129_(#BUSCMD_READ, #BUSCMD_MST, BusInput, BusOutput, CommandPose, BusTimeout)
+
+            if Status == OK then
+
+                if BusInput.JobId == 255 then
+                    return
+                endif
+
+                if BusInput.JobId == BusOutput.JobId then
+
+                    GuideE6Pose = NowE6Pos
+                    GuideE6Pose.x = CommandPose.x
+                    GuideE6Pose.y = CommandPose.y
+                    GuideE6Pose.z = CommandPose.z
+                    GuideE6Pose.a = CommandPose.a
+                    GuideE6Pose.b = CommandPose.b
+                    GuideE6Pose.c = CommandPose.c
+
+                    if (abs(GuideE6Pose.x - PicturePose.x) <= MaxCorr.x) and (abs(GuideE6Pose.y - PicturePose.y) <= MaxCorr.y) and (abs(GuideE6Pose.z - PicturePose.z) <= MaxCorr.z) then
+
+                        move_l_(GuideE6Pose,SpeedL,,$ACT_BASE,$ACT_TOOL)
+                        wait sec DelayL
+                    else
+
+                        error_write_(801,"Move out of range")
+                    endif
+                else
+
+                    error_write_(802,"Time series Err")
+                endif
+
+            else
+
+                err_display_(BusInput, BusOutput)
+                bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+                Count = 0
+            endif
+
+        default
+
+            error_write_(999,"Calibration Param Err")
+            bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+            Count = 0
+
+        endswitch
+
+    endwhile
+
+
+end
+
+def err_display_(BusIn : in,BusOut : in)
+    
+    decl busin_t BusIn
+    decl busout_t BusOut
+
+    if not BusIn.SysReady then 
+
+        error_write_(901,"Software not ready")
+        return
+    endif
+
+    if BusIn.TellId <> BusOut.RobTellId then 
+
+        error_write_(902,"Software processing timeout")
+        return
+    endif
+
+    switch BusIn.ErrorId 
+    case 1
+        error_write_(001,"Camera connection failed")
+    case 2
+        error_write_(002,"Camera shot failed")
+    case 3
+        error_write_(003,"Loading identification failed")
+    case 4
+        error_write_(004,"The hinge fit calculation failed")
+    case 5
+        error_write_(005,"Hinge adjustment calculation failed")
+    case 6
+        error_write_(006,"The gap surface difference calculation failed")
+    case 7
+        error_write_(007,"Call adjustment failed")
+    case 8
+        error_write_(008,"Call screw down failed")
+    case 9
+        error_write_(009,"Call car door failed")
+    case 10
+        error_write_(010,"Out of range")
+    default
+        error_write_(903,"Unknow error")
+    endswitch
+
+end

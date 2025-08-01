@@ -1,0 +1,74 @@
+&ACCESS RVP
+&REL 131
+&COMMENT Polish 250608
+&PARAM DISKPATH = KRC:\R1\Program\SbtComm012Polish
+def  PolishMain01 ( )
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+;Initialized Data
+PolishInitialization()
+;FOLD SbtComm012.PolishInit ;%{PE}
+WAIT SEC 0.0
+Comm012HeadStatus(1)
+Comm012HeadStatus(2)
+Comm012HeadStatus(3)
+Comm012HeadStatus(4)
+Comm012PolishInit()
+;ENDFOLD
+;Camera photography
+PolishTrigger01()
+;FOLD SbtComm012.PolishPlanning IN Job Id: 1, IN Planing Id: 1, OUT Num Edges: NumOfPath ;%{PE}
+Comm012PolishPlan(1, 1, NumOfPath)
+;ENDFOLD
+for PathNumber = 1 to NumOfPath
+;FOLD SbtComm012.PolishGetParam IN Job Id: 1, IN Num Edges: PathNumber, OUT GrindHead Id: GrindHead, OUT Spindle Speed: SpindleSpeed ;%{PE}
+Comm012PolishGetPara(1, PathNumber, GrindHead, SpindleSpeed)
+;ENDFOLD
+;FOLD Replace the polishing head
+;PolishReplaceHead(GrindHead)
+;ENDFOLD
+BAS(#TOOL, GrindHeadTool[GrindHead].BindToolNum)
+;FOLD SbtComm012.PolishGetPath IN Job Id: 1, IN Num Edges: PathNumber, IN Step Dist: 5 ;%{PE}
+Comm012PolishGetPath(1,  PathNumber, 5)
+;ENDFOLD
+;FOLD SbtComm012.PolishMoveAppr IN Speed Type: EXTERNAL, IN GrindHead Id: GrindHead, IN Move Speed: 300 cm/min ;%{PE}
+IF 1 == 1 THEN
+Comm012PolishMoveAppr(GrindHead, )
+ELSE
+Comm012PolishMoveAppr(GrindHead, 300)
+ENDIF
+;ENDFOLD
+;FOLD SbtComm012.HeadCtrlByName IN Ctrl Type: HEAD_STARTING, IN GrindHead Id: GrindHead, IN Spindle Speed: SpindleSpeed, IN Timeout: 10 sec ;%{PE}
+WAIT SEC 0.0
+Comm012HeadCtrl(#HEAD_STARTING, GrindHead, SpindleSpeed, 10 * 1000)
+;ENDFOLD
+;FOLD SbtComm012.PolishMoveGrind IN Speed Type: EXTERNAL, IN GrindHead Id: GrindHead, IN Move Speed: 300 cm/min, IN Ori Type: VAR ;%{PE}
+IF 1 == 1 THEN
+Comm012PolishMoveGrind(GrindHead, , #VAR)
+ELSE
+Comm012PolishMoveGrind(GrindHead, 300, #VAR)
+ENDIF
+;ENDFOLD
+;FOLD SbtComm012.PolishMoveExit IN Speed Type: EXTERNAL, IN GrindHead Id: GrindHead, IN Move Speed: 300 cm/min ;%{PE}
+IF 1 == 1 THEN
+Comm012PolishMoveExit(GrindHead, )
+ELSE
+Comm012PolishMoveExit(GrindHead, 300)
+ENDIF
+;ENDFOLD
+endfor 
+;FOLD SbtComm012.HeadCtrlByName IN Ctrl Type: HEAD_STOPPED, IN GrindHead Id: GrindHead, IN Spindle Speed: SpindleSpeed, IN Timeout: 5 sec ;%{PE}
+WAIT SEC 0.0
+Comm012HeadCtrl(#HEAD_STOPPED, GrindHead, SpindleSpeed, 5 * 1000)
+;ENDFOLD
+
+end

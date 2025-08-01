@@ -1,0 +1,37 @@
+&ACCESS RVP
+&REL 22
+&comment Conveyor Pick Select
+&PARAM DISKPATH = KRC:\R1\Program\SecondSortMain
+defdat second_pkcv_select 
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: second_pkcv_select.dat
+; 
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 28
+;   Modification Data    ==   2022 - 06 - 28
+; 
+; Author: speedbot
+; 
+; Version: 1.0
+;***********************************************************
+
+
+ext second_pkcv01()
+ext second_pkcv02()
+ext second_pkcv03()
+ext second_pkcv04()
+
+decl state_t State
+decl int Offset = 0
+decl char Msg[256]
+    
+
+
+enddat
+
+
+

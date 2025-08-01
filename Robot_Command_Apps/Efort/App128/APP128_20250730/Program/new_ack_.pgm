@@ -1,0 +1,4 @@
+RobotCmd := Cmd;
+RobotSep := 0;
+RobotAck := 0;
+RobotTellId := PcTellId;

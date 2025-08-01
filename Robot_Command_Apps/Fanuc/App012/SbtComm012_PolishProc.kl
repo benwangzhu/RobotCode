@@ -1,0 +1,47 @@
+program SbtPoliProc
+--***********************************************************
+--
+-- file Name: SbtPoliProc
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 05 - 06
+--
+-- Author: 
+--
+-- Version: 1.0
+%comment = 'SBT POLISH PROC 250507'
+%nolockgroup
+%nobusylamp
+%nopause = error + command + tpenable
+
+%include include/lib_logs_t
+%include include/lib_socket_t
+%include include/lib_transform_t
+%include sbt_comm12_t
+%include sbt_comm12_global
+
+var 
+    JobId                               : integer 
+    PLanPara                            : integer 
+    ProcNum                             : integer 
+    ProcRegNum                          : integer
+    Status                              : integer                   
+
+%include include/lib_inst_h
+%include include/lib_tp_if_h
+%include include/lib_string_h
+
+begin 
+    JobId       = get_iparm_(1)                 --获取任务编号
+    PLanPara    = get_iparm_(2)                 --获取路径规划参数号   
+    ProcRegNum  = get_iparm_(3)                 --获取工艺段数存储在的R寄存器号   
+
+    Status = f002_it01_(PolishSock, JobId, PLanPara, ProcNum)
+    if Status <> OK then  
+        post_err(CC_UALARM, '打磨路径规划失败![Status:' + int_to_str_(Status) + ']', 0, CC_ABORT)
+    endif 
+
+    set_ireg_(ProcRegNum, ProcNum)
+end SbtPoliProc

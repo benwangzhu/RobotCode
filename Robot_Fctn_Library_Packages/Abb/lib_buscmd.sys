@@ -1,0 +1,1443 @@
+module lib_buscmd(sysmodule, noview)
+!***********************************************************
+!
+! Copyright 2018 - 2024 speedbot All Rights reserved.
+!
+! File Name: lib_buscmd
+!
+! Description:
+!   Language             ==   Rapid for ABB ROBOT
+!   Date                 ==   2023 - 07 - 05
+!   Modification Data    ==   2023 - 12 - 11
+!
+! Author: speedbot
+!
+! Version: 1.0
+!*********************************************************************************************************!
+!                                                                                                         !
+!                                                      .^^^                                               !
+!                                               .,~<c+{{{{{{t,                                            ! 
+!                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          !
+!                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        !
+!                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       !
+!                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    !
+!                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  !
+!                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                !
+!                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              !
+!                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             !
+!                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             !
+!                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             !
+!                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              !
+!                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              !
+!                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               !
+!                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               !
+!                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                !
+!                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                !
+!                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 !
+!                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 !
+!                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  !
+!                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  !
+!                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    !                         
+!                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         !
+!                                         ^!{{{{{{{{t!",^`                                                !
+!                                                                                                         !
+!*********************************************************************************************************!
+!
+
+! 2023-12-12 ++ bus_cmd001_() ==> errnum
+! 2023-12-12 ++ bus_cmd002_() ==> errnum
+! 2023-12-12 ++ bus_cmd003_() ==> errnum
+! 2023-12-12 ++ bus_cmd004_() ==> errnum
+! 2023-12-12 ++ bus_cmd005_() ==> errnum
+! 2023-12-12 ++ bus_cmd006_() ==> errnum
+! 2023-12-12 ++ bus_cmd007_() ==> errnum
+! 2023-12-12 ++ bus_cmd008_() ==> errnum
+! 2023-12-12 ++ bus_cmd009_() ==> errnum
+! 2023-12-12 ++ bus_cmd010_() ==> errnum
+! 2023-12-12 ++ bus_cmd011_() ==> errnum
+! 2023-12-12 ++ bus_cmd012_() ==> errnum
+! 2023-12-12 ++ bus_cmd013_() ==> errnum
+! 2023-12-12 ++ bus_cmd014_() ==> errnum
+! 2023-12-12 ++ bus_cmd015_() ==> errnum
+! 2023-12-12 ++ bus_cmd016_() ==> errnum
+! 2023-12-12 ++ bus_cmd017_() ==> errnum
+! 2023-12-12 ++ bus_cmd018_() ==> errnum
+! 2023-12-12 ++ bus_cmd019_() ==> errnum
+! 2023-12-12 ++ bus_cmd020_() ==> errnum
+! 2023-12-12 ++ bus_cmd021_() ==> errnum
+! 2023-12-12 ++ bus_cmd022_() ==> errnum
+! 2023-12-12 ++ bus_cmd023_() ==> errnum
+! 2023-12-12 ++ bus_cmd024_() ==> errnum
+! 2023-12-12 ++ bus_cmd025_() ==> errnum
+! 2023-12-12 ++ bus_cmd026_() ==> errnum
+! 2023-12-12 ++ bus_cmd027_() ==> errnum
+! 2023-12-12 ++ bus_cmd028_() ==> errnum
+! 2023-12-12 ++ bus_cmd029_() ==> errnum
+! 2023-12-12 ++ bus_cmd030_() ==> errnum
+! 2023-12-12 ++ bus_cmd031_() ==> errnum
+! 2023-12-12 ++ bus_cmd032_() ==> errnum
+! 2023-12-12 ++ bus_cmd033_() ==> errnum
+! 2023-12-12 ++ bus_cmd034_() ==> errnum
+! 2023-12-12 ++ bus_cmd035_() ==> errnum
+! 2023-12-12 ++ bus_cmd036_() ==> errnum
+! 2023-12-12 ++ bus_cmd037_() ==> errnum
+! 2023-12-12 ++ bus_cmd038_() ==> errnum
+! 2023-12-12 ++ bus_cmd039_() ==> errnum
+! 2023-12-12 ++ bus_cmd040_() ==> errnum
+! 2023-12-12 ++ bus_cmd041_() ==> errnum
+! 2023-12-12 ++ bus_cmd042_() ==> errnum
+! 2023-12-12 ++ bus_cmd043_() ==> errnum
+! 2023-12-12 ++ bus_cmd044_() ==> errnum
+! 2023-12-12 ++ bus_cmd045_() ==> errnum
+! 2023-12-12 ++ bus_cmd046_() ==> errnum
+! 2023-12-12 ++ bus_cmd047_() ==> errnum
+! 2023-12-12 ++ bus_cmd048_() ==> errnum
+! 2023-12-12 ++ bus_cmd049_() ==> errnum
+! 2023-12-12 ++ bus_cmd050_() ==> errnum
+! 2023-12-12 ++ bus_cmd051_() ==> errnum
+! 2023-12-12 ++ bus_cmd052_() ==> errnum
+! 2023-12-12 ++ bus_cmd053_() ==> errnum
+! 2023-12-12 ++ bus_cmd054_() ==> errnum
+! 2023-12-12 ++ bus_cmd055_() ==> errnum
+! 2023-12-12 ++ bus_cmd056_() ==> errnum
+! 2023-12-12 ++ bus_cmd057_() ==> errnum
+! 2023-12-12 ++ bus_cmd058_() ==> errnum
+! 2023-12-12 ++ bus_cmd059_() ==> errnum
+! 2023-12-12 ++ bus_cmd060_() ==> errnum
+! 2023-12-12 ++ bus_cmd061_() ==> errnum
+! 2023-12-12 ++ bus_cmd062_() ==> errnum
+! 2023-12-12 ++ bus_cmd063_() ==> errnum
+! 2023-12-12 ++ bus_cmd064_() ==> errnum
+! 2023-12-12 ++ bus_cmd065_() ==> errnum
+! 2023-12-12 ++ bus_cmd066_() ==> errnum
+! 2023-12-12 ++ bus_cmd067_() ==> errnum
+! 2023-12-12 ++ bus_cmd068_() ==> errnum
+! 2023-12-12 ++ bus_cmd069_() ==> errnum
+! 2023-12-12 ++ bus_cmd070_() ==> errnum
+! 2023-12-12 ++ bus_cmd071_() ==> errnum
+! 2023-12-12 ++ bus_cmd072_() ==> errnum
+! 2023-12-12 ++ bus_cmd073_() ==> errnum
+! 2023-12-12 ++ bus_cmd074_() ==> errnum
+! 2023-12-12 ++ bus_cmd075_() ==> errnum
+! 2023-12-12 ++ bus_cmd076_() ==> errnum
+! 2023-12-12 ++ bus_cmd077_() ==> errnum
+! 2023-12-12 ++ bus_cmd078_() ==> errnum
+! 2023-12-12 ++ bus_cmd079_() ==> errnum
+! 2023-12-12 ++ bus_cmd080_() ==> errnum
+! 2023-12-12 ++ bus_cmd081_() ==> errnum
+! 2023-12-12 ++ bus_cmd082_() ==> errnum
+! 2023-12-12 ++ bus_cmd083_() ==> errnum
+! 2023-12-12 ++ bus_cmd084_() ==> errnum
+! 2023-12-12 ++ bus_cmd085_() ==> errnum
+! 2023-12-12 ++ bus_cmd086_() ==> errnum
+! 2023-12-12 ++ bus_cmd087_() ==> errnum
+! 2023-12-12 ++ bus_cmd088_() ==> errnum
+! 2023-12-12 ++ bus_cmd089_() ==> errnum
+! 2023-12-12 ++ bus_cmd090_() ==> errnum
+! 2023-12-12 ++ bus_cmd091_() ==> errnum
+! 2023-12-12 ++ bus_cmd092_() ==> errnum
+! 2023-12-12 ++ bus_cmd093_() ==> errnum
+! 2023-12-12 ++ bus_cmd094_() ==> errnum
+! 2023-12-12 ++ bus_cmd095_() ==> errnum
+! 2023-12-12 ++ bus_cmd096_() ==> errnum
+! 2023-12-12 ++ bus_cmd097_() ==> errnum
+! 2023-12-12 ++ bus_cmd098_() ==> errnum
+! 2023-12-12 ++ bus_cmd099_() ==> errnum
+! 2023-12-12 ++ bus_cmd100_() ==> errnum
+! 2023-12-12 ++ bus_cmd101_() ==> errnum
+! 2023-12-12 ++ bus_cmd102_() ==> errnum
+! 2023-12-12 ++ bus_cmd103_() ==> errnum
+! 2023-12-12 ++ bus_cmd104_() ==> errnum
+! 2023-12-12 ++ bus_cmd105_() ==> errnum
+! 2023-12-12 ++ bus_cmd106_() ==> errnum
+! 2023-12-12 ++ bus_cmd107_() ==> errnum
+! 2023-12-12 ++ bus_cmd108_() ==> errnum
+! 2023-12-12 ++ bus_cmd109_() ==> errnum
+! 2023-12-12 ++ bus_cmd110_() ==> errnum
+! 2023-12-12 ++ bus_cmd111_() ==> errnum
+
+
+record cmd_typ01_t
+    byte Byte01;
+    byte Byte02;
+    num  Short03;
+    num  Short04;
+    num  Int05;
+    num  Int06;
+    num  Float07;
+    num  Float08;
+endrecord
+
+record cmd_typ02_t
+    num Float01;
+    num Float02;
+    num Float03;
+    num Float04;
+    num Float05;
+    num Float06;
+endrecord
+
+record cmd_typ03_t
+    byte Byte01;
+    byte Byte02;
+    byte Byte03;
+    byte Byte04;
+    byte Byte05;
+    byte Byte06;
+    byte Byte07;
+    byte Byte08;
+    byte Byte09;
+    byte Byte10;
+    byte Byte11;
+    byte Byte12;
+    byte Byte13;
+    byte Byte14;
+    byte Byte15;
+    byte Byte16;
+    byte Byte17;
+    byte Byte18;
+endrecord
+
+record cmd_typ04_t
+    byte Byte01;
+    num  Short02;
+    num  Short03;
+    num  Short04;
+    byte Byte05;
+    byte Byte06;
+    byte Byte07;
+    byte Byte08;
+    byte Byte09;
+    byte Byte10;
+    byte Byte11;
+    byte Byte12;
+    num  Short13;
+    num  Short14;
+    byte Byte15;
+    byte Byte16;
+    byte Byte17;
+endrecord
+
+record cmd_typ05_t
+    num  Int01;
+    byte Byte02;
+    byte Byte03;
+    num  Short04;
+    num  Int05;
+    num  Short06;
+    num  Short07;
+    byte Byte08;
+    byte Byte09;
+    byte Byte10;
+endrecord
+
+record cmd_typ06_t
+    byte Byte01;
+    num  Short02;
+    num  Short03;
+    num  Short04;
+    num  Float05;
+    num  Float06;
+endrecord
+
+record cmd_typ07_t
+    num Float01;
+    num Float02;
+    num Float03;
+    num Float04;
+    num Float05;
+    num Float06;
+    num Float07;
+    num Float08;
+    num Float09;
+    num Float10;
+    num Float11;
+    num Float12;
+    num Int13;
+    num Int14;
+endrecord
+
+record cmd_typ08_t
+    byte Byte01;
+    byte Byte02;
+    byte Byte03;
+    byte Byte04;
+    num  Short05;
+    num  Short06;
+    num  Short07;
+    num  Short08;
+    num  Int09;
+    num  Int10;
+    num  Int11;
+    num  Int12;
+    num  Float13;
+    num  Float14;
+    num  Float15;
+    num  Float16;
+endrecord
+
+record cmd_typ09_t
+    num Int01;
+    num Int02;
+    num Float03;
+    num Float04;
+    num Float05;
+    num Float06;
+    num Float07;
+    num Float08;
+    num Float09;
+    num Float10;
+    num Float11;
+    num Float12;
+    num Float13;
+    num Float14;
+endrecord
+
+const num BUSCMD_WRITE := 1;                 ! 机器人进行写操作
+const num BUSCMD_READ := 2;                  ! 机器人进行读操作
+
+const num BUSCMD_MST := -1;                  ! 机器人做主控
+const num BUSCMD_SLE := -2;                  ! 机器人做从控
+
+
+local func errnum buscmd_wo__(byte BusCmdId, num BusMstSel, 
+                              inout busin_t BusIn, inout busout_t BusOut)
+
+    test BusMstSel
+
+    case BUSCMD_MST:
+
+        BusOut.RobMsgType := BusCmdId;
+        bus_stell_ BusIn, BusOut;
+        return(OK);
+
+    case BUSCMD_SLE:
+
+        BusOut.MsgType := BusCmdId;
+        bus_ftell_ BusIn, BusOut;
+        return(OK);
+    endtest
+    
+    error
+    return(NG);
+endfunc
+
+local func errnum buscmd_ro__(byte BusCmdId, num BusMstSel, 
+                              inout busin_t BusIn, inout busout_t BusOut, \num Timeout)
+    var errnum RoStatus := 0;
+
+    test BusMstSel
+    
+    case BUSCMD_MST:
+
+        RoStatus := bus_rtell_(BusIn, BusOut, \Timeout?Timeout);
+
+        setgo GoRobMsgType, 0;
+
+        if (not (RoStatus = 0)) then
+
+            tpwrite "MST Read CMD[" + numtostr(BusCmdId, 0) + "] Err[" + numtostr(RoStatus, 0) + "]";
+            return(RoStatus);
+        endif
+
+        if (not (BusIn.MsgType = BusCmdId)) then 
+
+            errwrite "buscmd_ro__", "MST Read CMD[" + numtostr(BusCmdId, 0) + "] Err !!!" \Rl2 := "New CMD = " + numtostr(BusIn.MsgType, 0);
+            return(NG);
+        endif
+
+    case BUSCMD_SLE:
+
+        RoStatus := bus_wtell_(BusIn, BusOut, \Timeout?Timeout);
+
+        if (not (RoStatus = 0)) then
+         
+            tpwrite "SLE Read CMD[" + numtostr(BusCmdId, 0) + "] Err[" + numtostr(RoStatus, 0) + "]";
+            return(RoStatus);
+        endif
+
+        if (not (BusIn.AgentMsgType = BusCmdId)) then 
+
+            errwrite "buscmd_ro__", "SLE Read CMD[" + numtostr(BusCmdId, 0) + "] Err !!!" \Rl2 := "New CMD = " + numtostr(BusIn.AgentMsgType, 0);
+            return(NG);
+        endif
+    endtest
+    
+    return(OK);
+endfunc
+
+!***********************************************************
+! func bus_cmd001_
+!***********************************************************
+!     输入参数 : BusOperation     * 操作类型 *     * 总线操作类型（写入或读取） *
+!     输入参数 : BusMstSel        * 主机选择 *     * 选择的主机 *
+!     输入输出参数 : BusIn         * 总线输入 *     * 总线输入结构 *
+!     输入输出参数 : BusOut        * 总线输出 *     * 总线输出结构 *
+!     输入参数 : \num Timeout      * 可选数字 *     * 等待超时时间 *
+! 返回 :                     * 错误码 *     * 操作状态 *
+!***********************************************************
+! 功能 : 执行总线命令。
+!        根据操作类型选择执行写入或读取操作。
+!        对于写入操作，调用 `buscmd_wo__` 函数。
+!        对于读取操作，调用 `buscmd_ro__` 函数，并传递可选的超时时间。
+!        返回操作的结果。
+!***********************************************************
+func errnum bus_cmd001_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        return(buscmd_wo__(1, BusMstSel, BusIn, BusOut));
+
+    case BUSCMD_READ:
+
+        return(buscmd_ro__(1, BusMstSel, BusIn, BusOut, \Timeout?Timeout));
+
+    endtest
+
+endfunc
+
+!***********************************************************
+! func bus_cmd002_
+!***********************************************************
+!     输入参数 : BusOperation     * 操作类型 *     * 总线操作类型（写入或读取） *
+!     输入参数 : BusMstSel        * 主机选择 *     * 选择的主机 *
+!     输入输出参数 : BusIn         * 总线输入 *     * 总线输入结构 *
+!     输入输出参数 : BusOut        * 总线输出 *     * 总线输出结构 *
+!     输入输出参数 : BusData       * 数据结构 *     * 用于存储数据的结构 *
+!     输入参数 : \num Timeout      * 可选数字 *     * 等待超时时间 *
+! 返回 :                     * 错误码 *     * 操作状态 *
+!***********************************************************
+! 功能 : 执行总线命令。
+!        根据操作类型选择执行写入或读取操作。
+!        对于写入操作，设置字节、整数、双整数、浮点数等数据到总线输出结构，并调用 `buscmd_wo__` 函数。
+!        对于读取操作，调用 `buscmd_ro__` 函数，并在成功后读取对应的数据类型到总线输入结构。
+!        如果读取操作成功，则返回 OK，并填充 BusData 结构；
+!        否则返回 NG，并清空 BusData 结构。
+!***********************************************************
+func errnum bus_cmd002_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ01_t BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_BYTE,   1, BusData.Byte01;
+        bus_sdata_ BUS_TYP_BYTE,   2, BusData.Byte02;
+        bus_sdata_ BUS_TYP_INT,    3, BusData.Short03;
+        bus_sdata_ BUS_TYP_INT,    5, BusData.Short04;
+        bus_sdata_ BUS_TYP_DINT,   7, BusData.Int05;
+        bus_sdata_ BUS_TYP_DINT,   11, BusData.Int06;
+        bus_sdata_ BUS_TYP_FLOAT2, 15, BusData.Float07;
+        bus_sdata_ BUS_TYP_FLOAT2, 19, BusData.Float08;
+
+        return(buscmd_wo__(2, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(2, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := [bus_gdata_(BUS_TYP_BYTE, 1),
+                        bus_gdata_(BUS_TYP_BYTE, 2),
+                        bus_gdata_(BUS_TYP_INT, 3),
+                        bus_gdata_(BUS_TYP_INT, 5),
+                        bus_gdata_(BUS_TYP_DINT, 7),
+                        bus_gdata_(BUS_TYP_DINT, 11),
+                        bus_gdata_(BUS_TYP_FLOAT2, 15),
+                        bus_gdata_(BUS_TYP_FLOAT2, 19)];
+            return(OK);
+        endif
+
+        BusData := [0, 0, 0, 0, 0, 0, 0.0, 0.0];
+
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd003_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout robtarget BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_scartp_ 1, BusData;
+        return(buscmd_wo__(3, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(3, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := bus_gcartp_(1);
+            return(OK);
+        endif
+
+        BusData := null_pos_();
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd009_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout robtarget BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_scartp_ 1, BusData;
+        return(buscmd_wo__(9, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(9, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := bus_gcartp_(1);
+            return(OK);
+        endif
+
+        BusData := null_pos_();
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd010_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout robtarget BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_scartp_ 1, BusData;
+
+        return(buscmd_wo__(10, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(10, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := bus_gcartp_(1);
+            return(OK);
+        endif
+
+        BusData := null_pos_();
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd011_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout robtarget BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_scartp_ 1, BusData;
+
+        return(buscmd_wo__(11, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(11, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := bus_gcartp_(1);
+            return(OK);
+        endif
+
+        BusData := null_pos_();
+    endtest
+   
+    return(NG);
+endfunc
+
+func errnum bus_cmd012_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ01_t BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_BYTE,   1, BusData.Byte01;
+        bus_sdata_ BUS_TYP_BYTE,   2, BusData.Byte02;
+        bus_sdata_ BUS_TYP_INT,    3, BusData.Short03;
+        bus_sdata_ BUS_TYP_INT,    5, BusData.Short04;
+        bus_sdata_ BUS_TYP_DINT,   7, BusData.Int05;
+        bus_sdata_ BUS_TYP_DINT,   11, BusData.Int06;
+        bus_sdata_ BUS_TYP_FLOAT2, 15, BusData.Float07;
+        bus_sdata_ BUS_TYP_FLOAT2, 19, BusData.Float08;
+
+        return(buscmd_wo__(12, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(12, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := [bus_gdata_(BUS_TYP_BYTE, 1),
+                        bus_gdata_(BUS_TYP_BYTE, 2),
+                        bus_gdata_(BUS_TYP_INT, 3),
+                        bus_gdata_(BUS_TYP_INT, 5),
+                        bus_gdata_(BUS_TYP_DINT, 7),
+                        bus_gdata_(BUS_TYP_DINT, 11),
+                        bus_gdata_(BUS_TYP_FLOAT2, 15),
+                        bus_gdata_(BUS_TYP_FLOAT2, 19)];
+            return(OK);
+        endif
+
+        BusData := [0, 0, 0, 0, 0, 0, 0.0, 0.0];
+
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd013_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ01_t BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_BYTE,   1, BusData.Byte01;
+        bus_sdata_ BUS_TYP_BYTE,   2, BusData.Byte02;
+        bus_sdata_ BUS_TYP_INT,    3, BusData.Short03;
+        bus_sdata_ BUS_TYP_INT,    5, BusData.Short04;
+        bus_sdata_ BUS_TYP_DINT,   7, BusData.Int05;
+        bus_sdata_ BUS_TYP_DINT,   11, BusData.Int06;
+        bus_sdata_ BUS_TYP_FLOAT2, 15, BusData.Float07;
+        bus_sdata_ BUS_TYP_FLOAT2, 19, BusData.Float08;
+
+        return(buscmd_wo__(13, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(13, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := [bus_gdata_(BUS_TYP_BYTE, 1),
+                        bus_gdata_(BUS_TYP_BYTE, 2),
+                        bus_gdata_(BUS_TYP_INT, 3),
+                        bus_gdata_(BUS_TYP_INT, 5),
+                        bus_gdata_(BUS_TYP_DINT, 7),
+                        bus_gdata_(BUS_TYP_DINT, 11),
+                        bus_gdata_(BUS_TYP_FLOAT2, 15),
+                        bus_gdata_(BUS_TYP_FLOAT2, 19)];
+            return(OK);
+        endif
+
+        BusData := [0, 0, 0, 0, 0, 0, 0.0, 0.0];
+
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd014_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ01_t BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_BYTE,   1, BusData.Byte01;
+        bus_sdata_ BUS_TYP_BYTE,   2, BusData.Byte02;
+        bus_sdata_ BUS_TYP_INT,    3, BusData.Short03;
+        bus_sdata_ BUS_TYP_INT,    5, BusData.Short04;
+        bus_sdata_ BUS_TYP_DINT,   7, BusData.Int05;
+        bus_sdata_ BUS_TYP_DINT,   11, BusData.Int06;
+        bus_sdata_ BUS_TYP_FLOAT2, 15, BusData.Float07;
+        bus_sdata_ BUS_TYP_FLOAT2, 19, BusData.Float08;
+
+        return(buscmd_wo__(14, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(14, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := [bus_gdata_(BUS_TYP_BYTE, 1),
+                        bus_gdata_(BUS_TYP_BYTE, 2),
+                        bus_gdata_(BUS_TYP_INT, 3),
+                        bus_gdata_(BUS_TYP_INT, 5),
+                        bus_gdata_(BUS_TYP_DINT, 7),
+                        bus_gdata_(BUS_TYP_DINT, 11),
+                        bus_gdata_(BUS_TYP_FLOAT2, 15),
+                        bus_gdata_(BUS_TYP_FLOAT2, 19)];
+            return(OK);
+        endif
+
+        BusData := [0, 0, 0, 0, 0, 0, 0.0, 0.0];
+
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd017_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ07_t BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_FLOAT2, 1, BusData.Float01;
+        bus_sdata_ BUS_TYP_FLOAT2, 5, BusData.Float02;
+        bus_sdata_ BUS_TYP_FLOAT2, 9, BusData.Float03;
+        bus_sdata_ BUS_TYP_FLOAT2, 13, BusData.Float04;
+        bus_sdata_ BUS_TYP_FLOAT2, 17, BusData.Float05;
+        bus_sdata_ BUS_TYP_FLOAT2, 21, BusData.Float06;
+        bus_sdata_ BUS_TYP_FLOAT2, 25, BusData.Float07;
+        bus_sdata_ BUS_TYP_FLOAT2, 29, BusData.Float08;
+        bus_sdata_ BUS_TYP_FLOAT2, 33, BusData.Float09;
+        bus_sdata_ BUS_TYP_FLOAT2, 37, BusData.Float10;
+        bus_sdata_ BUS_TYP_FLOAT2, 41, BusData.Float11;
+        bus_sdata_ BUS_TYP_FLOAT2, 45, BusData.Float12;
+        bus_sdata_ BUS_TYP_DINT,   49, BusData.Int13;
+        bus_sdata_ BUS_TYP_DINT,   53, BusData.Int14;
+
+        setdo DoMeasuerSt, 0;
+        setdo DoMeasuereD, 0;
+
+        return(buscmd_wo__(17, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(17, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := [bus_gdata_(BUS_TYP_FLOAT2, 1),
+                        bus_gdata_(BUS_TYP_FLOAT2, 5),
+                        bus_gdata_(BUS_TYP_FLOAT2, 9),
+                        bus_gdata_(BUS_TYP_FLOAT2, 13),
+                        bus_gdata_(BUS_TYP_FLOAT2, 17),
+                        bus_gdata_(BUS_TYP_FLOAT2, 21),
+                        bus_gdata_(BUS_TYP_FLOAT2, 25),
+                        bus_gdata_(BUS_TYP_FLOAT2, 29),
+                        bus_gdata_(BUS_TYP_FLOAT2, 33),
+                        bus_gdata_(BUS_TYP_FLOAT2, 37),
+                        bus_gdata_(BUS_TYP_FLOAT2, 41),
+                        bus_gdata_(BUS_TYP_FLOAT2, 45),
+                        bus_gdata_(BUS_TYP_DINT, 49),
+                        bus_gdata_(BUS_TYP_DINT, 53)];
+            return(OK);
+        endif
+
+        BusData := [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0];
+
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd018_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ07_t BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_FLOAT2, 1, BusData.Float01;
+        bus_sdata_ BUS_TYP_FLOAT2, 5, BusData.Float02;
+        bus_sdata_ BUS_TYP_FLOAT2, 9, BusData.Float03;
+        bus_sdata_ BUS_TYP_FLOAT2, 13, BusData.Float04;
+        bus_sdata_ BUS_TYP_FLOAT2, 17, BusData.Float05;
+        bus_sdata_ BUS_TYP_FLOAT2, 21, BusData.Float06;
+        bus_sdata_ BUS_TYP_FLOAT2, 25, BusData.Float07;
+        bus_sdata_ BUS_TYP_FLOAT2, 29, BusData.Float08;
+        bus_sdata_ BUS_TYP_FLOAT2, 33, BusData.Float09;
+        bus_sdata_ BUS_TYP_FLOAT2, 37, BusData.Float10;
+        bus_sdata_ BUS_TYP_FLOAT2, 41, BusData.Float11;
+        bus_sdata_ BUS_TYP_FLOAT2, 45, BusData.Float12;
+        bus_sdata_ BUS_TYP_DINT,   49, BusData.Int13;
+        bus_sdata_ BUS_TYP_DINT,   53, BusData.Int14;
+
+        setdo DoMeasuerSt, 0;
+        setdo DoMeasuereD, 0;
+
+        return(buscmd_wo__(18, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(18, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := [bus_gdata_(BUS_TYP_FLOAT2, 1),
+                        bus_gdata_(BUS_TYP_FLOAT2, 5),
+                        bus_gdata_(BUS_TYP_FLOAT2, 9),
+                        bus_gdata_(BUS_TYP_FLOAT2, 13),
+                        bus_gdata_(BUS_TYP_FLOAT2, 17),
+                        bus_gdata_(BUS_TYP_FLOAT2, 21),
+                        bus_gdata_(BUS_TYP_FLOAT2, 25),
+                        bus_gdata_(BUS_TYP_FLOAT2, 29),
+                        bus_gdata_(BUS_TYP_FLOAT2, 33),
+                        bus_gdata_(BUS_TYP_FLOAT2, 37),
+                        bus_gdata_(BUS_TYP_FLOAT2, 41),
+                        bus_gdata_(BUS_TYP_FLOAT2, 45),
+                        bus_gdata_(BUS_TYP_DINT, 49),
+                        bus_gdata_(BUS_TYP_DINT, 53)];
+            return(OK);
+        endif
+        BusData := [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0];
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd020_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout robtarget BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_scartp_ 1, BusData;
+
+        return(buscmd_wo__(20, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(20, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := bus_gcartp_(1);
+            return(OK);
+        endif
+
+        BusData := null_pos_();
+
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd021_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ01_t BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_BYTE,   1, BusData.Byte01;
+        bus_sdata_ BUS_TYP_BYTE,   2, BusData.Byte02;
+        bus_sdata_ BUS_TYP_INT,    3, BusData.Short03;
+        bus_sdata_ BUS_TYP_INT,    5, BusData.Short04;
+        bus_sdata_ BUS_TYP_DINT,   7, BusData.Int05;
+        bus_sdata_ BUS_TYP_DINT,   11, BusData.Int06;
+        bus_sdata_ BUS_TYP_FLOAT2, 15, BusData.Float07;
+        bus_sdata_ BUS_TYP_FLOAT2, 19, BusData.Float08;
+
+        return(buscmd_wo__(21, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(21, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := [bus_gdata_(BUS_TYP_BYTE, 1),
+                        bus_gdata_(BUS_TYP_BYTE, 2),
+                        bus_gdata_(BUS_TYP_INT, 3),
+                        bus_gdata_(BUS_TYP_INT, 5),
+                        bus_gdata_(BUS_TYP_DINT, 7),
+                        bus_gdata_(BUS_TYP_DINT, 11),
+                        bus_gdata_(BUS_TYP_FLOAT2, 15),
+                        bus_gdata_(BUS_TYP_FLOAT2, 19)];
+            return(OK);
+        endif
+
+        BusData := [0, 0, 0, 0, 0, 0, 0.0, 0.0];
+
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd022_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ01_t BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_BYTE,   1, BusData.Byte01;
+        bus_sdata_ BUS_TYP_BYTE,   2, BusData.Byte02;
+        bus_sdata_ BUS_TYP_INT,    3, BusData.Short03;
+        bus_sdata_ BUS_TYP_INT,    5, BusData.Short04;
+        bus_sdata_ BUS_TYP_DINT,   7, BusData.Int05;
+        bus_sdata_ BUS_TYP_DINT,   11, BusData.Int06;
+        bus_sdata_ BUS_TYP_FLOAT2, 15, BusData.Float07;
+        bus_sdata_ BUS_TYP_FLOAT2, 19, BusData.Float08;
+
+        return(buscmd_wo__(22, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(22, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := [bus_gdata_(BUS_TYP_BYTE, 1),
+                        bus_gdata_(BUS_TYP_BYTE, 2),
+                        bus_gdata_(BUS_TYP_INT, 3),
+                        bus_gdata_(BUS_TYP_INT, 5),
+                        bus_gdata_(BUS_TYP_DINT, 7),
+                        bus_gdata_(BUS_TYP_DINT, 11),
+                        bus_gdata_(BUS_TYP_FLOAT2, 15),
+                        bus_gdata_(BUS_TYP_FLOAT2, 19)];
+            return(OK);
+        endif
+
+        BusData := [0, 0, 0, 0, 0, 0, 0.0, 0.0];
+
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd026_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ01_t BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_BYTE,   1, BusData.Byte01;
+        bus_sdata_ BUS_TYP_BYTE,   2, BusData.Byte02;
+        bus_sdata_ BUS_TYP_INT,    3, BusData.Short03;
+        bus_sdata_ BUS_TYP_INT,    5, BusData.Short04;
+        bus_sdata_ BUS_TYP_DINT,   7, BusData.Int05;
+        bus_sdata_ BUS_TYP_DINT,   11, BusData.Int06;
+        bus_sdata_ BUS_TYP_FLOAT2, 15, BusData.Float07;
+        bus_sdata_ BUS_TYP_FLOAT2, 19, BusData.Float08;
+
+        return(buscmd_wo__(26, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(26, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := [bus_gdata_(BUS_TYP_BYTE, 1),
+                        bus_gdata_(BUS_TYP_BYTE, 2),
+                        bus_gdata_(BUS_TYP_INT, 3),
+                        bus_gdata_(BUS_TYP_INT, 5),
+                        bus_gdata_(BUS_TYP_DINT, 7),
+                        bus_gdata_(BUS_TYP_DINT, 11),
+                        bus_gdata_(BUS_TYP_FLOAT2, 15),
+                        bus_gdata_(BUS_TYP_FLOAT2, 19)];
+            return(OK);
+        endif
+
+        BusData := [0, 0, 0, 0, 0, 0, 0.0, 0.0];
+
+    endtest
+   
+    return(NG);
+endfunc
+
+func errnum bus_cmd027_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ08_t BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_BYTE,   1, BusData.Byte01;
+        bus_sdata_ BUS_TYP_BYTE,   2, BusData.Byte02;
+        bus_sdata_ BUS_TYP_BYTE,   3, BusData.Byte03;
+        bus_sdata_ BUS_TYP_BYTE,   4, BusData.Byte04;
+        bus_sdata_ BUS_TYP_INT,    5, BusData.Short05;
+        bus_sdata_ BUS_TYP_INT,    7, BusData.Short06;
+        bus_sdata_ BUS_TYP_INT,    9, BusData.Short07;
+        bus_sdata_ BUS_TYP_INT,    11, BusData.Short08;
+        bus_sdata_ BUS_TYP_DINT,   13, BusData.Int09;
+        bus_sdata_ BUS_TYP_DINT,   17, BusData.Int10;
+        bus_sdata_ BUS_TYP_DINT,   21, BusData.Int11;
+        bus_sdata_ BUS_TYP_DINT,   25, BusData.Int12;
+        bus_sdata_ BUS_TYP_FLOAT2, 29, BusData.Float13;
+        bus_sdata_ BUS_TYP_FLOAT2, 33, BusData.Float14;
+        bus_sdata_ BUS_TYP_FLOAT2, 37, BusData.Float15;
+        bus_sdata_ BUS_TYP_FLOAT2, 41, BusData.Float16;
+
+        return(buscmd_wo__(27, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(27, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := [bus_gdata_(BUS_TYP_BYTE, 1),
+                        bus_gdata_(BUS_TYP_BYTE, 2),
+                        bus_gdata_(BUS_TYP_BYTE, 3),
+                        bus_gdata_(BUS_TYP_BYTE, 4),
+                        bus_gdata_(BUS_TYP_INT, 5),
+                        bus_gdata_(BUS_TYP_INT, 7),
+                        bus_gdata_(BUS_TYP_INT, 9),
+                        bus_gdata_(BUS_TYP_INT, 11),
+                        bus_gdata_(BUS_TYP_DINT, 13),
+                        bus_gdata_(BUS_TYP_DINT, 17),
+                        bus_gdata_(BUS_TYP_DINT, 21),
+                        bus_gdata_(BUS_TYP_DINT, 25),
+                        bus_gdata_(BUS_TYP_FLOAT2, 29),
+                        bus_gdata_(BUS_TYP_FLOAT2, 33),
+                        bus_gdata_(BUS_TYP_FLOAT2, 37),
+                        bus_gdata_(BUS_TYP_FLOAT2, 41)];
+            return(OK);
+        endif
+
+        BusData := [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0, 0.0, 0.0, 0.0];
+    endtest
+    
+    return(NG);
+endfunc
+
+func errnum bus_cmd129_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout robtarget BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_scartp_ 1, BusData;
+
+        return(buscmd_wo__(129, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(129, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := bus_gcartp_(1);
+            return(OK);
+        endif
+
+        BusData := null_pos_();
+
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd130_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout jointtarget BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sjoint_ 1, BusData;
+        return(buscmd_wo__(130, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(130, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := bus_gjoint_(1);
+            return(OK);
+        endif
+
+        BusData := [[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd131_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ02_t BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_FLOAT2, 1, BusData.Float01;
+        bus_sdata_ BUS_TYP_FLOAT2, 5, BusData.Float02;
+        bus_sdata_ BUS_TYP_FLOAT2, 9, BusData.Float03;
+        bus_sdata_ BUS_TYP_FLOAT2, 13, BusData.Float04;
+        bus_sdata_ BUS_TYP_FLOAT2, 17, BusData.Float05;
+        bus_sdata_ BUS_TYP_FLOAT2, 21, BusData.Float06;
+
+        return(buscmd_wo__(131, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(131, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := [bus_gdata_(BUS_TYP_FLOAT2, 1),
+                        bus_gdata_(BUS_TYP_FLOAT2, 5),
+                        bus_gdata_(BUS_TYP_FLOAT2, 9),
+                        bus_gdata_(BUS_TYP_FLOAT2, 13),
+                        bus_gdata_(BUS_TYP_FLOAT2, 17),
+                        bus_gdata_(BUS_TYP_FLOAT2, 21)];
+            return(OK);
+        endif
+
+        BusData := [0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+
+    endtest
+
+    error
+    return(NG);
+endfunc
+
+func errnum bus_cmd132_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ07_t BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_FLOAT2, 1, BusData.Float01;
+        bus_sdata_ BUS_TYP_FLOAT2, 5, BusData.Float02;
+        bus_sdata_ BUS_TYP_FLOAT2, 9, BusData.Float03;
+        bus_sdata_ BUS_TYP_FLOAT2, 13, BusData.Float04;
+        bus_sdata_ BUS_TYP_FLOAT2, 17, BusData.Float05;
+        bus_sdata_ BUS_TYP_FLOAT2, 21, BusData.Float06;
+        bus_sdata_ BUS_TYP_FLOAT2, 25, BusData.Float07;
+        bus_sdata_ BUS_TYP_FLOAT2, 29, BusData.Float08;
+        bus_sdata_ BUS_TYP_FLOAT2, 33, BusData.Float09;
+        bus_sdata_ BUS_TYP_FLOAT2, 37, BusData.Float10;
+        bus_sdata_ BUS_TYP_FLOAT2, 41, BusData.Float11;
+        bus_sdata_ BUS_TYP_FLOAT2, 45, BusData.Float12;
+        bus_sdata_ BUS_TYP_DINT,   49, BusData.Int13;
+        bus_sdata_ BUS_TYP_DINT,   53, BusData.Int14;
+
+        return(buscmd_wo__(132, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(132, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := [bus_gdata_(BUS_TYP_FLOAT2, 1),
+                        bus_gdata_(BUS_TYP_FLOAT2, 5),
+                        bus_gdata_(BUS_TYP_FLOAT2, 9),
+                        bus_gdata_(BUS_TYP_FLOAT2, 13),
+                        bus_gdata_(BUS_TYP_FLOAT2, 17),
+                        bus_gdata_(BUS_TYP_FLOAT2, 21),
+                        bus_gdata_(BUS_TYP_FLOAT2, 25),
+                        bus_gdata_(BUS_TYP_FLOAT2, 29),
+                        bus_gdata_(BUS_TYP_FLOAT2, 33),
+                        bus_gdata_(BUS_TYP_FLOAT2, 37),
+                        bus_gdata_(BUS_TYP_FLOAT2, 41),
+                        bus_gdata_(BUS_TYP_FLOAT2, 45),
+                        bus_gdata_(BUS_TYP_DINT, 49),
+                        bus_gdata_(BUS_TYP_DINT, 53)];
+            return(OK);
+        endif
+
+        BusData := [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0];
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd133_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ07_t BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_FLOAT2, 1, BusData.Float01;
+        bus_sdata_ BUS_TYP_FLOAT2, 5, BusData.Float02;
+        bus_sdata_ BUS_TYP_FLOAT2, 9, BusData.Float03;
+        bus_sdata_ BUS_TYP_FLOAT2, 13, BusData.Float04;
+        bus_sdata_ BUS_TYP_FLOAT2, 17, BusData.Float05;
+        bus_sdata_ BUS_TYP_FLOAT2, 21, BusData.Float06;
+        bus_sdata_ BUS_TYP_FLOAT2, 25, BusData.Float07;
+        bus_sdata_ BUS_TYP_FLOAT2, 29, BusData.Float08;
+        bus_sdata_ BUS_TYP_FLOAT2, 33, BusData.Float09;
+        bus_sdata_ BUS_TYP_FLOAT2, 37, BusData.Float10;
+        bus_sdata_ BUS_TYP_FLOAT2, 41, BusData.Float11;
+        bus_sdata_ BUS_TYP_FLOAT2, 45, BusData.Float12;
+        bus_sdata_ BUS_TYP_DINT,   49, BusData.Int13;
+        bus_sdata_ BUS_TYP_DINT,   53, BusData.Int14;
+
+        return(buscmd_wo__(133, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(133, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := [bus_gdata_(BUS_TYP_FLOAT2, 1),
+                        bus_gdata_(BUS_TYP_FLOAT2, 5),
+                        bus_gdata_(BUS_TYP_FLOAT2, 9),
+                        bus_gdata_(BUS_TYP_FLOAT2, 13),
+                        bus_gdata_(BUS_TYP_FLOAT2, 17),
+                        bus_gdata_(BUS_TYP_FLOAT2, 21),
+                        bus_gdata_(BUS_TYP_FLOAT2, 25),
+                        bus_gdata_(BUS_TYP_FLOAT2, 29),
+                        bus_gdata_(BUS_TYP_FLOAT2, 33),
+                        bus_gdata_(BUS_TYP_FLOAT2, 37),
+                        bus_gdata_(BUS_TYP_FLOAT2, 41),
+                        bus_gdata_(BUS_TYP_FLOAT2, 45),
+                        bus_gdata_(BUS_TYP_DINT, 49),
+                        bus_gdata_(BUS_TYP_DINT, 53)];
+            return(OK);
+        endif
+
+        BusData := [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0];
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd134_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ09_t BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_DINT,    1, BusData.Int01;
+        bus_sdata_ BUS_TYP_DINT,    5, BusData.Int02;
+        bus_sdata_ BUS_TYP_FLOAT2,  9, BusData.Float03;
+        bus_sdata_ BUS_TYP_FLOAT2,  13, BusData.Float04;
+        bus_sdata_ BUS_TYP_FLOAT2,  17, BusData.Float05;
+        bus_sdata_ BUS_TYP_FLOAT2,  21, BusData.Float06;
+        bus_sdata_ BUS_TYP_FLOAT2,  25, BusData.Float07;
+        bus_sdata_ BUS_TYP_FLOAT2,  29, BusData.Float08;
+        bus_sdata_ BUS_TYP_FLOAT2,  33, BusData.Float09;
+        bus_sdata_ BUS_TYP_FLOAT2,  37, BusData.Float10;
+        bus_sdata_ BUS_TYP_FLOAT2,  41, BusData.Float11;
+        bus_sdata_ BUS_TYP_FLOAT2,  45, BusData.Float12;
+        bus_sdata_ BUS_TYP_FLOAT2,  49, BusData.Float13;
+        bus_sdata_ BUS_TYP_FLOAT2,  53, BusData.Float14;
+
+        return(buscmd_wo__(134, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(134, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := [bus_gdata_(BUS_TYP_DINT, 1),
+                        bus_gdata_(BUS_TYP_DINT, 5),
+                        bus_gdata_(BUS_TYP_FLOAT2, 9),
+                        bus_gdata_(BUS_TYP_FLOAT2, 13),
+                        bus_gdata_(BUS_TYP_FLOAT2, 17),
+                        bus_gdata_(BUS_TYP_FLOAT2, 21),
+                        bus_gdata_(BUS_TYP_FLOAT2, 25),
+                        bus_gdata_(BUS_TYP_FLOAT2, 29),
+                        bus_gdata_(BUS_TYP_FLOAT2, 33),
+                        bus_gdata_(BUS_TYP_FLOAT2, 37),
+                        bus_gdata_(BUS_TYP_FLOAT2, 41),
+                        bus_gdata_(BUS_TYP_FLOAT2, 45),
+                        bus_gdata_(BUS_TYP_FLOAT2, 49),
+                        bus_gdata_(BUS_TYP_FLOAT2, 53)];
+            return(OK);
+        endif
+
+        BusData := [0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd137_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ03_t BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_BYTE, 1, BusData.Byte01;
+        bus_sdata_ BUS_TYP_BYTE, 2, BusData.Byte02;
+        bus_sdata_ BUS_TYP_BYTE, 3, BusData.Byte03;
+        bus_sdata_ BUS_TYP_BYTE, 4, BusData.Byte04;
+        bus_sdata_ BUS_TYP_BYTE, 5, BusData.Byte05;
+        bus_sdata_ BUS_TYP_BYTE, 6, BusData.Byte06;
+        bus_sdata_ BUS_TYP_BYTE, 7, BusData.Byte07;
+        bus_sdata_ BUS_TYP_BYTE, 8, BusData.Byte08;
+        bus_sdata_ BUS_TYP_BYTE, 9, BusData.Byte09;
+        bus_sdata_ BUS_TYP_BYTE, 10, BusData.Byte10;
+        bus_sdata_ BUS_TYP_BYTE, 11, BusData.Byte11;
+        bus_sdata_ BUS_TYP_BYTE, 12, BusData.Byte12;
+        bus_sdata_ BUS_TYP_BYTE, 13, BusData.Byte13;
+        bus_sdata_ BUS_TYP_BYTE, 14, BusData.Byte14;
+        bus_sdata_ BUS_TYP_BYTE, 15, BusData.Byte15;
+        bus_sdata_ BUS_TYP_BYTE, 16, BusData.Byte16;
+        bus_sdata_ BUS_TYP_BYTE, 17, BusData.Byte17;
+        bus_sdata_ BUS_TYP_BYTE, 18, BusData.Byte18;
+
+        return(buscmd_wo__(137, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(137, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := [bus_gdata_(BUS_TYP_BYTE, 1),
+                        bus_gdata_(BUS_TYP_BYTE, 2),
+                        bus_gdata_(BUS_TYP_BYTE, 3),
+                        bus_gdata_(BUS_TYP_BYTE, 4),
+                        bus_gdata_(BUS_TYP_BYTE, 5),
+                        bus_gdata_(BUS_TYP_BYTE, 6),
+                        bus_gdata_(BUS_TYP_BYTE, 7),
+                        bus_gdata_(BUS_TYP_BYTE, 8),
+                        bus_gdata_(BUS_TYP_BYTE, 9),
+                        bus_gdata_(BUS_TYP_BYTE, 10),
+                        bus_gdata_(BUS_TYP_BYTE, 11),
+                        bus_gdata_(BUS_TYP_BYTE, 12),
+                        bus_gdata_(BUS_TYP_BYTE, 13),
+                        bus_gdata_(BUS_TYP_BYTE, 14),
+                        bus_gdata_(BUS_TYP_BYTE, 15),
+                        bus_gdata_(BUS_TYP_BYTE, 16),
+                        bus_gdata_(BUS_TYP_BYTE, 17),
+                        bus_gdata_(BUS_TYP_BYTE, 18)];
+            return(OK);
+        endif
+
+        BusData := [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd145_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ01_t BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_BYTE,   1, BusData.Byte01;
+        bus_sdata_ BUS_TYP_BYTE,   2, BusData.Byte02;
+        bus_sdata_ BUS_TYP_INT,    3, BusData.Short03;
+        bus_sdata_ BUS_TYP_INT,    5, BusData.Short04;
+        bus_sdata_ BUS_TYP_DINT,   7, BusData.Int05;
+        bus_sdata_ BUS_TYP_DINT,   11, BusData.Int06;
+        bus_sdata_ BUS_TYP_FLOAT2, 15, BusData.Float07;
+        bus_sdata_ BUS_TYP_FLOAT2, 19, BusData.Float08;
+
+        return(buscmd_wo__(145, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(145, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := [bus_gdata_(BUS_TYP_BYTE, 1),
+                        bus_gdata_(BUS_TYP_BYTE, 2),
+                        bus_gdata_(BUS_TYP_INT, 3),
+                        bus_gdata_(BUS_TYP_INT, 5),
+                        bus_gdata_(BUS_TYP_DINT, 7),
+                        bus_gdata_(BUS_TYP_DINT, 11),
+                        bus_gdata_(BUS_TYP_FLOAT2, 15),
+                        bus_gdata_(BUS_TYP_FLOAT2, 19)];
+            return(OK);
+        endif
+
+        BusData := [0, 0, 0, 0, 0, 0, 0.0, 0.0];
+
+    endtest
+
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd148_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ08_t BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_BYTE,   1, BusData.Byte01;
+        bus_sdata_ BUS_TYP_BYTE,   2, BusData.Byte02;
+        bus_sdata_ BUS_TYP_BYTE,   3, BusData.Byte03;
+        bus_sdata_ BUS_TYP_BYTE,   4, BusData.Byte04;
+        bus_sdata_ BUS_TYP_INT,    5, BusData.Short05;
+        bus_sdata_ BUS_TYP_INT,    7, BusData.Short06;
+        bus_sdata_ BUS_TYP_INT,    9, BusData.Short07;
+        bus_sdata_ BUS_TYP_INT,    11, BusData.Short08;
+        bus_sdata_ BUS_TYP_DINT,   13, BusData.Int09;
+        bus_sdata_ BUS_TYP_DINT,   17, BusData.Int10;
+        bus_sdata_ BUS_TYP_DINT,   21, BusData.Int11;
+        bus_sdata_ BUS_TYP_DINT,   25, BusData.Int12;
+        bus_sdata_ BUS_TYP_FLOAT2, 29, BusData.Float13;
+        bus_sdata_ BUS_TYP_FLOAT2, 33, BusData.Float14;
+        bus_sdata_ BUS_TYP_FLOAT2, 37, BusData.Float15;
+        bus_sdata_ BUS_TYP_FLOAT2, 41, BusData.Float16;
+
+        return(buscmd_wo__(148, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(148, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := [bus_gdata_(BUS_TYP_BYTE, 1),
+                        bus_gdata_(BUS_TYP_BYTE, 2),
+                        bus_gdata_(BUS_TYP_BYTE, 3),
+                        bus_gdata_(BUS_TYP_BYTE, 4),
+                        bus_gdata_(BUS_TYP_INT, 5),
+                        bus_gdata_(BUS_TYP_INT, 7),
+                        bus_gdata_(BUS_TYP_INT, 9),
+                        bus_gdata_(BUS_TYP_INT, 11),
+                        bus_gdata_(BUS_TYP_DINT, 13),
+                        bus_gdata_(BUS_TYP_DINT, 17),
+                        bus_gdata_(BUS_TYP_DINT, 21),
+                        bus_gdata_(BUS_TYP_DINT, 25),
+                        bus_gdata_(BUS_TYP_FLOAT2, 29),
+                        bus_gdata_(BUS_TYP_FLOAT2, 33),
+                        bus_gdata_(BUS_TYP_FLOAT2, 37),
+                        bus_gdata_(BUS_TYP_FLOAT2, 41)];
+            return(OK);
+        endif
+
+        BusData := [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0, 0.0, 0.0, 0.0];
+    endtest
+    
+    return(NG);
+endfunc
+
+func errnum bus_cmd151_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ06_t BusData, \num Timeout)
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_BYTE,   1, BusData.Byte01;
+        bus_sdata_ BUS_TYP_INT,    2, BusData.Short02;
+        bus_sdata_ BUS_TYP_INT,    4, BusData.Short03;
+        bus_sdata_ BUS_TYP_INT,    6, BusData.Short04;
+        bus_sdata_ BUS_TYP_FLOAT2, 10, BusData.Float05;
+        bus_sdata_ BUS_TYP_FLOAT2, 14, BusData.Float06;
+
+        return(buscmd_wo__(151, BusMstSel, BusIn, BusOut));
+    case BUSCMD_READ:
+
+        if buscmd_ro__(151, BusMstSel, BusIn, BusOut, \Timeout?Timeout) = 0 then
+            BusData := [bus_gdata_(BUS_TYP_BYTE, 1),
+                        bus_gdata_(BUS_TYP_BYTE, 2),
+                        bus_gdata_(BUS_TYP_INT, 4),
+                        bus_gdata_(BUS_TYP_INT, 6),
+                        bus_gdata_(BUS_TYP_FLOAT2, 10),
+                        bus_gdata_(BUS_TYP_FLOAT2, 14)];
+            return(OK);
+        endif
+
+        BusData := [0, 0, 0, 0, 0.0, 0.0];
+
+    endtest
+
+    error
+    return(NG);
+endfunc
+
+func errnum bus_cmd254_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ07_t BusData, \num Timeout)
+    var num TimeVal     := 0;
+
+    if present(Timeout) TimeVal := Timeout;
+
+
+    test BusOperation
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_FLOAT2, 1, BusData.Float01;
+        bus_sdata_ BUS_TYP_FLOAT2, 5, BusData.Float02;
+        bus_sdata_ BUS_TYP_FLOAT2, 9, BusData.Float03;
+        bus_sdata_ BUS_TYP_FLOAT2, 13, BusData.Float04;
+        bus_sdata_ BUS_TYP_FLOAT2, 17, BusData.Float05;
+        bus_sdata_ BUS_TYP_FLOAT2, 21, BusData.Float06;
+        bus_sdata_ BUS_TYP_FLOAT2, 25, BusData.Float07;
+        bus_sdata_ BUS_TYP_FLOAT2, 29, BusData.Float08;
+        bus_sdata_ BUS_TYP_FLOAT2, 33, BusData.Float09;
+        bus_sdata_ BUS_TYP_FLOAT2, 37, BusData.Float10;
+        bus_sdata_ BUS_TYP_FLOAT2, 41, BusData.Float11;
+        bus_sdata_ BUS_TYP_FLOAT2, 45, BusData.Float12;
+        bus_sdata_ BUS_TYP_DINT,   49, BusData.Int13;
+        bus_sdata_ BUS_TYP_DINT,   53, BusData.Int14;
+
+        setgo GoRobMsgType, 254;
+
+        if (doutput(DoMeasuerSt) = 0) and (doutput(DoMeasuerEd) = 0) then
+            setdo DoMeasuerSt, 1;
+            setdo DoMeasuerEd, 0;
+        elseif (doutput(DoMeasuerSt) = 1) and (doutput(DoMeasuerEd) = 0) then
+            setdo DoMeasuerSt, 0;
+            setdo DoMeasuerEd, 1;
+        else
+            setdo DoMeasuerSt, 1;
+            setdo DoMeasuerEd, 0;
+        endif
+
+        if (TimeVal > 0) then 
+            waitdi DiOnMeasure, doutput(DoMeasuerSt);
+            waitdi DiMeasuerOver, doutput(DoMeasuerEd);
+        endif
+        
+        return(OK);
+
+    case BUSCMD_READ:
+
+        BusData := [bus_gdata_(BUS_TYP_FLOAT2, 1),
+                    bus_gdata_(BUS_TYP_FLOAT2, 5),
+                    bus_gdata_(BUS_TYP_FLOAT2, 9),
+                    bus_gdata_(BUS_TYP_FLOAT2, 13),
+                    bus_gdata_(BUS_TYP_FLOAT2, 17),
+                    bus_gdata_(BUS_TYP_FLOAT2, 21),
+                    bus_gdata_(BUS_TYP_FLOAT2, 25),
+                    bus_gdata_(BUS_TYP_FLOAT2, 29),
+                    bus_gdata_(BUS_TYP_FLOAT2, 33),
+                    bus_gdata_(BUS_TYP_FLOAT2, 37),
+                    bus_gdata_(BUS_TYP_FLOAT2, 41),
+                    bus_gdata_(BUS_TYP_FLOAT2, 45),
+                    bus_gdata_(BUS_TYP_DINT, 49),
+                    bus_gdata_(BUS_TYP_DINT, 53)];
+
+        return(OK);
+    endtest
+
+    return(NG);
+endfunc
+
+func errnum bus_cmd255_(num BusOperation, num BusMstSel, inout busin_t BusIn, inout busout_t BusOut, inout cmd_typ07_t BusData, \num Timeout)
+
+    test BusOperation
+
+    case BUSCMD_WRITE:
+
+        bus_sdata_ BUS_TYP_FLOAT2, 1, BusData.Float01;
+        bus_sdata_ BUS_TYP_FLOAT2, 5, BusData.Float02;
+        bus_sdata_ BUS_TYP_FLOAT2, 9, BusData.Float03;
+        bus_sdata_ BUS_TYP_FLOAT2, 13, BusData.Float04;
+        bus_sdata_ BUS_TYP_FLOAT2, 17, BusData.Float05;
+        bus_sdata_ BUS_TYP_FLOAT2, 21, BusData.Float06;
+        bus_sdata_ BUS_TYP_FLOAT2, 25, BusData.Float07;
+        bus_sdata_ BUS_TYP_FLOAT2, 29, BusData.Float08;
+        bus_sdata_ BUS_TYP_FLOAT2, 33, BusData.Float09;
+        bus_sdata_ BUS_TYP_FLOAT2, 37, BusData.Float10;
+        bus_sdata_ BUS_TYP_FLOAT2, 41, BusData.Float11;
+        bus_sdata_ BUS_TYP_FLOAT2, 45, BusData.Float12;
+        bus_sdata_ BUS_TYP_DINT,   49, BusData.Int13;
+        bus_sdata_ BUS_TYP_DINT,   53, BusData.Int14;
+
+        setgo GoRobMsgType, 255;
+
+        if (doutput(DoMeasuerSt) = 0) and (doutput(DoMeasuerEd) = 0) then
+            setdo DoMeasuerSt, 1;
+            setdo DoMeasuerEd, 0;
+        elseif (doutput(DoMeasuerSt) = 1) and (doutput(DoMeasuerEd) = 0) then
+            setdo DoMeasuerSt, 0;
+            setdo DoMeasuerEd, 1;
+        else
+            setdo DoMeasuerSt, 1;
+            setdo DoMeasuerEd, 0;
+        endif
+
+        return(OK);
+
+    case BUSCMD_READ:
+
+        BusData := [bus_gdata_(BUS_TYP_FLOAT2, 1),
+                    bus_gdata_(BUS_TYP_FLOAT2, 5),
+                    bus_gdata_(BUS_TYP_FLOAT2, 9),
+                    bus_gdata_(BUS_TYP_FLOAT2, 13),
+                    bus_gdata_(BUS_TYP_FLOAT2, 17),
+                    bus_gdata_(BUS_TYP_FLOAT2, 21),
+                    bus_gdata_(BUS_TYP_FLOAT2, 25),
+                    bus_gdata_(BUS_TYP_FLOAT2, 29),
+                    bus_gdata_(BUS_TYP_FLOAT2, 33),
+                    bus_gdata_(BUS_TYP_FLOAT2, 37),
+                    bus_gdata_(BUS_TYP_FLOAT2, 41),
+                    bus_gdata_(BUS_TYP_FLOAT2, 45),
+                    bus_gdata_(BUS_TYP_DINT, 49),
+                    bus_gdata_(BUS_TYP_DINT, 53)];
+
+        return(OK);
+    endtest
+
+    return(NG);
+endfunc
+
+endmodule

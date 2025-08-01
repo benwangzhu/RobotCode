@@ -1,0 +1,18 @@
+// InstParseVersion: V1.02
+Start:
+/*安全点*/
+MovJ{P=t_l.P0}
+/*放置点*/
+MovL{P=t_l.P2}
+/*反馈任务成功*/
+SbtComm010Skill{Mode="SUCCESS"}
+/*请求下一个任务*/
+SbtComm010Skill{Mode="DATA1"}
+/*松吸盘*/
+/*抬高点*/
+MovLOffset{RP=t_l.P2,TP=t_l.PlaceOffs01,T="COORD",Tool=t_g.StackTool,Coord=t_s.World}
+/*安全点*/
+MovJ{P=t_l.P1}
+/*反馈离开区域一*/
+SbtComm010Skill{Mode="AREA",AreaId=1}
+End;

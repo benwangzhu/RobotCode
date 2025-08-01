@@ -1,0 +1,12 @@
+&ACCESS RVO1
+&REL 83
+&COMMENT Polish Take Photo 250712
+&PARAM DISKPATH = KRC:\R1\Program\SbtComm012Polish
+def PolishTrigger01 ()
+
+;FOLD SbtComm012.PolishTrigger IN Sleep Time: 1 sec, IN Camera Id: 1, IN Capture Id: 1 ;%{PE}
+wait sec 1
+Comm012PolishTrig(1, 1)
+;ENDFOLD
+
+end

@@ -1,0 +1,375 @@
+&access RP
+&comment Lib Motion-h 221122
+defdat  lib_motion_t public
+;***********************************************************
+;
+; Copyright 2018 - 2023 speedbot All Rights reserved.
+;
+; File Name: lib_motion.dat
+; 
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2021 - 08 - 31
+;   Modification Data    ==   2021 - 08 - 31
+; 
+; Author: speedbot
+; 
+; Version: 1.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+;***********************************************************
+; func get_axs_num_()
+;***********************************************************
+; return :              * int *        * Number of axes *
+;***********************************************************
+; Return the number of robot axes
+;***********************************************************
+extfct int get_axs_num_()
+
+;***********************************************************
+; func cur_pos_()
+;***********************************************************
+;     in : UframeNo     * int *		* Base number *
+;     in : UtoolNo      * int *		* Tool number *
+; return :              * e6pos *   * Returns Cartesian coordinates *
+;***********************************************************
+; Get the current Cartesian position in the specified coordinate system
+; UframeNo and UtoolNo parameters can be omitted, defaulting to the base coordinate system and flange coordinate system if not provided.
+; Returns {X -9999, Y -9999, Z -9999 , A -9999, B -9999, C -9999} if $BASE and $TOOL are not active.
+;***********************************************************
+extfct e6pos cur_pos_(int : in, int : in)
+
+;***********************************************************
+; func cur_jpos_()
+;***********************************************************
+; return :              * e6axis *      * Returns joint coordinates *
+;***********************************************************
+; Get the current joint coordinates
+;***********************************************************
+extfct e6axis cur_jpos_()
+
+;***********************************************************
+; func trans_pos_()
+;***********************************************************
+;    out : PosAry[]     * real *	    * Floating-point array *
+; return :              * e6pos *	    * Returns Cartesian coordinates *
+;***********************************************************
+; Convert a floating-point array to Cartesian coordinates
+;***********************************************************
+extfct e6pos trans_pos_(real[] : out)
+
+;***********************************************************
+; func trans_pos2_()
+;***********************************************************
+;    out : PosAry[]     * real *	    * Floating-point two-dimensional array *
+;     in : ArrayIndex   * int *         * Dimension index *
+; return :              * e6pos *	    * Returns Cartesian coordinates *
+;***********************************************************
+; Convert a floating-point two-dimensional array to Cartesian coordinates
+;***********************************************************
+extfct e6pos trans_pos2_(real[, ] : out, int : in)
+
+;***********************************************************
+; func trans_axis_()
+;***********************************************************
+;    out : PosAry[]     * real *	    * Floating-point array *
+; return :              * e6axis *	    * Returns joint coordinates *
+;***********************************************************
+; Convert a floating-point array to joint coordinates
+;***********************************************************
+extfct e6axis trans_axis_(real[] : out)
+
+;***********************************************************
+; func trans_axis2_()
+;***********************************************************
+;    out : PosAry[]     * real *	    * Floating-point two-dimensional array *
+;     in : ArrayIndex   * int *         * Dimension index *
+; return :              * e6axis *	    * Returns joint coordinates *
+;***********************************************************
+; Convert a floating-point two-dimensional array to joint coordinates
+;***********************************************************
+extfct e6axis trans_axis2_(real[, ] : out, int : in)
+
+;***********************************************************
+; func chk_pos_()
+;***********************************************************
+;     in : NeedChkPos   * e6pos *	    * Cartesian position to check *
+;     in : UframeNo     * int *		    * Base number *
+;     in : UtoolNo      * int *		    * Tool number *
+; return :              * bool *	    * true if reachable *
+;***********************************************************
+; Check the reachability of the Cartesian position in the specified coordinate system
+; UframeNo and UtoolNo parameters can be omitted, defaulting to the base coordinate system and flange coordinate system if not provided.
+;***********************************************************
+extfct bool chk_pos_(e6pos : in, int : in, int : in)
+
+;***********************************************************
+; func move_j_()
+;***********************************************************
+;     in : PointName    * e6pos *	    * Target point *
+;     in : Speed        * real *	    * Speed *
+;     in : Accu         * real *	    * Positioning accuracy *
+;     in : UframeNo     * int *		    * Base number *
+;     in : UtoolNo      * int *		    * Tool number *
+;     in : Acc          * real *        * Acceleration *
+;***********************************************************
+; Joint motion, input coordinate type is Cartesian coordinates
+; The Speed parameter defaults to maximum speed if omitted.
+; The Accu parameter defaults to 0.0 if omitted.
+; The UframeNo parameter defaults to 0 if omitted.
+; The UtoolNo parameter defaults to 0 if omitted.
+; The Acc parameter defaults to 100.0 if omitted.
+;***********************************************************
+ext move_j_(e6pos : in, real : in, real : in, int : in, int : in, real : in)
+
+;***********************************************************
+; func move_l_()
+;***********************************************************
+;     in : PointName    * e6pos *	    * Target point *
+;     in : Speed        * real *	    * Speed *
+;     in : Accu         * real *	    * Positioning accuracy *
+;     in : UframeNo     * int *		    * Base number *
+;     in : UtoolNo      * int *		    * Tool number *
+;     in : Acc          * real *        * Acceleration *
+;***********************************************************
+; Linear motion, input coordinate type is Cartesian coordinates
+; The Speed parameter defaults to maximum speed if omitted.
+; The Accu parameter defaults to 0.0 if omitted.
+; The UframeNo parameter defaults to 0 if omitted.
+; The UtoolNo parameter defaults to 0 if omitted.
+; The Acc parameter defaults to 100.0 if omitted.
+;***********************************************************
+ext move_l_(e6pos : in, real : in, real : in, int : in, int : in, real : in, ORI_TYPE : in)
+
+;***********************************************************
+; func move_abs_j_()
+;***********************************************************
+;     in : PointName    * e6axis *	    * Target point (joint coordinates) *
+;     in : Speed        * real *	    * Speed *
+;     in : Accu         * real *	    * Positioning accuracy *
+;     in : UframeNo     * int *		    * Base number *
+;     in : UtoolNo      * int *		    * Tool number *
+;     in : Acc          * real *        * Acceleration *
+;***********************************************************
+; Joint motion, input coordinate type is joint coordinates
+; The Speed parameter defaults to maximum speed if omitted.
+; The Accu parameter defaults to 0.0 if omitted.
+; The UframeNo parameter defaults to 0 if omitted.
+; The UtoolNo parameter defaults to 0 if omitted.
+; The Acc parameter defaults to 100.0 if omitted.
+;***********************************************************
+ext move_abs_j_(e6axis : in, real : in, real : in, int : in, int : in, real : in)
+
+;***********************************************************
+; func smove_j_()
+;***********************************************************
+;     in : PointName    * e6pos *	    * Target point *
+;     in : Speed        * real *	    * Speed *
+;     in : Accu         * real *	    * Positioning accuracy *
+;     in : UframeNo     * int *		    * Base number *
+;     in : UtoolNo      * int *		    * Tool number *
+;     in : Acc          * real *        * Acceleration *
+;     in : UserColl     * int *         * Collision sensitivity number *
+;***********************************************************
+; Joint motion, input coordinate type is Cartesian coordinates
+; The Speed parameter defaults to maximum speed if omitted.
+; The Accu parameter defaults to 0.0 if omitted.
+; The UframeNo parameter defaults to 0 if omitted.
+; The UtoolNo parameter defaults to 0 if omitted.
+; The Acc parameter defaults to 100.0 if omitted.
+; The UserColl parameter defaults to 0 if omitted.
+;***********************************************************
+ext smove_j_(e6pos : in, real : in, real : in, int : in, int : in, real : in, int : in)
+
+;***********************************************************
+; func smove_l_()
+;***********************************************************
+;     in : PointName    * e6pos *	    * Target point *
+;     in : Speed        * real *	    * Speed *
+;     in : Accu         * real *	    * Positioning accuracy *
+;     in : UframeNo     * int *		    * Base number *
+;     in : UtoolNo      * int *		    * Tool number *
+;     in : Acc          * real *        * Acceleration *
+;     in : UserColl     * int *         * Collision sensitivity number *
+;***********************************************************
+; Linear motion, input coordinate type is Cartesian coordinates
+; The Speed parameter defaults to maximum speed if omitted.
+; The Accu parameter defaults to 0.0 if omitted.
+; The UframeNo parameter defaults to 0 if omitted.
+; The UtoolNo parameter defaults to 0 if omitted.
+; The Acc parameter defaults to 100.0 if omitted.
+; The UserColl parameter defaults to 0 if omitted.
+;***********************************************************
+ext smove_l_(e6pos : in, real : in, real : in, int : in, int : in, real : in, int : in)
+
+;***********************************************************
+; func smove_c_()
+;***********************************************************
+;     in : PointName    * e6pos *	    * Arc auxiliary point *
+;     in : PointName2   * e6pos *	    * Arc target point *
+;     in : Speed        * real *	    * Speed *
+;     in : Accu         * real *	    * Positioning accuracy *
+;     in : UframeNo     * int *		    * Base number *
+;     in : UtoolNo      * int *		    * Tool number *
+;     in : Acc          * real *        * Acceleration *
+;     in : UserColl     * int *         * Collision sensitivity number *
+;***********************************************************
+; Arc motion, input coordinate type is Cartesian coordinates
+; The Speed parameter defaults to maximum speed if omitted.
+; The Accu parameter defaults to 0.0 if omitted.
+; The UframeNo parameter defaults to 0 if omitted.
+; The UtoolNo parameter defaults to 0 if omitted.
+; The Acc parameter defaults to 100.0 if omitted.
+; The UserColl parameter defaults to 0 if omitted.
+;***********************************************************
+ext smove_c_(e6pos : in, e6pos : in, real : in, real : in, int : in, int : in, real : in, int : in)
+
+
+;***********************************************************
+; func smove_abs_j_()
+;***********************************************************
+;     in : PointName    * e6axis *	    * Target point (joint coordinates) *
+;     in : Speed        * real *	    * Speed *
+;     in : Accu         * real *	    * Positioning accuracy *
+;     in : UframeNo     * int *		    * Base number *
+;     in : UtoolNo      * int *		    * Tool number *
+;     in : Acc          * real *        * Acceleration *
+;     in : UserColl     * int *         * Collision sensitivity number *
+;***********************************************************
+; Joint motion, input coordinate type is joint coordinates
+; The Speed parameter defaults to maximum speed if omitted.
+; The Accu parameter defaults to 0.0 if omitted.
+; The UframeNo parameter defaults to 0 if omitted.
+; The UtoolNo parameter defaults to 0 if omitted.
+; The Acc parameter defaults to 100.0 if omitted.
+; The UserColl parameter defaults to 0 if omitted.
+;***********************************************************
+ext smove_abs_j_(e6axis : in, real : in, real : in, int : in, int : in, real : in, int : in)
+
+;***********************************************************
+; func move_axis_offset_()
+;***********************************************************
+;     in : Monopodium       * char *	* Specified axis *
+;     in : Distance   		* real *	* Movement distance *
+;     in : UframeNo         * int  *	* Base number *
+;     in : UtoolNo          * int  *	* Tool number *
+;***********************************************************
+; Offset a single axis from the current position
+;***********************************************************
+ext move_axis_offset_(char[] : in, real : in, int : in, int : in)
+
+;***********************************************************
+; func move_pos_offset_()
+;***********************************************************
+;     in : ptmp   		   * pos  *		* Target position *
+;     in : Monopodium      * char *		* Specified axis *
+;     in : Distance   	   * real *		* Movement distance *
+;     in : UframeNo        * int  *		* Base number *
+;     in : UtoolNo         * int  *		* Tool number *
+;***********************************************************
+; Offset a specified position
+;***********************************************************
+ext move_pos_offset_(pos : in, char[] : in, real : in, int : in, int : in)
+
+;***********************************************************
+; func cur_trq_()
+;***********************************************************
+;    out : TrqVal   	   * real  *		* Variable for storing torque *
+;***********************************************************
+; Get the torque of robot axes or external axes
+;***********************************************************
+ext cur_trq_(real[] : out)
+
+;***********************************************************
+; func jnt_2cart_()
+;***********************************************************
+;     in : ThisJoint    * e6axis *	* Joint coordinates to be converted *
+;     in : UframeNo     * int    *	* Number of the relative user coordinate system *
+;     in : UtoolNo      * int    *	* Number of the relative tool coordinate system *
+;    out : RltCartPos   * e6pos  *	* Calculated Cartesian position *
+; return :               * bool   *	* Conversion status *
+;***********************************************************
+; Convert specified joint coordinates to Cartesian coordinates
+; Return TRUE if conversion is successful
+; Return FALSE if conversion fails
+;***********************************************************
+extfct bool jnt_2cart_(e6axis : in, int : in, int : in, e6pos : out)
+
+;***********************************************************
+; func cart_2jnt_()
+;***********************************************************
+;     in : ThisCartPos  * e6pos  *	* Cartesian coordinates to be converted *
+;     in : UframeNo     * int    *	* Number of the relative user coordinate system *
+;     in : UtoolNo      * int    *	* Number of the relative tool coordinate system *
+;    out : RltJoint     * e6axis *	* Calculated joint coordinates *
+; return :               * bool   *	* Conversion status *
+;***********************************************************
+; Convert specified Cartesian coordinates to joint coordinates
+; Return TRUE if conversion is successful
+; Return FALSE if conversion fails
+;***********************************************************
+extfct bool cart_2jnt_(e6pos : in, int : in, int : in, e6axis : out)
+
+;***********************************************************
+; func ufrm_offs_()
+;***********************************************************
+;     in : ThisPos      * e6pos  *	* Pose to be offset *
+;     in : OffsX        * real   *	* X offset *
+;     in : OffsY        * real   *	* Y offset *
+;    out : OffsZ        * real   *	* Z offset *
+; return :               * e6pos  *	* Offset pose *
+;***********************************************************
+; Offset based on the user coordinate system
+; Return the pose after offset
+; Values for X, Y, and Z can be omitted; default to 0.0 if not provided
+;***********************************************************
+extfct e6pos ufrm_offs_(e6pos : in, real : in, real : in, real : in)
+extfct e6pos ufrm_offs_byframe_(e6pos : in, frame : in)
+
+;***********************************************************
+; func tool_offs_()
+;***********************************************************
+;     in : ThisPos      * e6pos  *	* Pose to be offset *
+;     in : OffsX        * real   *	* X offset *
+;     in : OffsY        * real   *	* Y offset *
+;    out : OffsZ        * real   *	* Z offset *
+; return :               * e6pos  *	* Offset pose *
+;***********************************************************
+; Offset based on the tool coordinate system
+; Return the pose after offset
+; Values for X, Y, and Z can be omitted; default to 0.0 if not provided
+;***********************************************************
+extfct e6pos tool_offs_(e6pos : in, real : in, real : in, real : in)
+extfct e6pos tool_offs_byframe_(e6pos : in, frame : in)
+
+extfct frame set_frame_(real : in, real : in, real : in, real : in, real : in, real : in, real : in)
+
+enddat

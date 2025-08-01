@@ -1,0 +1,20 @@
+// InstParseVersion: V1.02
+Start:
+/**********************************/
+/*码垛到 5 号框程序*/
+/**********************************/
+/*过渡点*/
+MovJ{P=t_l.P0,Tool=t_g.MixTool,Coord=t_s.World}
+/*码垛点正上方*/
+MovL{P=t_p.BoxPlaceUpPos}
+/*码垛点*/
+MovL{P=t_p.CopyPlacePos,B="FINE"}
+/*获取下一个任务*/
+MixsortAck{Mode="GET_TACK"}
+/*退磁*/
+CALL tool_mag_focoff
+/*码垛点正上方*/
+MovL{P=t_p.BoxPlaceUpPos}
+/*过渡点*/
+MovJ{P=t_l.P1}
+End;

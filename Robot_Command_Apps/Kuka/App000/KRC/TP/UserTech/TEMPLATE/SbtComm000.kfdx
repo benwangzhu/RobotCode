@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--For an example how to add menu entries for UserTech InlineForms see file C:\KRC\TP\UserTech\SmartHMI\SmartHMI.exe.UserTech.InlineForms.config-->
+<KukaTechDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	
+	<!-- ===================================================================================== -->
+	<!-- =============================== SbtComm000 ========================================== -->
+	<!-- ===================================================================================== -->
+	<Application Name="SbtComm000" SOT="FALSE" SOC="TRUE">							
+		<!-- ================================ Global Data Type ========================================= -->
+
+		<Param Name="TrajeId" ShortName="IN Traje Id: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="255" Step="1" Autolimit="" />
+		</Param>
+		
+		<Param Name="SleepTime" ShortName="IN Sleep Time: " ShortCut="" Unit="sec" Var="" Enable="">
+			<Value Type="REAL" Default="0.0" Min="0.0" Max="88888888.0" Step="0.5" Autolimit="True" />
+		</Param>
+		
+		<!-- ================================ Global Script ========================================= -->
+
+
+	
+		<!-- ================================ CalibrationStart ========================================= -->
+		
+		<Fold Name="CalibrationStartFold">									
+			<Line>sbt_comm000_(1, %TrajeId/)</Line>		
+		</Fold>
+		<InlineForm Name="CalibrationStart" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="CalibrationStartFold" />	
+			<PRM Name="TrajeId" />
+		</InlineForm>
+
+		<!-- ================================ CalibrationPicture ========================================= -->
+		
+		<Fold Name="CalibrationPictureFold">	
+			<Line>wait sec %SleepTime/</Line>	
+			<Line>sbt_comm000_(2, )</Line>	
+		</Fold>
+		<InlineForm Name="CalibrationPicture" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="CalibrationPictureFold" />	
+			<PRM Name="SleepTime" />
+		</InlineForm>
+
+		<!-- ================================ CalibrationPicture ========================================= -->
+		
+		<Fold Name="CalibrationEndFold">									
+			<Line>sbt_comm000_(3, )</Line>		
+		</Fold>
+		<InlineForm Name="CalibrationEnd" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="CalibrationEndFold" />	
+		</InlineForm>
+	</Application>
+</KukaTechDescription>
+<!--checksum 45498028524 -->

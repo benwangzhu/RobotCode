@@ -1,0 +1,56 @@
+&ACCESS RVP1
+&REL 56
+&COMMENT Picture01
+&PARAM DISKPATH = KRC:\R1\Program\SbtComm001Main
+DEF  PICTRUE01 ( )
+;********************************
+
+;CREATOR : SPEEDBOT
+;DATE    : 2024-09-23
+;PROGRAM : sbtComm001_PICTRUE01
+
+;********************************
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+    continue
+    if $MOVE_BCO == FALSE Then
+      ; BCO
+      ptp cur_jpos_()
+    endif        
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+;waiting for PLC clearance to proceed
+;FOLD PLC.PathSegment IN Segment Nr: 10 ;%{PE}
+path_segment_(10)
+;ENDFOLD
+;Teach the robot to the Picture point
+;FOLD SPTP P1 CONT Vel=100 % PDAT1 Tool[1] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=P1; Kuka.BlendingEnabled=True; Kuka.MoveDataPtpName=PDAT1; Kuka.VelocityPtp=100; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP XP1 WITH $VEL_AXIS[1] = SVEL_JOINT(100.0), $TOOL = STOOL2(FP1), $BASE = SBASE(FP1.BASE_NO), $IPO_MODE = SIPO_MODE(FP1.IPO_FRAME), $LOAD = SLOAD(FP1.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PPDAT1), $APO = SAPO_PTP(PPDAT1), $GEAR_JERK[1] = SGEAR_JERK(PPDAT1), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0) C_Spl
+;ENDFOLD
+;Move To Picture Pos
+;FOLD SPTP P_PictPos Vel=100 % PDAT6 Tool[1] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=P_PictPos; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT6; Kuka.VelocityPtp=100; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP XP_PictPos WITH $VEL_AXIS[1] = SVEL_JOINT(100.0), $TOOL = STOOL2(FP_PictPos), $BASE = SBASE(FP_PictPos.BASE_NO), $IPO_MODE = SIPO_MODE(FP_PictPos.IPO_FRAME), $LOAD = SLOAD(FP_PictPos.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PPDAT6), $APO = SAPO_PTP(PPDAT6), $GEAR_JERK[1] = SGEAR_JERK(PPDAT6), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0)
+;ENDFOLD
+;FOLD SbtComm001.Event IN Sleep Time: 1 sec, IN EI1: 1, IN EI2: 1, IN EF1: 0, IN EF2: 0, IN EF3: 0, IN EF4: 0, IN EF5: 0, IN EF6: 0 ;%{PE}
+wait sec 1
+SbtComm001Event(1, 1, 0, 0, 0, 0, 0, 0)
+;ENDFOLD
+;FOLD PLC.RequestToContinue ;%{PE}
+req_to_continue_()
+;ENDFOLD
+;FOLD PLC.MoveToHome ;%{PE}
+move_to_home_()
+;ENDFOLD
+END

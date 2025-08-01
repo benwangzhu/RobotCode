@@ -1,0 +1,93 @@
+program track_frame
+--***********************************************************
+--
+-- file Name: track_frame.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 11 - 25
+--   Modification Data    ==   2021 - 11 - 25
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--
+
+%comment = 'Get Trk Frm V1.0'
+%nolockgroup
+%nopauseshft
+%nopause = error + tpenable
+%include klevkeys
+
+var
+    EncodeOrigin                        : integer
+    EncodeTerm                          : integer
+    LinSch                              : integer   
+    UframeNo                            : integer                
+    
+
+    OldLnFrame                          : position
+    NewLnFrame                          : position
+
+    Done                                : boolean
+
+%include include\lib_logs_h
+%include include\lib_motion_h
+%include include\lib_string_h
+%include include\lib_tp_if_h
+
+routine new_frame_ from track_frame
+
+begin
+
+    log_clear_
+
+    log_force_
+
+    if uninit(Done) then ; Done = false ; endif
+
+    if (uninit(EncodeOrigin)) or (uninit(EncodeTerm)) or (uninit(LinSch)) or (uninit(UframeNo)) then
+
+        log_error_('TKFM','Parameters are not initialized ...')
+        log_info_('TKFM','Exit ...')
+        abort_task_('*')
+
+    endif
+
+    if Done then
+
+        log_error_('TKFM','Done = True ...')
+        log_info_('TKFM','Exit ...')
+        abort_task_('*')
+
+    endif
+
+    OldLnFrame = get_sys_pos_('$lnsch[' + int_to_str_(LinSch) + '].$trk_frame')
+    new_frame_
+  
+    log_info_('TKFM','Origin Encode = ' + int_to_str_(EncodeOrigin))
+    log_info_('TKFM','term Encode = ' + int_to_str_(EncodeTerm))
+    log_info_('TKFM','Line Tracking Sch = ' + int_to_str_(LinSch))
+    log_info_('TKFM','Old frame = ' + pos_to_str_(OldLnFrame))
+    log_info_('TKFM','New frame = ' + pos_to_str_(NewLnFrame))
+    log_info_('TKFM','Press Next To Record')
+
+    wait for tpin[KY_NEXT]+
+
+    set_sys_pos_('$mnuframe[1,' + int_to_str_(UframeNo) + ']',NewLnFrame)
+    set_sys_pos_('$lnsch[' + int_to_str_(LinSch) + '].$trk_frame',NewLnFrame)
+    log_info_('TKFM','Exit ...')
+
+end track_frame
+
+routine new_frame_
+    var
+        DistFrame                   : xyzwpr
+    begin
+        DistFrame = null_pos_
+        DistFrame.X = ((EncodeOrigin - EncodeTerm) / get_sys_rel_('$lnsch[' + int_to_str_(LinSch) + '].$scale'))-- * (-1)
+        NewLnFrame = OldLnFrame : DistFrame
+    end new_frame_

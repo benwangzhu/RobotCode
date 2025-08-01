@@ -1,0 +1,70 @@
+--***********************************************************
+--
+-- file Name: sbt_Comm011_global
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2024 - 07 - 04
+--   Modification Data    ==   2024 - 07 - 04
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--
+
+var
+    RelTmSockCfg        in cmos from sbt_network   	: sock_cfg_t
+	ShutdownReq			in cmos from sbt_network	: boolean
+	ShutdownReq2		in cmos from sbt_network	: boolean
+    NumOfRobAxis        in cmos from sbt_network   	: integer
+    NumOfRotAxis        in cmos from sbt_network   	: integer
+
+	GlbCommannd					from sbt_network   	: integer
+    GlbSlodId                   from sbt_network    : integer
+    GlbWeldMode                 from sbt_network    : integer
+    GlbSpeed                    from sbt_network    : real
+
+	SemRltAck					from sbt_network   	: integer
+
+    PackRealTime                from sbt_network	: pk_realtm_t
+    PackTajeInst                from sbt_network	: pk_tarje_t
+
+    TpeProgName                 from sbt_network	: string[24]    
+    InstMove                	from sbt_network	: inst_move_t
+    InstReg                     from sbt_network	: inst_reg_t
+    TpeOpenId                	from sbt_network	: integer
+	TrajeTpeLine				from sbt_network	: integer
+
+    AdapParam           in cmos from sbt_network    : adap_param_t
+    TeachParam          in cmos from sbt_network    : tch_param_t
+
+

@@ -1,0 +1,63 @@
+&ACCESS RV3
+&REL 1
+DEFDAT  SBT_COMM128_GLOBAL PUBLIC
+;***********************************************************
+; 
+; file Name: sbt_comm128_global
+; 
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 05 - 12
+;   Modification Data    ==   2022 - 05 - 12
+; 
+; Author: speedbot
+; 
+; Version: 2.0
+;***********************************************************
+
+; Status Communication Interface
+DECL GLOBAL udp_cfg_t UdpSockCfg={Connection TRUE,SockXmlName[] "SbtComm128StateConfig",ActFlagNo 10,RecvFlagNo 11,NByte 0,RecvTimeout 0}
+
+; Control Communication Interface
+DECL GLOBAL sock_cfg_t TcpSockCfg={Connected TRUE,SockXmlName[] "SbtComm128MotionConfig",ActFlagNo 12,RecvFlagNo 13,NByte 1,RecvTimeout 3000}
+
+; TRUE, uploads status information in real-time
+; FALSE, it allows control of the robot.
+DECL GLOBAL BOOL OnlyCollect=FALSE
+
+DECL GLOBAL INT NumOfRobAxis=8 ; Number of Robot Manipulator Axes and Linear Axes
+DECL GLOBAL INT NumOfRotAxis=1 ; Number of Extended Rotational Axes
+DECL GLOBAL INT IsVirRobId=0 ; Virtual Robot ID; fill with 0 for a real robot
+
+; Output Signal Index
+DECL GLOBAL INT OutMapAddr[8]
+OutMapAddr[1]=0
+OutMapAddr[2]=0
+OutMapAddr[3]=0
+OutMapAddr[4]=0
+OutMapAddr[5]=0
+OutMapAddr[6]=0
+OutMapAddr[7]=0
+OutMapAddr[8]=0
+
+; Input Signal Index
+DECL GLOBAL INT InMapAddr[8]
+InMapAddr[1]=0
+InMapAddr[2]=0
+InMapAddr[3]=0
+InMapAddr[4]=0
+InMapAddr[5]=0
+InMapAddr[6]=0
+InMapAddr[7]=0
+InMapAddr[8]=0
+
+;Weld Sch & Weave
+DECL GLOBAL weld_channel_t WeldChannel={WeldEnable false, JobMode 1,Channel1 170.000,Channel2 20.0000,Channel3 0.0,Channel4 0.0,Channel5 0.0,Channel6 0.0,Channel7 0.0,Channel8 0.0}
+DECL GLOBAL weave_sch_t WeaveSch={Length 0.0,Amplitude 0.0,Angle 0.0,LeftSideDelay 0.0,RightSideDelay 0.0}
+
+; Do not modify these variables
+DECL GLOBAL INT GlbMoveId=3818
+DECL GLOBAL INT GlbTrajectorySize=0
+DECL GLOBAL trajectory_pt_t GlbTrajectorys[1000]
+DECL GLOBAL BOOL StopMoving=FALSE
+ENDDAT

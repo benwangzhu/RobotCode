@@ -1,0 +1,131 @@
+&access RP
+&comment Lib Bus I/O 230704
+defdat  lib_busio_t public
+;***********************************************************
+;
+; Copyright 2018 - 2023 speedbot All Rights reserved.
+;
+; File Name: lib_busio_t.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2023 - 07 - 04
+;   Modification Data    ==   2023 - 07 - 04
+;
+; Author: speedbot
+;
+; Version: 1.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+global const int PTC_LN_PL              = 1
+global const int PTC_ST_PK              = 2
+global const int PTC_GEN_CMD            = 64
+global const int PTC_ROB_CTL            = 128
+
+
+global struc busin_t int BusIoSt, bool SysReady, SysInited, StopMov, OnMeasure, MeasuerOver, ResultOk, ResultNG, Finished, int DeviceId, JobId, ErrorId, AgentTellId, AgentMsgType, TellId, MsgType 
+global struc busout_t int BusIoSt, bool SysEnable, SysInit, RobMoving, MeasuerSt, MeasuerEd, Reserverd1, Reserverd2, CycleEnd, int RobotId, JobId, ProtocolId, TellId, MsgType, RobTellId, RobMsgType 
+
+
+global enum PORT_TYPE_T IO_DIN, IO_DOUT
+
+; ***** These signals must be configured to match BusioSt *****
+; This configuration ensures the atomicity of system signals.
+; Using a FOR loop to update TELL ID may result in signals being interrupted by the bus mechanism during execution, leading to abnormal signals received by the other party.
+
+global signal DiSysReady        $in[3001]                   ; DIN Start Addr + 0
+global signal DiSysInited       $in[3002]                   ; DIN Start Addr + 1
+global signal DiStopMov         $in[3003]                   ; DIN Start Addr + 2
+global signal DiOnMeasure       $in[3004]                   ; DIN Start Addr + 3
+global signal DiMeasuerOver     $in[3005]                   ; DIN Start Addr + 4
+global signal DiResultOk        $in[3006]                   ; DIN Start Addr + 5
+global signal DiResultNG        $in[3007]                   ; DIN Start Addr + 6
+global signal DiFinished        $in[3008]                   ; DIN Start Addr + 7
+global signal GiDeviceId        $in[3009] to $in[3016]      ; DIN Start Addr + 8
+global signal GiJobId           $in[3017] to $in[3024]      ; DIN Start Addr + 16
+global signal GiErrorId         $in[3025] to $in[3032]      ; DIN Start Addr + 24
+global signal GiAgentTellId     $in[3033] to $in[3040]      ; DIN Start Addr + 32
+global signal GiAgentMsgType    $in[3041] to $in[3048]      ; DIN Start Addr + 40
+global signal GiTellId          $in[3049] to $in[3056]      ; DIN Start Addr + 48
+global signal GiMsgType         $in[3057] to $in[3064]      ; DIN Start Addr + 56
+
+
+global signal DoSysEnable       $out[3001]                  ; DOUT Start Addr + 0
+global signal DoSysInit         $out[3002]                  ; DOUT Start Addr + 1
+global signal DoRobMoving       $out[3003]                  ; DOUT Start Addr + 2
+global signal DoMeasuerSt       $out[3004]                  ; DOUT Start Addr + 3
+global signal DoMeasuerEd       $out[3005]                  ; DOUT Start Addr + 4
+global signal DoReserverd1      $out[3006]                  ; DOUT Start Addr + 5
+global signal DoReserverd2      $out[3007]                  ; DOUT Start Addr + 6
+global signal DoCycleEnd        $out[3008]                  ; DOUT Start Addr + 7
+global signal GoRobotId         $out[3009] to $out[3016]    ; DOUT Start Addr + 8
+global signal GoJobId           $out[3017] to $out[3024]    ; DOUT Start Addr + 16
+global signal GoProtocolId      $out[3025] to $out[3032]    ; DOUT Start Addr + 24
+global signal GoTellId          $out[3033] to $out[3040]    ; DOUT Start Addr + 32
+global signal GoMsgType         $out[3041] to $out[3048]    ; DOUT Start Addr + 40
+global signal GoRobTellId       $out[3049] to $out[3056]    ; DOUT Start Addr + 48
+global signal GoRobMsgType      $out[3057] to $out[3064]    ; DOUT Start Addr + 56
+
+; modified on 2025.03.05
+; Initialize all data
+decl global busin_t BusInput               = {BusIoSt 3001, SysReady false, SysInited false, StopMov false, OnMeasure false, MeasuerOver false, ResultOk false, ResultNG false, Finished false, DeviceId 0, JobId 0, ErrorId 0, AgentTellId 0, AgentMsgType 0, TellId 0, MsgType 0}
+decl global busout_t BusOutput             = {BusIoSt 3001, SysEnable false, SysInit false, RobMoving false, MeasuerSt false, MeasuerEd false, Reserverd1 false, Reserverd2 false, CycleEnd false, RobotId 0, JobId 0, ProtocolId 64, TellId 0, MsgType 0, RobTellId 0, RobMsgType 0}
+
+decl global int BusTimeout = -1                      ; Bus Comm Timeout    
+
+ext bus_sbyte_(int : in, char : in)
+ext bus_ssint_(int : in, int : in)
+ext bus_susint_(int : in, int : in)
+ext bus_sint_(int : in, int : in)
+ext bus_sfloat_(int : in, real : in)
+ext bus_sfloat2_(int : in, real : in)
+ext bus_sjoint_(int : in, e6axis : in, int : in)
+ext bus_scartp_(int : in, e6pos : in, int : in)
+
+extfct char bus_gbyte_(port_type_t : in, int : in)
+extfct int bus_gsint_(port_type_t : in, int : in)
+extfct int bus_gusint_(port_type_t : in, int : in)
+extfct int bus_gint_(port_type_t : in, int : in)
+extfct real bus_gfloat_(port_type_t : in, int : in)
+extfct real bus_gfloat2_(port_type_t : in, int : in)
+extfct e6axis bus_gjoint_(port_type_t : in, int : in, int : in)
+extfct e6pos bus_gcartp_(port_type_t : in, int : in, int : in)
+
+ext bus_uptin_(busin_t : out)
+ext bus_uptout_(busout_t : out)
+ext bus_init_(busin_t : out, busout_t : out, int : in, int : in)
+extfct int bus_wtell_(busin_t : out, busout_t : out, int : in)
+ext bus_ftell_(busin_t : out, busout_t : out)
+extfct int bus_ntell_(busin_t : out, busout_t : out, int : in)
+ext bus_stell_(busin_t : out, busout_t : out)
+extfct int bus_rtell_(busin_t : out, busout_t : out, int : in)
+
+enddat

@@ -1,0 +1,31 @@
+&ACCESS RV2
+defdat sbt_comm012
+;***********************************************************
+;
+; file Name: sbt_comm012.dat
+;
+; Copyright 2025 - 2025 speedbot All Rights reserved.
+;
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2025 - 05 - 08
+;   Modification Data    ==   2025 - 05 - 08
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+;
+
+decl int Status = 0
+
+decl state_t State
+decl int Offset = 0
+decl char Msg[128]
+
+DECL modus_t mode
+
+const bool DEBUG = TRUE
+
+enddat

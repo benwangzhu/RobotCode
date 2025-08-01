@@ -1,0 +1,297 @@
+program lib_tpe2
+--***********************************************************
+--
+-- Copyright 2018 - 2023 speedbot All Rights reserved.
+--
+-- file Name: lib_tpe2
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2023 - 03 - 11
+--   Modification Data    ==   2023 - 03 - 11
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--*********************************************************************************************************--
+--                                                                                                         --
+--                                                      .^^^                                               --
+--                                               .,~<c+{{{{{{t,                                            -- 
+--                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          --
+--                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        --
+--                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       --
+--                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    --
+--                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  --
+--                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                --
+--                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              --
+--                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             --
+--                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             --
+--                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             --
+--                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              --
+--                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              --
+--                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               --
+--                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               --
+--                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                --
+--                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                --
+--                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 --
+--                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 --
+--                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  --
+--                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  --
+--                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    --                         
+--                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         --
+--                                         ^!{{{{{{{{t!",^`                                                --
+--                                                                                                         --
+--*********************************************************************************************************--
+--  
+-- 2023 - 03 - 11 ++ copy_tpels_() ==> integer
+
+-- 2023 - 03 - 11 ++ extr_tpe_() ==> string
+
+-- 2023 - 03 - 11 ++ anal_tpels_() ==> array of string
+--
+%nolockgroup
+%nobusylamp
+%nopause = tpenable + command + error
+%comment = 'Tpe 231129'
+
+%include include/lib_transform_t
+%include include/lib_tpe_t
+%include include/lib_math_t
+%include include/lib_logs_t
+%include klevtpe
+
+%include include/lib_tpe_h
+%include include/lib_string_h
+%include include/lib_logs_h
+%include include/lib_tp_if_h
+%include include/lib_math_h
+begin
+
+
+end lib_tpe2
+
+routine tpe_it_twat_
+var
+    LinData         : array[48] of byte
+    LenData         : integer
+    SetStatus       : integer
+begin
+
+    LinData[1] = MN_WAIT_DLY
+    LinData[2] = LM_INDEX
+
+    LinData[3] = ((round(InstSch / 10) and 65280)   div 256)    and (255)
+    LinData[4] = ((round(InstSch / 10) and 255)     div 1)      and (255)
+
+    LenData = 4
+    -- wait for ($mor_grp[1].$servo_ready = true)
+    rep_inst_tpe(OpenId, LineNo, 2, LinData, LenData, SetStatus)
+    if SetStatus <> CC_SUCCESS then
+        post_err(CC_UALARM, 'Err [tpe_it_twat_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+    endif
+    LineNo = LineNo + 1
+end tpe_it_twat_
+
+routine tpe_it_swat_
+var
+    LinData         : array[48] of byte
+    LenData         : integer
+    SetStatus       : integer
+begin
+    LinData[1] = LM_WAIT
+    LinData[2] = 115
+    
+    if InstSch.IoStat then
+
+        select InstSch.IoType of
+        case(LM_SDO):   LinData[3] = LM_SDO
+        case(LM_FLG):   LinData[3] = LM_FLG
+        case(LM_UO):    LinData[3] = LM_UO
+        case(LM_RDO):   LinData[3] = LM_RDO
+        case(LM_WO):    LinData[3] = LM_WO
+        case(LM_SDI):   LinData[3] = LM_SDI
+        case(LM_RDI):   LinData[3] = LM_RDI
+        else:           
+            post_err(CC_UALARM, 'Err [tpe_it_swat_] IoType[' + int_2str_(InstSch.IoType) + ']', 0, CC_ABORT)
+        endselect
+        
+        LinData[4] = LM_INDEX
+        LinData[5] = ((InstSch.IoNo and 65280) div 256)    and (255)
+        LinData[6] = ((InstSch.IoNo  and 255)   div 1)    and (255)
+        LinData[7] = 116
+
+        LenData = 7
+    else
+
+        LinData[3] = 117
+        select InstSch.IoType of
+        case(LM_SDO):   LinData[4] = LM_SDO
+        case(LM_FLG):   LinData[4] = LM_FLG
+        case(LM_UO):    LinData[4] = LM_UO
+        case(LM_RDO):   LinData[4] = LM_RDO
+        case(LM_WO):    LinData[4] = LM_WO
+        case(LM_SDI):   LinData[4] = LM_SDI
+        case(LM_RDI):   LinData[4] = LM_RDI
+        else:           
+            post_err(CC_UALARM, 'Err [tpe_it_swat_] IoType[' + int_2str_(InstSch.IoType) + ']', 0, CC_ABORT)
+        endselect
+        
+        LinData[5] = LM_INDEX
+        LinData[6] = ((InstSch.IoNo and 65280) div 256)    and (255)
+        LinData[7] = ((InstSch.IoNo  and 255)   div 1)    and (255)
+        LinData[8] = 116
+
+        LenData = 8
+    endif
+    -- wait for ($mor_grp[1].$servo_ready = true)
+    rep_inst_tpe(OpenId, LineNo, 2, LinData, LenData, SetStatus)
+    if SetStatus <> CC_SUCCESS then
+        post_err(CC_UALARM, 'Err [tpe_it_swat_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+    endif
+    LineNo = LineNo + 1
+end tpe_it_swat_
+
+routine tpe_it_tst_
+var
+    LinData         : array[48] of byte
+    LenData         : integer
+    SetStatus       : integer
+begin
+
+    LinData[1] = LM_TRACK
+    LinData[2] = LM_CONST
+    LinData[3] = 44
+    LinData[4] = LM_INDEX
+
+
+    LinData[5] = ((InstSch and 65280)   div 256)    and (255)
+    LinData[6] = ((InstSch and 255)     div 1)      and (255)
+
+    LenData = 6
+    -- wait for ($mor_grp[1].$servo_ready = true)
+    rep_inst_tpe(OpenId, LineNo, 2, LinData, LenData, SetStatus)
+    if SetStatus <> CC_SUCCESS then
+        post_err(CC_UALARM, 'Err [tpe_it_tst_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+    endif
+    LineNo = LineNo + 1
+end tpe_it_tst_
+
+routine tpe_it_tked_
+var
+    LinData         : array[48] of byte
+    LenData         : integer
+    SetStatus       : integer
+begin
+
+    LinData[1] = LM_TRACK
+    LinData[2] = LM_INDEX
+    LinData[3] = 0
+
+    LenData = 3
+    -- wait for ($mor_grp[1].$servo_ready = true)
+    rep_inst_tpe(OpenId, LineNo, 2, LinData, LenData, SetStatus)
+    if SetStatus <> CC_SUCCESS then
+        post_err(CC_UALARM, 'Err [tpe_it_tked_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+    endif
+    LineNo = LineNo + 1
+end tpe_it_tked_
+
+routine tpe_it_call_
+var
+    LinData         : array[48] of byte
+    LenData         : integer
+    SetStatus       : integer
+    I               : integer
+    UprTpeName      : string[24]
+begin
+
+    UprTpeName = low_2upper_(InstSch.Name)
+
+    LinData[1] = LM_CALL
+    LinData[2] = LM_PGNAM
+    
+    for I = 1 to str_len(UprTpeName) do
+        LinData[3 + I - 1] = ord(UprTpeName, I)
+    endfor
+
+    LinData[2 + str_len(UprTpeName) + 1] = 0
+    LenData = 2 + str_len(UprTpeName) + 1
+    -- wait for ($mor_grp[1].$servo_ready = true)
+    rep_inst_tpe(OpenId, LineNo, 2, LinData, LenData, SetStatus)
+    if SetStatus <> CC_SUCCESS then
+        post_err(CC_UALARM, 'Err [tpe_it_call_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+    endif
+    LineNo = LineNo + 1
+end tpe_it_call_
+
+routine tpe_it_srch_
+var
+    LinData         : array[48] of byte
+    LenData         : integer
+    SetStatus       : integer
+    I               : integer
+    UprTpeName      : string[24]
+begin
+    LinData[1] = LM_TOUCH
+    LinData[2] = InstSch.Func
+    LinData[3] = 0
+
+    select InstSch.Func of
+    case(TCH_SR_ST):
+        LinData[4] = LM_INDEX
+        LinData[5] = ((InstSch.SearchIndex and 65280) div 256)    and (255)
+        LinData[6] = ((InstSch.SearchIndex  and 255)   div 1)    and (255)
+        LinData[7] = LM_INDEX
+        LinData[8] = ((InstSch.PrIndex and 65280) div 256)    and (255)
+        LinData[9] = ((InstSch.PrIndex  and 255)   div 1)    and (255)
+        LenData = 9
+    case(TCH_ST_ED):
+        LenData = 3
+    case(TCH_OFFS_ST):
+        LinData[4] = LM_INDEX
+        LinData[5] = ((InstSch.PrIndex and 65280) div 256)    and (255)
+        LinData[6] = ((InstSch.PrIndex  and 255)   div 1)    and (255)
+        LenData = 6
+    case(TCH_OFFS_ED):
+        LenData = 3
+    else:
+        post_err(CC_UALARM, 'Err [tpe_it_srch_] [' + int_2str_(LineNo) + '] FUNC[' + int_2str_(InstSch.Func) + ']', 0, CC_ABORT)
+    endselect
+    rep_inst_tpe(OpenId, LineNo, 2, LinData, LenData, SetStatus)
+    if SetStatus <> CC_SUCCESS then
+        post_err(CC_UALARM, 'Err [tpe_it_srch_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+    endif
+    LineNo = LineNo + 1
+end tpe_it_srch_
+
+routine tpe_it_dpm_
+var
+    LinData         : array[48] of byte
+    LenData         : integer
+    SetStatus       : integer
+begin
+    LinData[1] = 216
+    LinData[2] = InstSch.Func
+    select InstSch.Func of
+    case(TPE_DPM_ON):
+        LinData[3] = 163
+        LinData[4] = 2
+        LinData[5] = ((InstSch.DpmSch and 65280)   div 256)    and (255)
+        LinData[6] = ((InstSch.DpmSch and 255)     div 1)      and (255)
+        LenData = 6
+    case(TPE_DPM_OFF):
+        LinData[3] = 0
+        LenData = 3
+    else:
+        post_err(CC_UALARM, 'Err [tpe_it_dpm_] Func[' + int_2str_(InstSch.Func) + ']', 0, CC_ABORT)
+    endselect
+    
+    set_inst_tpe(OpenId, LineNo, 2, LinData, LenData, SetStatus)
+    if SetStatus <> 0 then
+        post_err(CC_UALARM, 'Err [tpe_it_dpm_] [' + int_2str_(LineNo) + '] [' + int_2str_(SetStatus) + ']', 0, CC_ABORT)
+    endif
+    LineNo = LineNo + 1
+end tpe_it_dpm_
+
+
+

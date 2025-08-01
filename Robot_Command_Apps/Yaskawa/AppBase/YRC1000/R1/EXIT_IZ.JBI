@@ -1,0 +1,73 @@
+/JOB
+//NAME EXIT_IZ
+///FOLDERNAME SPEEDBOT
+//POS
+///NPOS 0,0,0,0,0,0
+//INST
+///DATE 2024/08/16 10:18
+///COMM V0.1
+///ATTR SC,RW,MC
+///GROUP1 RB1
+///LVARS 0,1,0,0,0,0,0,0
+NOP
+'***********************
+'***宏程序：退出干涉区***
+'***********************
+'
+'Exit Zone
+GETARG LI000 IARG#(1)
+SWITCH LI000
+	'Zone1
+CASE 1
+	 DOUT OT#(21) ON
+	 DOUT OT#(241) OFF
+	'Zone2
+CASE 2
+	 DOUT OT#(22) ON
+	 DOUT OT#(242) OFF
+	'Zone3
+CASE 3
+	 DOUT OT#(23) ON
+	 DOUT OT#(243) OFF
+	'Zone4
+CASE 4
+	 DOUT OT#(24) ON
+	 DOUT OT#(244) OFF
+	'Zone5
+CASE 5
+	 DOUT OT#(25) ON
+	 DOUT OT#(245) OFF
+	'Zone6
+CASE 6
+	 DOUT OT#(26) ON
+	 DOUT OT#(246) OFF
+	'Zone7
+CASE 7
+	 DOUT OT#(27) ON
+	 DOUT OT#(247) OFF
+	'Zone8
+CASE 8
+	 DOUT OT#(28) ON
+	 DOUT OT#(248) OFF
+	'Zone9
+CASE 9
+	 DOUT OT#(29) ON
+	 DOUT OT#(249) OFF
+	'Zone10
+CASE 10
+	 DOUT OT#(30) ON
+	 DOUT OT#(250) OFF
+	'Zone11
+CASE 11
+	 DOUT OT#(31) ON
+	 DOUT OT#(251) OFF
+	'Zone12
+CASE 12
+	 DOUT OT#(32) ON
+	 DOUT OT#(252) OFF
+	'Error
+DEFAULT
+	 SETUALM 8000 "干涉区编号错误" 0
+	 ABORT
+ENDSWITCH
+END

@@ -1,0 +1,67 @@
+program second_fdbk
+--***********************************************************
+--
+-- file Name: second_fdbk.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 11 - 09
+--   Modification Data    ==   2023 - 07 - 03
+--
+-- Author: speedbot
+--
+-- Version: 5.0
+--***********************************************************
+--   
+%comment = 'Snd Fdbk V5.0'
+%nolockgroup
+%nobusylamp
+%nopause = error + tpenable + command
+%include second_t
+%include second_global
+
+var 
+
+    FdbkStatus              : integer
+    I, J                    : integer
+
+%include include\lib_string_h
+%include include\lib_tp_if_h
+%include include\lib_busio_h
+
+begin
+
+
+    if get_sys_int_('$vr[' + int_to_str_(PkPlCfg.pkcvCfg[get_iparm_(1)].VReg) + '].$workid') <= 0 then return; endif
+
+    bus_sint_(BusOutput.BusIoSt + 64, &
+              get_sys_int_('$vr[' + int_to_str_(PkPlCfg.pkcvCfg[get_iparm_(1)].VReg) + '].$workid'))
+    
+    bus_sbyte_(BusOutput.BusIoSt + 96, get_iparm_(2))
+    
+    bus_sint_(BusOutput.BusIoSt + 112, &
+              get_sys_int_('$vr[' + int_to_str_(PkPlCfg.pkcvCfg[get_iparm_(1)].VReg) + '].$enc_count'))
+
+    if get_iparm_(2) = 0 then
+
+        FdbkStatus = bus_ntell_(BusInput, BusOutput, 0)
+    else
+
+        for I = 1 to PkPlCfg.NumOfConv do  
+            for J = 1 to SecondQueue[I].n_entries do  
+                if (get_sys_int_('$vr[' + int_to_str_(I) + '].$view[4].$modelid') = PartIndex[I, J].PartData.BoxId) and &
+                   (get_sys_rel_('$vr[' + int_to_str_(I) + '].$view[4].$x') = PartIndex[I, J].PartData.PlacePosn[1]) and &
+                   (get_sys_rel_('$vr[' + int_to_str_(I) + '].$view[4].$y') = PartIndex[I, J].PartData.PlacePosn[2]) then  
+                
+                    PartIndex[I, J].PartData.PlacePosn[3] = PartIndex[I, J].PartData.PlacePosn[3] - get_sys_rel_('$vr[' + int_to_str_(I) + '].$offset.$z')                
+                endif
+            endfor
+        endfor
+
+        FdbkStatus = bus_ntell_(BusInput, BusOutput, 3000)
+    endif
+
+end second_fdbk
+

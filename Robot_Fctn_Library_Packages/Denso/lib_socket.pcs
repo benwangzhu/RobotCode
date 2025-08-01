@@ -1,0 +1,104 @@
+'!TITLE "lib_socket"
+
+#Include "lib_socket.h"
+Sub Main
+'!***********************************************************
+'!
+'! Copyright 2018 - 2025 speedbot All Rights reserved.
+'!
+'! File Name: lib_socket.pcs
+'!
+'! Description:
+'!   Language             ==   PacScipt for DENSO ROBOT
+'!   Date                 ==   2025 - 02 - 24
+'!   Modification Data    ==   2025 - 02 - 24
+'!
+'! Author: speedbot
+'!
+'! Version: 1.0
+'!*********************************************************************************************************;
+End Sub
+
+#Pragma Encrypt(On) 
+
+Function CommOpen(ByRef CommConfig As Variant) As Integer
+    Dim RetryCount As Integer = 0
+	
+	On Error GoTo ERRORS
+	CommClose CommConfig(1)
+	Comm.Open CommConfig(1)
+	CommConfig(0) = True
+	CommConfig(2) = 0
+	CommOpen = _OK_
+	
+	Exit Function
+ERRORS:
+	RetryCount = RetryCount + 1
+	If RetryCount <= 3 Then
+		Delay 100
+		Resume
+	End If
+	CommConfig(0) = False
+	CommConfig(2) = 0
+	CommOpen = -abs(Err.Number)
+	Exit Function
+End Function
+
+Sub CommClose(ByRef CommConfig As Variant)
+	
+	On Error GoTo ERRORS
+	Comm.Close CommConfig(1)
+	CommConfig(0) = False
+	CommConfig(2) = 0
+	Exit Sub
+ERRORS:
+	Comm.Close CommConfig(1)
+	CommConfig(0) = False
+	CommConfig(2) = 0
+	Exit Sub
+End Sub
+
+Function CommWrite(ByRef CommConfig As Variant, ByVal Buffer As Variant, ByVal Length As Integer) As Integer
+	
+	On Error GoTo ERRORS
+	Comm.Output CommConfig(1), Buffer, -1, Length
+	CommWrite = _OK_
+	
+	Exit Function
+ERRORS:
+	CommConfig(0) = False
+	CommConfig(2) = 0
+	CommWrite = -abs(Err.Number)
+	Exit Function
+End Function
+
+Function CommRead(ByRef CommConfig As Variant, ByRef Buffer As Variant, ByVal Length As Integer) As Integer
+	
+	On Error GoTo ERRORS
+	Buffer = Comm.Input(CommConfig(1), CommConfig(3), Length)
+	CommRead = Ubound(Buffer)
+	Exit Function
+ERRORS:
+	CommConfig(0) = False
+	CommConfig(2) = 0
+	CommRead = -abs(Err.Number)
+	Exit Function
+End Function
+
+
+Function CommGetBuffBits(ByRef CommConfig As Variant) As Integer
+	Dim Bytes As Integer
+
+	On Error GoTo ERRORS
+	Bytes = Comm.Count(CommConfig(1))
+	CommConfig(2) = Bytes
+	CommGetBuffBits = Bytes
+	Exit Function
+ERRORS:
+	CommConfig(0) = False
+	CommConfig(2) = -abs(Err.Number)
+	CommGetBuffBits = -abs(Err.Number)
+	Exit Function
+End Function
+
+#Pragma Encrypt(Off) 

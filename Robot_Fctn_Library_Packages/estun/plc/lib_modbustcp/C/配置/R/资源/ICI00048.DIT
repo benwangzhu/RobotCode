@@ -1,0 +1,94 @@
+(*
+T: FUNCTION_BLOCK STRING_TO_BUF
+FW: YES	NO_VARIANT STR_2_BF SKIP_NOTHING
+CI#: 48
+QSL: 0
+QVE: 14
+QPar: 9
+QFBI: 0
+*)
+
+REQ	1	VAR_INPUT	@TYP:1	
+	
+
+;
+PFW: 
+
+BUF_FORMAT	2	VAR_INPUT	@TYP:1	
+	
+
+;
+PFW: 
+
+BUF_OFFS	3	VAR_INPUT	@TYP:4	
+	
+
+;
+PFW: 
+
+BUF_CNT	4	VAR_INPUT	@TYP:4	
+	
+
+;
+PFW: 
+
+lastVal	5	VAR	@TYP:1	
+	
+
+;
+PFW: 
+
+dataType	6	VAR	@TYP:4	
+	
+
+;
+PFW: 
+
+intFormat	7	VAR	@TYP:17	
+	
+
+;
+PFW: 
+
+intDone	8	VAR	@TYP:17	
+	
+
+;
+PFW: 
+
+intError	9	VAR	@TYP:17	
+	
+
+;
+PFW: 
+
+DONE	10	VAR_OUTPUT	@TYP:1	
+	
+
+;
+PFW: 
+
+ERROR	11	VAR_OUTPUT	@TYP:1	
+	
+
+;
+PFW: 
+
+STATUS	12	VAR_OUTPUT	@TYP:3	
+	
+
+;
+PFW: 
+
+SRC	13	VAR_IN_OUT	@TYP:24	
+	
+
+;
+PFW: 
+
+BUFFER	14	VAR_IN_OUT	@TYP:24	
+	
+
+;
+PFW: 
+

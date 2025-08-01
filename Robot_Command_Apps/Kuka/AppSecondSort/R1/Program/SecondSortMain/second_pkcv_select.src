@@ -1,0 +1,56 @@
+&ACCESS RVP
+&REL 22
+&comment Conveyor Pick Select
+&PARAM DISKPATH = KRC:\R1\Program\SecondSortMain
+def second_pkcv_select()
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: second_pkcv_select.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 27
+;   Modification Data    ==   2024 - 10 - 25
+;
+; Author: speedbot
+;
+; Version: 1.1
+;***********************************************************
+
+continue
+$flag[FLAG_CONV_PKSU] = false
+
+loop
+    
+    GlbPickSelectId = GlbPickSelectId + 1
+    if GlbPickSelectId > PkPlCfg.NumOfConv then  
+        GlbPickSelectId = 1
+    endif
+
+    switch (GlbPickSelectId)
+    case 1
+        second_pkcv01()
+    case 2
+        second_pkcv02()
+    case 3
+        second_pkcv03()
+    case 4
+        second_pkcv04() 
+    default
+        Offset = 0
+        swrite(Msg[], State, Offset, "ConvId Error[ConvId:%D, MaxConvId:%D]", GlbPickSelectId, PkPlCfg.NumOfConv)
+        err_write_("SecondSort", Msg[], true)
+    endswitch
+
+    continue
+    if $flag[FLAG_CONV_PKSU] == true then
+
+        ; Exit loop when part is successfully grasped
+        exit
+    endif
+endloop
+end
+
+

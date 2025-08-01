@@ -1,0 +1,79 @@
+&ACCESS RVP
+&REL 20
+&COMMENT MixSort Main
+&PARAM EDITMASK = *
+&PARAM DISKPATH = KRC:\R1\Program\MixSortMain
+DEF  mixsort_main ( )
+;***********************************************************
+; 
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+; 
+; File Name: mixsort_main.DAT
+; 
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 27
+;   Modification Data    ==   2025 - 02 - 10
+; 
+; Author: speedbot
+; 
+; Version: 1.1
+;***********************************************************
+;FOLD INI;%{PE}
+    ;FOLD BASISTECH INI
+        GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+        INTERRUPT ON 3 
+        BAS (#INITMOV,0 )
+    ;ENDFOLD (BASISTECH INI)
+    ;FOLD USER INI
+        ;Make your modifications here
+        
+    ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+;FOLD Basic.Override IN Override: 30  ;%{PE}
+override_(30)
+;ENDFOLD
+;FOLD PLC.Pounce ;%{PE}
+pounce_()
+;ENDFOLD
+mixsort_config()
+;FOLD MixSort.MixSortSr ;%{PE}
+mixsort_sr_inte()
+;ENDFOLD
+;FOLD MixSort.GetTask ;%{PE}
+mixsort_get_task()
+;ENDFOLD
+LOOP
+    continue
+    wait for ToRobotFlg
+    ToRobotFlg = false
+    
+    switch ToRobotAck
+    case #TO_TP_NEXT
+        mixsort_waitpos()
+    case #TO_TP_PICT
+        mixsort_picture()
+    case #TO_TP_PK
+        switch (GlobalTaskId)
+        case 2
+            mixsort_pick01()
+        case 3
+            mixsort_pick02()
+        case 4
+            mixsort_pick03()
+        case 101
+            mixsort_pick04()
+        case 102
+            mixsort_pick05()
+        default
+            log_error_("Unkonwn GlobalTaskId!")
+        endswitch
+        mixsort_place_select()
+    case #TO_TP_HOME
+        exit    
+    endswitch
+ENDLOOP
+;FOLD PLC.MoveToHome ;%{PE}
+move_to_home_()
+;ENDFOLD
+END

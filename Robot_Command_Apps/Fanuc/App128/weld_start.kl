@@ -1,0 +1,321 @@
+program weld_start
+--***********************************************************
+--
+-- file Name: weld_start
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2022 - 03 - 09
+--   Modification Data    ==   2022 - 03 - 10
+--
+-- Author: 
+--
+-- Version: 1.0
+%comment = 'WELD_START 1103'
+%lockgroup = 1
+%nopause = error + command + tpenable
+-- %include include/lib_tp_if_t
+-- %include include/lib_tp_if_t
+
+var
+    DoWeldStart                 in cmos     : integer
+    DoGasStart                  in cmos     : integer
+    DoWireAlarm                 in cmos     : integer
+    DiArcDetect                 in cmos     : integer
+    DiPowerFault                in cmos     : integer
+    AoCurrent                   in cmos     : integer
+    AoWireFeed                  in cmos     : integer
+
+    DetTimeout                              : integer
+
+
+    WeldProgNo                              : integer
+    WeldSchNo                               : integer
+
+    Current                                 : real
+    WireFeed                                : real
+    CmdTime                                 : real
+
+    TimerClk                                : integer
+    Timeout                                 : boolean
+
+    SvEntry                                 : integer
+    Status                                  : integer
+
+
+    PreFlow                                 : real
+    PostFlow                                : real
+
+    AlarmEnb                                : boolean
+    AlarmNo                                 : integer
+
+    TaskId                                  : integer
+
+    LastStep                                : integer
+    -- LastProg                                : string[12]
+
+    WeldAmpMode                             : integer
+    WeldWfsMode                             : integer
+
+    Continued                               : boolean
+
+%include include/lib_tp_if_h
+%include include/lib_string_h
+%include include/lib_thread_h
+
+routine weld_start_ from weld_start
+routine weld_stop_ from weld_start
+
+-- routine dpm_on_ from dpm_on_
+-- routine dpm_off_ from dpm_off_
+begin 
+
+    WeldProgNo = get_iparm_(1)
+    WeldSchNo = get_iparm_(2)
+
+    get_var(SvEntry, 'awe1wp01', 'sch[' + int_2str_(WeldSchNo) + '].$cmd_volts', Current, Status)
+    if Status <> 0 then  
+
+        post_err(38000, '未找到气压信息', 0, 2)
+    endif
+
+    get_var(SvEntry, 'awe1wp01', 'sch[' + int_2str_(WeldSchNo) + '].$cmd_wfs', WireFeed, Status)
+    if Status <> 0 then  
+
+        post_err(38000, '未找到焦距信息', 0, 2)
+    endif
+
+    get_var(SvEntry, 'awe1wp01', 'sch[' + int_2str_(WeldSchNo) + '].$cmd_time', CmdTime, Status)
+    if Status <> 0 then  
+
+        post_err(38000, '未找到烧穿时间信息', 0, 2)
+    endif
+
+    get_var(SvEntry, 'awe1wp01', 'eupr.$preflow', PreFlow, Status)
+    if Status <> 0 then  
+
+        post_err(38000, '未找到提前送气时间信息', 0, 2)
+    endif
+
+    get_var(SvEntry, 'awe1wp01', 'eupr.$postflow', PostFlow, Status)
+    if Status <> 0 then  
+
+        post_err(38000, '未找到滞后送气时间信息', 0, 2)
+    endif
+
+    DoWeldStart = get_sys_int_('$aweprr[1].$weld_start.$port_num')            -- DO[*] 起弧信号地址
+    -- DoGasStart = get_sys_int_('$aweprr[1].$gas_start.$port_num')              -- DO[*] 气体信号地址
+    -- DoWireAlarm = get_sys_int_('$aweprr[1].$wstk_alarm.$port_num')            -- DO[*] 熔敷报警信号地址
+    -- DiArcDetect = get_sys_int_('$aweprr[1].$arc_detect.$port_num')            -- DI[*] 电弧检测信号地址
+    DiPowerFault = get_sys_int_('$aweprr[1].$pwr_fault.$port_num')            -- DI[*] 焊接电源错误信号地址
+    -- AoCurrent = get_sys_int_('$aweprr[1].$voltage_cmd.$port_num')              --  电流
+    -- AoWireFeed = get_sys_int_('$aweprr[1].$wfs_cmd.$port_num')                  --  送丝速度
+    -- WeldAmpMode = get_sys_int_('$aweprr[1].$voltage_cmd.$port_type')             -- 电流信号类型
+    -- WeldWfsMode = get_sys_int_('$aweprr[1].$wfs_cmd.$port_type')                 -- 送丝速度信号类型
+
+    DetTimeout = round(get_sys_rel_('$aweupr[1].$max_det_tim') * 1000)      -- 电弧检测超时时间 [MS]
+
+    -- while din[DiPowerFault] do 
+    --     post_err(38000, '焊接电源报警', 0, 1)
+    --     delay(100)
+    -- endwhile   
+
+    AlarmEnb = false
+    AlarmNo = 0
+    Continued = false
+
+    thrd_end_('weld_monitor')
+    TaskId = thrd_create_('weld_monitor', 0, false)
+
+    purge condition[9]
+    condition[9]: 
+        when abort do                   -- 焊接中途暂停
+            noabort
+            AlarmNo = -1
+            AlarmEnb = true
+            dout[DoWeldStart] = false
+            -- pulse dout[DoGasStart] for trunc(PostFlow * 1000.0)
+            -- gout[AoCurrent] = 0
+            -- gout[AoWireFeed] = 0
+            -- enable condition[10]
+        when pause do                   -- 焊接中途暂停
+            LastStep = $shell_wrk.$curr_line
+            AlarmNo = 1
+            AlarmEnb = true
+            dout[DoWeldStart] = false
+            -- pulse dout[DoGasStart] for trunc(PostFlow * 1000.0)
+            -- gout[AoCurrent] = 0
+            -- gout[AoWireFeed] = 0
+            -- dpm_off_
+            enable condition[10]
+        when dout[DoWeldStart] and din[DiPowerFault]+ do      -- 焊机电源错误
+            LastStep = $shell_wrk.$curr_line
+           -- LastProg = $shell_wrk.$rout_name
+            AlarmNo = 2
+            AlarmEnb = true
+            dout[DoWeldStart] = false
+            -- pulse dout[DoGasStart] for trunc(PostFlow * 1000.0)
+            -- gout[AoCurrent] = 0
+            -- gout[AoWireFeed] = 0
+            enable condition[10]
+        -- when dout[DoWeldStart] and din[DiArcDetect]- do       -- 焊接中途电弧检测丢失
+        --     LastStep = $shell_wrk.$curr_line
+        --    -- LastProg = $shell_wrk.$rout_name
+        --     AlarmNo = 3
+        --     AlarmEnb = true
+        --     dout[DoWeldStart] = false
+        --     -- pulse dout[DoGasStart] for trunc(PostFlow * 1000.0)
+        --     -- gout[AoCurrent] = 0
+        --     -- gout[AoWireFeed] = 0
+        --     enable condition[10]
+    endcondition
+
+    purge condition[10]
+    condition[10]:
+        when continue do
+            -- hold
+            Continued = true
+            weld_start_
+            --continue
+            -- unhold
+    endcondition
+
+    purge condition[11]
+    condition[11]:
+        when TimerClk > DetTimeout do
+            Timeout = true
+        when pause do
+            nopause
+            dout[DoWeldStart] = false
+            -- dout[DoGasStart] = false
+            -- gout[AoCurrent] = 0
+            -- gout[AoWireFeed] = 0
+    endcondition
+
+
+    weld_start_
+
+end weld_start
+
+routine weld_start_
+begin
+
+    if dout[39] then 
+
+        dout[39] = false
+        delay(1000)
+    endif
+
+
+    gout[7] = trunc(Current * 100)      -- 输出比例阀
+    gout[8] = trunc(WireFeed * 100)     -- 输出焦距                 
+
+    pulse dout[39] for 500          -- 焦距伺服移动请求
+
+    TimerClk = 0
+    connect timer to TimerClk
+    while not din[39] do
+        wait for din[39] or TimerClk  >= 3000            -- 等待焦距伺服到位
+        if not din[39] then
+            post_err(38000, '焦距伺服移动超时', 2, 1)
+        endif
+        TimerClk = 0
+    endwhile
+    disconnect timer TimerClk
+
+    -- 焊接使能关掉了就什么都不处理
+    if (get_sys_bol_('$awepor[1].$arc_enable') = false) or (get_sys_int_('$ssr.$singlestep') = 1) then
+        resume
+        return
+    endif
+
+
+
+            -- LastStep = $shell_wrk.$curr_line
+            -- LastProg = $shell_wrk.$rout_name
+
+    if Continued = true then  
+        if ($shell_wrk.$curr_line <> LastStep) then
+            resume
+            return
+        endif
+    endif
+
+    -- repeat
+        
+        stop
+        -- Timeout = false
+        -- TimerClk = 0
+        enable condition[11]
+        -- connect timer to TimerClk
+
+        while not din[31] do 
+
+            post_err(38000, '激光未准备好', 2, 1)
+            delay(100)
+        endwhile
+        
+        -- dout[DoGasStart] = true
+        -- 提前送气
+        -- delay(trunc(PreFlow * 1000.0))
+        dout[30] = true
+    --     wait for din[DiArcDetect] or Timeout = true
+        delay(trunc(PreFlow * 1000.0))
+
+        disable condition[11]
+        -- if not (din[30]) then
+
+        --     post_err(38000, '激光起弧失败', 2, 1)
+        -- endif
+
+        delay(trunc(CmdTime * 1000.0))
+        -- disconnect timer TimerClk
+    --     if not din[DiArcDetect] then
+    --         resume
+    --         dout[DoWeldStart] = false
+    --         dout[DoGasStart] = false
+    --         AlarmNo = 4
+    --         AlarmEnb = true
+    --         delay(200)
+    --     endif
+    -- until(din[DiArcDetect])
+    resume
+    
+    enable condition[9]
+end weld_start_
+
+routine weld_stop_
+begin
+    disable condition[9]
+    disable condition[10]
+    disable condition[11]
+    dout[30] = false
+    -- pulse dout[DoGasStart] for trunc(PostFlow * 1000.0)
+    delay(trunc(PostFlow * 1000.0))
+
+    TimerClk = 0
+    connect timer to TimerClk
+    while din[30] do
+        wait for (din[30] = false) or (TimerClk  >= 1000)            -- 等待焦距伺服到位
+        if not din[30] then
+            post_err(38000, '激光关弧失败', 2, 1)
+        endif
+        TimerClk = 0
+    endwhile
+    disconnect timer TimerClk
+
+    -- if WeldAmpMode = 19 then
+    --     gout[AoCurrent] = 0
+    -- else
+    --     aout[AoCurrent] = 0
+    -- endif
+
+    -- if WeldWfsMode = 19 then
+    --     gout[AoWireFeed] = 0
+    -- else
+    --     aout[AoWireFeed] = 0
+    -- endif
+    AlarmNo = -1
+    AlarmEnb = true
+end weld_stop_
+

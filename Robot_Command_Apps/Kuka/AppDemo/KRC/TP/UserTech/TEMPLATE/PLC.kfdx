@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--For an example how to add menu entries for UserTech InlineForms see file C:\KRC\TP\UserTech\SmartHMI\SmartHMI.exe.UserTech.InlineForms.config-->
+<KukaTechDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	
+	<!-- ===================================================================================== -->
+	<!-- =============================== PLC ========================================== -->
+	<!-- ===================================================================================== -->
+	<Application Name="PLC" SOT="False" SOC="True">							
+		<!-- ================================ Global Data Type ========================================= -->
+	
+		<Param Name="SegmentId" ShortName="IN Segment Nr: " Unit="">							
+			<Value Type="NUMBER" Default="1" Min="1" Max="255" Step="1" Autolimit="False" />
+		</Param>
+	
+		<Param Name="ZoneId" ShortName="IN Zone Nr: " ShortCut="" Unit="" Var="" Enable="">
+			<List SelectedItem="">
+				<Item Disp="ZONE [1]" Key="1" />
+				<Item Disp="ZONE [2]" Key="2" />
+				<Item Disp="ZONE [3]" Key="3" />
+				<Item Disp="ZONE [4]" Key="4" />
+				<Item Disp="ZONE [5]" Key="5" />
+				<Item Disp="ZONE [6]" Key="6" />
+				<Item Disp="ZONE [7]" Key="7" />
+				<Item Disp="ZONE [8]" Key="8" />
+				<Item Disp="ZONE [9]" Key="9" />
+				<Item Disp="ZONE [10]" Key="10" />
+				<Item Disp="ZONE [11]" Key="11" />
+				<Item Disp="ZONE [12]" Key="12" />
+			</List>
+		</Param>
+
+		<!-- ================================ EchoProgNo ========================================= -->
+
+		<Param Name="ProgNo" ShortName="IN Program No.: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="1" Min="1" Max="255" Step="1" Autolimit="" />
+		</Param>
+		
+		<Fold Name="EchoProgNoFold">									
+			<Line>Go001ProgNo = %ProgNo/</Line>		
+		</Fold>
+		<InlineForm Name="EchoProgNo" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="EchoProgNoFold" />
+			<PRM Name="ProgNo" />
+		</InlineForm>
+
+		<!-- ================================ EnterZone ========================================= -->
+
+		<Fold Name="EnterZoneFold">									
+			<Line>zone_ctrl_(#I_ENTER, %ZoneId/)</Line>		
+		</Fold>
+		<InlineForm Name="EnterZone" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		<!-- ????????? -->
+			<FLD Name="EnterZoneFold" />							
+			<PRM Name="ZoneId" />								
+		</InlineForm>
+
+		<!-- ================================ ExitZone ========================================= -->
+
+		<Fold Name="ExitZoneFold">									
+			<Line>zone_ctrl_(#I_EXIT, %ZoneId/)</Line>		
+		</Fold>
+		<InlineForm Name="ExitZone" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		<!-- ????????? -->
+			<FLD Name="ExitZoneFold" />							
+			<PRM Name="ZoneId" />								
+		</InlineForm>
+
+		<!-- ================================ PathSegment ========================================= -->
+
+		<Fold Name="PathSegmentFold">
+			<Line>path_segment_(%SegmentId/)</Line>
+		</Fold>
+		<InlineForm Name="PathSegment" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" >
+			<FLD Name="PathSegmentFold" />
+			<PRM Name="SegmentId" />						
+		</InlineForm>
+
+		<!-- ================================ RequestToContinue ========================================= -->
+
+		<Fold Name="RequestToContinueFold">
+			<Line>req_to_continue_()</Line>
+		</Fold>
+		<InlineForm Name="RequestToContinue" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" >
+			<FLD Name="RequestToContinueFold" />
+		</InlineForm>
+
+		<!-- ================================ MoveToHomeFold ========================================= -->
+
+		<Fold Name="MoveToHomeFold">
+			<Line>move_to_home_()</Line>
+		</Fold>
+		<InlineForm Name="MoveToHome" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" >
+			<FLD Name="MoveToHomeFold" />
+		</InlineForm>
+
+		<!-- ================================ PounceFold ========================================= -->
+
+		<Fold Name="PounceFold">
+			<Line>pounce_()</Line>
+		</Fold>
+		<InlineForm Name="Pounce" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" >
+			<FLD Name="PounceFold" />
+		</InlineForm>
+
+		<!-- ================================ ServoCtrl ========================================= -->
+		
+		<Param Name="ServoCtrlMode" ShortName="IN Ctrl Mode: " ShortCut="" Unit="" Var="" Enable="">
+			<List SelectedItem="">
+               <Item Disp="MOVING" Key="#MOVING" />
+               <Item Disp="WAITING" Key="#WAITING" />
+			</List>
+		</Param>
+
+		<Param Name="Dist" ShortName="IN Dist: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="0" Max="65535" Step="1" Autolimit="" />
+		</Param>
+		
+		<Fold Name="ServoCtrlFold">									
+			<Line>servo01_ctrl_(%ServoCtrlMode/, %Dist/)</Line>		
+		</Fold>
+		<InlineForm Name="ServoCtrl" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="ServoCtrlFold" />
+			<PRM Name="ServoCtrlMode" />
+			<PRM Name="Dist" />
+		</InlineForm>
+
+		<!-- ================================ MagToolCtrl ========================================= -->
+		
+		<Param Name="MagToolCtrlMode" ShortName="IN Ctrl Mode: " ShortCut="" Unit="" Var="" Enable="">
+			<List SelectedItem="">
+               <Item Disp="ON" Key="#ON" />
+               <Item Disp="OFF" Key="#OFF" />
+               <Item Disp="WON" Key="#WON" />
+               <Item Disp="WOFF" Key="#WOFF" />
+			</List>
+		</Param>
+
+		<Param Name="Timeout" ShortName="IN Timeout: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="0" Max="1000000" Step="1000" Autolimit="" />
+		</Param>
+
+		<Param Name="SleepTime" ShortName="IN SleepTime: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="0" Max="1000000" Step="1000" Autolimit="" />
+		</Param>
+
+		<Param Name="Success" ShortName="OUT Success: " ShortCut="" Unit="" Var="" Enable="">
+			<Value Type="NAME" Default="Success" />
+		</Param>
+
+		<Script Name="DeclSuccess">
+			<Redecl Path="%MODULE/" Declaration= "DECL BOOL %Success/=FALSE" />
+			<Message Text="Define BOOL %Success/ In %MODULE/" />
+		</Script>
+		
+		<Fold Name="MagToolCtrlFold">									
+			<Line>mag_tool_ctrl_(%MagToolCtrlMode/, %Timeout/, %SleepTime/, %Success/)</Line>		
+		</Fold>
+		<InlineForm Name="MagToolCtrl" IlfType="" Style="" Focus="" Spline="" OnAccept="DeclSuccess" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="MagToolCtrlFold" />
+			<PRM Name="MagToolCtrlMode" />
+			<PRM Name="Timeout" />
+			<PRM Name="SleepTime" />
+			<PRM Name="Success" />
+		</InlineForm>
+		
+		<Fold Name="MagToolForcCtrlFold">									
+			<Line>mag_tool_forc_ctrl_(%MagToolCtrlMode/,%SleepTime/)</Line>		
+		</Fold>
+		<InlineForm Name="MagToolForcCtrl" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="MagToolCtrlFold" />
+			<PRM Name="MagToolCtrlMode" />
+			<PRM Name="SleepTime" />
+		</InlineForm>
+		
+	</Application>
+</KukaTechDescription>
+<!--checksum 1083941364 -->

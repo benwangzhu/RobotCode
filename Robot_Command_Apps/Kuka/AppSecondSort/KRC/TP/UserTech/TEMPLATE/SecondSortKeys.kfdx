@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<KukaTechDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Application Name="SecondSortKeys" SOT="TRUE" SOC="TRUE">
+    
+    <Param Name="BildNr" ShortName="" ShortCut="" Unit="" Var="" Enable="">
+      <Value Type="Number" Default="1" Min="0" Max="2" Step="" Autolimit="" />
+    </Param>
+    <Param Name="StatKeyNr" ShortName="" ShortCut="" Unit="" Var="" Enable="">
+      <Value Type="Number" Default="1" Min="0" Max="3" Step="" Autolimit="" />
+    </Param>
+    
+		<!-- ================================ MagForceOn ========================================= -->
+    <StatKey Name="Stat1" Style="" Next="" Enable="" UserMode="">
+      <Picture Default="C:\KRC\TP\UserTech\Template\MagToolOn.ICO" KeyDown="" KeyDownMinus="" />
+      <Text Top="" Center="" Bottom="" />
+      <Needs SafetySwitch="True" DrivesOk="" Prostate0="" Prostate="30" ModeOp="T1" />
+      <Scripts OnKeyDown="SB01" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+    </StatKey>
+
+		<!-- ================================ MagForceOff ========================================= -->
+    <StatKey Name="Stat2" Style="" Next="" Enable="" UserMode="">
+      <Picture Default="C:\KRC\TP\UserTech\Template\MagToolOff.ICO" KeyDown="" KeyDownMinus="" />
+      <Text Top="" Center="" Bottom="" />
+      <Needs SafetySwitch="True" DrivesOk="" Prostate0="" Prostate="30" ModeOp="T1" />
+      <Scripts OnKeyDown="SB02" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+    </StatKey>
+
+		<!-- ================================ ServoOpen ========================================= -->
+    <StatKey Name="Stat3" Style="" Next="" Enable="" UserMode="">
+      <Picture Default="C:\KRC\TP\UserTech\Template\ServoOpen.ICO" KeyDown="" KeyDownMinus="" />
+      <Text Top="" Center="" Bottom="" />
+      <Needs SafetySwitch="True" DrivesOk="" Prostate0="" Prostate="30" ModeOp="T1" />
+      <Scripts OnKeyDown="SB03" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+    </StatKey>
+
+		<!-- ================================ KeyChange ========================================= -->
+    <StatKey Name="Stat4" Style="" Next="" Enable="" UserMode="">
+      <Picture Default="C:\KRC\TP\UserTech\Template\KeyChange.ICO" KeyDown="" KeyDownMinus="" />
+      <Text Top="" Center="" Bottom="" />
+      <Needs SafetySwitch="" DrivesOk="" Prostate0="" Prostate="" ModeOp="" />
+      <Scripts OnKeyDown="CHGStatkey" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+    </StatKey>
+
+		<!-- ================================ KeyState Cmd ========================================= -->
+    <Script Name="SB01">
+      <SetVar Fullpath="SESecondSortKey" Value="1" />
+    </Script>
+    <Script Name="SB02">
+      <SetVar Fullpath="SESecondSortKey" Value="2" />
+    </Script>
+    <Script Name="SB03">
+      <SetVar Fullpath="SESecondSortKey" Value="3" />
+    </Script>
+    <Script Name="SB04">
+      <SetVar Fullpath="SESecondSortKey" Value="4" />
+    </Script>
+    <Script Name="SB05">
+      <SetVar Fullpath="SESecondSortKey" Value="5" />
+    </Script>
+    <Script Name="SB06">
+      <SetVar Fullpath="SESecondSortKey" Value="6" />
+    </Script>
+    <Script Name="SB07">
+      <SetVar Fullpath="SESecondSortKey" Value="7" />
+    </Script>
+    <Script Name="SB08">
+      <SetVar Fullpath="SESecondSortKey" Value="8" />
+    </Script>
+    <Script Name="SB09">
+      <SetVar Fullpath="SESecondSortKey" Value="9" />
+    </Script>
+    <Script Name="SB10">
+      <SetVar Fullpath="SESecondSortKey" Value="10" />
+    </Script>
+    <Script Name="SB11">
+      <SetVar Fullpath="SESecondSortKey" Value="11" />
+    </Script>
+    <Script Name="SB12">
+      <SetVar Fullpath="SESecondSortKey" Value="12" />
+    </Script>
+    <Script Name="SB13">
+      <SetVar Fullpath="SESecondSortKey" Value="13" />
+    </Script>
+    <Script Name="SB14">
+      <SetVar Fullpath="SESecondSortKey" Value="14" />
+    </Script>
+    <Script Name="SB15">
+      <SetVar Fullpath="SESecondSortKey" Value="15" />
+    </Script>
+    <Script Name="SB16">
+      <SetVar Fullpath="SESecondSortKey" Value="16" />
+    </Script>
+    
+		<!-- ================================ Change KeyState01 ========================================= -->
+    <Script Name="SKB1">
+      <ShowVar Fullpath="1" Param="BildNr" />
+      <Set Name="Stat1" Enable="" UserMode="" Style="" Next="">
+        <Picture Default="C:\KRC\TP\UserTech\Template\MagToolOn.ICO" KeyDown="" KeyDownMinus="" />
+        <Text Top="" Center="" Bottom="" />
+        <Needs SafetySwitch="True" DrivesOk="" Prostate0="" Prostate="30" ModeOp="T1" />
+        <Scripts OnKeyDown="SB01" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+      </Set>
+      <Set Name="Stat2" Enable="" UserMode="" Style="" Next="">
+        <Picture Default="C:\KRC\TP\UserTech\Template\MagToolOff.ICO" KeyDown="" KeyDownMinus="" />
+        <Text Top="" Center="" Bottom="" />
+        <Needs SafetySwitch="True" DrivesOk="" Prostate0="" Prostate="30" ModeOp="T1" />
+        <Scripts OnKeyDown="SB02" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+      </Set>
+      <Set Name="Stat3" Enable="" UserMode="" Style="" Next="">
+        <Picture Default="C:\KRC\TP\UserTech\Template\ServoOpen.ICO" KeyDown="" KeyDownMinus="" />
+        <Text Top="" Center="" Bottom="" />
+        <Needs SafetySwitch="True" DrivesOk="" Prostate0="" Prostate="30" ModeOp="T1" />
+        <Scripts OnKeyDown="SB03" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+      </Set>
+    </Script>
+
+		<!-- ================================ Change KeyState02 ========================================= -->
+    <Script Name="SKB2">
+      <ShowVar Fullpath="2" Param="BildNr" />
+      <Set Name="Stat1" Enable="" UserMode="" Style="" Next="">
+        <Picture Default="C:\KRC\TP\UserTech\Template\ServoClose.ICO" KeyDown="" KeyDownMinus="" />
+        <Text Top="" Center="" Bottom="" />
+        <Needs SafetySwitch="True" DrivesOk="" Prostate0="" Prostate="30" ModeOp="T1" />
+        <Scripts OnKeyDown="SB04" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+      </Set>
+      <Set Name="Stat2" Enable="" UserMode="" Style="" Next="">
+        <Picture Default="C:\KRC\TP\UserTech\Template\Home.ICO" KeyDown="" KeyDownMinus="" />
+        <Text Top="" Center="" Bottom="" />
+        <Needs SafetySwitch="True" DrivesOk="" Prostate0="" Prostate="30" ModeOp="T1" />
+        <Scripts OnKeyDown="SB05" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+      </Set>
+      <Set Name="Stat3" Enable="" UserMode="" Style="" Next="">
+        <Picture Default="C:\KRC\TP\UserTech\Template\Cell.ICO" KeyDown="" KeyDownMinus="" />
+        <Text Top="" Center="" Bottom="" />
+        <Needs SafetySwitch="True" DrivesOk="" Prostate0="" Prostate="30" ModeOp="T1" />
+        <Scripts OnKeyDown="SB06" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+      </Set>
+    </Script>
+
+		<!-- ================================ Switch KeyState ========================================= -->
+    <Script Name="CHGStatkey">
+      <Switch Dialog="FALSE" Condition="%BildNr">
+        <Case Value="1" Do="SKB2" />
+        <Case Value="2" Do="SKB1" />
+      </Switch>
+    </Script>
+
+		<!-- ================================ KeyState Trigger ========================================= -->
+    <StatkeyBar Name="SeKeys">
+      <SK Name="Stat1" Pos="1" />
+      <SK Name="Stat2" Pos="2" />
+      <SK Name="Stat3" Pos="3" />
+      <SK Name="Stat4" Pos="4" />
+    </StatkeyBar>
+  </Application>
+</KukaTechDescription>
+<!--checksum 62624726176 -->

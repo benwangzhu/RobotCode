@@ -1,0 +1,428 @@
+&ACCESS RO2
+&COMMENT App128 Motion
+def sbt_comm128_motion()
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; file Name: sbt_comm128_motion.src
+;
+; Description:
+;   Language             ==   KRL for KUKA ROBOT
+;   Date                 ==   2022 - 02 - 26
+;   Modification Data    ==   2024 - 09 - 24
+;
+; Author: speedbot
+;
+; Version: 3.0
+;***********************************************************
+
+;FOLD SPEEDBOT COMM128 MOTION
+    ; When in data collection mode, exit
+    if OnlyCollect then  
+        return
+    endif
+
+    comm128_mtn_comm_init_()
+
+    ; Control Interface Communication Disconnect Detection Interrupt
+    global interrupt decl 18 when $flag[TcpSockCfg.ActFlagNo] == false do comm128_mtn_comm_init_()   
+    interrupt on 18
+
+    ; Data Reception Interrupt
+    global interrupt decl 19 when $flag[TcpSockCfg.RecvFlagNo] == true do comm128_mtn_comm_cmd_()   
+    interrupt on 19
+
+    wait sec 0.012
+;ENDFOLD
+end
+
+;FOLD COMM128 MOTION COMM INIT
+def comm128_mtn_comm_init_()
+
+    continue
+    $flag[FLG_ACK_MOV_NUM] = false
+    StopMoving = false
+    GlbTrajectorySize = 0
+
+    CtrlAckData.DrvHead.Head = PACK_HEADER
+    CtrlAckData.DrvHead.Length = 780
+    CtrlAckData.DrvHead.PacketCount = 1
+    CtrlAckData.DrvHead.Cmd = 255
+    CtrlAckData.DrvHead.Type_ = TYPE_KUKA
+    CtrlAckData.DrvHead.Seq = 0
+    CtrlAckData.DrvHead.VirtualRob = IsVirRobId
+    CtrlAckData.Ack = 0
+    CtrlAckData.DrvTail.Tail = PACK_TAIL
+
+TCP_CREATE:
+    wait sec 0.1
+    sock_dconn_(TcpSockCfg)
+    Status = csock_conn_(TcpSockCfg) 
+
+    if Status <> OK then
+        goto TCP_CREATE
+    endif
+
+    Status = new_mtnctrl_(TcpSockCfg)
+    if Status == OK then 
+
+        goto CONNECTED
+    endif
+
+    goto TCP_CREATE
+
+CONNECTED:
+end
+;ENDFOLD
+
+;FOLD COMM128 MOTION COMM COMMAND
+def comm128_mtn_comm_cmd_()
+
+    Status = sock_read_(TcpSockCfg, RecvPackages[])
+    if Status <> OK then
+        return
+    endif
+
+    Status = unpack_head_(RecvPackages[], CtrlPackData.DrvHead, Offset)
+    if Status <> OK then
+        return
+    endif
+
+    PackErrorId = OK
+
+    switch (CtrlPackData.DrvHead.Cmd)
+    case CMD_CTRL
+        Status = new_trajes_(CtrlPackData)
+        if (status <> OK) or (PackErrorId <> OK) then
+
+            GlbTrajectorySize = 0
+            log_error_("Trajectory download failed")
+        endif
+    case CMD_IO
+        Status = new_io_(CtrlPackData)
+        if status <> OK then
+
+            log_error_("Set IO failed ")
+        endif
+    case CMD_STOP
+        Status = new_stop_(CtrlPackData)
+        if status <> OK then
+
+            log_error_("Trajectory stop failed ")
+        endif
+    case CMD_PARAM
+        Status = new_param_(CtrlPackData)
+        if status <> OK then
+
+            log_error_("Get Params failed ")
+        endif
+    default
+        log_error_("Invalid control command ")
+    endswitch
+
+    CtrlAckData.DrvHead.Seq = CtrlPackData.DrvHead.Seq
+    CtrlAckData.Ack = PackErrorId
+
+    if (CtrlPackData.DrvHead.Cmd <> CMD_CTRL) or (CtrlPackData.DrvHead.Type_ <> 1) or (PackErrorId <> OK) then
+        
+        Status = new_ack_()
+    endif
+end
+;ENDFOLD
+
+;FOLD NEW MOTION CONTROL
+deffct int new_mtnctrl_(SockCfg : out)
+    decl sock_cfg_t SockCfg
+    decl drv_ack_t Packages1
+    decl drv_ack_t Packages2
+
+    Packages1.DrvHead.Head = PACK_HEADER
+    Packages1.DrvHead.Length = 780
+    Packages1.DrvHead.PacketCount = 1
+    Packages1.DrvHead.Cmd = 254
+    Packages1.DrvHead.Type_ = TYPE_KUKA
+    Packages1.DrvHead.Seq = 1
+    Packages1.DrvHead.VirtualRob = IsVirRobId
+    Packages1.Ack = 0
+    Packages1.DrvTail.Tail = PACK_TAIL
+
+    Packages2.DrvHead.Head = 0
+    Packages2.DrvHead.Length = 0
+    Packages2.DrvHead.PacketCount = 0
+    Packages2.DrvHead.Cmd = 0
+    Packages2.DrvHead.Type_ = 0
+    Packages2.DrvHead.Seq = 1
+    Packages2.DrvHead.VirtualRob = 0
+    Packages2.Ack = 0
+    Packages2.DrvTail.Tail = 0
+
+    pack_head_(SendPackages[], Packages1.DrvHead, Offset)
+    cast_to(SendPackages[], Offset, Packages1.Ack)
+    pack_tail_(SendPackages[], Packages1.DrvTail, Offset)
+
+    Status = sock_write_(SockCfg, SendPackages[])
+    if Status <> OK then
+        return(Status)
+    endif
+    Status = sock_read_(SockCfg, RecvPackages[])
+    if Status <> OK then
+        return(Status)
+    endif
+    Status = unpack_head_(RecvPackages[], Packages2.DrvHead, Offset)
+    if Status <> OK then
+        return(Status)
+    endif
+    cast_from(RecvPackages[], Offset, Packages2.Ack)
+    if Status <> OK then
+        return(Status)
+    endif
+    if Packages2.DrvHead.Cmd <> 254 then
+
+        return(NG)
+    endif
+    Status = unpack_tail_(RecvPackages[], Packages2.DrvTail, Offset)
+    if Status <> OK then
+        return(Status)
+    endif
+
+
+    return(OK)
+endfct
+;ENDFOLD
+
+;FOLD NEW ACK
+global deffct int new_ack_()
+
+    pack_head_(SendPackages[], CtrlAckData.DrvHead, Offset)
+    cast_to(SendPackages[], Offset, CtrlAckData.Ack)
+    pack_tail_(SendPackages[], CtrlAckData.DrvTail, Offset)
+
+    Status = sock_write_(TcpSockCfg, SendPackages[])
+
+    return(Status)
+endfct
+;ENDFOLD
+
+;FOLD NEW TRAJECTORYS
+deffct int new_trajes_(DrvPack : out)
+    decl drv_pack_t DrvPack
+    decl int k
+
+    for k = 1 to DrvPack.DrvHead.PacketCount 
+
+        cast_from(RecvPackages[], Offset, DrvPack.Point.MoveId, DrvPack.Point.MovType, DrvPack.Point.ProcessType, DrvPack.Point.Acc, DrvPack.Point.Smoot, DrvPack.Point.Velocity, DrvPack.Point.PrcoParm1, DrvPack.Point.PrcoParm2, DrvPack.Point.PrcoParm3)
+        cast_from(RecvPackages[], Offset, DrvPack.Point.Point, TempReal)
+        chk_point_(DrvPack.Point)
+        add_traj_pt_(DrvPack.Point)
+    endfor
+
+    Status = unpack_tail_(RecvPackages[], DrvPack.DrvTail, Offset)
+    if Status <> OK then
+        return(Status)
+    endif
+
+    if (PackErrorId == OK) and (DrvPack.DrvHead.Type_ == 1) then
+        
+        continue
+        $flag[FLG_ACK_MOV_NUM] = true
+    endif
+
+    return(OK)
+endfct
+;ENDFOLD
+
+;FOLD NEW IO
+deffct int new_io_(DrvPack : out)
+    decl drv_pack_t DrvPack
+    decl int k
+
+    DrvPack.Io[1] = RecvPackages[Offset + 1]
+    DrvPack.Io[2] = RecvPackages[Offset + 2]
+    DrvPack.Io[3] = RecvPackages[Offset + 3]
+    DrvPack.Io[4] = RecvPackages[Offset + 4]
+    DrvPack.Io[5] = RecvPackages[Offset + 5]
+    DrvPack.Io[6] = RecvPackages[Offset + 6]
+    DrvPack.Io[7] = RecvPackages[Offset + 7]
+    DrvPack.Io[8] = RecvPackages[Offset + 8]
+
+    Offset = Offset + 8
+
+    Status = unpack_tail_(RecvPackages[], DrvPack.DrvTail, Offset)
+    if Status <> OK then
+        return(Status)
+    endif
+
+    chk_io_()
+
+    if PackErrorId == OK then 
+        bus_sbyte_(OutMapAddr[1], DrvPack.Io[1])
+        bus_sbyte_(OutMapAddr[2], DrvPack.Io[2])
+        bus_sbyte_(OutMapAddr[3], DrvPack.Io[3])
+        bus_sbyte_(OutMapAddr[4], DrvPack.Io[4])
+        bus_sbyte_(OutMapAddr[5], DrvPack.Io[5])
+        bus_sbyte_(OutMapAddr[6], DrvPack.Io[6])
+        bus_sbyte_(OutMapAddr[7], DrvPack.Io[7])
+        bus_sbyte_(OutMapAddr[8], DrvPack.Io[8])
+    endif
+
+    return(OK)
+endfct
+;ENDFOLD
+
+;FOLD NEW PARAMS
+deffct int new_param_(DrvPack : out)
+    decl drv_pack_t DrvPack
+    decl real Params[13]
+    decl int k
+
+    cast_from(RecvPackages[], Offset, ParamType, Params[])
+
+    Status = unpack_tail_(RecvPackages[], DrvPack.DrvTail, Offset)
+    if Status <> OK then
+        return(Status)
+    endif
+
+    switch (ParamType)
+    case 1
+        WeldChannel.Channel1 = Params[1]
+        WeldChannel.Channel2 = Params[2]
+        WeldChannel.JobMode = Params[3] / 1
+    case 2 
+        WeaveSch.Length = Params[1]
+        WeaveSch.Amplitude = Params[2]
+        WeaveSch.LeftSideDelay = Params[3]
+        WeaveSch.RightSideDelay = Params[4]
+        WeaveSch.Angle = Params[5]
+    case 10
+        WeldChannel.WeldEnable = (round_(Params[1]) > 0)
+    case 11
+        override_(round_(Params[1]))
+    default
+        return(NG)
+    endswitch
+
+    return(OK)
+endfct
+;ENDFOLD
+
+;FOLD NEW STOP
+deffct int new_stop_(DrvPack : out)
+    decl drv_pack_t DrvPack
+    decl int k
+
+    Status = unpack_tail_(RecvPackages[], DrvPack.DrvTail, Offset)
+    if Status <> OK then
+        return(Status)
+    endif
+
+    continue
+    $flag[FLG_ACK_MOV_NUM] = false
+    GlbTrajectorySize = 0
+    StopMoving = true
+    return(OK)
+endfct
+;ENDFOLD
+
+;FOLD ADD TRAJECTORYS POINT
+def add_traj_pt_(Packages : in)
+    decl drv_pnt_t Packages
+    decl bool CnvStatus
+    decl int ActToolNo
+    decl int ActBaseNo
+
+    TempInt = Packages.Smoot
+
+    GlbTrajectorySize = GlbTrajectorySize + 1
+    GlbTrajectorys[GlbTrajectorySize].TrjMoveId = Packages.MoveId
+    GlbTrajectorys[GlbTrajectorySize].TrjMoveType = Packages.MovType
+    GlbTrajectorys[GlbTrajectorySize].TrjProcessType = Packages.ProcessType
+    GlbTrajectorys[GlbTrajectorySize].TrjAcc = Packages.Acc
+    GlbTrajectorys[GlbTrajectorySize].TrjSmoot = MTN_MAX_SMT / 100.0 * TempInt * 1.0
+    if Packages.MovType == MTN_MOVJ then
+        GlbTrajectorys[GlbTrajectorySize].TrjSpeed = (Packages.Velocity / (DEF_VEL_CP * 1000.0)) * 100.0
+    else
+        GlbTrajectorys[GlbTrajectorySize].TrjSpeed = Packages.Velocity
+    endif
+    GlbTrajectorys[GlbTrajectorySize].TrjProcParm1 = Packages.PrcoParm1
+    GlbTrajectorys[GlbTrajectorySize].TrjProcParm2 = Packages.PrcoParm2
+    GlbTrajectorys[GlbTrajectorySize].TrjProcParm3 = Packages.PrcoParm3
+
+    continue
+    ActToolNo = $act_tool
+    continue
+    ActBaseNo = $act_base
+
+    CnvStatus = jnt_2cart_(Packages.Point, ActBaseNo, ActToolNo, GlbTrajectorys[GlbTrajectorySize].TrajePose)
+end
+;ENDFOLD
+
+;FOLD CHECK IO
+def chk_io_()
+    if (CtrlPackData.Io[1] > 0) and (OutMapAddr[1] <= 0) then 
+        PackErrorId = ERR_CFG_IO1 
+    endif
+    if (CtrlPackData.Io[2] > 0) and (OutMapAddr[2] <= 0) then 
+        PackErrorId = ERR_CFG_IO2 
+    endif
+    if (CtrlPackData.Io[3] > 0) and (OutMapAddr[3] <= 0) then 
+        PackErrorId = ERR_CFG_IO3 
+    endif
+    if (CtrlPackData.Io[4] > 0) and (OutMapAddr[4] <= 0) then 
+        PackErrorId = ERR_CFG_IO4 
+    endif
+    if (CtrlPackData.Io[5] > 0) and (OutMapAddr[5] <= 0) then 
+        PackErrorId = ERR_CFG_IO5 
+    endif
+    if (CtrlPackData.Io[6] > 0) and (OutMapAddr[6] <= 0) then 
+        PackErrorId = ERR_CFG_IO6 
+    endif
+    if (CtrlPackData.Io[7] > 0) and (OutMapAddr[7] <= 0) then 
+        PackErrorId = ERR_CFG_IO7 
+    endif
+    if (CtrlPackData.Io[8] > 0) and (OutMapAddr[8] <= 0) then 
+        PackErrorId = ERR_CFG_IO8 
+    endif
+end
+;ENDFOLD
+
+;FOLD CHECK POINT
+def chk_point_(Packages : in)
+    decl drv_pnt_t Packages
+    decl e6pos TmpCartPos
+    decl int ActToolNo
+    decl int ActBaseNo
+
+    if Packages.MoveId <= 0 then 
+        PackErrorId = ERR_MOVEID
+        return
+    endif
+    if not ((Packages.MovType == MTN_MOVJ) or (Packages.MovType == MTN_MOVL) or (Packages.MovType == MTN_MOVC1) or (Packages.MovType == MTN_MOVC2)) then 
+        PackErrorId = ERR_MOVTYPE
+        return
+    endif
+    if (Packages.Acc < 20) or (Packages.Acc > 100) then 
+        PackErrorId = ERR_ACC
+        return
+    endif
+    if (Packages.Smoot < 0) or (Packages.Smoot > 100) then 
+        PackErrorId = ERR_SMOOT
+        return
+    endif
+
+    if (Packages.Velocity <= 0.0) or ((Packages.Velocity / 10.0) > (DEF_VEL_CP * 1000.0)) then
+
+        PackErrorId = ERR_VELOCITY
+    endif
+
+    continue
+    ActBaseNo = $act_base
+    continue
+    ActToolNo = $act_tool
+
+    if not jnt_2cart_(Packages.Point, ActBaseNo, ActToolNo, TmpCartPos) then
+
+        PackErrorId = ERR_POINT
+    endif
+end
+;ENDFOLD

@@ -1,0 +1,26 @@
+&ACCESS RVO
+defdat sbt_comm005 public
+;***********************************************************
+;
+; file Name: sbtctrl_main
+;
+; Description:
+;   Language             ==   KRL for KUKA ROBOT
+;   Date                 ==   2024 - 05 - 17
+;   Modification Data    ==   2022 - 05 - 17
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+
+
+decl int Count                      = 0
+
+decl cmd_typ03_t CmdType03          
+decl cmd_typ01_t CmdType01          
+decl int Res                        = 0   
+decl pos CurPos     
+
+
+enddat

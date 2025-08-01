@@ -1,0 +1,99 @@
+--***********************************************************
+--
+-- file Name: sbt_comm010_t.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2024 - 04 - 01
+--   Modification Data    ==   2024 - 04 - 07
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--
+const
+
+    CMD_UNKNOWN                         = 0                 -- 未知命令
+    CMD_DATA1                           = 1                 -- 请求工件数据命令
+    CMD_DATA2                           = 2                 -- 请求垛上测量数据命令
+    CMD_DTFEEK                          = 3                 -- 可达反馈命令
+    CMD_PKSU                            = 4                 -- 抓取成功命令
+    CMD_MISS                            = 5                 -- 丢件命令
+    CMD_PRESS                           = 6                 -- 过压命令
+    CMD_PKFL                            = 7                 -- 抓取失败命令
+    CMD_AREA                            = 8                 -- 离开区域命令
+
+    WORK_STACK                          = 1                 -- 工作模式 --> 码垛模式
+    WORK_UNSTACK                        = 2                 -- 工作模式 --> 拆垛模式
+
+    MODE_UNKNOWN                        = 0                 -- 未知抓取模式
+    MODE_ONE                            = 11                -- 通常模式
+    MODE_TWO                            = 12                -- 垛上测量模式
+
+    RLT_UNKNOWN                         = 0                 -- 结果未知
+    RLT_OK                              = 129               -- 结果 OK
+    RLT_NOTOK                           = 130               -- 结果 NOT OK
+
+
+    REG_MODE                            = 51
+    REG_TSKNUM                          = 52
+    REG_AREA                            = 53
+    REG_PIP                             = 54
+    REG_BOXLEN                          = 55
+    REG_BOXWID                          = 56
+    REG_BOXHIG                          = 57
+    REG_OBLIPOS                         = 51
+    REG_PICKPOS                         = 52
+    REG_PLACEPOS                        = 53
+
+    REG_FDTSKNUM                        = 61
+    REG_FDAREA                          = 62
+
+
+    REG_CMD_ID                          = 31
+    REG_RLT_ID                          = 32
+
+    FLG_RESULT                          = 31
+
+    PROC_TASK_NM                        = 'TSK_COMM010'
+type
+
+    data_table_t from sbt_comm010 = structure
+        Mode        : integer
+        TaskNum     : integer
+        Area        : integer
+        Pip         : integer
+        BoxLenght   : real
+        BoxWidth    : real
+        BoxHigh     : real
+        ObliPos     : xyzwprext
+        PickPos     : xyzwprext
+        PlacePos    : xyzwprext
+    endstructure
+
+    addr_table_t from sbt_comm010 = structure
+        ModeReg         : integer
+        TaskNumReg      : integer
+        AreaReg         : integer
+        PipReg          : integer
+        BoxLenghtReg    : integer
+        BoxWidthReg     : integer
+        BoxHighReg      : integer
+        ObliPosReg      : integer
+        PickPosReg      : integer
+        PlacePosReg     : integer
+        FdTaskNumReg    : integer
+        FdAreaReg       : integer
+        CmdIdReg        : integer
+        RltIdReg        : integer
+        RltFlg          : integer
+    endstructure
+
+    lim_cfg_t from sbt_comm010 = structure
+        LimitUp         : array[8] of vector
+        LimitDown       : array[8] of vector
+    endstructure

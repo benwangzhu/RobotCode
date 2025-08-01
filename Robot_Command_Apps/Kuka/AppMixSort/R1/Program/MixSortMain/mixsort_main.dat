@@ -1,0 +1,56 @@
+&ACCESS RVP
+&REL 20
+&COMMENT MixSort Main
+&PARAM EDITMASK = *
+&PARAM DISKPATH = KRC:\R1\Program\MixSortMain
+DEFDAT  MIXSORT_MAIN
+;***********************************************************
+; 
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+; 
+; File Name: mixsort_main.DAT
+; 
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 27
+;   Modification Data    ==   2025 - 02 - 10
+; 
+; Author: speedbot
+; 
+; Version: 1.1
+;***********************************************************
+;FOLD EXTERNAL DECLARATIONS;%{PE}%MKUKATPBASIS,%CEXT,%VCOMMON,%P
+;FOLD BASISTECH EXT;%{PE}%MKUKATPBASIS,%CEXT,%VEXT,%P
+EXT  BAS (BAS_COMMAND  :IN,REAL  :IN )
+EXT  mixsort_pick01 ( )
+EXT  mixsort_pick02 ( )
+EXT  mixsort_pick03 ( )
+EXT  mixsort_pick04 ( )
+EXT  mixsort_pick05 ( )
+EXT  mixsort_place01 ( )
+EXT  mixsort_place02 ( )
+EXT  mixsort_place03 ( )
+EXT  mixsort_place04 ( )
+EXT  mixsort_place05 ( )
+EXT  mixsort_place06 ( )
+EXT  mixsort_place07 ( )
+EXT  mixsort_place08 ( )
+EXT  mixsort_drop01 ( )
+EXT  mixsort_drop02 ( )
+EXT  mixsort_drop03 ( )
+EXT  mixsort_drop04 ( )
+EXT  mixsort_picture ( )
+EXT  mixsort_waitpos ( )
+
+DECL INT SUCCESS
+;ENDFOLD (BASISTECH EXT)
+;FOLD USER EXT;%{E}%MKUKATPUSER,%CEXT,%VEXT,%P
+;Make your modifications here
+
+;ENDFOLD (USER EXT)
+;ENDFOLD (EXTERNAL DECLARATIONS)
+
+DECL part_data_t CopyPartData
+
+DECL MODULEPARAM_T LAST_TP_PARAMS={PARAMS[] "BASIC.OVERRIDESPEED=30      "}
+ENDDAT

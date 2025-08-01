@@ -1,0 +1,190 @@
+program sbt_comm005
+--***********************************************************
+--
+-- file Name: sbt_comm005.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 02 - 18
+--   Modification Data    ==   2025 - 02 - 18
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--
+%comment = 'Paintwork 20250218'
+%nolockgroup 
+%nopause = error + tpenable + command
+%include include\lib_busio_t
+%include include\lib_buscmd_t
+%include include\lib_math_t
+%include include\lib_logs_t
+%include include\lib_transform_t
+const
+
+    CMD_VPARM                              = -1                 -- 初始化和车型信息交互
+    CMD_PICTURE                            = 1
+    CMD_RESULT                             = 101
+var
+    --
+    -- 总线通讯接口
+    BusInput    in cmos from sbt_comm005    : busin_t               
+    BusOutput   in cmos from sbt_comm005    : busout_t
+
+    TraigModel                              : integer
+    Pid                                     : integer
+    VinRegIdx                               : integer
+
+    CommType03                              : cmd_typ03_t
+    CommType01                              : cmd_typ01_t
+
+    BusTimeout  in cmos from sbt_comm005    : integer
+
+    CurPos                                  : xyzwprext
+
+    Status                                  : integer
+
+
+%include include\lib_logs_h
+%include include\lib_math_h
+%include include\lib_motion_h
+%include include\lib_string_h
+%include include\lib_tp_if_h
+%include include\lib_busio_h
+%include include\lib_buscmd_h
+
+
+routine err_display_(BusIn : busin_t;
+                     BusOut : busout_t) from sbt_comm005
+
+begin
+
+    while true do 
+
+        TraigModel = get_iparm_(1)
+
+        select TraigModel of
+
+        case(CMD_VPARM):
+            --
+            -- 默认总线输入开始地址为 513 位
+            --
+            BusInput.BusIoSt = tern_int_(uninit(BusInput.BusIoSt), 513, BusInput.BusIoSt)
+            --
+            -- 默认总线输出开始地址为 513 位
+            --
+            BusOutput.BusIoSt = tern_int_(uninit(BusOutput.BusIoSt), 513, BusOutput.BusIoSt)
+
+
+            BusTimeout = tern_int_(uninit(BusTimeout), 3000, BusTimeout)
+
+
+            bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+
+
+            -- 工件编号
+            Pid = get_iparm_(2)
+
+            -- Vin R[] 寄存器起始地址
+            VinRegIdx = get_iparm_(3)
+
+            CommType03[1] = Pid
+            CommType03[2] = get_ireg_(VinRegIdx + 0)
+            CommType03[3] = get_ireg_(VinRegIdx + 1)
+            CommType03[4] = get_ireg_(VinRegIdx + 2)
+            CommType03[5] = get_ireg_(VinRegIdx + 3)
+            CommType03[6] = get_ireg_(VinRegIdx + 4)
+            CommType03[7] = get_ireg_(VinRegIdx + 5)
+            CommType03[8] = get_ireg_(VinRegIdx + 6)
+            CommType03[9] = get_ireg_(VinRegIdx + 7)
+            CommType03[10] = get_ireg_(VinRegIdx + 8)
+            CommType03[11] = get_ireg_(VinRegIdx + 9)
+            CommType03[12] = get_ireg_(VinRegIdx + 10)
+            CommType03[13] = get_ireg_(VinRegIdx + 11)
+            CommType03[14] = get_ireg_(VinRegIdx + 12)
+            CommType03[15] = get_ireg_(VinRegIdx + 13)
+            CommType03[16] = get_ireg_(VinRegIdx + 14)
+            CommType03[17] = get_ireg_(VinRegIdx + 15)
+            CommType03[18] = get_ireg_(VinRegIdx + 16)
+
+
+
+            Status = bus_cmd137_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CommType03, 0)
+            Status = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, 5000)
+
+            if Status = OK then 
+
+                return
+            else
+
+                err_display_(BusInput, BusOutput)
+            endif
+
+        case(CMD_PICTURE):
+            
+            BusOutput.RobotId = get_iparm_(2)
+
+            CurPos = c_mulgp_ps_(0, 0, 1)
+
+            Status = bus_cmd009_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CurPos, 0)
+            Status = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, BusTimeout)
+
+            if Status = OK then 
+
+            else
+
+                err_display_(BusInput, BusOutput)
+            endif
+            return
+
+        case(CMD_RESULT):
+
+
+            Status = bus_cmd012_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CommType01, 0)
+            Status = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, 5000)
+
+            if Status = OK then 
+
+            else
+                err_display_(BusInput, BusOutput)
+            endif
+            return
+
+        else:
+
+            post_err(CC_UALARM, '999 Cmd Param1 Err !!!', 0, CC_ABORT)
+
+        endselect
+    
+    endwhile  
+
+end sbt_comm005
+
+routine err_display_
+begin
+    if not BusIn.SysReady then 
+
+        post_err(CC_UALARM, '901 软件未就绪', 0, CC_PAUSE)
+        return
+    endif
+
+    if BusIn.TellId <> BusOut.RobTellId then 
+
+        post_err(CC_UALARM, '902 软件处理超时', 0, CC_PAUSE)
+        return
+    endif
+
+    select BusIn.ErrorId of
+    case(1):
+        post_err(CC_UALARM, '001 VIN码读取失败', 0, CC_WARN)
+    case(2):
+        post_err(CC_UALARM, '002 检测拍照失败', 0, CC_WARN)
+    else:
+        post_err(CC_UALARM, '903 未知错误', 0, CC_PAUSE)
+    endselect
+    
+end err_display_

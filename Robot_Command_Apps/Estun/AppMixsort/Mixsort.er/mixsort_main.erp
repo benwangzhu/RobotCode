@@ -1,0 +1,26 @@
+// InstParseVersion: V1.02
+Start:
+/**********************************/
+/*分拣主程序*/
+/**********************************/
+SetOverRide{V=80}
+CALL G:pounce
+CALL mixsort_init
+RUN mixsort_sensor
+MixsortAck{Mode="GET_TACK"}
+LOOP:
+WaitCondition{JudgeCondi="t_p.GlobalToRobotFlg.value == true",T=0,InterEnable=0,Ret=t_l.Status}
+GlobalToRobotFlg.value = false
+IF t_p.GlobalToRobotCmd.value == 1 THEN
+    CALL mixsort_waitpos
+ELSIF t_p.GlobalToRobotCmd.value == 2 THEN
+    CALL mixsort_picture
+ELSIF t_p.GlobalToRobotCmd.value == 3 THEN
+    CALL mixsort_work
+ELSE
+    GOTO ENDLOOP
+ENDIF
+GOTO LOOP
+ENDLOOP:
+CALL G:move_to_home
+End;

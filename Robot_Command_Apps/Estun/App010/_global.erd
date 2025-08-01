@@ -1,0 +1,3 @@
+LimitUp={_type="CPOSARRAY",count=8}
+LimitDown={_type="CPOSARRAY",count=8}
+StackTool={_type="TOOL",id=1,x=0.000000,y=0.000000,z=0.000000,a=0.000000,b=0.000000,c=0.000000,dyn={_type="LoadDyn",M=0.000000,pos={_type="CenterPos",Mx=0.000000,My=0.000000,Mz=0.000000},tensor={_type="InertiaTensor",Ixx=0.000000,Iyy=0.000000,Izz=0.000000,Ixy=0.000000,Iyz=0.000000,Ixz=0.000000}}}

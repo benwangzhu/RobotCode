@@ -1,0 +1,29 @@
+<ETHERNETKRL>
+   <CONFIGURATION>
+      <EXTERNAL>
+            <IP>192.168.0.1</IP>                    <!-- 服务端 IP 地址 -->
+            <PORT>54600</PORT>                      <!-- 服务端 端口号 -->
+      </EXTERNAL>
+      <INTERNAL>
+            <ENVIRONMENT>Program</ENVIRONMENT>      <!-- 在后台使用时可以使用 Submit -->
+            <BUFFERSIZE Limit="65534"/>             <!-- 不修改 -->
+            <ALIVE Set_Flag = "1" />                <!-- 链接成功时，此 $FLAG 自动为 TRUE -->
+            <BUFFERING Limit="512"/>                <!-- 不修改 -->
+            <PROTOCOL>UDP</PROTOCOL>                <!-- 指定 UDP 通讯 -->
+            <Messages Display="disabled" Logging="disabled"/>   <!-- 不修改 -->
+      </INTERNAL>
+   </CONFIGURATION>
+   <RECEIVE>
+		<RAW>
+            <!-- Tag        不修改 -->
+            <!-- Type       "STREAM" 可变长度数据流 "BYTE" 固定长度数据流 -->
+            <!-- Set_Flag   当接收到一个完成报文时自动将此 $FLAG 置 TRUE, 需手动 FALSE -->
+            <!-- Size       为可变长度数据流时代表一次接收的最大报文长度，为固定长度数据流时代表固定报文长度 -->
+            <!-- EOS        当为可变长度数据流时，需要设置此项，代表结尾符，当接收缓存中出现此结尾符才算一个完整报文，详见 ASCII 字符表 -->
+
+            <ELEMENT Tag="Buffer" Type="STREAM" Set_Flag="11" Size="512" EOS="36"/>         <!-- 可变长度数据流 -->
+            <!--ELEMENT Tag="Buffer" Type="BYTE" Set_Flag="11" Size = "76"/-->              <!-- 固定长度数据流 -->
+		</RAW>
+	</RECEIVE>
+	<SEND/>
+</ETHERNETKRL>

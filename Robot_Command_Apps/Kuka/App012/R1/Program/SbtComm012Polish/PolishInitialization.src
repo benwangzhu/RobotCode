@@ -1,0 +1,23 @@
+&ACCESS RVP
+&REL 105
+&COMMENT Polish Init 250608
+&PARAM DISKPATH = KRC:\R1\Program\SbtComm012Polish
+def PolishInitialization ()
+
+;FOLD SbtComm012.HeadConfig IN GrindHead Id: 1, Grind Enable DISABLE, IN DO Index: 0, IN DI Index: 0, IN TOOL: TOOL_DATA[0], IN Spindle Speed: 6000 RPM ;%{PE}
+GrindHeadTool[1] = {Enable False, DoutputAddr 0, DinputAddr 0, BindToolNum 0, MaxGrindingSpeed 6000}
+;ENDFOLD
+;FOLD SbtComm012.HeadConfig IN GrindHead Id: 2, Grind Enable DISABLE, IN DO Index: 0, IN DI Index: 0, IN TOOL: TOOL_DATA[0], IN Spindle Speed: 6000 RPM ;%{PE}
+GrindHeadTool[2] = {Enable False, DoutputAddr 0, DinputAddr 0, BindToolNum 0, MaxGrindingSpeed 6000}
+;ENDFOLD
+;FOLD SbtComm012.HeadConfig IN GrindHead Id: 3, Grind Enable DISABLE, IN DO Index: 0, IN DI Index: 0, IN TOOL: TOOL_DATA[0], IN Spindle Speed: 6000 RPM ;%{PE}
+GrindHeadTool[3] = {Enable False, DoutputAddr 0, DinputAddr 0, BindToolNum 0, MaxGrindingSpeed 6000}
+;ENDFOLD
+;FOLD SbtComm012.HeadConfig IN GrindHead Id: 4, Grind Enable ENABLE, IN DO Index: 0, IN DI Index: 0, IN TOOL: TOOL_DATA[0], IN Spindle Speed: 6000 RPM ;%{PE}
+GrindHeadTool[4] = {Enable True, DoutputAddr 0, DinputAddr 0, BindToolNum 0, MaxGrindingSpeed 6000}
+;ENDFOLD
+;FOLD SbtComm012.SafeToolRetreatDir IN Tool Direction: +Z ;%{PE}
+SafeToolRetreatDir = 5
+;ENDFOLD
+
+end

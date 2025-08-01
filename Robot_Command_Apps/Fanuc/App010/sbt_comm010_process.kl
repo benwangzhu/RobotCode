@@ -1,0 +1,603 @@
+program tsk_comm010
+--***********************************************************
+--
+-- file Name: tsk_comm010.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2024 - 04 - 01
+--   Modification Data    ==   2024 - 04 - 07
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--
+%comment = 'TskComm010 240421'
+%NOLOCKGROUP 
+%NOBUSYLAMP
+%nopause = error + tpenable + command
+%include include\lib_busio_t
+%include include\lib_buscmd_t
+%include include\lib_math_t
+%include include\lib_logs_t
+%include sbt_comm010_t
+%include include\lib_transform_t
+
+const
+
+    FEEK_DATA                            = 201              
+    FEEK_STATE                           = 202              
+    FEEK_AREA                            = 203               
+
+
+    STATE_SUCC                          = 0              
+    STATE_MISS                          = 1                 
+    STATE_PERSS                         = 2                 
+    STATE_FAILED                        = 3                 
+
+    P_TYP_NULL                          = 0
+    P_TYP_PICK                          = 101
+    P_TYP_PLACE                         = 102
+    P_TYP_OBLI                          = 103
+
+    REQ_ONE                             = 1
+    REQ_TWO                             = 2
+
+var 
+
+    BusInput    in cmos from sbt_comm010    : busin_t               
+    BusOutput   in cmos from sbt_comm010    : busout_t
+    BusTimeout  in cmos from sbt_comm010    : integer
+    AddrTable    in cmos from sbt_comm010   : addr_table_t
+    DataTable           from sbt_comm010    : data_table_t
+    LimConfig   in cmos from sbt_comm010    : lim_cfg_t
+    WorkMode            from sbt_comm010    : integer
+    Status              from tsk_comm010    : integer
+    ShutDownReq         from tsk_comm010    : boolean
+    CmdType01           from tsk_comm010    : cmd_typ01_t
+    CmdType08           from tsk_comm010    : cmd_typ08_t
+    CmdType09           from tsk_comm010    : cmd_typ09_t
+    ReqMode             from tsk_comm010    : integer
+%include include\lib_logs_h
+%include include\lib_math_h
+%include include\lib_motion_h
+%include include\lib_string_h
+%include include\lib_tp_if_h
+%include include\lib_busio_h
+%include include\lib_buscmd_h
+
+routine data_init_              from tsk_comm010
+routine p_data1_                from tsk_comm010
+routine p_data2_                from tsk_comm010
+routine p_data_fk_              from tsk_comm010
+routine p_pick_succ_            from tsk_comm010
+routine p_miss_                 from tsk_comm010
+routine p_press_                from tsk_comm010
+routine p_pick_fail_            from tsk_comm010
+routine p_area_                 from tsk_comm010
+
+begin
+
+    ShutDownReq = false
+
+    while not ShutDownReq do
+
+        select get_ireg_(AddrTable.CmdIdReg) of
+
+        case(CMD_UNKNOWN):
+
+            -- 未知的命令
+            -- 程序会一直阻塞在这里直到有新的命令输入
+            delay(20)
+        case(CMD_DATA1):
+
+            -- 请求工件数据
+            log_info_('COMM010', 'COMM = CMD_DATA1')
+            data_init_
+            p_data1_
+
+        case(CMD_DATA2):
+
+            -- 请求垛上测量数据
+            log_info_('COMM010', 'COMM = CMD_DATA2')
+            p_data2_
+
+            -- 命令恢复成未知状态
+            --set_ireg_(AddrTable.CmdIdReg, CMD_UNKNOWN)
+        case(CMD_DTFEEK):
+
+            -- 可达性反馈
+            log_info_('COMM010', 'COMM = CMD_DTFEEK')
+            p_data_fk_
+
+            -- 命令恢复成未知状态
+            set_ireg_(AddrTable.CmdIdReg, CMD_UNKNOWN)
+        case(CMD_PKSU):
+
+            -- 反馈抓取成功
+            log_info_('COMM010', 'COMM = CMD_PKSU')
+            p_pick_succ_
+
+            -- 命令恢复成未知状态
+            set_ireg_(AddrTable.CmdIdReg, CMD_UNKNOWN)
+        case(CMD_MISS):
+
+            -- 丢失反馈
+            log_info_('COMM010', 'COMM = CMD_MISS')
+            p_miss_
+
+            -- 命令恢复成未知状态
+            set_ireg_(AddrTable.CmdIdReg, CMD_UNKNOWN)
+        case(CMD_PRESS):
+
+            -- 反馈过压
+            log_info_('COMM010', 'COMM = CMD_PRESS')
+            p_press_
+
+            -- 命令恢复成未知状态
+            set_ireg_(AddrTable.CmdIdReg, CMD_UNKNOWN)
+        case(CMD_PKFL):
+
+            -- 反馈抓取失败
+            log_info_('COMM010', 'COMM = CMD_PKFL')
+            p_pick_fail_
+
+            set_ireg_(AddrTable.CmdIdReg, CMD_UNKNOWN)
+        case(CMD_AREA):
+
+            -- 反馈离开区域
+            log_info_('COMM010', 'COMM = CMD_AREA')
+            p_area_
+            
+            -- 命令恢复成未知状态
+            set_ireg_(AddrTable.CmdIdReg, CMD_UNKNOWN)
+        else:
+            log_info_('COMM010', 'Unknown COMM [Cmd :' + int_2str_(get_ireg_(AddrTable.CmdIdReg)) + ']')
+            set_ireg_(AddrTable.CmdIdReg, CMD_UNKNOWN)
+        endselect
+
+        -- 输出错误时结束任务
+        if get_ireg_(AddrTable.RltIdReg) <> RLT_OK then
+            ShutDownReq = (flg[AddrTable.RltFlg] = true)
+        endif
+    endwhile
+
+    log_info_('COMM010', 'tak_comm010 Exit !!!')
+end tsk_comm010
+
+routine data_init_
+begin
+    DataTable.Mode = 0
+    DataTable.TaskNum = 0
+    DataTable.Area = 0
+    DataTable.Pip = 0
+    DataTable.BoxLenght = 0.0
+    DataTable.BoxWidth = 0.0
+    DataTable.BoxHigh = 0.0
+    DataTable.ObliPos = null_pos_
+    DataTable.PickPos = null_pos_
+    DataTable.PlacePos = null_pos_
+end data_init_
+
+
+
+routine p_data1_
+var
+    I                   : integer
+    Res                 : integer
+    Posn01              : xyzwprext
+    Posn02              : xyzwprext
+begin
+
+    Res = bus_cmd021_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CmdType01, 0)
+    Res = bus_cmd148_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, CmdType08, BusTimeout)
+
+    if Res = OK then 
+
+        DataTable.Mode        = CmdType08.byte01
+        DataTable.TaskNum     = CmdType08.Int09
+        DataTable.Area        = CmdType08.byte02
+        DataTable.Pip         = CmdType08.byte03
+        DataTable.BoxLenght   = CmdType08.Float13
+        DataTable.BoxWidth    = CmdType08.Float14
+        DataTable.BoxHigh     = CmdType08.Float15
+
+    else
+
+        log_error_('COMM010', 'Get Data01 Failed !!!')
+        set_ireg_(AddrTable.RltIdReg, RLT_NOTOK)
+        set_ireg_(AddrTable.CmdIdReg, CMD_UNKNOWN)
+        flg[AddrTable.RltFlg] = true
+        return
+    endif
+
+    if (DataTable.Mode = MODE_UNKNOWN) then
+
+        log_info_('COMM010', 'Finished !!!')
+        set_ireg_(AddrTable.RltIdReg, RLT_UNKNOWN)
+        set_ireg_(AddrTable.CmdIdReg, CMD_UNKNOWN)
+        flg[AddrTable.RltFlg] = true
+        return
+    endif
+
+    if not ((DataTable.Mode = MODE_ONE) or (DataTable.Mode = MODE_TWO)) then
+
+        post_err(38000, 'Unknow DataTable.Mode [Mode :' + int_2str_(DataTable.Mode) + '] !!!', 0, 1)
+        set_ireg_(AddrTable.RltIdReg, RLT_NOTOK)
+        set_ireg_(AddrTable.CmdIdReg, CMD_UNKNOWN)
+        flg[AddrTable.RltFlg] = true
+        return
+    else
+
+        log_info_('COMM010', 'Get Task Succ [Id:' + int_2str_(DataTable.TaskNum) + ']')
+    endif
+
+    ReqMode = REQ_ONE
+
+    -- CmdType01.Byte01 = ReqMode
+
+    for I = 1 to 2 do 
+
+        CmdType01.Byte01 = i
+
+        Res = bus_cmd022_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CmdType01, 0)
+        Res = bus_cmd134_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, CmdType09, BusTimeout)
+
+        if Res <> OK then
+
+            log_error_('COMM010', 'Get Data01 Failed !!!')
+            set_ireg_(AddrTable.RltIdReg, RLT_NOTOK)
+            set_ireg_(AddrTable.CmdIdReg, CMD_UNKNOWN)
+            flg[AddrTable.RltFlg] = true
+            return
+        else
+
+            Posn01 = c_mulgp_ps_(0, 0, 1)
+            Posn02 = c_mulgp_ps_(0, 0, 1)
+
+            Posn01.x = CmdType09.Float03
+            Posn01.y = CmdType09.Float04
+            Posn01.z = CmdType09.Float05
+            Posn01.w = CmdType09.Float06
+            Posn01.p = CmdType09.Float07
+            Posn01.r = CmdType09.Float08
+
+            Posn02.x = CmdType09.Float09
+            Posn02.y = CmdType09.Float10
+            Posn02.z = CmdType09.Float11
+            Posn02.w = CmdType09.Float12
+            Posn02.p = CmdType09.Float13
+            Posn02.r = CmdType09.Float14
+
+            select CmdType09.Int01 of
+            case(P_TYP_NULL):
+            case(P_TYP_PICK):
+                log_info_('COMM010', 'Get Pick Pos OK !!!')   
+                DataTable.PickPos     = Posn01
+            case(P_TYP_PLACE): 
+                log_info_('COMM010', 'Get Place Pos OK !!!')   
+                DataTable.PlacePos    = Posn01
+            case(P_TYP_OBLI):  
+                log_info_('COMM010', 'Get Obli Pos OK !!!')     
+                DataTable.ObliPos     = Posn01
+            else:
+                post_err(38000, 'Unknown Pos Type [Type :' + int_2str_(CmdType09.Int01) + '] !!!', 0, 1)
+                set_ireg_(AddrTable.RltIdReg, RLT_NOTOK)
+                set_ireg_(AddrTable.CmdIdReg, CMD_UNKNOWN)
+                flg[AddrTable.RltFlg] = true
+                return
+            endselect
+
+            select CmdType09.Int02 of
+            case(P_TYP_NULL):
+            case(P_TYP_PICK):
+                log_info_('COMM010', 'Get Pick Pos OK !!!')   
+                DataTable.PickPos     = Posn02
+            case(P_TYP_PLACE): 
+                log_info_('COMM010', 'Get Place Pos OK !!!')   
+                DataTable.PlacePos    = Posn02
+            case(P_TYP_OBLI):  
+                log_info_('COMM010', 'Get Obli Pos OK !!!')     
+                DataTable.ObliPos     = Posn02
+            else:
+                post_err(38000, 'Unknown Pos Type [Type :' + int_2str_(CmdType09.Int01) + '] !!!', 0, 1)
+                set_ireg_(AddrTable.RltIdReg, RLT_NOTOK)
+                set_ireg_(AddrTable.CmdIdReg, CMD_UNKNOWN)
+                flg[AddrTable.RltFlg] = true
+                return
+            endselect
+
+            if DataTable.Mode = MODE_TWO then
+
+                log_info_('COMM010', 'command_request_data01_ OK !!!')
+                set_ireg_(AddrTable.CmdIdReg, CMD_DTFEEK)
+                return
+            endif
+
+        endif
+
+    endfor
+    
+    log_info_('COMM010', 'command_request_data01_ OK !!!')
+    set_ireg_(AddrTable.CmdIdReg, CMD_DTFEEK)
+
+end p_data1_
+
+routine p_data2_
+var
+    I                   : integer
+    Res                 : integer
+    Posn01              : xyzwprext
+    Posn02              : xyzwprext
+begin
+    ReqMode = REQ_TWO
+
+    CmdType01.Byte01 = ReqMode
+
+    for I = 1 to 1 do 
+
+        Res = bus_cmd022_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CmdType01, 0)
+        Res = bus_cmd134_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, CmdType09, BusTimeout)
+
+        if Res <> OK then
+
+            log_error_('COMM010', 'command_request_data02_ NOT OK !!!')
+            set_ireg_(AddrTable.RltIdReg, RLT_NOTOK)
+            flg[AddrTable.RltFlg] = true
+            return
+        else
+
+            Posn01 = c_mulgp_ps_(0, 0, 1)
+            Posn02 = c_mulgp_ps_(0, 0, 1)
+
+            Posn01.x = CmdType09.Float03
+            Posn01.y = CmdType09.Float04
+            Posn01.z = CmdType09.Float05
+            Posn01.w = CmdType09.Float06
+            Posn01.p = CmdType09.Float07
+            Posn01.r = CmdType09.Float08
+
+            Posn02.x = CmdType09.Float09
+            Posn02.y = CmdType09.Float10
+            Posn02.z = CmdType09.Float11
+            Posn02.w = CmdType09.Float12
+            Posn02.p = CmdType09.Float13
+            Posn02.r = CmdType09.Float14
+
+            select CmdType09.Int01 of
+            case(P_TYP_NULL):
+            case(P_TYP_PICK):
+                log_info_('COMM010', 'Get Pick Pos OK !!!')   
+                DataTable.PickPos     = Posn01
+            case(P_TYP_PLACE): 
+                log_info_('COMM010', 'Get Place Pos OK !!!')   
+                DataTable.PlacePos    = Posn01
+            case(P_TYP_OBLI):  
+                log_info_('COMM010', 'Get Obli Pos OK !!!')     
+                DataTable.ObliPos     = Posn01
+            else:
+                post_err(38000, 'Unknown Pos Type [Type :' + int_2str_(CmdType09.Int01) + '] !!!', 0, 1)
+                set_ireg_(AddrTable.RltIdReg, RLT_NOTOK)
+                flg[AddrTable.RltFlg] = true
+                return
+            endselect
+
+            select CmdType09.Int02 of
+            case(P_TYP_NULL):
+            case(P_TYP_PICK):
+                log_info_('COMM010', 'Get Pick Pos OK !!!')   
+                DataTable.PickPos     = Posn02
+            case(P_TYP_PLACE): 
+                log_info_('COMM010', 'Get Place Pos OK !!!')   
+                DataTable.PlacePos    = Posn02
+            case(P_TYP_OBLI):  
+                log_info_('COMM010', 'Get Obli Pos OK !!!')     
+                DataTable.ObliPos     = Posn02
+            else:
+                post_err(38000, 'Unknown Pos Type [Type :' + int_2str_(CmdType09.Int01) + '] !!!', 0, 1)
+                set_ireg_(AddrTable.RltIdReg, RLT_NOTOK)
+                flg[AddrTable.RltFlg] = true
+                return
+            endselect
+
+            set_ireg_(AddrTable.CmdIdReg, CMD_DTFEEK)
+        endif
+    endfor
+
+    log_info_('COMM010', 'command_request_data02_ OK !!!')
+end p_data2_
+
+
+routine p_data_fk_
+var
+
+    Res                 : integer
+    CheckStatus         : integer
+begin
+    select WorkMode of
+
+    case(WORK_STACK):
+        
+        log_info_('COMM010', 'Check Pick Pos !!!')
+        if ((DataTable.PickPos.x > LimConfig.LimitUp[1].x) or (DataTable.PickPos.x < LimConfig.LimitDown[1].x) or &
+            (DataTable.PickPos.y > LimConfig.LimitUp[1].y) or (DataTable.PickPos.y < LimConfig.LimitDown[1].y) or &
+            (DataTable.PickPos.z > LimConfig.LimitUp[1].z) or (DataTable.PickPos.z < LimConfig.LimitDown[1].z)) then
+            
+            log_error_('COMM010', 'Pick Pos Out Of Range !!!')
+            CheckStatus = P_TYP_PICK
+            goto LBL_ACK
+        endif 
+
+        if (ReqMode = REQ_TWO) or (DataTable.Mode = MODE_ONE) then
+
+            log_info_('COMM010', 'Check Place Pos !!!')
+            if ((DataTable.PlacePos.x > LimConfig.LimitUp[DataTable.Area].x) or (DataTable.PlacePos.x < LimConfig.LimitDown[DataTable.Area].x) or &
+                (DataTable.PlacePos.y > LimConfig.LimitUp[DataTable.Area].y) or (DataTable.PlacePos.y < LimConfig.LimitDown[DataTable.Area].y) or &
+                (DataTable.PlacePos.z > LimConfig.LimitUp[DataTable.Area].z) or (DataTable.PlacePos.z < LimConfig.LimitDown[DataTable.Area].z)) then
+
+                log_error_('COMM010', 'Place Pos Out Of Range !!!')
+                CheckStatus = P_TYP_PLACE
+                goto LBL_ACK
+            endif 
+        endif    
+
+
+    case(WORK_UNSTACK):
+
+        log_info_('COMM010', 'Check Pick Pos !!!')
+        if ((DataTable.PickPos.x > LimConfig.LimitUp[DataTable.Area].x) or (DataTable.PickPos.x < LimConfig.LimitDown[DataTable.Area].x) or
+            (DataTable.PickPos.y > LimConfig.LimitUp[DataTable.Area].y) or (DataTable.PickPos.y < LimConfig.LimitDown[DataTable.Area].y)or
+            (DataTable.PickPos.z > LimConfig.LimitUp[DataTable.Area].z) or (DataTable.PickPos.z < LimConfig.LimitDown[DataTable.Area].z)) then
+
+            log_error_('COMM010', 'Pick Pos Out Of Range !!!')
+            CheckStatus = P_TYP_PICK
+            go to LBL_ACK
+        endif 
+
+    endselect
+
+    LBL_ACK::
+
+    CmdType01.Byte01 = FEEK_DATA
+    CmdType01.Byte02 = CheckStatus
+    Res = bus_cmd026_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CmdType01, 0)
+    Res = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, 3000)
+
+    
+    if (CheckStatus = 0) and (Res = OK) then
+
+        log_info_('COMM010', 'p_data_fk_ OK !!!')
+
+        set_ireg_(AddrTable.ModeReg, DataTable.Mode)
+        set_ireg_(AddrTable.TaskNumReg, DataTable.TaskNum)
+        set_ireg_(AddrTable.AreaReg, DataTable.Area)
+        set_ireg_(AddrTable.PipReg, DataTable.Pip)
+        set_rreg_(AddrTable.BoxLenghtReg, DataTable.BoxLenght)
+        set_rreg_(AddrTable.BoxWidthReg, DataTable.BoxWidth)
+        set_rreg_(AddrTable.BoxHighReg, DataTable.BoxHigh)
+        set_preg_(AddrTable.ObliPosReg, DataTable.ObliPos)
+        set_preg_(AddrTable.PickPosReg, DataTable.PickPos)
+        set_preg_(AddrTable.PlacePosReg, DataTable.PlacePos)
+
+        set_ireg_(AddrTable.RltIdReg, RLT_OK)
+        flg[AddrTable.RltFlg] = true
+    else
+        post_err(38000, 'Failed Dt Feek [Res :' + int_2str_(Res) + '] !!!', 0, 1)
+        --set_ireg_(AddrTable.RltIdReg, RLT_NOTOK)
+        --flg[AddrTable.RltFlg] = true
+    endif
+end p_data_fk_
+
+routine p_pick_succ_
+var
+
+    Res                 : integer
+begin
+    CmdType01.Byte01 = FEEK_STATE
+    CmdType01.Byte02 = STATE_SUCC
+
+    Res = bus_cmd026_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CmdType01, 0)
+    Res = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, 3000)
+
+    if Res <> OK then
+
+        post_err(38000, 'Failed p_pick_succ_ [Res :' + int_2str_(Res) + '] !!!', 0, 1)
+    else
+
+        log_info_('COMM010', 'p_pick_succ_ OK !!!')
+    endif
+end p_pick_succ_
+
+routine p_miss_
+var
+
+    Res                 : integer
+begin
+    CmdType01.Byte01 = FEEK_STATE
+    CmdType01.Byte02 = STATE_MISS
+
+    Res = bus_cmd026_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CmdType01, 0)
+    Res = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, 3000)
+
+    if Res <> OK then
+
+        post_err(38000, 'Failed p_miss_ [Res :' + int_2str_(Res) + '] !!!', 0, 1)
+    else
+
+        log_info_('COMM010', 'p_miss_ OK !!!')
+    endif
+end p_miss_
+
+routine p_press_
+var
+
+    Res                 : integer
+begin
+    CmdType01.Byte01 = FEEK_STATE
+    CmdType01.Byte02 = STATE_PERSS
+
+    Res = bus_cmd026_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CmdType01, 0)
+    Res = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, 3000)
+
+    if Res <> OK then
+
+        post_err(38000, 'Failed p_press_ [Res :' + int_2str_(Res) + '] !!!', 0, 1)
+    else
+
+        log_info_('COMM010', 'p_press_ OK !!!')
+    endif
+end p_press_
+
+routine p_pick_fail_
+var
+
+    Res                 : integer
+begin
+    CmdType01.Byte01 = FEEK_STATE
+    CmdType01.Byte02 = STATE_FAILED
+
+    Res = bus_cmd026_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CmdType01, 0)
+    Res = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, 3000)
+
+    if Res <> OK then
+
+        post_err(38000, 'Failed p_pick_fail_ [Res :' + int_2str_(Res) + '] !!!', 0, 1)
+    else
+
+        log_info_('COMM010', 'p_pick_fail_ OK !!!')
+    endif
+end p_pick_fail_
+
+
+routine p_area_
+var
+
+    Res                 : integer
+begin
+    CmdType01.Byte01 = FEEK_AREA
+    CmdType01.Byte02 = get_ireg_(AddrTable.FdAreaReg)
+
+    Res = bus_cmd026_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CmdType01, 0)
+    Res = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, 3000)
+
+    if Res <> OK then
+
+        post_err(38000, 'Failed p_area_ [Res :' + int_2str_(Res) + '] !!!', 0, 1)
+    else
+
+        log_info_('COMM010', 'p_area_ OK !!!')
+    endif
+end p_area_
+
+
+
+
+
+
+
+
+

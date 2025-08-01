@@ -1,0 +1,133 @@
+program mixsort_cfg
+--***********************************************************
+--
+-- file Name: mixsort_cfg.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 11 - 25
+--   Modification Data    ==   2021 - 11 - 25
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--   
+%comment = 'Mix Config V1.1'
+%nolockgroup
+%nobusylamp
+%nopause = error + tpenable + command
+%include include\lib_busio_t
+%include mixsort_t
+%include mixsort_global
+%include include\lib_logs_t
+
+var 
+
+    I                           : integer
+
+%include include\lib_motion_h
+%include include\lib_logs_h
+%include include\lib_tp_if_h
+
+begin
+
+    if uninit(BusInput.BusIoSt)     then BusInput.BusIoSt   = 513; CfgChecked = false; endif
+    if uninit(BusOutput.BusIoSt)    then BusOutput.BusIoSt  = 513; CfgChecked = false; endif
+
+    using MixPkCfg do
+        NumAxis = get_axs_num_(1)
+
+        if uninit(RobotId)      then RobotId = 1;       CfgChecked = false; endif
+        if uninit(NumPlPoint)   then NumPlPoint = 2;    CfgChecked = false; endif
+        if uninit(EyeInHand)    then EyeInHand = false; CfgChecked = false; endif
+        
+        if NumAxis > 6 then 
+            if uninit(ExtCfg.E7Coordinate) then; ExtCfg.E7Coordinate = 2; CfgChecked = false; endif
+            ExtCfg.E7UpLim = get_sys_rel_('$param_group[1].$upperlims[7]') - 20
+            ExtCfg.E7DwLim = get_sys_rel_('$param_group[1].$lowerlims[7]') + 20
+        endif 
+
+        if uninit(PictCfg.RefPtpregNo)  then PictCfg.RefPtpregNo = PR_REF_PICT; CfgChecked = false; endif
+        if uninit(PictCfg.PictPregNo)   then PictCfg.PictPregNo = PR_CUR_PICT;  CfgChecked = false; endif
+        if NumAxis > 6 then 
+            if uninit(PictCfg.PtRlE7Pos) then 
+                PictCfg.PtRlE7Pos = (ExtCfg.E7UpLim - ExtCfg.E7DwLim) / 2.0 
+                CfgChecked = false
+            endif 
+            if uninit(PictCfg.PtMinDist)    then PictCfg.PtMinDist = 1600; CfgChecked = false;  endif
+        endif
+        if uninit(PictCfg.PtMaxData.X)  then PictCfg.PtMaxData.X = 10000;       CfgChecked = false; endif
+        if uninit(PictCfg.PtMaxData.Y)  then PictCfg.PtMaxData.Y = 10000;       CfgChecked = false; endif
+        if uninit(PictCfg.PtMaxData.Z)  then PictCfg.PtMaxData.Z = 0;           CfgChecked = false; endif
+        if uninit(PictCfg.PtMinData.X)  then PictCfg.PtMinData.X = -10000;      CfgChecked = false; endif
+        if uninit(PictCfg.PtMinData.Y)  then PictCfg.PtMinData.Y = -10000;      CfgChecked = false; endif
+        if uninit(PictCfg.PtMinData.Z)  then PictCfg.PtMinData.Z = 0;           CfgChecked = false; endif
+
+        if uninit(PickCfg.PtLenRegNo)   then PickCfg.PtLenRegNo = R_PART_LEN;   CfgChecked = false; endif
+        if uninit(PickCfg.PkPosRegNo)   then PickCfg.PkPosRegNo = PR_PICK_POS;  CfgChecked = false; endif
+
+        for I = 1 to array_len(PickCfg.MagPipRegNo) do PickCfg.MagPipRegNo[I] = R_MAG_PIP + I - 1; endfor
+
+        if uninit(AckCfg.IsPickingFlg)   then AckCfg.IsPickingFlg = F_PICKING;  CfgChecked = false; endif
+
+
+        if uninit(PickCfg.PickToolNo)   then PickCfg.PickToolNo = 0;            CfgChecked = false; endif
+        if uninit(PickCfg.GripDt1RegNo)  then PickCfg.GripDt1RegNo = R_GIRP_DIST1; CfgChecked = false; endif
+        if uninit(PickCfg.GripDt2RegNo)  then PickCfg.GripDt2RegNo = R_GIRP_DIST2; CfgChecked = false; endif
+        if uninit(PickCfg.PkUpPregNo)   then PickCfg.PkUpPregNo = PR_PICK_UP ;  CfgChecked = false; endif
+        if uninit(PickCfg.PkRUpPregNo)  then PickCfg.PkRUpPregNo = PR_PICK_RUP; CfgChecked = false; endif
+        if uninit(PickCfg.PkUpDist)     then PickCfg.PkUpDist = 150;            CfgChecked = false; endif
+        if uninit(PickCfg.PkRUpDist)    then PickCfg.PkRUpDist = 150;           CfgChecked = false; endif
+        if uninit(PickCfg.PkMaxData.X)  then PickCfg.PkMaxData.X = 10000;       CfgChecked = false; endif
+        if uninit(PickCfg.PkMaxData.Y)  then PickCfg.PkMaxData.Y = 10000;       CfgChecked = false; endif
+        if uninit(PickCfg.PkMaxData.Z)  then PickCfg.PkMaxData.Z = 0;           CfgChecked = false; endif
+        if uninit(PickCfg.PkMinData.X)  then PickCfg.PkMinData.X = -10000;      CfgChecked = false; endif
+        if uninit(PickCfg.PkMinData.Y)  then PickCfg.PkMinData.Y = -10000;      CfgChecked = false; endif
+        if uninit(PickCfg.PkMinData.Z)  then PickCfg.PkMinData.Z = 0;           CfgChecked = false; endif
+
+        if uninit(PlaceCfg.BoxOrConv)  then  PlaceCfg.BoxOrConv  = true;        CfgChecked = false; endif
+        if uninit(PlaceCfg.PlaceIdReg)  then PlaceCfg.PlaceIdReg = R_PLACE_ID;  CfgChecked = false; endif
+        if uninit(PlaceCfg.PlUpPregNo)  then PlaceCfg.PlUpPregNo = PR_PLACE_UP; CfgChecked = false; endif
+        if uninit(PlaceCfg.PlPosPregNo) then PlaceCfg.PlPosPregNo = PR_PLACE;   CfgChecked = false; endif
+        
+        if PlaceCfg.BoxOrConv then 
+        
+            for I = 1 to array_len(PlaceCfg.BoxCfg) do
+                if uninit(PlaceCfg.BoxCfg[I].PlaceToolNo)   then PlaceCfg.BoxCfg[I].PlaceToolNo = 0;        CfgChecked = false; endif
+                if uninit(PlaceCfg.BoxCfg[I].PlaceUpDst)    then PlaceCfg.BoxCfg[I].PlaceUpDst = 200.0;     CfgChecked = false; endif
+                if uninit(PlaceCfg.BoxCfg[I].BoxFrame)      then PlaceCfg.BoxCfg[I].BoxFrame = null_pos_;   CfgChecked = false; endif
+                if uninit(PlaceCfg.BoxCfg[I].PlaceE7Pos)    then PlaceCfg.BoxCfg[I].PlaceE7Pos = 0.0;       CfgChecked = false; endif
+                if uninit(PlaceCfg.BoxCfg[I].PlMaxData.X)   then PlaceCfg.BoxCfg[I].PlMaxData.X = 3000.0;   CfgChecked = false; endif
+                if uninit(PlaceCfg.BoxCfg[I].PlMaxData.Y)   then PlaceCfg.BoxCfg[I].PlMaxData.Y = 3000.0;   CfgChecked = false; endif
+                if uninit(PlaceCfg.BoxCfg[I].PlMaxData.Z)   then PlaceCfg.BoxCfg[I].PlMaxData.Z = 3000.0;   CfgChecked = false; endif
+                if uninit(PlaceCfg.BoxCfg[I].PlMinData.X)   then PlaceCfg.BoxCfg[I].PlMinData.X = -3000.0;  CfgChecked = false; endif
+                if uninit(PlaceCfg.BoxCfg[I].PlMinData.Y)   then PlaceCfg.BoxCfg[I].PlMinData.Y = -3000.0;  CfgChecked = false; endif
+                if uninit(PlaceCfg.BoxCfg[I].PlMinData.Z)   then PlaceCfg.BoxCfg[I].PlMinData.Z = -3000.0;  CfgChecked = false; endif
+            endfor
+        
+        else 
+            for I = 1 to array_len(PlaceCfg.ConvCfg) do
+                if uninit(PlaceCfg.ConvCfg[I].PlUpDist)     then PlaceCfg.ConvCfg[I].PlUpDist = 150.0;      CfgChecked = false; endif
+                if uninit(PlaceCfg.ConvCfg[I].PlOrtMode)    then PlaceCfg.ConvCfg[I].PlOrtMode = 1;         CfgChecked = false; endif
+                if uninit(PlaceCfg.ConvCfg[I].PlMaxOfsOrt)  then PlaceCfg.ConvCfg[I].PlMaxOfsOrt = 200.0;   CfgChecked = false; endif
+                if uninit(PlaceCfg.ConvCfg[I].PlMiNOfsOrt)  then PlaceCfg.ConvCfg[I].PlMiNOfsOrt = -200.0;  CfgChecked = false; endif
+            endfor
+        endif
+        
+    endusing
+
+    if uninit(BusTimeout) then BusTimeout = 30000; CfgChecked = false; endif
+    if uninit(CfgChecked) then CfgChecked = false; endif
+
+    if not CfgChecked then
+
+        log_error_('CFG','Config Not Check ...')
+
+        abort_task_('*')
+    
+    endif
+
+end mixsort_cfg

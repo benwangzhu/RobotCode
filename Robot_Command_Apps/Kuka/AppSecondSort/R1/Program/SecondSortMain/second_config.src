@@ -1,0 +1,145 @@
+&ACCESS RVP
+&REL 61
+&COMMENT SecondSort Config
+&PARAM DISKPATH = KRC:\R1\Program\SecondSortMain
+def second_config()
+;***********************************************************
+;
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+;
+; File Name: second_config.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 27
+;   Modification Data    ==   2024 - 10 - 25
+;
+; Author: speedbot
+;
+; Version: 1.1
+;***********************************************************
+;FOLD SecondSort.PkPlConfig IN Robot Id: 1, IN Num Axis: 6, IN Num Conv: 1, IN Num Box: 6 ;%{PE}
+PkPlCfg.RobId = 1
+PkPlCfg.NumAxis = 6
+PkPlCfg.NumOfConv = 1
+PkPlCfg.NumOfBox = 6
+PkPlCfg.SrSens = 0
+;ENDFOLD
+;FOLD SecondSort.ConvConfig IN Conveyer Id: LinConveyor1, IN SrPortIndex: 0, IN WaitPosStream: 0, IN UpStream: 0, IN DownStream: 0, IN ManualZerOfs: ManualZerOfs1 ;%{PE}
+IF CONV_BASE_INDEX[1] > 0 THEN
+PkCvCfg[1].ConvName[] = conv_get_name(1)
+PkCvCfg[1].SrPortIndex = 0
+PkCvCfg[1].SrTrigCount = 0
+PkCvCfg[1].WaitPosStream = 0
+PkCvCfg[1].UpStream = 0
+PkCvCfg[1].DownStream = 0
+PkCvCfg[1].ManualZerOfs = ManualZerOfs1
+ENDIF
+;ENDFOLD
+;FOLD SecondSort.ConvConfig IN Conveyer Id: LinConveyor2, IN SrPortIndex: 0, IN WaitPosStream: 0, IN UpStream: 0, IN DownStream: 0, IN ManualZerOfs: ManualZerOfs2 ;%{PE}
+IF CONV_BASE_INDEX[2] > 0 THEN
+PkCvCfg[2].ConvName[] = conv_get_name(2)
+PkCvCfg[2].SrPortIndex = 0
+PkCvCfg[2].SrTrigCount = 0
+PkCvCfg[2].WaitPosStream = 0
+PkCvCfg[2].UpStream = 0
+PkCvCfg[2].DownStream = 0
+PkCvCfg[2].ManualZerOfs = ManualZerOfs2
+ENDIF
+;ENDFOLD
+;FOLD SecondSort.ConvConfig IN Conveyer Id: LinConveyor3, IN SrPortIndex: 0, IN WaitPosStream: 0, IN UpStream: 0, IN DownStream: 0, IN ManualZerOfs: ManualZerOfs3 ;%{PE}
+IF CONV_BASE_INDEX[3] > 0 THEN
+PkCvCfg[3].ConvName[] = conv_get_name(3)
+PkCvCfg[3].SrPortIndex = 0
+PkCvCfg[3].SrTrigCount = 0
+PkCvCfg[3].WaitPosStream = 0
+PkCvCfg[3].UpStream = 0
+PkCvCfg[3].DownStream = 0
+PkCvCfg[3].ManualZerOfs = ManualZerOfs3
+ENDIF
+;ENDFOLD
+;FOLD SecondSort.ConvConfig IN Conveyer Id: LinConveyor4, IN SrPortIndex: 0, IN WaitPosStream: 0, IN UpStream: 0, IN DownStream: 0, IN ManualZerOfs: ManualZerOfs4 ;%{PE}
+IF CONV_BASE_INDEX[4] > 0 THEN
+PkCvCfg[4].ConvName[] = conv_get_name(4)
+PkCvCfg[4].SrPortIndex = 0
+PkCvCfg[4].SrTrigCount = 0
+PkCvCfg[4].WaitPosStream = 0
+PkCvCfg[4].UpStream = 0
+PkCvCfg[4].DownStream = 0
+PkCvCfg[4].ManualZerOfs = ManualZerOfs4
+ENDIF
+;ENDFOLD
+;FOLD SecondSort.FsConfig IN Fs Id: 1, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN LimUp: LimUp1, IN LimDown: LimDown1 ;%{PE}
+PlFsCfg[1].PlaceUpDst = 0
+PlFsCfg[1].PlaceE7Pos = 0
+PlFsCfg[1].LimUp = LimUp1
+PlFsCfg[1].LimDown = LimDown1
+;ENDFOLD
+;FOLD SecondSort.FsConfig IN Fs Id: 2, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN LimUp: LimUp2, IN LimDown: LimDown2 ;%{PE}
+PlFsCfg[2].PlaceUpDst = 0
+PlFsCfg[2].PlaceE7Pos = 0
+PlFsCfg[2].LimUp = LimUp2
+PlFsCfg[2].LimDown = LimDown2
+;ENDFOLD
+;FOLD SecondSort.FsConfig IN Fs Id: 3, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN LimUp: LimUp3, IN LimDown: LimDown3 ;%{PE}
+PlFsCfg[3].PlaceUpDst = 0
+PlFsCfg[3].PlaceE7Pos = 0
+PlFsCfg[3].LimUp = LimUp3
+PlFsCfg[3].LimDown = LimDown3
+;ENDFOLD
+;FOLD SecondSort.FsConfig IN Fs Id: 4, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN LimUp: LimUp4, IN LimDown: LimDown4 ;%{PE}
+PlFsCfg[4].PlaceUpDst = 0
+PlFsCfg[4].PlaceE7Pos = 0
+PlFsCfg[4].LimUp = LimUp4
+PlFsCfg[4].LimDown = LimDown4
+;ENDFOLD
+;FOLD SecondSort.FsConfig IN Fs Id: 5, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN LimUp: LimUp5, IN LimDown: LimDown5 ;%{PE}
+PlFsCfg[5].PlaceUpDst = 0
+PlFsCfg[5].PlaceE7Pos = 0
+PlFsCfg[5].LimUp = LimUp5
+PlFsCfg[5].LimDown = LimDown5
+;ENDFOLD
+;FOLD SecondSort.FsConfig IN Fs Id: 6, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN LimUp: LimUp6, IN LimDown: LimDown6 ;%{PE}
+PlFsCfg[6].PlaceUpDst = 0
+PlFsCfg[6].PlaceE7Pos = 0
+PlFsCfg[6].LimUp = LimUp6
+PlFsCfg[6].LimDown = LimDown6
+;ENDFOLD
+;FOLD SecondSort.FsConfig IN Fs Id: 7, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN LimUp: LimUp7, IN LimDown: LimDown7 ;%{PE}
+PlFsCfg[7].PlaceUpDst = 0
+PlFsCfg[7].PlaceE7Pos = 0
+PlFsCfg[7].LimUp = LimUp7
+PlFsCfg[7].LimDown = LimDown7
+;ENDFOLD
+;FOLD SecondSort.FsConfig IN Fs Id: 8, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN LimUp: LimUp8, IN LimDown: LimDown8 ;%{PE}
+PlFsCfg[8].PlaceUpDst = 0
+PlFsCfg[8].PlaceE7Pos = 0
+PlFsCfg[8].LimUp = LimUp8
+PlFsCfg[8].LimDown = LimDown8
+;ENDFOLD
+;FOLD SecondSort.FsConfig IN Fs Id: 9, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN LimUp: LimUp9, IN LimDown: LimDown9 ;%{PE}
+PlFsCfg[9].PlaceUpDst = 0
+PlFsCfg[9].PlaceE7Pos = 0
+PlFsCfg[9].LimUp = LimUp9
+PlFsCfg[9].LimDown = LimDown9
+;ENDFOLD
+;FOLD SecondSort.FsConfig IN Fs Id: 10, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN LimUp: LimUp10, IN LimDown: LimDown10 ;%{PE}
+PlFsCfg[10].PlaceUpDst = 0
+PlFsCfg[10].PlaceE7Pos = 0
+PlFsCfg[10].LimUp = LimUp10
+PlFsCfg[10].LimDown = LimDown10
+;ENDFOLD
+;FOLD SecondSort.FsConfig IN Fs Id: 11, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN LimUp: LimUp11, IN LimDown: LimDown11 ;%{PE}
+PlFsCfg[11].PlaceUpDst = 0
+PlFsCfg[11].PlaceE7Pos = 0
+PlFsCfg[11].LimUp = LimUp11
+PlFsCfg[11].LimDown = LimDown11
+;ENDFOLD
+;FOLD SecondSort.FsConfig IN Fs Id: 12, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN LimUp: LimUp12, IN LimDown: LimDown12 ;%{PE}
+PlFsCfg[12].PlaceUpDst = 0
+PlFsCfg[12].PlaceE7Pos = 0
+PlFsCfg[12].LimUp = LimUp12
+PlFsCfg[12].LimDown = LimDown12
+;ENDFOLD
+
+end

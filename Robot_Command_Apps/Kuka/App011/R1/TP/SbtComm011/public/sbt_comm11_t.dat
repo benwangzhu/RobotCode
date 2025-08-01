@@ -1,0 +1,50 @@
+&ACCESS RP
+&comment Sbt Comm011 T
+defdat sbt_comm11_t public
+;***********************************************************
+;
+; Copyright 2025 - 2025 speedbot All Rights reserved.
+;
+; file Name: sbt_comm11_t.dat
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2025 - 05 - 08
+;   Modification Data    ==   2025 - 05 - 08
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+;
+
+GLOBAL ENUM WELD_SCAN_T TCP_OPEN,SCAN_ST,SCAN_SP,GET_PATH,MOV_PATH,TCP_CLOSE
+
+; Real-time data structure for transmission
+GLOBAL STRUC pk_realtm_t pack_head_t Header,E6POS Point,REAL ProcessPrm01,REAL ProcessPrm02,REAL ProcessPrm03,REAL ProcessPrm04,CHAR Reversed1,Reversed2,Reversed3,Reversed4,Reversed5,Reversed6,Reversed7,Reversed8,pack_tail_t Tail
+
+; Data receiving structure
+GLOBAL STRUC pk_tarje_t pack_head_t Header,E6POS Point,REAL ProcessPrm01,REAL ProcessPrm02,REAL ProcessPrm03,REAL ProcessPrm04,CHAR Reversed1,Reversed2,Reversed3,Reversed4,Reversed5,Reversed6,Reversed7,Reversed8,pack_tail_t Tail
+
+GLOBAL CONST CHAR INST_UNKNOWN      = "'H00'" ; Unknown command
+GLOBAL CONST CHAR INST_PATH         = "'H01'" ; Receive path trajectory command
+GLOBAL CONST CHAR INST_2D_ST        = "'H02'" ; 2D camera scan start command
+GLOBAL CONST CHAR INST_2D_ED        = "'H03'" ; 2D camera scan end command
+GLOBAL CONST CHAR INST_3D_ST        = "'H04'" ; 3D camera scan start command
+GLOBAL CONST CHAR INST_3D_ED        = "'H05'" ; 3D camera scan end command
+GLOBAL CONST CHAR INST_LS_ST        = "'H06'" ; Laser camera scan start command
+GLOBAL CONST CHAR INST_LS_ED        = "'H07'" ; Laser camera scan end command
+GLOBAL CONST CHAR INST_PRM_ST       = "'H08'" ; Welding parameter real-time correction start command
+GLOBAL CONST CHAR INST_PRM_ED       = "'H09'" ; Welding parameter real-time correction end command
+
+
+;Timer number
+GLOBAL CONST INT FLG_COMM011 = 20
+
+GLOBAL CONST INT COMM011_INTE_NO = 20
+
+;Timer time
+GLOBAL CONST INT COMM011_FREQ = 30
+
+
+enddat

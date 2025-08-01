@@ -1,0 +1,774 @@
+&access RP
+&comment Lib Socket 240227
+def lib_socket()
+;***********************************************************
+;
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+;
+; File Name: lib_socket.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2021 - 08 - 17
+;   Modification Data    ==   2024 - 02 - 27
+;
+; Author: speedbot
+;
+; Version: 1.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+; 2021 - 08 - 17 ++ sock_accept_()
+
+; 2021 - 08 - 17 ++ csock_conn_() ==> int
+
+; 2021 - 08 - 17 ++ sock_dconn_()
+
+; 2021 - 08 - 17 ++ sock_write_() ==> int 
+
+; 2021 - 08 - 17 ++ get_bits_() == int
+
+; 2021 - 08 - 17 ++ sock_rjson_() ==> int
+
+; 2022 - 04 - 20 ++ udp_create_() ==> int
+
+; 2022 - 04 - 20 ++ udp_close_()
+
+; 2022 - 04 - 20 ++ udp_sendto_() ==> int
+
+; 2022 - 04 - 20 ++ udp_recvfm_() ==> int
+
+; 2022 - 04 - 20 ++ recv_udp_pack_() ==> int
+
+; 2023 - 03 - 16 ++ sock_clr_buff_()
+
+; 2023 - 03 - 16 ++ udp_clr_buff_()
+end
+
+;FOLD SOCKET ACCETP
+global deffct int sock_accept_(ThisSock : out, WaitConn : in)
+    decl eki_status EkiRet
+    decl bool WaitConn
+    decl sock_cfg_t ThisSock
+    
+    
+    if (varstate("WaitConn") <> #initialized) then
+
+        WaitConn = true
+    endif
+    continue
+    $flag[ThisSock.ActFlagNo] = false
+    continue
+    $flag[ThisSock.RecvFlagNo] = false
+    ThisSock.Connected = false
+
+    ;EkiRet = eki_clear(ThisSock.SockXmlName[])
+    EkiRet = eki_init(ThisSock.SockXmlName[])
+    EkiRet = eki_open(ThisSock.SockXmlName[]) 
+    if EkiRet.Msg_No <> SOCK_SUCCESS then
+
+        return(-abs(EkiRet.Msg_No))
+    else
+        if WaitConn then
+            continue
+            wait for ($flag[ThisSock.ActFlagNo])
+        endif
+        ThisSock.Connected = true
+    endif
+    EkiRet = eki_clearbuffer(ThisSock.SockXmlName[], XML_TAG_NAME[])
+    return(SOCK_SUCCESS)
+endfct
+;ENDFOLD
+
+;FOLD SOCKET CONNECT
+global deffct int csock_conn_(ThisSock : out)
+    decl eki_status EkiRet
+    decl sock_cfg_t ThisSock 
+    
+    continue
+    $flag[ThisSock.ActFlagNo] = false
+    continue
+    $flag[ThisSock.RecvFlagNo] = false
+    ThisSock.Connected = false
+
+    ;EkiRet = eki_clear(ThisSock.SockXmlName[])
+    EkiRet = eki_init(ThisSock.SockXmlName[])
+    EkiRet = eki_open(ThisSock.SockXmlName[])
+    EkiRet = eki_clearbuffer(ThisSock.SockXmlName[], XML_TAG_NAME[])
+    continue   
+    ThisSock.Connected = ($flag[ThisSock.ActFlagNo] == true)
+    return(-abs(EkiRet.Msg_No))  
+endfct
+;ENDFOLD
+
+;FOLD SOCKET CREATE RESET
+global def tcp_create_reset_(ThisSock : out)
+    decl sock_cfg_t ThisSock
+    decl eki_status EkiRet
+    
+    continue
+    EkiRet = eki_clear(ThisSock.SockXmlName[])
+    EkiRet = eki_init(ThisSock.SockXmlName[])
+    EkiRet = eki_open(ThisSock.SockXmlName[])
+    EkiRet = eki_clearbuffer(ThisSock.SockXmlName[], XML_TAG_NAME[])
+    continue
+    ThisSock.Connected = ($flag[ThisSock.ActFlagNo] == true)
+end
+;ENDFOLD
+
+;FOLD SOCKET DISCONNECT
+global def sock_dconn_(ThisSock : out)
+    decl sock_cfg_t ThisSock
+    decl eki_status EkiRet
+    
+    continue
+    ;if $flag[ThisSock.ActFlagNo] then
+    
+    ;EkiRet = eki_clearbuffer(ThisSock.SockXmlName[], XML_TAG_NAME[])
+    EkiRet = eki_close(ThisSock.SockXmlName[])
+    if EkiRet.Msg_No <> SOCK_SUCCESS then
+        EkiRet = eki_close(ThisSock.SockXmlName[])
+    endif
+    ;endif
+    EkiRet = eki_clear(ThisSock.SockXmlName[])
+    continue
+    $flag[ThisSock.ActFlagNo] = false
+    ThisSock.Connected = false 
+end
+;ENDFOLD
+
+;FOLD SOCKET WRITE
+global deffct int sock_write_(ThisSock : out, Msg[] : in, Len : in)
+    decl sock_cfg_t ThisSock
+    decl int Len
+    decl char Msg[]
+    decl eki_status EkiRet
+    if (varstate("Len") <> #initialized) then
+
+        Len = strlen(Msg[])
+    endif
+    continue
+    if not $flag[ThisSock.ActFlagNo] then
+        ThisSock.Connected = false
+        return(-abs(SOCK_COM_ERR))
+    endif
+    EkiRet = eki_send(ThisSock.SockXmlName[], Msg[], Len)
+    ThisSock.Connected = (EkiRet.Msg_No == 0)
+    return(-abs(EkiRet.Msg_No))
+endfct
+;ENDFOLD
+
+;FOLD SOCKET READ
+global deffct int sock_read_(ThisSock : out, Msg[] : out)
+    decl sock_cfg_t ThisSock
+    decl char Msg[]
+    
+    decl eki_status EkiRet
+    decl int TimerIndex, BuffLens
+    
+    Msg[] = " "
+    continue
+    TimerIndex = $rob_timer
+    
+    BuffLens = get_bits_(ThisSock)
+    if ThisSock.RecvTimeout > 0 then
+        continue
+        wait for ($flag[ThisSock.RecvFlagNo]) or (($rob_timer - TimerIndex) > abs(ThisSock.RecvTimeout)) or (not $flag[ThisSock.ActFlagNo]) or (BuffLens > 0)       
+    else
+        continue
+        wait for ($flag[ThisSock.RecvFlagNo]) or (not $flag[ThisSock.ActFlagNo]) or (BuffLens > 0)
+    endif
+
+    continue
+    if $flag[ThisSock.RecvFlagNo] or (BuffLens > 0) then
+        continue
+        $flag[ThisSock.RecvFlagNo] = false
+        EkiRet = eki_getstring(ThisSock.SockXmlName[], XML_TAG_NAME[], Msg[])
+        ThisSock.Connected = (EkiRet.Msg_No == 0)
+        if EkiRet.Msg_No <> SOCK_SUCCESS then 
+            return(-abs(EkiRet.Msg_No))
+        endif
+
+        return(SOCK_SUCCESS)
+    endif
+
+    continue
+    if not $flag[ThisSock.ActFlagNo] then
+        ThisSock.Connected = false
+        return(-abs(SOCK_COM_ERR))
+    endif
+
+    return(-abs(SOCK_TIMEOUT))
+  endfct
+;ENDFOLD
+
+;FOLD SOCKET CHECK BUFF
+global deffct int get_bits_(ThisSock : out)
+   decl sock_cfg_t ThisSock
+   decl eki_status EkiRet
+    
+    continue
+    if not $flag[ThisSock.ActFlagNo] then
+        ThisSock.NByte = -abs(SOCK_COM_ERR)
+    else
+        if not $flag[ThisSock.RecvFlagNo] then  
+            return(0)
+        endif   
+        EkiRet = eki_checkbuffer(ThisSock.SockXmlName[], XML_TAG_NAME[])
+        ThisSock.Connected = (EkiRet.Msg_No == 0)
+        if EkiRet.Msg_No <> SOCK_SUCCESS then 
+            ThisSock.NByte = -abs(EkiRet.Msg_No)
+        else
+            ThisSock.NByte = EkiRet.Buff
+        endif
+    endif
+    return(ThisSock.NByte)
+endfct
+;ENDFOLD
+
+;FOLD SOCKET READ JSON
+global deffct int sock_rjson_(ThisSock : out, IntData[] : out, FloatData[] : out, StringData[ , ] : out, PosData[ , ] : out)
+   decl sock_cfg_t ThisSock
+   decl char Buff[512]
+   decl eki_status EkiRet
+   decl char TmpStr[256]
+   decl char ProcStr[256]
+   decl char JsonName[30, 24]
+   decl char JsonType[30, 8]
+   decl int NumOfKey
+   decl int NumOfValue
+   decl int NumOfInt
+   decl int NumOfRel
+   decl int NumOfStr
+   decl int NumOfPos
+   decl int IntData[]
+   decl real FloatData[]
+   decl char StringData[ , ]
+   decl real PosData[ , ]
+   decl int K 
+   decl int J
+   decl int Count
+   decl int RJsonStat
+;FOLD READ
+    RJsonStat = sock_read_(ThisSock, Buff[])
+;ENDFOLD
+;FOLD KEY
+      ; Conver 'key{********************}'
+      ;
+    if RJsonStat == SOCK_SUCCESS then
+
+        NumOfKey = 0
+        NumOfValue = 0
+        NumOfInt = 0
+        NumOfRel = 0
+        NumOfStr = 0
+        NumOfPos = 0
+      
+        Count = 1
+        if not strclear(TmpStr[]) then
+            return(-abs(CHAR_DEC_ERR))
+        endif
+        while not strcomp(Buff[Count], JSON_DEC_EL1[], #NOT_CASE_SENS)
+            if not strcomp(Buff[Count], JSON_DEC_NUL[], #NOT_CASE_SENS) then	
+                if stradd(TmpStr[], Buff[Count]) == 0 then
+                    return(-abs(CHAR_DEC_ERR)) 
+                endif  
+            endif
+            Count = Count + 1
+        endwhile
+      
+        if not strcomp(TmpStr[], JSON_DEC_KEY[], #NOT_CASE_SENS) then
+            return(-abs(SOCK_HED_NAM))
+        endif 
+      
+      
+        while not strcomp(Buff[Count], JSON_DEC_EL2[], #NOT_CASE_SENS)
+            NumOfKey = NumOfKey + 1
+            if NumOfKey > JSON_MAX_DATA then              
+                return(-abs(SOCK_NUM_DAT))
+            endif
+            if not strclear(TmpStr[]) then
+                return(-abs(CHAR_DEC_ERR))
+            endif
+            Count = Count + 1
+            repeat
+                if stradd(TmpStr[], Buff[Count]) == 0 then
+                    return(-abs(CHAR_DEC_ERR)) 
+                endif            
+                Count = Count + 1
+            until (strcomp(Buff[Count], JSON_DEC_EL4[], #NOT_CASE_SENS)) or (strcomp(Buff[Count], JSON_DEC_EL2[], #NOT_CASE_SENS))
+
+            if not strcopy(JsonName[NumOfKey, ], sub_str_(TmpStr[], 1, strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS) - 1)) then
+                return(-abs(CHAR_DEC_ERR)) 
+            endif
+
+            if not strcopy(JsonType[NumOfKey, ], sub_str_(TmpStr[], strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS) + 1, strlen(TmpStr[]) - strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS))) then
+                return(-abs(CHAR_DEC_ERR)) 
+            endif
+        endwhile
+;ENDFOLD 
+;FOLD VALUE
+      ; Conver 'value{********************}'
+      ;
+        Count = Count + 1
+        if not strclear(TmpStr[]) then
+            return(-abs(CHAR_DEC_ERR))
+        endif
+        while not strcomp(Buff[Count], JSON_DEC_EL1[], #NOT_CASE_SENS)
+            if stradd(TmpStr[], Buff[Count]) == 0 then
+                return(-abs(CHAR_DEC_ERR)) 
+            endif            
+            Count = Count + 1
+        endwhile
+        
+        if not strcomp(TmpStr[], JSON_DEC_VAL[], #NOT_CASE_SENS) then
+            return(-abs(SOCK_HED_DAT))
+        endif         
+      
+        while not strcomp(Buff[Count], JSON_DEC_EL2[], #NOT_CASE_SENS)
+            NumOfValue = NumOfValue + 1
+            if NumOfValue > NumOfKey then              
+                return(-abs(SOCK_NUM_DAT))
+            endif
+            if not strclear(TmpStr[]) then
+                return(-abs(CHAR_DEC_ERR))
+            endif
+            Count = Count + 1
+            repeat
+                if stradd(TmpStr[], Buff[Count]) == 0 then
+                    return(-abs(CHAR_DEC_ERR)) 
+                endif            
+                Count = Count + 1
+            until (strcomp(Buff[Count], JSON_DEC_EL4[], #NOT_CASE_SENS)) or (strcomp(Buff[Count], JSON_DEC_EL2[], #NOT_CASE_SENS))
+
+            for K = 1 to NumOfKey
+                if strcomp(sub_str_(TmpStr[], 1, strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS) - 1), JsonName[K, ], #NOT_CASE_SENS) then
+                    if strcomp(JsonType[K, ], JSON_INT_TYP[], #NOT_CASE_SENS) then
+                        NumOfInt = NumOfInt + 1   
+                        if not strtoint(sub_str_(TmpStr[], strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS) + 1, strlen(TmpStr[]) - strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS)), IntData[NumOfInt]) then
+                            return(-abs(CHAR_CNV_ERR))
+                        endif
+                    else
+                        if strcomp(JsonType[K, ], JSON_FLT_TYP[], #NOT_CASE_SENS) then
+                            NumOfRel = NumOfRel + 1
+                            if not strtoreal(sub_str_(TmpStr[], strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS) + 1, strlen(TmpStr[]) - strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS)), FloatData[NumOfRel]) then
+                                return(-abs(CHAR_CNV_ERR))
+                            endif
+                        else
+                            if strcomp(JsonType[K, ], JSON_STR_TYP[], #NOT_CASE_SENS) then
+                                NumOfStr = NumOfStr + 1
+
+                                for J = 1 to (strlen(TmpStr[]) - strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS))
+                                    StringData[NumOfStr, J] = TmpStr[J + strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS)]        
+                                endfor
+
+                            else
+                                if strcomp(JsonType[K, ], JSON_POS_TYP[], #NOT_CASE_SENS) then
+                                    NumOfPos = NumOfPos + 1
+                                    if not strcopy(ProcStr[], sub_str_(TmpStr[], strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS) + 1, strlen(TmpStr[]) - strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS))) then
+                                        return(-abs(CHAR_DEC_ERR)) 
+                                    endif
+                                    if stradd(ProcStr[], JSON_DEC_EL5[]) == 0 then
+                                        return(-abs(CHAR_DEC_ERR)) 
+                                    endif            
+                                    for  J = 1 to JSON_MAX_AXS
+                                        if not strtoreal(sub_str_(ProcStr[], 1, strfind(1, ProcStr[], JSON_DEC_EL5[], #NOT_CASE_SENS) - 1), PosData[NumOfPos, J]) then
+                                            return(-abs(CHAR_CNV_ERR)) 
+                                        endif
+                                        if not strcopy(ProcStr[], sub_str_(ProcStr[], strfind(1, ProcStr[], JSON_DEC_EL5[], #NOT_CASE_SENS) + 1, strlen(ProcStr[]) - strfind(1, ProcStr[], JSON_DEC_EL5[], #NOT_CASE_SENS))) then  
+                                            return(-abs(CHAR_DEC_ERR))
+                                        endif
+                                    endfor
+                                else
+                                    return(-abs(SOCK_TYP_DAT))
+                                endif
+                            endif
+                        endif
+                    endif
+                endif
+            endfor
+        endwhile
+    else
+
+        return(-abs(RJsonStat))
+    endif
+   
+   return(SOCK_SUCCESS)
+;ENDFOLD
+endfct
+;ENDFOLD
+
+;FOLD SOCKET CLEAR BUFF
+global def sock_clr_buff_(ThisSock : out)
+    decl sock_cfg_t ThisSock
+    decl eki_status EkiRet
+
+    continue
+    ;if $flag[ThisSock.RecvFlagNo] then
+        EkiRet = eki_clearbuffer(ThisSock.SockXmlName[], XML_TAG_NAME[])
+    ;endif
+
+    continue
+    $flag[ThisSock.RecvFlagNo] = false
+
+    ;ThisSock.Connected = (EkiRet.Connected == true)
+end
+;ENDFOLD
+
+;FOLD UDP CREATE
+global deffct int udp_create_(UdpSock : out)
+    decl udp_cfg_t UdpSock
+    decl eki_status EkiRet
+    
+    continue
+    $flag[UdpSock.RecvFlagNo] = false
+    EkiRet = eki_init(UdpSock.SockXmlName[])
+    EkiRet = eki_open(UdpSock.SockXmlName[])
+    EkiRet = eki_clearbuffer(UdpSock.SockXmlName[], XML_TAG_NAME[]) 
+    continue
+    UdpSock.Connection = ($flag[UdpSock.ActFlagNo] == true)
+    return(-abs(EkiRet.Msg_No)) 
+endfct
+;ENDFOLD
+
+;FOLD UDP CREATE RESET
+global def udp_create_reset_(UdpSock : out)
+    decl udp_cfg_t UdpSock
+    decl eki_status EkiRet
+    
+    continue
+    EkiRet = eki_clear(UdpSock.SockXmlName[])
+    EkiRet = eki_init(UdpSock.SockXmlName[])
+    EkiRet = eki_open(UdpSock.SockXmlName[])
+    EkiRet = eki_clearbuffer(UdpSock.SockXmlName[], XML_TAG_NAME[])
+    continue
+    UdpSock.Connection = ($flag[UdpSock.ActFlagNo] == true)
+end
+;ENDFOLD
+
+;FOLD UDP CLOSE
+global def udp_close_(UdpSock : out)
+    decl udp_cfg_t UdpSock
+    decl eki_status EkiRet
+    continue
+    EkiRet = eki_close(UdpSock.SockXmlName[])
+    if EkiRet.Msg_No <> SOCK_SUCCESS then
+        EkiRet = eki_close(UdpSock.SockXmlName[])
+    endif
+    EkiRet = eki_clear(UdpSock.SockXmlName[])
+    continue
+    UdpSock.Connection = ($flag[UdpSock.ActFlagNo] == true)
+end
+;ENDFOLD
+
+;FOLD UDP CHECK BUFF
+global deffct int udp_bits_(UdpSock : out)
+    decl udp_cfg_t UdpSock
+    decl eki_status EkiRet
+    
+    continue
+    if not $flag[UdpSock.ActFlagNo] then
+        UdpSock.NByte = -abs(SOCK_COM_ERR)
+    else
+        EkiRet = eki_checkbuffer(UdpSock.SockXmlName[], XML_TAG_NAME[])
+        if EkiRet.Msg_No <> SOCK_SUCCESS then 
+            UdpSock.NByte = -abs(EkiRet.Msg_No)
+        else
+            UdpSock.NByte = EkiRet.Buff
+        endif
+    endif
+    return(UdpSock.NByte)
+endfct
+;ENDFOLD
+
+;FOLD UDP SEND TO 
+global deffct int udp_sendto_(UdpSock : out, Msg[] : in, Len : in)
+    decl udp_cfg_t UdpSock
+    decl char Msg[]
+    decl eki_status EkiRet
+    decl int Len
+    if (varstate("Len") <> #initialized) then
+
+        Len = strlen(Msg[])
+    endif
+    continue
+    EkiRet = eki_send(UdpSock.SockXmlName[], Msg[], Len)
+    continue
+    UdpSock.Connection = ($flag[UdpSock.ActFlagNo] == true)
+    return(-abs(EkiRet.Msg_No))
+endfct
+;ENDFOLD
+
+;FOLD UDP RECV FROM
+global deffct int udp_recvfm_(UdpSock : out, Msg[] : out)
+    decl udp_cfg_t UdpSock
+    decl int TimerIndex
+    decl eki_status EkiRet
+    decl char Msg[]
+    decl int BuffLens
+    
+    Msg[] = " "
+    continue
+    TimerIndex = $rob_timer
+
+    BuffLens = udp_bits_(UdpSock)
+    
+    if UdpSock.RecvTimeout > 0 then
+        continue
+        wait for ($flag[UdpSock.RecvFlagNo]) or (($rob_timer - TimerIndex) > abs(UdpSock.RecvTimeout)) or (BuffLens > 0)     
+    else
+        continue
+        wait for ($flag[UdpSock.RecvFlagNo]) or (BuffLens > 0)  
+    endif
+
+    continue
+    UdpSock.Connection = ($flag[UdpSock.ActFlagNo] == true)
+
+    continue
+    if ($flag[UdpSock.RecvFlagNo]) or (BuffLens > 0)   then
+        continue
+        $flag[UdpSock.RecvFlagNo] = false
+        EkiRet = eki_getstring(UdpSock.SockXmlName[], XML_TAG_NAME[], Msg[])
+        if EkiRet.Msg_No <> SOCK_SUCCESS then
+            return(-EkiRet.Msg_No)
+        endif
+
+        return(strlen(Msg[]))
+    endif
+
+    return(-abs(UdpSock.RecvTimeout))
+endfct
+;ENDFOLD
+
+;FOLD UDP READ JSON
+global deffct int udp_rjson_(UdpSock : out, IntData[] : out, FloatData[] : out, StringData[ , ] : out, PosData[ , ] : out)
+   decl udp_cfg_t UdpSock
+   decl char Buff[512]
+   decl eki_status EkiRet
+   decl char TmpStr[256]
+   decl char ProcStr[256]
+   decl char JsonName[30, 24]
+   decl char JsonType[30, 8]
+   decl int NumOfKey
+   decl int NumOfValue
+   decl int NumOfInt
+   decl int NumOfRel
+   decl int NumOfStr
+   decl int NumOfPos
+   decl int IntData[]
+   decl real FloatData[]
+   decl char StringData[ , ]
+   decl real PosData[ , ]
+   decl int K 
+   decl int J
+   decl int Count
+   decl int RJsonStat
+;FOLD READ
+    RJsonStat = udp_recvfm_(UdpSock, Buff[])
+;ENDFOLD
+;FOLD KEY
+      ; Conver 'key{********************}'
+      ;
+    if RJsonStat > 0 then
+
+        NumOfKey = 0
+        NumOfValue = 0
+        NumOfInt = 0
+        NumOfRel = 0
+        NumOfStr = 0
+        NumOfPos = 0
+      
+        Count = 1
+        if not strclear(TmpStr[]) then
+            return(-abs(CHAR_DEC_ERR))
+        endif
+        while not strcomp(Buff[Count], JSON_DEC_EL1[], #NOT_CASE_SENS)
+            if not strcomp(Buff[Count], JSON_DEC_NUL[], #NOT_CASE_SENS) then	
+                if stradd(TmpStr[], Buff[Count]) == 0 then
+                    return(-abs(CHAR_DEC_ERR)) 
+                endif  
+            endif
+            Count = Count + 1
+        endwhile
+      
+        if not strcomp(TmpStr[], JSON_DEC_KEY[], #NOT_CASE_SENS) then
+            return(-abs(SOCK_HED_NAM))
+        endif 
+      
+      
+        while not strcomp(Buff[Count], JSON_DEC_EL2[], #NOT_CASE_SENS)
+            NumOfKey = NumOfKey + 1
+            if NumOfKey > JSON_MAX_DATA then              
+                return(-abs(SOCK_NUM_DAT))
+            endif
+            if not strclear(TmpStr[]) then
+                return(-abs(CHAR_DEC_ERR))
+            endif
+            Count = Count + 1
+            repeat
+                if stradd(TmpStr[], Buff[Count]) == 0 then
+                    return(-abs(CHAR_DEC_ERR)) 
+                endif            
+                Count = Count + 1
+            until (strcomp(Buff[Count], JSON_DEC_EL4[], #NOT_CASE_SENS)) or (strcomp(Buff[Count], JSON_DEC_EL2[], #NOT_CASE_SENS))
+
+            if not strcopy(JsonName[NumOfKey, ], sub_str_(TmpStr[], 1, strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS) - 1)) then
+                return(-abs(CHAR_DEC_ERR)) 
+            endif
+
+            if not strcopy(JsonType[NumOfKey, ], sub_str_(TmpStr[], strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS) + 1, strlen(TmpStr[]) - strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS))) then
+                return(-abs(CHAR_DEC_ERR)) 
+            endif
+        endwhile
+;ENDFOLD 
+;FOLD VALUE
+      ; Conver 'value{********************}'
+      ;
+        Count = Count + 1
+        if not strclear(TmpStr[]) then
+            return(-abs(CHAR_DEC_ERR))
+        endif
+        while not strcomp(Buff[Count], JSON_DEC_EL1[], #NOT_CASE_SENS)
+            if stradd(TmpStr[], Buff[Count]) == 0 then
+                return(-abs(CHAR_DEC_ERR)) 
+            endif            
+            Count = Count + 1
+        endwhile
+        
+        if not strcomp(TmpStr[], JSON_DEC_VAL[], #NOT_CASE_SENS) then
+            return(-abs(SOCK_HED_DAT))
+        endif         
+      
+        while not strcomp(Buff[Count], JSON_DEC_EL2[], #NOT_CASE_SENS)
+            NumOfValue = NumOfValue + 1
+            if NumOfValue > NumOfKey then              
+                return(-abs(SOCK_NUM_DAT))
+            endif
+            if not strclear(TmpStr[]) then
+                return(-abs(CHAR_DEC_ERR))
+            endif
+            Count = Count + 1
+            repeat
+                if stradd(TmpStr[], Buff[Count]) == 0 then
+                    return(-abs(CHAR_DEC_ERR)) 
+                endif            
+                Count = Count + 1
+            until (strcomp(Buff[Count], JSON_DEC_EL4[], #NOT_CASE_SENS)) or (strcomp(Buff[Count], JSON_DEC_EL2[], #NOT_CASE_SENS))
+
+            for K = 1 to NumOfKey
+                if strcomp(sub_str_(TmpStr[], 1, strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS) - 1), JsonName[K, ], #NOT_CASE_SENS) then
+                    if strcomp(JsonType[K, ], JSON_INT_TYP[], #NOT_CASE_SENS) then
+                        NumOfInt = NumOfInt + 1   
+                        if not strtoint(sub_str_(TmpStr[], strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS) + 1, strlen(TmpStr[]) - strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS)), IntData[NumOfInt]) then
+                            return(-abs(CHAR_CNV_ERR))
+                        endif
+                    else
+                        if strcomp(JsonType[K, ], JSON_FLT_TYP[], #NOT_CASE_SENS) then
+                            NumOfRel = NumOfRel + 1
+                            if not strtoreal(sub_str_(TmpStr[], strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS) + 1, strlen(TmpStr[]) - strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS)), FloatData[NumOfRel]) then
+                                return(-abs(CHAR_CNV_ERR))
+                            endif
+                        else
+                            if strcomp(JsonType[K, ], JSON_STR_TYP[], #NOT_CASE_SENS) then
+                                NumOfStr = NumOfStr + 1
+
+                                for J = 1 to (strlen(TmpStr[]) - strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS))
+                                    StringData[NumOfStr, J] = TmpStr[J + strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS)]        
+                                endfor
+
+                            else
+                                if strcomp(JsonType[K, ], JSON_POS_TYP[], #NOT_CASE_SENS) then
+                                    NumOfPos = NumOfPos + 1
+                                    if not strcopy(ProcStr[], sub_str_(TmpStr[], strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS) + 1, strlen(TmpStr[]) - strfind(1, TmpStr[], JSON_DEC_EL3[], #NOT_CASE_SENS))) then
+                                        return(-abs(CHAR_DEC_ERR)) 
+                                    endif
+                                    if stradd(ProcStr[], JSON_DEC_EL5[]) == 0 then
+                                        return(-abs(CHAR_DEC_ERR)) 
+                                    endif            
+                                    for  J = 1 to JSON_MAX_AXS
+                                        if not strtoreal(sub_str_(ProcStr[], 1, strfind(1, ProcStr[], JSON_DEC_EL5[], #NOT_CASE_SENS) - 1), PosData[NumOfPos, J]) then
+                                            return(-abs(CHAR_CNV_ERR)) 
+                                        endif
+                                        if not strcopy(ProcStr[], sub_str_(ProcStr[], strfind(1, ProcStr[], JSON_DEC_EL5[], #NOT_CASE_SENS) + 1, strlen(ProcStr[]) - strfind(1, ProcStr[], JSON_DEC_EL5[], #NOT_CASE_SENS))) then  
+                                            return(-abs(CHAR_DEC_ERR))
+                                        endif
+                                    endfor
+                                else
+                                    return(-abs(SOCK_TYP_DAT))
+                                endif
+                            endif
+                        endif
+                    endif
+                endif
+            endfor
+        endwhile
+    else
+
+        return(-abs(RJsonStat))
+    endif
+   
+   return(SOCK_SUCCESS)
+;ENDFOLD
+endfct
+;ENDFOLD
+
+;FOLD UDP RECV PACKS
+global deffct int  recv_udp_pack_(UdpSock : out, UdpPacks : out)
+    decl udp_cfg_t UdpSock
+    decl data_packet_t UdpPacks
+    decl char Buff[512]
+    decl int Offset
+    Offset = 0
+    if not strclear(Buff[]) then 
+        return(-1)
+    endif
+    if udp_recvfm_(UdpSock, Buff[]) > 0 then 
+        cast_from(Buff[], Offset, UdpPacks.DataInt1, UdpPacks.DataInt2, UdpPacks.DataInt3)
+        cast_from(Buff[], Offset, UdpPacks.DataReal1, UdpPacks.DataReal2,UdpPacks.DataReal3,UdpPacks.DataReal4,UdpPacks.DataReal5,UdpPacks.DataReal6,UdpPacks.DataReal7,UdpPacks.DataReal8,UdpPacks.DataReal9)
+        return(SOCK_SUCCESS)
+    endif
+    return(-1)
+endfct
+;ENDFOLD
+
+;FOLD UDP CLEAR BUFF
+global def udp_clr_buff_(ThisUdp : out)
+    decl udp_cfg_t ThisUdp
+    decl eki_status EkiRet
+
+    continue
+    if $flag[ThisUdp.RecvFlagNo] then
+        EkiRet = eki_clearbuffer(ThisUdp.SockXmlName[], XML_TAG_NAME[])
+    endif
+
+    continue
+    $flag[ThisUdp.RecvFlagNo] = false
+end
+;ENDFOLD

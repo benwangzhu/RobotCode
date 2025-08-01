@@ -1,0 +1,13 @@
+TYPE 
+
+	modbus_r_t			: ARRAY [0..99] OF WORD;
+	modbus_w_t			: ARRAY [0..299] OF WORD;
+
+	modbus_rw_t:
+	STRUCT
+		Connected		: BOOL;
+		ModbusIn		: modbus_r_t;
+		ModbusOut		: modbus_w_t;
+	END_STRUCT;
+END_TYPE
+

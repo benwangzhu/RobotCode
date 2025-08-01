@@ -1,0 +1,26 @@
+&ACCESS RVEO
+defdat sbt_comm001
+;***********************************************************
+;
+; file Name: sbt_comm001.dat
+;
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+;
+;
+; Description:
+;   Language             ==   KRL for KUKA ROBOT
+;   Date                 ==   2024 - 06 - 03
+;   Modification Data    ==   2025 - 01 - 21
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+
+
+decl cmd_typ01_t CommType01 = {Byte01 0, Byte02 0, Short03 0, Short04 0, Int05 0, Int06 0, Float07 0.0, Float08 0.0}  
+decl cmd_typ07_t CommType07 = {Float01 0.0, Float02 0.0, Float03 0.0, Float04 0.0, Float05 0.0, Float06 0.0, Float07 0.0, Float08 0.0, Float09 0.0, Float10 0.0, Float11 0.0, Float12 0.0, Int13 0, Int14 0}
+decl int Status = 0
+decl e6pos CurPos
+
+enddat

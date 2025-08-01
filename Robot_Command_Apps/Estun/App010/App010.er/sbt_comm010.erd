@@ -1,0 +1,6 @@
+Status={_type="INT",value=0,saveflag=false}
+ReqMode={_type="INT",value=0,saveflag=false}
+i={_type="INT",value=0,saveflag=false}
+Posn01={_type="CPOS",confdata={_type="POSCFG",mode=0,cf1=0,cf2=0,cf3=0,cf4=0,cf5=0,cf6=0},x=0.000000,y=0.000000,z=0.000000,a=0.000000,b=0.000000,c=0.000000,a7=0.000000,a8=0.000000,a9=0.000000,a10=0.000000,a11=0.000000,a12=0.000000,a13=0.000000,a14=0.000000,a15=0.000000,a16=0.000000}
+Posn02={_type="CPOS",confdata={_type="POSCFG",mode=0,cf1=0,cf2=0,cf3=0,cf4=0,cf5=0,cf6=0},x=0.000000,y=0.000000,z=0.000000,a=0.000000,b=0.000000,c=0.000000,a7=0.000000,a8=0.000000,a9=0.000000,a10=0.000000,a11=0.000000,a12=0.000000,a13=0.000000,a14=0.000000,a15=0.000000,a16=0.000000}
+CheckStatus={_type="INT",value=0,saveflag=false}

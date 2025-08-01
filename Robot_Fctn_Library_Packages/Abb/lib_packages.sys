@@ -1,0 +1,172 @@
+module lib_packages(sysmodule, noview)
+!***********************************************************
+!
+! Copyright 2018 - 2024 speedbot All Rights reserved.
+!
+! File Name: lib_packages
+!
+! Description:
+!   Language             ==   Rapid for ABB ROBOT
+!   Date                 ==   2024 - 09 - 12
+!   Modification Data    ==   2024 - 09 - 12
+!
+! Author: speedbot
+!
+! Version: 2.1
+!*********************************************************************************************************!
+!                                                                                                         !
+!                                                      .^^^                                               !
+!                                               .,~<c+{{{{{{t,                                            ! 
+!                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          !
+!                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        !
+!                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       !
+!                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    !
+!                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  !
+!                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                !
+!                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              !
+!                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             !
+!                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             !
+!                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             !
+!                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              !
+!                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              !
+!                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               !
+!                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               !
+!                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                !
+!                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                !
+!                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 !
+!                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 !
+!                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  !
+!                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  !
+!                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    !                         
+!                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         !
+!                                         ^!{{{{{{{{t!",^`                                                !
+!                                                                                                         !
+!*********************************************************************************************************!
+!
+
+! 2024 - 09 - 12 ++ pack_head_ ()
+
+! 2024 - 09 - 12 ++ pack_tail_()
+
+! 2024 - 09 - 12 ++ unpack_head_() ==> errnum
+
+! 2024 - 09 - 12 ++ unpack_tail_ () ==> errnum
+
+record pack_head_t
+    num Head;  
+    num Length ;
+    num PacketCount;
+    byte Cmd;
+    byte Type_;
+    byte Seq;
+    byte VirtualRob;
+endrecord
+
+alias num pack_tail_t;
+
+const num PACK_HEADER           := 232425;
+const num PACK_TAIL             := 485868;
+
+
+!***********************************************************
+! proc pack_head_
+!***********************************************************
+!     输入输出参数 : Packages      * 原始字节 *     * 包装后的原始字节数据 *
+!     输入参数 : Header          * 包头结构 *     * 包含包头信息的结构 *
+!***********************************************************
+! 功能 : 将包头信息打包到原始字节数据中。
+!        清除原始字节数据，然后依次添加包头各个字段。
+!        字段包括：头部标识、长度、包计数、命令、类型、序列号、虚拟机器人标识。
+!***********************************************************
+proc pack_head_ (var rawbytes Packages, pack_head_t Header)
+
+    clearrawbytes Packages;
+    packrawbytes Header.Head, Packages, rawbyteslen(Packages) + 1, \IntX := DINT;
+    packrawbytes Header.Length , Packages, rawbyteslen(Packages) + 1, \IntX := DINT;
+    packrawbytes Header.PacketCount, Packages, rawbyteslen(Packages) + 1, \IntX := DINT;
+    packrawbytes Header.Cmd, Packages, rawbyteslen(Packages) + 1, \ASCII;
+    packrawbytes Header.Type_, Packages, rawbyteslen(Packages) + 1, \ASCII;
+    packrawbytes Header.Seq, Packages, rawbyteslen(Packages) + 1, \ASCII;
+    packrawbytes Header.VirtualRob, Packages, rawbyteslen(Packages) + 1, \ASCII;
+endproc
+
+!***********************************************************
+! proc pack_tail_
+!***********************************************************
+!     输入输出参数 : Packages      * 原始字节 *     * 包装后的原始字节数据 *
+!     输入参数 : Tail             * 包尾结构 *     * 包含包尾信息的结构 *
+!***********************************************************
+! 功能 : 将包尾信息打包到原始字节数据中。
+!        将包尾信息复制到临时变量，然后添加到原始字节数据末尾。
+!***********************************************************
+proc pack_tail_ (var rawbytes Packages, pack_tail_t Tail)
+    var num CopyVal;
+    CopyVal := Tail;
+    packrawbytes CopyVal, Packages, rawbyteslen(Packages) + 1, \IntX := DINT;
+endproc
+
+!***********************************************************
+! func unpack_head_
+!***********************************************************
+!     输入输出参数 : Packages      * 原始字节 *     * 包含包头信息的原始字节数据 *
+!     输入输出参数 : Header        * 包头结构 *     * 包头信息结构 *
+! 返回 :                     * 错误码 *     * 解包状态 *
+!***********************************************************
+! 功能 : 从原始字节数据中解包包头信息。
+!        清除原始字节数据，然后依次从数据中提取包头各个字段。
+!        检查包头是否正确，如果不正确则记录错误并返回错误码。
+!        否则返回成功码。
+!***********************************************************
+func errnum unpack_head_ (var rawbytes Packages, inout pack_head_t Header)
+
+    !clearrawbytes Packages;
+    unpackrawbytes Packages, 1, Header.Head, \IntX := DINT;
+    unpackrawbytes Packages, 5, Header.Length , \IntX := DINT;
+    unpackrawbytes Packages, 9, Header.PacketCount, \IntX := DINT;
+    unpackrawbytes Packages, 13, Header.Cmd,\ASCII := 1;
+    unpackrawbytes Packages, 14, Header.Type_,\ASCII := 1;
+    unpackrawbytes Packages, 15, Header.Seq,\ASCII := 1;
+    unpackrawbytes Packages, 16, Header.VirtualRob,\ASCII := 1;
+
+    if Header.Head  <> PACK_HEADER then
+
+        log_error_ "Packet Header Check Error", \ELOG;
+        return(NG);
+    endif
+
+    return(OK);
+endfunc
+
+!***********************************************************
+! func unpack_tail_
+!***********************************************************
+!     输入输出参数 : Packages      * 原始字节 *     * 包含包尾信息的原始字节数据 *
+!     输入输出参数 : Tail          * 包尾结构 *     * 包尾信息结构 *
+! 返回 :                     * 错误码 *     * 解包状态 *
+!***********************************************************
+! 功能 : 从原始字节数据中解包包尾信息。
+!        清除原始字节数据，然后从数据末尾提取包尾字段。
+!        检查包尾是否正确，如果不正确则记录错误并返回错误码。
+!        否则返回成功码。
+!***********************************************************
+func errnum unpack_tail_ (var rawbytes Packages, inout pack_tail_t Tail)
+    var num UnPackTail := 0;
+    !clearrawbytes Packages;
+    unpackrawbytes Packages, rawbyteslen(Packages) - 4 + 1, UnPackTail, \IntX := DINT;
+    Tail := UnPackTail;
+    if Tail <> PACK_TAIL then
+
+        log_error_ "Packet Trailer Check Error", \ELOG;
+        return(NG);
+    endif
+
+    return(OK);
+endfunc
+
+endmodule
+
+
+
+
+
+

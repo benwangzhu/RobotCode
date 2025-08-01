@@ -1,0 +1,517 @@
+program second_sr
+--***********************************************************
+--
+-- file Name: second_sr.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 09 - 03
+--   Modification Data    ==   2024 - 08 - 23
+--
+-- Author: speedbot
+--
+-- Version: 6.0 Bus Comm
+--***********************************************************
+--   
+%comment = 'Snd Sensor V6.0'
+%nolockgroup
+%nobusylamp
+%stacksize = 3000
+%nopause = error + tpenable + command
+%include second_t
+%include second_global
+%include include\lib_logs_t
+%include kliotyps
+%include kliouop
+
+var
+    SensorPack                                  : part_dat_t
+    PlacePos                                    : xyzwprext
+    PlaceUpPos                                  : xyzwprext
+    SndStatus                                   : integer
+    SndErrNo                                    : integer
+    AppEncode                                   : boolean
+    PartFind                                    : boolean
+    I, J                                        : integer
+
+%include include\lib_logs_h
+%include include\lib_busio_h
+%include include\lib_motion_h
+%include include\lib_string_h
+%include include\lib_tp_if_h
+
+routine second_chk_ : integer from second_sr
+
+routine chk_olp_tol_(ThisPart : part_dat_t) : boolean from second_sr
+
+routine put_queue_(ThisPart : part_dat_t;
+                   QIndex : integer) : integer from second_sr
+
+routine install_ah_ from second_sr
+
+routine remove_ah_ from second_sr
+
+routine	ab_hndlr_ from second_sr
+
+routine get_encode_(ThisQueue : queue_type;
+                    QueueData : array of integer;
+                    EncodeVal : integer) : integer from second_sr 
+
+routine enc1_count_ from second_sr
+
+routine enc2_count_ from second_sr
+
+routine enc3_count_ from second_sr
+
+routine enc4_count_ from second_sr
+
+begin
+
+    log_clear_
+
+    for I = 1 to PkPlCfg.NumOfConv do ; init_vr_(PkPlCfg.pkcvCfg[I].VReg) ; endfor
+
+    remove_ah_
+    install_ah_
+
+    AppEncode               = false
+    SndStatus               = 0
+
+    log_info_('SR','(^_~) 总线通讯初始化 !')
+    bus_init_(BusInput, BusOutput, PkPlCfg.RobId, PTC_LN_PL)
+        
+    while BusOutput.SysEnable do
+
+        SndErrNo = 0
+        PartFind = false
+
+        -- 读取新数据
+        repeat
+
+            log_info_('SR', '(-_-) 等待接收工件信息 ...')
+            SndStatus = bus_wtell_(BusInput, BusOutput, -1)
+
+            if SndStatus = 0 then
+
+                select BusInput.AgentMsgType of
+                case(1):
+                    SensorPack.TaskId       = bus_gint_(IO_DIN, BusInput.BusIoSt + 64)
+                    SensorPack.ConvId       = bus_gbyte_(IO_DIN, BusInput.BusIoSt + 96)
+                    SensorPack.BoxId        = bus_gbyte_(IO_DIN, BusInput.BusIoSt + 104)
+                    SensorPack.ServoDist    = bus_gsint_(IO_DIN, BusInput.BusIoSt + 112) / 10.0
+                    SensorPack.EncCount     = bus_gint_(IO_DIN, BusInput.BusIoSt + 128) 
+                    SensorPack.Thickness    = bus_gsint_(IO_DIN, BusInput.BusIoSt + 160) / 10.0
+                    SensorPack.Weight       = bus_gsint_(IO_DIN, BusInput.BusIoSt + 176) / 10.0
+                    SensorPack.Num          = bus_gbyte_(IO_DIN, BusInput.BusIoSt + 192)
+
+                    bus_sbyte_(BusOutput.BusIoSt + 104, 0)
+                    bus_ftell_(BusInput, BusOutput)
+
+                    log_info_('SR', '(-_-) 接收到工件数据 ...')
+                case(2):
+                    SensorPack.PkcvOfs[1]   = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 64)
+                    SensorPack.PkcvOfs[2]   = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 96)
+                    SensorPack.PkcvOfs[3]   = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 128)
+                    SensorPack.PkcvOfs[4]   = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 160)
+                    SensorPack.PkcvOfs[5]   = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 192)
+                    SensorPack.PkcvOfs[6]   = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 224)
+
+                    bus_sbyte_(BusOutput.BusIoSt + 104, 0)
+                    bus_ftell_(BusInput, BusOutput)
+
+                    log_info_('SR', '(-_-) 接收到抓取数据 ...')
+                case(3):
+                    SensorPack.PlacePosn[1] = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 64)
+                    SensorPack.PlacePosn[2] = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 96)
+                    SensorPack.PlacePosn[3] = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 128)
+                    SensorPack.PlacePosn[4] = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 160)
+                    SensorPack.PlacePosn[5] = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 192)
+                    SensorPack.PlacePosn[6] = bus_gfloat2_(IO_DIN, BusInput.BusIoSt + 224)
+
+                    log_info_('SR', '(-_-) 接收到码垛数据 ...')
+                else:
+
+                    delay(100)
+                    log_error_('SR','(T_T) 步骤 ID ==> ' + int_to_str_(BusInput.AgentMsgType) + ' !')
+                endselect
+
+            else
+
+                delay(100)
+                log_info_('SR','(T_T) 接收状态 ==> ' + int_to_str_(SndStatus) + ' !')
+            endif
+           
+        until ((BusInput.AgentMsgType = 3) and (SndStatus = 0)) or (SndStatus <> 0)
+
+        SndErrNo = 0
+
+        if SndStatus = 0 then
+
+            -- 根据 Job Id 不一样来应用数据
+            select BusInput.JobId of
+            case(1):    -- 添加任务
+
+                log_info_('SR', '(^_+) 添加新任务 ID ==> ' + int_to_str_(SensorPack.TaskId) + ' !')
+
+                -- 检查放置编号是否有问题
+                if ((SensorPack.BoxId > PkPlCfg.NumOfBox) or (SensorPack.BoxId <= 0)) and (SensorPack.TaskId > 0) then
+
+                    SndErrNo = 1
+                    log_error_('SR','(T_T) 框 ID ==> ' + int_to_str_(SensorPack.BoxId) + ' !')
+                    go to ACK
+                endif
+
+                -- 检查输入的传送带编号是否有问题
+                if ((SensorPack.ConvId > PkPlCfg.NumOfConv) or (SensorPack.ConvId <= 0)) and (SensorPack.TaskId > 0) then
+
+                    SndErrNo = 2
+                    log_error_('SR','(T_T) 输送线 ID ==> ' + int_to_str_(SensorPack.ConvId) + ' !')
+                    go to ACK
+                endif
+
+                -- 传感器由自己记录，就从记录的队列拿数据
+                if PkPlCfg.SrEnable then
+
+                    -- 使用自己记录的编码器值
+                    if not AppEncode then 
+                        if get_encode_(EncodeQue[SensorPack.ConvId], EncodeVal[SensorPack.ConvId], SensorPack.EncCount) <> 0 then  
+
+                            SndErrNo = 3
+                            log_error_('SR', '(T_T) 队列中获取编码器值错误 !')
+                            go to ACK
+                        endif
+                    endif
+                endif
+
+                AppEncode =  not (SensorPack.Num = 1)  
+                                        
+                if SensorPack.TaskId > 0 then 
+                    
+                    if second_chk_ <> OK then
+
+                        go to ACK
+                    endif
+                endif
+
+                -- 将零件信息投入到对列
+                QueueCount[SensorPack.ConvId] = QueueCount[SensorPack.ConvId] + 1
+                if put_queue_(SensorPack, QueueCount[SensorPack.ConvId]) <> SND_SUCCESS then
+                    QueueCount[SensorPack.ConvId] = QueueCount[SensorPack.ConvId] - 1
+
+                    SndErrNo = 201
+                    log_error_('SR','(T_T) 工件加入队列失败  !')
+                    go to ACK
+                endif
+
+                log_info_('SR','(^o^) 工件加入队列成功 !')
+            case(2):    -- 修改任务
+
+                log_info_('SR', '(^_+) - 修改任务 ID ==> ' + int_to_str_(SensorPack.TaskId) + ' !')
+
+                -- 检查放置编号是否有问题
+                if ((SensorPack.BoxId > PkPlCfg.NumOfBox) or (SensorPack.BoxId <= 0)) then
+
+                    SndErrNo = 1
+                    log_error_('SR','(T_T) 框 ID ==> ' + int_to_str_(SensorPack.BoxId) + ' !')
+                    go to ACK
+                endif
+                
+                if second_chk_ <> OK then
+                
+                    go to ACK
+                endif
+
+                for I = 1 to MAX_QUE_NUM do  
+                    if SensorPack.TaskId = abs(PartIndex[SensorPack.ConvId, I].PartData.TaskId) then  
+                        PartIndex[SensorPack.ConvId, I].PartData.BoxId      = SensorPack.BoxId
+                        PartIndex[SensorPack.ConvId, I].PartData.TaskId     = SensorPack.TaskId
+                        PartIndex[SensorPack.ConvId, I].PartData.PlacePosn  = SensorPack.PlacePosn
+                        PartFind = true
+                        log_info_('SR','(^o^) 修改任务成功 !')
+                    endif
+                endfor
+
+                if SensorPack.TaskId = abs(get_sys_int_('$vr[' + int_to_str_(PkPlCfg.PkCvCfg[SensorPack.ConvId].VReg) + '].$workid')) then
+
+                    set_sys_int_('$vr[' + int_to_str_(PkPlCfg.PkCvCfg[SensorPack.ConvId].VReg) + '].$workid',             SensorPack.TaskId)
+                    set_sys_int_('$vr[' + int_to_str_(PkPlCfg.PkCvCfg[SensorPack.ConvId].VReg) + '].$view[4].$modelid',   SensorPack.BoxId)  
+
+                    set_sys_rel_('$vr[' + int_to_str_(PkPlCfg.PkCvCfg[SensorPack.ConvId].VReg) + '].$view[4].$x',         SensorPack.PlacePosn[1])   
+                    set_sys_rel_('$vr[' + int_to_str_(PkPlCfg.PkCvCfg[SensorPack.ConvId].VReg) + '].$view[4].$y',         SensorPack.PlacePosn[2])   
+                    set_sys_rel_('$vr[' + int_to_str_(PkPlCfg.PkCvCfg[SensorPack.ConvId].VReg) + '].$view[4].$z',         SensorPack.PlacePosn[3])   
+                    set_sys_rel_('$vr[' + int_to_str_(PkPlCfg.PkCvCfg[SensorPack.ConvId].VReg) + '].$view[4].$w',         SensorPack.PlacePosn[4])   
+                    set_sys_rel_('$vr[' + int_to_str_(PkPlCfg.PkCvCfg[SensorPack.ConvId].VReg) + '].$view[4].$p',         SensorPack.PlacePosn[5])   
+                    set_sys_rel_('$vr[' + int_to_str_(PkPlCfg.PkCvCfg[SensorPack.ConvId].VReg) + '].$view[4].$r',         SensorPack.PlacePosn[6])   
+                    PartFind = true
+                    log_info_('SR','(^o^) 修改任务成功 !')
+                endif
+
+                -- 没有找到队列
+                if not PartFind then 
+
+                    log_error_('SR', '(T_T) 没找到需要修改的队列 !')
+                    SndErrNo = 254 
+                    go to ACK
+                endif
+            case(3):    -- 中联桩基项目添加检测任务，正常不用
+                if SensorPack.ConvId = 101 then  
+                    flg[101] = true  
+                endif      
+                if SensorPack.ConvId = 102 then  
+                    flg[102] = true  
+                endif      
+                if SensorPack.ConvId = 103 then  
+                    flg[103] = true  
+                endif      
+                if SensorPack.ConvId = 104 then  
+                    flg[104] = true  
+                endif      
+                if SensorPack.ConvId = 105 then  
+                    flg[105] = true  
+                endif      
+            else:
+
+                SndErrNo = 255
+                log_error_('SR','(T_T) - Job Id 错误 !')
+            endselect
+
+            ACK::
+
+            -- 反馈数据状态是否异常
+            bus_sbyte_(BusOutput.BusIoSt + 104, SndErrNo)
+            bus_ftell_(BusInput, BusOutput)
+            log_info_('SR','(^o^) 反馈成功[' + int_to_str_(SndErrNo) + '] !')    
+
+        endif
+    endwhile
+
+    remove_ah_
+
+    log_info_('SR','(X_X) 后台任务退出 !')
+end second_sr
+
+
+routine second_chk_
+
+begin
+
+    -- 将放置坐标计算到世界坐标系下
+    PlacePos = PkPlCfg.plfsCfg[SensorPack.BoxId].BoxFrame : trans_pos_(SensorPack.PlacePosn)
+
+    if PkPlCfg.NumAxis > 6 then  
+
+        PlacePos.Ext1 = PkPlCfg.plfsCfg[SensorPack.BoxId].PlaceE7Pos
+    endif
+    
+
+    PlaceUpPos = PlacePos 
+    PlaceUpPos.Z = PkPlCfg.plfsCfg[SensorPack.BoxId].PlaceUpDst
+
+
+    if (SensorPack.PlacePosn[1] > PkPlCfg.plfsCfg[SensorPack.BoxId].Lim.MaxX) then
+
+        SndErrNo = 101
+        log_error_('SR','(T_T) 码垛 X > 最大设置值['  + int_to_str_(SensorPack.BoxId) + '] !')
+        log_error_('SR','(T_T) X[' + rel_to_str_(SensorPack.PlacePosn[1]) + ']' + 'MaxX[' + rel_to_str_(PkPlCfg.plfsCfg[SensorPack.BoxId].Lim.MaxX) + ']')
+        return(NG)
+    endif
+    
+    if (SensorPack.PlacePosn[1] < PkPlCfg.plfsCfg[SensorPack.BoxId].Lim.MinX) then
+
+        SndErrNo = 102
+        log_error_('SR','(T_T) 码垛 X < 最小设置值['  + int_to_str_(SensorPack.BoxId) + '] !')
+        log_error_('SR','(T_T) X[' + rel_to_str_(SensorPack.PlacePosn[1]) + ']' + 'MinX[' + rel_to_str_(PkPlCfg.plfsCfg[SensorPack.BoxId].Lim.MinX) + ']')
+        return(NG)
+    endif
+    
+    if (SensorPack.PlacePosn[2] > PkPlCfg.plfsCfg[SensorPack.BoxId].Lim.MaxY) then
+
+        SndErrNo = 103
+        log_error_('SR','(T_T) 码垛 Y > 最大设置值['  + int_to_str_(SensorPack.BoxId) + '] !')
+        log_error_('SR','(T_T) Y[' + rel_to_str_(SensorPack.PlacePosn[2]) + ']' + 'MaxY[' + rel_to_str_(PkPlCfg.plfsCfg[SensorPack.BoxId].Lim.MaxY) + ']')
+        return(NG)
+    endif
+
+    if (SensorPack.PlacePosn[2] < PkPlCfg.plfsCfg[SensorPack.BoxId].Lim.MinY) then
+
+        SndErrNo = 104
+        log_error_('SR','(T_T) 码垛 Y <  最小设置值['  + int_to_str_(SensorPack.BoxId) + '] !')
+        log_error_('SR','(T_T) Y[' + rel_to_str_(SensorPack.PlacePosn[2]) + ']' + 'MinY[' + rel_to_str_(PkPlCfg.plfsCfg[SensorPack.BoxId].Lim.MinY) + ']')
+        return(NG)
+    endif
+
+    if (not chk_pos_(PlacePos, 0, PkPlCfg.plfsCfg[SensorPack.BoxId].PlaceToolNo)) then
+
+        SndErrNo = 105
+        log_error_('SR','(T_T) 码垛坐标不可达['  + int_to_str_(SensorPack.BoxId) + '] !')
+        return(NG)
+    endif
+
+    if (not chk_pos_(PlaceUpPos, 0, PkPlCfg.plfsCfg[SensorPack.BoxId].PlaceToolNo)) then
+
+        SndErrNo = 106
+        log_error_('SR','(T_T) 码垛抬起坐标不可达['  + int_to_str_(SensorPack.BoxId) + '] !')
+        return(NG)
+    endif
+
+    SensorPack.PlacePosn = decom_pos_(PlacePos)
+
+    return(OK)
+end second_chk_
+
+routine chk_olp_tol_
+var
+    I               : integer
+    DOfsX           : real
+    DOfsConv        : real
+    DOfsY           : real
+    
+begin
+    for I = 1 to MAX_QUE_NUM do
+        DOfsX       = abs(ThisPart.PkcvOfs[1] - PartIndex[ThisPart.ConvId,I].PartData.PkcvOfs[1]) 
+        DOfsY       = abs(ThisPart.PkcvOfs[2] - PartIndex[ThisPart.ConvId,I].PartData.PkcvOfs[2]) 
+        DOfsConv    = abs(ThisPart.EncCount - PartIndex[ThisPart.ConvId,I].PartData.EncCount) / &
+                          get_sys_rel_('$lnsch[' + int_to_str_(PkPlCfg.pkcvCfg[ThisPart.ConvId].LnSchNo) + '].$scale')
+        if sqrt((DOfsX - DOfsConv) * (DOfsX - DOfsConv) + (DOfsY * DOfsY)) <= PkPlCfg.OverlapTol then return(true); endif
+    endfor
+    return(false)
+end chk_olp_tol_
+
+routine put_queue_
+var
+    SequeueNo       : integer
+    PutStat         : integer
+    I               : integer
+begin
+
+    append_queue(QIndex, SecondQueue[ThisPart.ConvId], QueueIndex[ThisPart.ConvId], SequeueNo, PutStat)
+
+    if PutStat <> SND_SUCCESS then return(PutStat); endif
+
+    if PartIndex[ThisPart.ConvId,MAX_QUE_NUM].NrQueue > 0 then return(-1); endif
+
+    for I = MAX_QUE_NUM downto 2 do PartIndex[ThisPart.ConvId, I] = PartIndex[ThisPart.ConvId, I - 1]; endfor
+
+    PartIndex[ThisPart.ConvId, 1].NrQueue    = QIndex
+    PartIndex[ThisPart.ConvId, 1].PartData   = ThisPart
+
+    return(SND_SUCCESS) 
+end put_queue_
+
+routine install_ah_
+begin
+	condition[COND_AB]: with $scan_time = 512
+		when (abort) or (dout[uopo_fault]) do
+			noabort
+			ab_hndlr_
+	endcondition
+
+    enable condition[COND_AB]
+
+    if PkPlCfg.SrEnable then
+        if PkPlCfg.NumOfConv >= 1 then
+            condition[COND_SR]: with $scan_time = PkPlCfg.SrSens
+                when din[PkPlCfg.pkcvCfg[1].SrPortIndex]+ do
+                    enc1_count_
+                    enable condition[COND_SR]
+            endcondition
+            enable condition[COND_SR]
+        endif
+        if PkPlCfg.NumOfConv >= 2 then
+            condition[COND_SR + 1]: with $scan_time = PkPlCfg.SrSens
+                when din[PkPlCfg.pkcvCfg[2].SrPortIndex]+ do
+                    enc2_count_
+                    enable condition[COND_SR + 1]
+            endcondition
+            enable condition[COND_SR + 1]
+        endif
+    --    if PkPlCfg.NumOfConv >= 3 then
+    --        condition[COND_SR + 2]: with $scan_time = PkPlCfg.SrSens
+    --            when din[PkPlCfg.pkcvCfg[3].SrPortIndex]+ do
+    --                enc3_count_
+    --                enable condition[COND_SR + 2]
+    --        endcondition
+    --        enable condition[COND_SR + 2]
+    --    endif
+    --    if PkPlCfg.NumOfConv >= 4 then
+    --        condition[COND_SR + 3]: with $scan_time = PkPlCfg.SrSens
+    --            when din[PkPlCfg.pkcvCfg[4].SrPortIndex]+ do
+    --                enc4_count_
+    --                enable condition[COND_SR + 3]
+    --        endcondition
+    --        enable condition[COND_SR + 3]
+    --    endif
+    endif
+end install_ah_
+
+routine remove_ah_
+var
+    I               : integer
+begin
+	purge condition[COND_AB]
+    if PkPlCfg.SrEnable then
+        for I = 1 to PkPlCfg.NumOfConv do purge condition[COND_SR + I - 1]; endfor
+    endif
+end remove_ah_
+
+routine ab_hndlr_
+var
+    I               : integer
+begin
+    BusOutput.SysEnable     = false
+    bus_uptout_(BusOutput)
+    disable condition[COND_AB]
+end ab_hndlr_
+
+routine get_encode_ 
+var
+    SequeueNo       : integer
+    Getstat         : integer
+begin
+
+    get_queue(ThisQueue, QueueData, EncodeVal, SequeueNo, Getstat)
+
+    return(Getstat)
+end get_encode_
+
+routine enc1_count_
+var
+    SequeueNo       : integer
+    AppStat         : integer
+begin
+    --Counts.Pict[1] = Counts.Pict[1] + 1
+    --log_info_('SR','(^0^) - Picture - 1 - ' + int_to_str_(Counts.Pict[1]) + '!')
+    append_queue(get_sys_int_('$enc_stat[' + int_to_str_(PkPlCfg.pkcvCfg[1].EncId) + '].$enc_count'), EncodeQue[1], EncodeVal[1], SequeueNo, AppStat)
+end enc1_count_
+
+routine enc2_count_
+var
+    SequeueNo       : integer
+    AppStat         : integer
+begin
+    --Counts.Pict[2] = Counts.Pict[2] + 1
+    --log_info_('SR','(^0^) - Picture - 2 - ' + int_to_str_(Counts.Pict[2]) + '!')
+    append_queue(get_sys_int_('$enc_stat[' + int_to_str_(PkPlCfg.pkcvCfg[2].EncId) + '].$enc_count'), EncodeQue[2], EncodeVal[2], SequeueNo, AppStat)
+end enc2_count_
+
+routine enc3_count_
+var
+    SequeueNo       : integer
+    AppStat         : integer
+begin
+    --Counts.Pict[3] = Counts.Pict[3] + 1
+    --log_info_('SR','(^0^) - Picture - 3 - ' + int_to_str_(Counts.Pict[3]) + '!')
+    append_queue(get_sys_int_('$enc_stat[' + int_to_str_(PkPlCfg.pkcvCfg[3].EncId) + '].$enc_count'), EncodeQue[3], EncodeVal[3], SequeueNo, AppStat)
+end enc3_count_
+
+routine enc4_count_
+var
+    SequeueNo       : integer
+    AppStat         : integer
+begin
+    --Counts.Pict[4] = Counts.Pict[4] + 1
+    --log_info_('SR','(^0^) - Picture - 4 - ' + int_to_str_(Counts.Pict[4]) + '!')
+    append_queue(get_sys_int_('$enc_stat[' + int_to_str_(PkPlCfg.pkcvCfg[3].EncId) + '].$enc_count'), EncodeQue[4], EncodeVal[4], SequeueNo, AppStat)
+end enc4_count_

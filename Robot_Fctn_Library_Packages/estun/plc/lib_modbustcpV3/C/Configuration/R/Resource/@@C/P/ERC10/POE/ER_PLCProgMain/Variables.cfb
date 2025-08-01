@@ -1,0 +1,4 @@
+ER_SYNC	ER_Sync
+ER_IO_Handle	PHY_SHM_Manage
+ER_SIMIO_Handle	SIM_SHM_Manage
+ER_SHARE_VAR_Handle	UpDatePlcShareTab

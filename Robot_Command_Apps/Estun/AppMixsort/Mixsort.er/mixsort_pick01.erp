@@ -1,0 +1,20 @@
+// InstParseVersion: V1.02
+Start:
+/**********************************/
+/*抓取工件程序*/
+/**********************************/
+/*过渡点*/
+MovJ{P=t_l.P0,Tool=t_g.MixTool,Coord=t_s.World}
+/*移动到抓取点正上方*/
+MovLOffset{RP=t_p.CopyPickPos,TP=t_l.PickUp,T="COORD",Tool=t_g.MixTool,Coord=t_s.World,B="RELATIVE",C=t_s.C100}
+/*等到端拾器伺服到位*/
+Servo01Ctrl{CtrlMode="WAITING"}
+/*移动到抓取点*/
+MovL{P=t_p.CopyPickPos,B="FINE"}
+/*开磁*/
+CALL tool_mag_on
+/*移动到抓取点正上方*/
+MovLOffset{RP=t_p.CopyPickPos,TP=t_l.PickRUp,T="COORD",Tool=t_g.MixTool,Coord=t_s.World,B="RELATIVE",C=t_s.C100}
+/*过渡点*/
+MovJ{P=t_l.P1}
+End;

@@ -1,0 +1,122 @@
+--***********************************************************
+--
+-- file Name: second_t.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2021 - 09 - 03
+--   Modification Data    ==   2021 - 09 - 18
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--   
+%include include\lib_busio_t
+
+const
+
+    -- regs
+    SS_CONV_CNT                         = 200   -- R[200]
+    SS_BOX_NO                           = 290   -- R[295]
+    SS_GRP_DIS                          = 300   -- R[300]
+
+    SS_PKCV_UP                          = 111   -- PR[111] 
+    SS_PKCV_RUP                         = 115   -- PR[115] 
+    SS_ADJ_POS                          = 135   -- PR[135]
+    SS_PLUP_POS                         = 190   -- PR[190]   
+    SS_PL_POS                           = 191   -- PR[191]
+    SS_PKCV_REF                         = 180   -- PR[180] - PR[183]   
+    SS_PKCV_WPOS                        = 179   -- PR[179]    
+
+    MAX_NUM_CONV                        = 4
+    MAX_NUM_BOX                         = 8
+
+    AGENT_PUT_Q                         = 1
+    AGENT_CHG_Q                         = 2
+
+    MAX_QUE_NUM                         = 30
+
+    COND_AB                             = 10
+    COND_SR                             = 11
+
+    SND_SUCCESS                         = 0
+
+type
+
+    box_lim_t from second_t = structure
+        MaxX            : real
+        MinX            : real
+        MaxY            : real
+        MinY            : real
+    endstructure
+
+    pkcv_dat_t from second_t = structure
+        CstnId          : integer
+        LnSchNo         : integer
+        VReg            : integer
+        EncId           : integer
+        SrPortIndex     : integer
+        ConvCount       : integer
+        PkRefPreg       : integer
+        TolOfsUpDst     : real
+        TolOfsRUpDst    : real
+        ManualZerOfs    : vector
+        ManualAdjOfs    : vector
+    endstructure
+
+    plfs_dat_t from second_t = structure
+        PlaceToolNo     : integer
+        PlaceUpDst      : real
+        PlaceE7Pos      : real
+        BoxFrame        : position
+        Lim             : box_lim_t
+    endstructure
+
+    pkpl_cfg_t from second_t = structure
+        RobId           : integer
+        NumAxis         : integer
+        NumOfConv       : integer
+        NumOfBox        : integer
+        OverlapTol      : real
+        SrEnable        : boolean
+        SrSens          : integer
+        --
+        NumOfConvReg    : integer
+        ServoDistReg    : integer
+        --
+        TolOfsUPreg     : integer
+        TolOfsRUPreg    : integer
+        AdjOfsPreg      : integer
+        --
+        PlaceIDReg      : integer
+        PlaceUpPreg     : integer
+        PlacePreg       : integer
+        --
+        pkcvCfg         : array[MAX_NUM_CONV] of pkcv_dat_t
+        plfsCfg         : array[MAX_NUM_BOX] of plfs_dat_t
+    endstructure
+
+    part_dat_t from second_t = structure
+        ConvId          : integer
+        TaskId          : integer
+        BoxId           : integer
+        PkcvOfs         : array[9] of real
+        PlacePosn       : array[9] of real
+        EncCount        : integer
+        ServoDist       : real
+        Thickness       : real
+        Weight          : real
+        Num             : integer
+    endstructure
+
+    queue_t_ from second_t = structure
+        NrQueue         : integer
+        PartData        : part_dat_t
+    endstructure
+
+    queue_idx_t from second_que_t = array[MAX_QUE_NUM] of integer
+
+    part_idx_t from second_que_t = array[MAX_QUE_NUM] of queue_t_

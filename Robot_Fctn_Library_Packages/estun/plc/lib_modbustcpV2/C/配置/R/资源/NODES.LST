@@ -1,0 +1,6 @@
+TASKDIR	4	Tasks		eCLR	I486_LE_MSC12_ACONTIS
+TASK	5	任务		eCLR	I486_LE_MSC12_ACONTIS
+PROGRAM	6	lib_plc_if	lib_modbustcpV2	eCLR	I486_LE_MSC12_ACONTIS
+PROGRAM	6	modbusTcp_data	modbusTcp_data		
+VAR_GLOBALS	4	Global_Variables	C\配置\R\资源\Global_Variables.VGR		
+IO/CONFIGURATION	4	IO_Configuration	C\配置\R\资源\IOCONFIG.CNF		

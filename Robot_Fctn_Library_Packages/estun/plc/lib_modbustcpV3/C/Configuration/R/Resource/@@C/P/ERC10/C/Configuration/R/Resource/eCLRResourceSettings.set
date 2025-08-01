@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceProfile DeviceProfileName="Robot Simulation" DeviceProfileVersion="2.4.0" UpdateType="AskUser">
+  <CILGenerator Name="Ade.Eclr.CilGenerator" Version="3.2.0" IsNative="false" />
+  <CILCompiler Prefix="cilc" ProcessorType="i486" ProgrammingModel="msc12" Version="3.0.0" CompilerOptions="2" />
+  <SimulationSupported>false</SimulationSupported>
+  <MetaDump Version="1.1.0" />
+  <ImageBuilder Version="1.0.0" />
+  <Assembly Name="ErShmLib" Version="1.0.0" IsNative="true" />
+  <Assembly Name="ErShmIoManage" Version="1.0.0" IsNative="true" />
+  <Assembly Name="TorqueOffsetShmLib" Version="3.0.0" IsNative="true" />
+  <Assembly Name="mscorlib" Version="2.4.0" IsNative="true" />
+  <Assembly Name="pcoslib" Version="2.5.3" IsNative="true" />
+  <Assembly Name="eclrlib" Version="2.6.0" IsNative="true" />
+  <Assembly Name="Iec61131Standard" Version="1.9.2" IsNative="false" />
+  <Assembly Name="dummyio" Version="1.4.0" IsNative="false" />
+  <Library Name="proconos" Path="..\..\..\ProgramData\PHOENIX CONTACT Software\MULTIPROG Express\5_50_10228\plc\FW_LIB\PROCONOS" InternalVersion="1.5.1">
+    <Assembly Name="ProConOS" Version="1.5.1" IsNative="false" />
+  </Library>
+  <DeviceDescription CPUType="259" MaximumProgramSize="2500000" MaximumDataSize="15000000" MaximumRetainDataSize="50000" MaximumImageSize="67108864" MaximumImageFilesSize="67108864" IsDownloadChangesCapable="true" ScheduleInterval="1000" ThreadingPriorityLevel="7" ThreadingType="Preemptive" LogicAnalyzerState="Inactive">
+    <Assembly Name="mscorlib" Version="2.4.0" IsNative="true" />
+    <Assembly Name="eclrlib" Version="2.6.0" IsNative="true" />
+    <Assembly Name="pcoslib" Version="2.6.2" IsNative="true" />
+    <Assembly Name="EcatIoShmLib" Version="1.0.0" IsNative="true" />
+    <Assembly Name="SHM_LIB" Version="1.0.0" IsNative="true" />
+    <Assembly Name="GetTickTime" Version="1.0.0" IsNative="true" />
+    <Assembly Name="INI_File_WR" Version="1.0.0" IsNative="true" />
+    <Assembly Name="TCP_IP_Lib" Version="1.0.0" IsNative="true" />
+    <Assembly Name="ModbusTCP_Lib" Version="1.0.0" IsNative="true" />
+    <Assembly Name="Read_File_Function" Version="1.0.0" IsNative="true" />
+    <Assembly Name="TorqueOffsetShmLib" Version="3.0.0" IsNative="true" />
+    <Assembly Name="ErShmLib" Version="1.0.0" IsNative="true" />
+    <Assembly Name="ErShmIoManage" Version="1.0.0" IsNative="true" />
+  </DeviceDescription>
+  <VirtualLimitation UserCodeSize="-1" UserCodeSizeWarningLevel="-1" DataSize="-1" DataSizeWarningLevel="-1" RetainDataSize="-1" RetainDataSizeWarningLevel="-1" />
+  <DownloadPouInfoList>true</DownloadPouInfoList>
+  <DownloadSfcPouList>true</DownloadSfcPouList>
+  <TaskProperties MinimumInterval="1000" MaximumInterval="1800000000" DefaultIntervalNewTask="100000" MinimumWatchdog="1000" MaximumWatchdog="5000000" DefaultWatchdogNewTask="100000" MaximumUserTasks="16" TaskTimeResolution="1000" AvailablePriorities="16" UniquePriorities="false" />
+</ResourceProfile>

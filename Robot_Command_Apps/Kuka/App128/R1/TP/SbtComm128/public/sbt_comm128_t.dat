@@ -1,0 +1,84 @@
+&ACCESS RV3
+defdat sbt_comm128_t public
+;***********************************************************
+;
+; file Name: sbt_comm128_t
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 05 - 12
+;   Modification Data    ==   2022 - 05 - 12
+;
+; Author: speedbot
+;
+; Version: 2.0
+;***********************************************************
+;
+
+global const int STATE_FREQ                 = 32            ; Real-time Status Information Frame Rate for Robot [MS]
+
+global const int FLG_STATE_TIME_INDEX       = 10            ; Real-time Status Interrupt Counter // TIMER_FLAG[*]
+
+; Do not change these definitions
+;
+global const char CMD_CTRL                  = 1             
+global const char CMD_IO                    = 2    
+global const char CMD_STOP                  = 200  
+
+; Code added on 2025.05.14
+;
+global const char CMD_PARAM                 = 100           ; 
+;
+
+global const char MTN_MOVJ                  = 6                   
+global const char MTN_MOVL                  = 7      
+global const char MTN_MOVC1                 = 8     
+global const char MTN_MOVC2                 = 0     
+
+global const int ERR_SUCCESS                = 0          
+global const int ERR_MOVTYPE                = 10001      
+global const int ERR_ACC                    = 10002       
+global const int ERR_SMOOT                  = 10003     
+global const int ERR_VELOCITY               = 10004    
+global const int ERR_MOVEID                 = 10005   
+global const int ERR_POINT                  = 10006  
+
+global const int ERR_CFG_IO1                = 20001 
+global const int ERR_CFG_IO2                = 20002
+global const int ERR_CFG_IO3                = 20003 
+global const int ERR_CFG_IO4                = 20004 
+global const int ERR_CFG_IO5                = 20005 
+global const int ERR_CFG_IO6                = 20006 
+global const int ERR_CFG_IO7                = 20007 
+global const int ERR_CFG_IO8                = 20008 
+
+; Code added on 2025.06.01
+; Process Type
+
+global const char PRC_ARC_ST                = "'H65'"
+global const char PRC_ARC_ED                = "'H66'"
+;
+
+
+; global const char TYPE_KUKA                 = 3
+
+global const int FLG_ACK_MOV_NUM            = 9
+
+global const char MTN_TRJ_PTOG_NAME[24]                        
+MTN_TRJ_PTOG_NAME[]                         = "sbt_comm128_main"
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+global const real MTN_MAX_SMT               = 100.0     ; Maximum Smooth Distance    
+global const int MTN_MAX_TRAJE_LEN          = 1000      ; Maximum Trajectory Length
+
+; Trajectory Information Structure
+global struc trajectory_pt_t int TrjMoveId, char TrjMoveType, char TrjProcessType, char TrjAcc, real TrjSmoot, real TrjSpeed, int TrjProcParm1, int TrjProcParm2, real TrjProcParm3, e6pos TrajePose
+
+;Weld Sch & Weave
+global struc weld_channel_t bool WeldEnable, int JobMode, real Channel1, Channel2, Channel3, Channel4, Channel5, Channel6, Channel7, Channel8
+global struc weave_sch_t real Length, Amplitude, Angle, LeftSideDelay, RightSideDelay
+
+
+enddat

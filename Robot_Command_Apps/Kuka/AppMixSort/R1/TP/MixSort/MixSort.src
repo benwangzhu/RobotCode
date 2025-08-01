@@ -1,0 +1,784 @@
+&access RP
+&comment Mixsort
+def MixSort()
+   ;***********************************************************
+   ;
+   ; Copyright 2018 - 2024 speedbot All Rights reserved.
+   ;
+   ; File Name: MixSort.src
+   ;
+   ; Description:
+   ;   Language             ==   Krl for KUKA ROBOT
+   ;   Date                 ==   2023 - 07 - 04
+   ;   Modification Data    ==   2024 - 09 - 27
+   ;
+   ; Author: speedbot
+   ;
+   ; Version: 1.0
+   ;*********************************************************************************************************;
+end
+
+;FOLD ----------------------------------------------- Sub Init ----------------------------------------------
+
+global def mixsort_SubMitInit()
+
+    SEMixSortKey = 0
+end
+
+global def mixsort_SubMitLoop()
+
+    if SEMixSortKey > 0 then
+        switch (SEMixSortKey)
+        case 1
+            mag_tool_forc_ctrl_(#ON, 0)
+            log_info_("Mag Tool Force On!")
+        case 2
+            mag_tool_forc_ctrl_(#OFF, 0)
+            log_info_("Mag Tool Force Off!")
+        case 3
+            servo01_ctrl_(#MOVING, 100)
+            log_info_("Servo Open!")
+        case 4
+            servo01_ctrl_(#MOVING, 0)
+            log_info_("Servo Close!")
+        case 5
+            cwrite($cmd, State, mode, "CANCEL 1")
+            cwrite($cmd, State, mode, "RUN/R1/MOVE_TO_HOME()")
+            log_info_("Call MOVE_TO_HOME!")
+        case 6
+            cwrite($cmd, State, mode, "CANCEL 1")
+            cwrite($cmd, State, mode, "RUN/R1/CELL()")
+            log_info_("Call Cell!")
+        default
+        endswitch
+
+        SEMixSortKey = 0
+    endif
+end
+
+;ENDFOLD
+
+;FOLD ----------------------------------------------- Global Function ----------------------------------------------
+
+global def mixsort_sr_inte()
+
+   	bus_init_(BusInput, BusOutput, MixPkCfg.RobotId, PTC_ST_PK)
+
+	$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = true
+	$timer[MIXSORT_TIMEOUT_TIME_IDX] = -abs(BusTimeout)
+		
+	ToRobotAck = #TO_TP_HOME
+	ToRobotFlg = false
+
+	global interrupt decl PRIO_MIXSORT_TELL_NO when GiTellId == GoRobTellId do mixsort_sr()
+	global interrupt decl PRIO_MIXSORT_TIMEOUT_NO when $TIMER[MIXSORT_TIMEOUT_TIME_IDX] > 0 do mixsort_timeout()
+	global interrupt decl PRIO_MIXSORT_READY_NO when DiSysReady == false do mixsort_notReady()
+	interrupt on PRIO_MIXSORT_TELL_NO
+	interrupt on PRIO_MIXSORT_READY_NO
+
+	wait sec 0.012
+ 
+end 
+
+global def mixsort_edg_picture()
+   
+	interrupt off PRIO_MIXSORT_TIMEOUT_NO
+	continue
+	$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = true
+
+	BusOutput.JobId = MIX_EDG_PIT
+	BusOutput.RobMsgType = 1
+	bus_stell_(BusInput, BusOutput)
+
+	if DEBUG then
+		Offset = 0
+		str_clear_(Msg[])
+		swrite(Msg[], State, Offset, "Edg Picture![BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
+		log_info_(Msg[])
+	endif
+
+	if BusTimeout > 0 then
+		continue
+		$timer[MIXSORT_TIMEOUT_TIME_IDX] = -abs(BusTimeout)
+		continue
+		$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = false
+		interrupt on PRIO_MIXSORT_TIMEOUT_NO
+	endif
+
+end 
+
+global def mixsort_get_picture()
+
+	AgentData.PictData = {IsUnrefId 0, PictVec {X 0, Y 0, Z 0}, PictPos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}}
+	CurAgtData.PictData = {IsUnrefId 0, PictVec {X 0, Y 0, Z 0}, PictPos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}}
+
+	interrupt off PRIO_MIXSORT_TIMEOUT_NO
+	continue
+	$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = true
+
+	BusOutput.JobId = MIX_PIT_DAT
+	BusOutput.RobMsgType = 1
+	bus_stell_(BusInput, BusOutput)
+
+	if DEBUG then
+		Offset = 0
+		str_clear_(Msg[])
+		swrite(Msg[], State, Offset, "Get Picture Pos![BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
+		log_info_(Msg[])
+	endif
+
+	if BusTimeout > 0 then
+		continue
+		$timer[MIXSORT_TIMEOUT_TIME_IDX] = -abs(BusTimeout)
+		continue
+		$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = false
+		interrupt on PRIO_MIXSORT_TIMEOUT_NO
+	endif
+   
+end 
+
+global def mixsort_ltn_picture()
+
+	interrupt off PRIO_MIXSORT_TIMEOUT_NO
+	continue
+	$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = true
+
+	BusOutput.JobId = MIX_LTN_PIT
+	BusOutput.RobMsgType = 1
+
+	bus_scartp_(BusOutput.BusIoSt + 64, cur_pos_(0,0), 6)
+	bus_stell_(BusInput, BusOutput)
+
+	if DEBUG then
+		Offset = 0
+		str_clear_(Msg[])
+		swrite(Msg[], State, Offset, "Ltn Picture![BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
+		log_info_(Msg[])
+	endif
+
+	if BusTimeout > 0 then
+		continue
+		$timer[MIXSORT_TIMEOUT_TIME_IDX] = -abs(BusTimeout)
+		continue
+		$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = false
+		interrupt on PRIO_MIXSORT_TIMEOUT_NO
+	endif
+end 
+
+global def mixsort_get_data()
+
+	AgentData.PartData = {IsUnrefId 0, FromRobId 0, PartLen 0, PlaceId 0, MagPip[] " ", OfsOrt 0, OfsRz 0, GripDist1 0, GripDist2 0, Thickness 0, Weight 0, PkPos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}, PlPos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}}
+	CurAgtData.PartData = {IsUnrefId 0, FromRobId 0, PartLen 0, PlaceId 0, MagPip[] " ", OfsOrt 0, OfsRz 0, GripDist1 0, GripDist2 0, Thickness 0, Weight 0, PkPos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}, PlPos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}}
+
+	interrupt off PRIO_MIXSORT_TIMEOUT_NO
+	continue
+	$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = true
+
+	; Code added on 2025.03.02
+	; Add feedback for Picking status
+	continue
+	if $flag[F_PICKING] == true then
+		bus_sbyte_(BusOutput.BusIoSt + 64, 1)
+	else
+		bus_sbyte_(BusOutput.BusIoSt + 64, 0)
+	endif
+	;
+	BusOutput.JobId = MIX_PIK_DAT
+	BusOutput.RobMsgType = 1
+	bus_stell_(BusInput, BusOutput)
+
+	if DEBUG then
+		Offset = 0
+		str_clear_(Msg[])
+		swrite(Msg[], State, Offset, "Get Data![BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
+		log_info_(Msg[])
+	endif
+
+	if BusTimeout > 0 then
+		continue
+		$timer[MIXSORT_TIMEOUT_TIME_IDX] = -abs(BusTimeout)
+		continue
+		$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = false
+		interrupt on PRIO_MIXSORT_TIMEOUT_NO
+	endif
+end 
+
+global def mixsort_get_task()
+
+	interrupt off PRIO_MIXSORT_TIMEOUT_NO
+	continue
+	$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = true
+
+	; Code added on 2025.06.16
+	; Add feedback for Picking status
+	continue
+	if $flag[F_PICKING] == true then
+		bus_sbyte_(BusOutput.BusIoSt + 64, 1)
+	else
+		bus_sbyte_(BusOutput.BusIoSt + 64, 0)
+	endif
+	;
+	
+	BusOutput.JobId = MIX_GET_TASK
+	BusOutput.RobMsgType = 1
+	bus_stell_(BusInput, BusOutput)
+
+	if DEBUG then
+		Offset = 0
+		str_clear_(Msg[])
+		swrite(Msg[], State, Offset, "Get Task![BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
+		log_info_(Msg[])
+	endif
+
+	if BusTimeout > 0 then
+		continue
+		$timer[MIXSORT_TIMEOUT_TIME_IDX] = -abs(BusTimeout)
+		continue
+		$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = false
+		interrupt on PRIO_MIXSORT_TIMEOUT_NO
+	endif
+end 
+
+;ENDFOLD
+
+;FOLD ----------------------------------------------- Local Function ----------------------------------------------
+
+def mixsort_get_pickpos()
+
+	interrupt off PRIO_MIXSORT_TIMEOUT_NO
+	continue
+	$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = true
+
+	BusOutput.JobId = MIX_PIK_DAT
+	BusOutput.RobMsgType = BusOutput.RobMsgType + 1
+	bus_stell_(BusInput, BusOutput)
+
+	if DEBUG then
+		Offset = 0
+		str_clear_(Msg[])
+		swrite(Msg[], State, Offset, "Get Pick Pos![BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
+		log_info_(Msg[])
+	endif
+
+	if BusTimeout > 0 then
+		continue
+		$timer[MIXSORT_TIMEOUT_TIME_IDX] = -abs(BusTimeout)
+		continue
+		$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = false
+		interrupt on PRIO_MIXSORT_TIMEOUT_NO
+	endif
+end 
+
+def mixsort_get_placepos()
+
+	interrupt off PRIO_MIXSORT_TIMEOUT_NO
+	continue
+	$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = true
+
+	BusOutput.JobId = MIX_PIK_DAT
+	BusOutput.RobMsgType = BusOutput.RobMsgType + 1
+	bus_stell_(BusInput, BusOutput)
+
+	if DEBUG then
+		Offset = 0
+		str_clear_(Msg[])
+		swrite(Msg[], State, Offset, "Get Place Pos![BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
+		log_info_(Msg[])
+	endif
+
+	if BusTimeout > 0 then
+		continue
+		$timer[MIXSORT_TIMEOUT_TIME_IDX] = -abs(BusTimeout)
+		continue
+		$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = false
+		interrupt on PRIO_MIXSORT_TIMEOUT_NO
+	endif
+end 
+
+def mixsort_feedback(FeedbackId : in)
+	decl char FeedbackId
+
+	interrupt off PRIO_MIXSORT_TIMEOUT_NO
+	continue
+	$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = true
+	bus_sbyte_(BusOutput.BusIoSt + 64, FeedbackId)
+	BusOutput.RobMsgType = BusOutput.RobMsgType + 1
+	bus_stell_(BusInput, BusOutput)
+
+	if DEBUG then
+		Offset = 0
+		str_clear_(Msg[])
+		swrite(Msg[], State, Offset, "Feedback![FeedCode:%d, BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", FeedbackId, BusOutput.JobId, BusOutput.RobMsgType)
+		log_info_(Msg[])
+	endif
+
+	if BusTimeout > 0 then
+		continue
+		$timer[MIXSORT_TIMEOUT_TIME_IDX] = -abs(BusTimeout)
+		continue
+		$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = false
+		interrupt on PRIO_MIXSORT_TIMEOUT_NO
+	endif
+end 
+
+def mixsort_sr()
+
+	interrupt off PRIO_MIXSORT_TIMEOUT_NO
+
+	MixStatus = bus_rtell_(BusInput, BusOutput, BusTimeout)
+	if MixStatus <> OK then 
+
+        Offset = 0
+		str_clear_(Msg[])
+        swrite(Msg[], State, Offset, "BusComm Err![ErrorCode:%d, BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", MixStatus, BusOutput.JobId, BusOutput.RobMsgType)
+        log_warn_(Msg[])
+		
+		mixsort_ack(#TO_TP_HOME) 
+
+		return
+	endif
+
+	if BusOutput.JobId == MIX_EDG_PIT then
+
+		if DEBUG then
+			Offset = 0
+			str_clear_(Msg[])
+			swrite(Msg[], State, Offset, "Edg Picture Successful!")
+			log_info_(Msg[])
+		endif
+		
+		mixsort_ack(#TO_TP_NEXT) 
+	endif
+
+	if BusOutput.JobId == MIX_PIT_DAT then
+		switch BusOutput.RobMsgType
+		case 1
+			bus_uptin_(BusInput)
+			if BusInput.Finished then
+			   
+				if DEBUG then
+					Offset = 0
+					str_clear_(Msg[])
+					swrite(Msg[], State, Offset, "All Finished!")
+					log_info_(Msg[])
+				endif
+				mixsort_ack(#TO_TP_HOME)
+				return
+			endif 
+			
+			RefPictPos = MixPkCfg.PictCfg.RefPictPos
+			
+			CurAgtData.PictData.PictVec.X = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 64)
+			CurAgtData.PictData.PictVec.Y = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 96)
+			CurAgtData.PictData.PictVec.Z = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 128)
+
+			if DEBUG then
+				Offset = 0
+				str_clear_(Msg[])
+				swrite(Msg[], State, Offset, "GetPicture Successful![x:%.1f, y:%.1f, z:%.1f]", CurAgtData.PictData.PictVec.x, CurAgtData.PictData.PictVec.y, CurAgtData.PictData.PictVec.z)
+				log_info_(Msg[])
+			endif
+
+			RefPictPos.X = CurAgtData.PictData.PictVec.X
+			RefPictPos.Y = CurAgtData.PictData.PictVec.Y
+
+			; Picture Pos Z = Ref + Get
+			RefPictPos.Z = CurAgtData.PictData.PictVec.Z + RefPictPos.Z
+			
+			CurAgtData.PictData.PictPos = mixsort_cnv_pos_(RefPictPos)
+			
+			CurAgtData.PictData.IsUnrefId = 0
+			
+			if (CurAgtData.PictData.PictPos.x > MixPkCfg.PictCfg.PtMaxData.x) or (CurAgtData.PictData.PictPos.x < MixPkCfg.PictCfg.PtMinData.x) then
+				
+				CurAgtData.PictData.IsUnrefId = 101
+				Offset = 0
+				str_clear_(Msg[])
+				swrite(Msg[], State, Offset, "Pict Pos X Unref![PictPos.x:%.1f, Max:%.1f, Min:%.1f]", CurAgtData.PictData.PictPos.x, MixPkCfg.PictCfg.PtMaxData.x, MixPkCfg.PictCfg.PtMinData.x)
+				log_warn_(Msg[])
+				goto PICTURE_ACK
+			endif
+			
+			if (CurAgtData.PictData.PictPos.y > MixPkCfg.PictCfg.PtMaxData.y) or (CurAgtData.PictData.PictPos.y < MixPkCfg.PictCfg.PtMinData.y) then
+				
+				CurAgtData.PictData.IsUnrefId = 102
+				Offset = 0
+				str_clear_(Msg[])
+				swrite(Msg[], State, Offset, "Pict Pos Y Unref![PictPos.y:%.1f, Max.y:%.1f, Min.y:%.1f]", CurAgtData.PictData.PictPos.y, MixPkCfg.PictCfg.PtMaxData.y, MixPkCfg.PictCfg.PtMinData.y)
+				log_warn_(Msg[])
+				goto PICTURE_ACK
+			endif
+			
+			; if chk_pos_(CurAgtData.PictData.PictPos, 0, 0) == false then
+				
+			; 	CurAgtData.PictData.IsUnrefId = 103
+			; 	Offset = 0
+			; 	str_clear_(Msg[])
+			; 	swrite(Msg[], State, Offset, "Picture Pos Is Unref!")
+			; 	log_warn_(Msg[])
+			; 	goto PICTURE_ACK
+			; endif
+			
+			PICTURE_ACK:
+			mixsort_feedback(CurAgtData.PictData.IsUnrefId)
+		case 2
+			if CurAgtData.PictData.IsUnrefId <> 0 then
+
+				; 
+				mixsort_get_task()
+				return
+			endif
+				
+			if DEBUG then
+				Offset = 0
+				str_clear_(Msg[])
+				swrite(Msg[], State, Offset, "Robot Move To Pict Pos!")
+				log_info_(Msg[])
+			endif
+
+			AgentData = CurAgtData
+			mixsort_ack(#TO_TP_PICT)
+				
+		endswitch
+		
+	endif
+
+	if BusOutput.JobId == MIX_LTN_PIT then
+
+		if DEBUG then
+			Offset = 0
+			str_clear_(Msg[])
+			swrite(Msg[], State, Offset, "Ltn Picture Successful!")
+			log_info_(Msg[])
+		endif
+
+		mixsort_ack(#TO_TP_NEXT) 
+	endif
+
+	if BusOutput.JobId == MIX_PIK_DAT then
+		
+		bus_uptin_(BusInput)
+
+		if BusInput.Finished == true then  
+			
+			if DEBUG then
+				Offset = 0
+				str_clear_(Msg[])
+				swrite(Msg[], State, Offset, "Finished!")
+				log_info_(Msg[])
+			endif
+
+			if MixPkCfg.EyeInHand then
+				mixsort_get_picture()
+			else
+				mixsort_ack(#TO_TP_HOME)
+			endif
+			return
+		endif
+
+		switch BusOutput.RobMsgType
+		case 1
+			CurAgtData.PartData.FromRobId   = bus_gbyte_(#IO_DIN, BusInput.BusIoSt + 64)
+			CurAgtData.PartData.PartLen     = round_(bus_gsint_(#IO_DIN, BusInput.BusIoSt + 72) / 10.0)
+			CurAgtData.PartData.OfsOrt      = bus_gsint_(#IO_DIN, BusInput.BusIoSt + 88) / 10.0
+			CurAgtData.PartData.OfsRz       = bus_gsint_(#IO_DIN, BusInput.BusIoSt + 104) / 10.0
+			CurAgtData.PartData.MagPip[1]   = bus_gbyte_(#IO_DIN, BusInput.BusIoSt + 120)
+			CurAgtData.PartData.MagPip[2]   = bus_gbyte_(#IO_DIN, BusInput.BusIoSt + 128)
+			CurAgtData.PartData.MagPip[3]   = bus_gbyte_(#IO_DIN, BusInput.BusIoSt + 136)
+			CurAgtData.PartData.MagPip[4]   = bus_gbyte_(#IO_DIN, BusInput.BusIoSt + 144)
+			CurAgtData.PartData.MagPip[5]   = bus_gbyte_(#IO_DIN, BusInput.BusIoSt + 152)
+			CurAgtData.PartData.MagPip[6]   = bus_gbyte_(#IO_DIN, BusInput.BusIoSt + 160)
+			CurAgtData.PartData.MagPip[7]   = bus_gbyte_(#IO_DIN, BusInput.BusIoSt + 168)
+			CurAgtData.PartData.MagPip[8]   = bus_gbyte_(#IO_DIN, BusInput.BusIoSt + 176)  
+			CurAgtData.PartData.GripDist1   = bus_gsint_(#IO_DIN, BusInput.BusIoSt + 184) / 10.0
+			CurAgtData.PartData.Thickness   = bus_gsint_(#IO_DIN, BusInput.BusIoSt + 200) / 10.0
+			CurAgtData.PartData.Weight      = bus_gsint_(#IO_DIN, BusInput.BusIoSt + 216) / 10.0
+			CurAgtData.PartData.PlaceId     = bus_gbyte_(#IO_DIN, BusInput.BusIoSt + 232)
+			CurAgtData.PartData.GripDist2   = bus_gsint_(#IO_DIN, BusInput.BusIoSt + 240) / 10.0
+			mixsort_get_pickpos()
+
+			if DEBUG then
+				Offset = 0
+				str_clear_(Msg[])
+				swrite(Msg[], State, Offset, "GetData Successful![GripDist1:%.1f, PartLen:%.1f, PlaceId:%d]", CurAgtData.PartData.GripDist1, CurAgtData.PartData.PartLen, CurAgtData.PartData.PlaceId)
+				log_info_(Msg[])
+			endif
+			return
+		case 2
+			
+			CartPos1 = cur_pos_(0, 0)
+			CartPos1 = {E1 0.0, E2 0.0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+			CartPos1.x = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 64)
+			CartPos1.y = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 96)
+			CartPos1.z = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 128)
+			CartPos1.a = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 160)
+			CartPos1.b = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 192)
+			CartPos1.c = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 224)
+			mixsort_get_placepos()
+
+			if DEBUG then
+				Offset = 0
+				str_clear_(Msg[])
+				swrite(Msg[], State, Offset, "GetPick Successful![x:%.1f, y:%.1f, z:%.1f]", CartPos1.x, CartPos1.y, CartPos1.z)
+				log_info_(Msg[])
+			endif
+			return
+		case 3
+			CartPos2 = cur_pos_(0, 0)
+			CartPos2 = {E1 0.0, E2 0.0, E3 0.0, E4 0.0, E5 0.0, E6 0.0}
+			CartPos2.x = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 64)
+			CartPos2.y = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 96)
+			CartPos2.z = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 128)
+			CartPos2.a = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 160)
+			CartPos2.b = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 192)
+			CartPos2.c = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 224)
+
+			if DEBUG then
+				Offset = 0
+				str_clear_(Msg[])
+				swrite(Msg[], State, Offset, "GetPlace Successful![x:%.1f, y:%.1f, z:%.1f]", CartPos2.x, CartPos2.y, CartPos2.z)
+				log_info_(Msg[])
+			endif
+
+			CurAgtData.PartData.PkPos = mixsort_cnv_pos_(CartPos1)
+	  
+			if (CurAgtData.PartData.Thickness < 0) or (CurAgtData.PartData.Thickness > 100) then 
+			
+				Offset = 0
+				str_clear_(Msg[])
+				swrite(Msg[], State, Offset, "Part Thickness Error![Thickness:%.1f]", CurAgtData.PartData.Thickness)
+				log_error_(Msg[])
+			endif      
+
+
+			if CurAgtData.PartData.PlaceId > MixPkCfg.NumPlPoint then 
+			
+				CurAgtData.PartData.IsUnrefId = 1
+				Offset = 0
+				str_clear_(Msg[])
+				swrite(Msg[], State, Offset, "Number exceeds the set maximum number![PlaceId:%d, NumPlPoint:%d]", CurAgtData.PartData.PlaceId, MixPkCfg.NumPlPoint)
+				log_warn_(Msg[])
+				goto PICK_ACK 
+			endif      
+			 
+			; if not chk_pos_(CurAgtData.PartData.PkPos, 0, MixPkCfg.PickCfg.PickToolNo) then 
+			
+			; 	CurAgtData.PartData.IsUnrefId = 2
+			; 	Offset = 0
+			;   str_clear_(Msg[])
+			; 	swrite(Msg[], State, Offset, "Pick Pos Unref!")
+			; 	log_warn_(Msg[])
+			; 	goto PICK_ACK 
+			; endif
+			 
+			if ((CurAgtData.PartData.PkPos.X > MixPkCfg.PickCfg.PkMaxData.X) or (CurAgtData.PartData.PkPos.X < MixPkCfg.PickCfg.PkMinData.X)) and (GlobalTaskId == 2) then
+			
+				CurAgtData.PartData.IsUnrefId = 5
+				Offset = 0
+				str_clear_(Msg[])
+				swrite(Msg[], State, Offset, "Pick Pos X Unref![PkPos.x:%.1f, Max:%.1f, Min.x:%.1f]", CurAgtData.PartData.PkPos.X, MixPkCfg.PickCfg.PkMaxData.X, MixPkCfg.PickCfg.PkMinData.X)
+				log_warn_(Msg[])
+				goto PICK_ACK
+			endif
+			 
+			if (CurAgtData.PartData.PkPos.Y > MixPkCfg.PickCfg.PkMaxData.Y) or (CurAgtData.PartData.PkPos.Y < MixPkCfg.PickCfg.PkMinData.Y) and (GlobalTaskId == 2) then
+			
+				CurAgtData.PartData.IsUnrefId = 6
+				Offset = 0
+				str_clear_(Msg[])
+				swrite(Msg[], State, Offset, "Pick Pos Y Unref![PkPos.y:%.1f, Max:%.1f, Min:%.1f]", CurAgtData.PartData.PkPos.y, MixPkCfg.PickCfg.PkMaxData.y, MixPkCfg.PickCfg.PkMinData.y)
+				log_warn_(Msg[])
+				goto PICK_ACK
+			endif
+
+			if MixPkCfg.BoxOrConv == true then
+				
+				CurAgtData.PartData.PlPos = CartPos2
+				CartPos2.Z = BoxCfg[CurAgtData.PartData.PlaceId].PlaceUpDst
+				
+				if MixPkCfg.NumAxis > 6 then
+				   
+				   CurAgtData.PartData.PlPos.E1 = BoxCfg[CurAgtData.PartData.PlaceId].PlaceE7Pos
+				endif 
+				
+				if (CurAgtData.PartData.PlPos.x > BoxCfg[CurAgtData.PartData.PlaceId].PlMaxData.x) or (CurAgtData.PartData.PlPos.x < BoxCfg[CurAgtData.PartData.PlaceId].PlMinData.x) then
+				   
+				   CurAgtData.PartData.IsUnrefId = 201
+				   Offset = 0
+				   str_clear_(Msg[])
+				   swrite(Msg[], State, Offset, "Place Pos X Unref![PlaceId:%d, PlPos.x:%.1f, Max:%.1f, Min:%.1f]", CurAgtData.PartData.PlaceId, CurAgtData.PartData.PlPos.x, BoxCfg[CurAgtData.PartData.PlaceId].PlMaxData.x, BoxCfg[CurAgtData.PartData.PlaceId].PlMinData.x)
+				   log_warn_(Msg[])
+				   goto PICK_ACK
+				endif
+				
+				if (CurAgtData.PartData.PlPos.y > BoxCfg[CurAgtData.PartData.PlaceId].PlMaxData.y) or (CurAgtData.PartData.PlPos.y < BoxCfg[CurAgtData.PartData.PlaceId].PlMinData.y) then
+				   
+					CurAgtData.PartData.IsUnrefId = 202
+
+					Offset = 0
+					str_clear_(Msg[])
+					swrite(Msg[], State, Offset, "Place Pos Y Unref![PlaceId:%d, PlPos.y:%.1f, Max:%.1f, Min:%.1f]", CurAgtData.PartData.PlaceId, CurAgtData.PartData.PlPos.y, BoxCfg[CurAgtData.PartData.PlaceId].PlMaxData.y, BoxCfg[CurAgtData.PartData.PlaceId].PlMinData.y)
+					log_warn_(Msg[])
+					 
+					goto PICK_ACK
+				endif
+				
+	
+			else
+
+				CurAgtData.PartData.OfsOrt = min_(CurAgtData.PartData.OfsOrt, ConvCfg[CurAgtData.PartData.PlaceId].PlMaxOfsOrt)
+				CurAgtData.PartData.OfsOrt = max_(CurAgtData.PartData.OfsOrt, ConvCfg[CurAgtData.PartData.PlaceId].PlMinOfsOrt)	  
+			endif
+			 
+			PICK_ACK:
+			mixsort_feedback(CurAgtData.PartData.IsUnrefId)
+	   
+		case 4
+
+			if CurAgtData.PartData.IsUnrefId <> 0 then
+         
+				mixsort_get_task()
+				return
+			endif
+			
+			if DEBUG then
+				Offset = 0
+				str_clear_(Msg[])
+				swrite(Msg[], State, Offset, "Robot Working!")
+				log_info_(Msg[])
+			endif
+			AgentData = CurAgtData
+			mixsort_ack(#TO_TP_PK)
+		endswitch
+		
+		return
+	endif
+
+	; Code added on 2025.03.02
+	if BusOutput.JobId == MIX_GET_TASK then
+		
+		
+		; These contents are specifically added for the Hengli project
+
+		bus_uptin_(BusInput)
+		GlobalTaskId = BusInput.JobId
+
+		if DEBUG then
+			Offset = 0
+			str_clear_(Msg[])
+			swrite(Msg[], State, Offset, "Get Task Successful![Task:%d]", GlobalTaskId)
+			log_info_(Msg[])
+		endif
+
+		switch (GlobalTaskId)
+		case 1
+			mixsort_get_picture()
+		case 2
+			mixsort_get_data()
+		case 3
+			mixsort_get_data()
+		case 4
+			mixsort_get_data()
+		case 101
+			mixsort_get_data()
+		case 102
+			mixsort_get_data()
+		default
+			Offset = 0
+			str_clear_(Msg[])
+			swrite(Msg[], State, Offset, "Unknown Task![Task:%d]", GlobalTaskId)
+			log_error_(Msg[])
+		endswitch
+		
+	endif
+
+	; *************************************************************************************************************
+
+end
+
+def mixsort_ack(AckMove: in)
+   decl MIXSORT_TYPE AckMove
+   
+   ToRobotAck = AckMove 
+   ToRobotFlg = true
+end
+
+deffct e6pos mixsort_cnv_pos_(ThisPos :in)
+   	decl e6pos ThisPos
+   	decl e6pos CnvPos
+   
+   	CnvPos = ThisPos
+   
+	if MixPkCfg.NumAxis > 6 then
+      
+		switch MixPkCfg.ExtCfg.E7Coordinate
+         
+		case 1
+			CnvPos.E1 = CnvPos.X
+
+			if abs(CnvPos.Y) < abs(MixPkCfg.PictCfg.PtMinDist) then
+				
+				if CnvPos.E1 > MixPkCfg.PictCfg.PtRlE7Pos then
+					
+					CnvPos.E1 = CnvPos.E1 - sqrt(MixPkCfg.PictCfg.PtMinDist * MixPkCfg.PictCfg.PtMinDist - CnvPos.Y * CnvPos.Y)
+				else
+					
+					CnvPos.E1 = CnvPos.E1 + sqrt(MixPkCfg.PictCfg.PtMinDist * MixPkCfg.PictCfg.PtMinDist - CnvPos.Y * CnvPos.Y)
+				endif
+				
+			endif
+
+		case 2
+			CnvPos.E1 = CnvPos.Y
+
+			if abs(CnvPos.X) < abs(MixPkCfg.PictCfg.PtMinDist) then
+				
+				if CnvPos.E1 > MixPkCfg.PictCfg.PtRlE7Pos then
+					
+					CnvPos.E1 = CnvPos.E1 - sqrt(MixPkCfg.PictCfg.PtMinDist * MixPkCfg.PictCfg.PtMinDist - CnvPos.X * CnvPos.X)
+				else
+					
+					CnvPos.E1 = CnvPos.E1 + sqrt(MixPkCfg.PictCfg.PtMinDist * MixPkCfg.PictCfg.PtMinDist - CnvPos.X * CnvPos.X)
+				endif
+				
+			endif
+
+		default
+			error_write_(801, "J7 Coordinate Is Error ...")
+      endswitch
+
+        if (CnvPos.E1 >= MixPkCfg.ExtCfg.E7UpLim) then
+            CnvPos.E1 = MixPkCfg.ExtCfg.E7UpLim
+        endif
+        if (CnvPos.E1 <= MixPkCfg.ExtCfg.E7DwLim) then
+            CnvPos.E1 = MixPkCfg.ExtCfg.E7DwLim
+        endif
+
+
+	endif
+	return(CnvPos)
+endfct
+
+def mixsort_timeout()
+
+	$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = true
+
+	Offset = 0
+	str_clear_(Msg[])
+	swrite(Msg[], State, Offset, "Timeout![Out.JobId:%d, Out.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
+	log_warn_(Msg[])
+	
+	mixsort_ack(#TO_TP_HOME)
+end 
+
+def mixsort_notReady()
+
+	Offset = 0
+	str_clear_(Msg[])
+	swrite(Msg[], State, Offset, "DiSysReady Miss![Out.JobId:%d, Out.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
+	log_warn_(Msg[])
+	
+	mixsort_ack(#TO_TP_HOME)
+end 
+
+;ENDFOLD

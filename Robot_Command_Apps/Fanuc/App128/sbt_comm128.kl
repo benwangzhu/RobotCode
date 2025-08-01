@@ -1,0 +1,170 @@
+program sbt_comm128
+--***********************************************************
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- file Name: sbt_comm128
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2023 - 07 - 03
+--   Modification Data    ==   2023 - 07 - 03
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--
+%nolockgroup                            -- 指定该程序段不使用锁组
+%comment = '控制-服务'            
+%nopause = error + command + tpenable   -- 设置不停止条件为错误、命令和TP使能
+
+%include sbt_comm128_t                  -- 包含 sbt_comm128_t 类型定义
+%include include/lib_socket_t       -- 包含 socket 类型定义
+%include include/lib_math_t         -- 包含数学类型定义
+%include include/lib_tpe_t          -- 包含 TPE 类型定义
+%include include/lib_logs_t         -- 包含日志函数库类型定义
+                    
+%include kliotyps                   -- 包含 kliotyps 类型定义
+%include sbt_comm128_global             -- 包含全局变量定义
+
+var  -- 定义变量
+
+    TaskId1                                 : integer  -- 定义整型变量 TaskId1
+    TaskId2                                 : integer  -- 定义整型变量 TaskId2
+    i                                       : integer  -- 定义整型变量 i
+
+%include include/lib_logs_h         -- 引用 Logs 函数库
+%include include/lib_thread_h       -- 引用线程函数库
+%include include/lib_motion_h       -- 引用运动函数库
+%include include/lib_math_h         -- 引用数学函数库
+%include include/lib_tp_if_h        -- 引用 TP 接口函数库
+%include include/lib_string_h       -- 引用字符串函数库
+%include include/lib_tpe_h          -- 引用 TPE 函数库
+
+
+-- routine stop_move_ from sbt_comm128
+
+begin
+    -- 指定是否仅作为 Speedbot-RobotCtrl 服务的数据采集程序
+    -- 
+    OnlyCollect             = tern_bool_(uninit(OnlyCollect), false, OnlyCollect)
+
+    -- 状态上传帧率指定
+    StateFreq               = tern_real_(uninit(StateFreq), STATE_FREQ, StateFreq)
+
+    -- 同步 I/O 地址映射，非数采程序时才会进行 I/O 映射
+    -- 不进行映射的点指定为 0
+
+    -- di 映射地址
+    IoMap.InAddr1           = tern_int_(uninit(IoMap.InAddr1), 0, IoMap.InAddr1)  -- 如果未初始化，则设置为 0，否则保持原值
+    IoMap.InAddr2           = tern_int_(uninit(IoMap.InAddr2), 0, IoMap.InAddr2)  -- 如果未初始化，则设置为 0，否则保持原值
+    IoMap.InAddr3           = tern_int_(uninit(IoMap.InAddr3), 0, IoMap.InAddr3)  -- 如果未初始化，则设置为 0，否则保持原值
+    IoMap.InAddr4           = tern_int_(uninit(IoMap.InAddr4), 0, IoMap.InAddr4)  -- 如果未初始化，则设置为 0，否则保持原值
+    IoMap.InAddr5           = tern_int_(uninit(IoMap.InAddr5), 0, IoMap.InAddr5)  -- 如果未初始化，则设置为 0，否则保持原值
+    IoMap.InAddr6           = tern_int_(uninit(IoMap.InAddr6), 0, IoMap.InAddr6)  -- 如果未初始化，则设置为 0，否则保持原值
+    IoMap.InAddr7           = tern_int_(uninit(IoMap.InAddr7), 0, IoMap.InAddr7)  -- 如果未初始化，则设置为 0，否则保持原值
+    IoMap.InAddr8           = tern_int_(uninit(IoMap.InAddr8), 0, IoMap.InAddr8)  -- 如果未初始化，则设置为 0，否则保持原值
+
+    -- do 映射地址
+    IoMap.OutAddr1          = tern_int_(uninit(IoMap.OutAddr1), 0, IoMap.OutAddr1)  -- 如果未初始化，则设置为 0，否则保持原值
+    IoMap.OutAddr2          = tern_int_(uninit(IoMap.OutAddr2), 0, IoMap.OutAddr2)  -- 如果未初始化，则设置为 0，否则保持原值
+    IoMap.OutAddr3          = tern_int_(uninit(IoMap.OutAddr3), 0, IoMap.OutAddr3)  -- 如果未初始化，则设置为 0，否则保持原值
+    IoMap.OutAddr4          = tern_int_(uninit(IoMap.OutAddr4), 0, IoMap.OutAddr4)  -- 如果未初始化，则设置为 0，否则保持原值
+    IoMap.OutAddr5          = tern_int_(uninit(IoMap.OutAddr5), 0, IoMap.OutAddr5)  -- 如果未初始化，则设置为 0，否则保持原值
+    IoMap.OutAddr6          = tern_int_(uninit(IoMap.OutAddr6), 0, IoMap.OutAddr6)  -- 如果未初始化，则设置为 0，否则保持原值
+    IoMap.OutAddr7          = tern_int_(uninit(IoMap.OutAddr7), 0, IoMap.OutAddr7)  -- 如果未初始化，则设置为 0，否则保持原值
+    IoMap.OutAddr8          = tern_int_(uninit(IoMap.OutAddr8), 0, IoMap.OutAddr8)  -- 如果未初始化，则设置为 0，否则保持原值
+    
+    log_clear_  -- 清除日志
+
+    if uninit(CtrlIpAddr) then CtrlIpAddr = '127.0.0.1'; endif          -- 如果 CtrlIpAddr 未初始化，则设置为本地地址
+
+    CtrlSock.Connected = false          -- 设置 CtrlSock 连接状态为 false
+    CtrlSock.Host = CtrlIpAddr          -- 设置 CtrlSock 的主机地址
+    if uninit(CtrlSock.PortTag) then CtrlSock.PortTag = 'C7:'; endif    -- 如果 CtrlSock.PortTag 未初始化，则设置为 'C7:'
+    CtrlSock.ServerPort = 12001         -- 设置 CtrlSock 的服务器端口号
+    CtrlSock.NByte = 0                  -- 设置 CtrlSock 的字节数
+    CtrlSock.AtrTimeout = 0             -- 设置 CtrlSock 的超时属性
+    CtrlSock.AtrBinary = true           -- 设置 CtrlSock 的二进制传输属性
+    CtrlSock.AtrIntAct = false          -- 设置 CtrlSock 的中断激活属性
+
+    StatSock.Connected = false          -- 设置 StatSock 连接状态为 false
+    StatSock.Host = CtrlIpAddr          -- 设置 StatSock 的主机地址
+    if uninit(StatSock.PortTag) then StatSock.PortTag = 'C8:'; endif    -- 如果 StatSock.PortTag 未初始化，则设置为 'C8:'
+    StatSock.ServerPort = 12002         -- 设置 StatSock 的服务器端口号
+    StatSock.NByte = 0                  -- 设置 StatSock 的字节数
+    StatSock.AtrTimeout = 0             -- 设置 StatSock 的超时属性
+    StatSock.AtrBinary = true           -- 设置 StatSock 的二进制传输属性
+    StatSock.AtrIntAct = false          -- 设置 StatSock 的中断激活属性
+
+    for i = TPE_MOV_FLG to TPE_MAX_FLG do   -- 初始化 TPE 标志
+        flg[i] = false                      -- 将 TPE 标志设置为 false
+    endfor
+    
+
+    -- 机器人轴数量指定
+    -- 本体轴
+    NumOfRobAxis = tern_int_(uninit(NumOfRobAxis), get_axs_num_(1), NumOfRobAxis)  -- 如果未初始化，则获取本体轴的数量，否则保持原值
+
+    -- 扩展轴
+    NumOfRotAxis = tern_int_(uninit(NumOfRotAxis), get_axs_num_(2), NumOfRotAxis)  -- 如果未初始化，则获取扩展轴的数量，否则保持原值
+
+    -- 检查是否是虚拟机器人
+    if not is_vir_rob_ then
+        IsVirRobId = 0  -- 如果不是虚拟机器人，则设置 IsVirRobId 为 0
+    else
+        IsVirRobId = tern_int_(uninit(IsVirRobId), 1, IsVirRobId)  -- 如果是虚拟机器人，并且 IsVirRobId 未初始化，则设置为 1，否则保持原值
+    endif
+
+    -- 路径跟踪模式
+    if uninit(PathCtrl) then  
+
+        PathCtrl = false
+    endif
+
+    -- MOVE ID 清零
+    set_ireg_(REG_MOV_ID, 0)  -- 将 MOVE ID 设置为 0
+
+    Restart = true
+
+    -- 作为系统程序的数采任务不在执行时，将启用这个程序
+    if task_status_('comm128_stat') <> PG_RUNNING then
+        TaskId1 = thrd_create_('comm128_stat', 0, false)  -- 如果 comm255_stat 任务没有运行，则创建该任务
+    endif
+
+    if not OnlyCollect then   
+
+        flg[PAUSE_FLAG] = false     
+        flg[CONT_FLAG] = false     
+
+        -- 创建运动控制线程
+        TaskId2 = thrd_create_('comm128_mtn', 0, false)  -- 创建运动控制线程
+
+        
+        purge condition[1]
+        condition[1]:
+            when flg[PAUSE_FLAG] = true do              -- 暂停
+                flg[PAUSE_FLAG] = false
+                pause
+                enable condition[1]
+            when flg[CONT_FLAG] = true do               -- 继续
+                flg[CONT_FLAG] = false
+                continue
+                enable condition[1]
+        endcondition
+
+        enable condition[1]
+    endif
+    
+end sbt_comm128
+
+-- routine stop_move_
+-- begin
+--     if not is_moving_ then 
+        
+--         StopMove = false
+--     endif
+
+-- end stop_move_
+

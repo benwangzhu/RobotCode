@@ -1,0 +1,42 @@
+&ACCESS RVP
+&REL 53
+&COMMENT Conveyor Pick01
+&PARAM DISKPATH = KRC:\R1\Program\SecondSortMain
+DEFDAT  SECOND_PKCV01
+;***********************************************************
+; 
+; Copyright 2018 - 2025 speedbot All Rights reserved.
+; 
+; File Name: second_pkcv01.dat
+; 
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 06 - 28
+;   Modification Data    ==   2022 - 06 - 28
+; 
+; Author: speedbot
+; 
+; Version: 1.0
+;***********************************************************
+
+DECL INT Status
+
+DECL part_dat_t PartData={ConvId 0,TaskId 0,BoxId 0,PkcvOfs {X 0.0,Y 0.0,Z 0.0,A 0.0},PlacePosn {X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0},EncCount 0,ServoDist 0.0,Thickness 0.0,Weight 0.0,Num 0}
+
+DECL pkcv_dcsn_t PkcvDicision
+
+DECL FRAME ToolUpOffs={X 0.0,Y 0.0,Z -150.000,A 0.0,B 0.0,C 0.0}
+DECL FRAME ToolRUpOffs={X 0.0,Y 0.0,Z -150.000,A 0.0,B 0.0,C 0.0}
+
+
+DECL E6POS XPickPos={X 1765.00,Y 1765.00,Z 1765.00,A 1765.00,B 90.0000,C 9.13112519E-09,S 6,T 18,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+DECL FDAT FPickPos={TOOL_NO 1,BASE_NO 0,IPO_FRAME #BASE,POINT2[] " "}
+DECL LDAT LCPDAT1={VEL 2.00000,ACC 100.000,APO_DIST 500.000,APO_FAC 50.0000,AXIS_VEL 100.000,AXIS_ACC 100.000,ORI_TYP #VAR,CIRC_TYP #BASE,JERK_FAC 50.0000,GEAR_JERK 100.000,EXAX_IGN 0}
+DECL MODULEPARAM_T LAST_TP_PARAMS={PARAMS[] "Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.MovementParameterFieldEnabled=True; Kuka.IsAngleEnabled=False; Kuka.PointName=PickPos; Kuka.FrameData.base_no=0; Kuka.FrameData.tool_no=1; Kuka.FrameData.ipo_frame=#BASE; Kuka.isglobalpoint=False; Kuka.MoveDataName=CPDAT1; Kuka.MovementData.apo_fac=50; Kuka.MovementData.apo_dist=500; Kuka.MovementData.axis_acc=100; Kuka.MovementData.axis_vel=100; Kuka.MovementData.circ_typ=#BASE; Kuka.MovementData.jerk_fac=50; Kuka.MovementData.ori_typ=#VAR; Kuka.MovementData.vel=2; Kuka.MovementData.acc=100; Kuka.MovementData.gear_jerk=100; Kuka.MovementData.exax_ign=0; Kuka.VelocityPath=2; Kuka.BlendingEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.FrameData.point2=; BASIC.FRAMENAME=ToolUpTrans; BASIC.X_=0; BASIC.Y_=0; BASIC.Z_=0; BASIC.A_=0; BASIC.B_=0; BASIC.C_=0; SECONDSORT.CONVID=1; SECONDSORT.SLEEPTIME=100; SECONDSORT.STATUS=Status; SECONDSORT.DIRREFPOINT=PickPos; SECONDSORT.DISTANCE=300; SECONDSORT.DIRWAITPOINT=WaitPos; SECONDSORT.PKCVDICISION=PkcvDicision; SECONDSORT.PKCVDICISION_=PkcvDicision; SECONDSORT.DIRWAITPOINT_=WaitPos; SECONDSORT.TOOLOFFS=ToolUpOffs; SECONDSORT.LIMXYLIST=WaitPosLimit; SECONDSORT.PICKSTATE=#PICK_FAIL; SECONDSORT.SYNCPOINT=PickPos; SECONDSORT.QUEUEDATA=PartData; SECONDSORT.SYNCVEL=1.5; SECONDSORT.SYNCAPO=100                         "}
+DECL E6POS XWaitPos={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+DECL xy_lim_t WaitPosLimit={MaxX 5000.00,MinX -5000.00,MaxY 5000.00,MinY -5000.00}
+DECL FRAME ToolUpTrans={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+ENDDAT
+
+
+

@@ -1,0 +1,6 @@
+// InstParseVersion: V1.02
+Start:
+PathSegment{SegmentNo=1}
+MovJ{P=t_l.P0,V=t_s.V2000,B="FINE"}
+RequestToContinue{Continue=t_g.DicisionCode}
+End;

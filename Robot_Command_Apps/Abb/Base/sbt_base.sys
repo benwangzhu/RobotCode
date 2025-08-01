@@ -1,0 +1,89 @@
+module sbt_base(sysmodule, noview)
+!***********************************************************
+!
+! Copyright 2018 - 2024 speedbot All Rights reserved.
+!
+! file Name: sbt_base
+! 
+!  Description:
+!    Language             ==   Rapid for ABB ROBOT
+!    Date                 ==   2024 - 11 - 28
+!    Modification Data    ==   2024 - 11 - 28
+! 
+!  Author: speedbot
+! 
+!  Version: 3.0
+! ***********************************************************
+
+pers frame_t PosMaxLimt := [100.00,100.00,100.00,1.00,1.00,1.00];
+pers frame_t PosMinLimt:= [-100.00,-100.00,-100.00,-1.00,-1.00,-1.00];
+
+func num sbt_chkpos_(robtarget ThisPos, wobjdata OffsUf, wobjdata ChkUf, frame_t PosMax, frame_t PosMin)
+
+    var pose NewPose;
+    var pose ThisPose;
+
+    ThisPose.trans := ThisPos.trans;
+    ThisPose.rot   := ThisPos.rot;
+
+    NewPose := PoseMult(PoseMult(PoseMult(PoseInv(ChkUf.uframe),OffsUf.uframe),ThisPose),PoseMult(PoseInv(OffsUf.uframe),ChkUf.uframe));
+
+    if ((NewPose.Trans.X > PosMax.X) or (NewPose.Trans.X < PosMin.X)) then
+
+        log_error_ "ThisPos.x overflow", \ELOG;
+        return(-1);
+    endif
+
+    if ((NewPose.Trans.Y > PosMax.Y) or (NewPose.Trans.Y < PosMin.Y)) then
+
+        log_error_ "ThisPos.y overflow", \ELOG;
+        return(-1);
+    endif
+
+    if ((NewPose.Trans.Z > PosMax.Z) or (NewPose.Trans.Z < PosMin.Z)) then
+
+        log_error_ "ThisPos.z overflow", \ELOG;
+        return(-1);
+    endif
+
+    if ((eulerzyx(\Z, NewPose.Rot) > PosMax.Rz) or (eulerzyx(\Z, NewPose.Rot) < PosMin.Rz)) then
+
+        log_error_ "ThisPos.Rz overflow", \ELOG;
+        return(-1);
+    endif
+
+    if ((eulerzyx(\X, NewPose.Rot) > PosMax.Rx) or (eulerzyx(\X, NewPose.Rot) < PosMin.Rx)) then
+
+        log_error_ "ThisPos.Rx overflow", \ELOG;
+        return(-1);
+    endif
+
+    if ((eulerzyx(\Y, NewPose.Rot) > PosMax.Ry) or (eulerzyx(\Y, NewPose.Rot) < PosMin.Ry)) then
+
+        log_error_ "ThisPos.Ry overflow", \ELOG;
+        return(-1);
+    endif
+error
+    return(0);
+
+endfunc
+
+proc sbt_ggframe_(\wobjdata Gframe, inout wobjdata Sframe,robtarget OffsetPos)
+    
+    VAR pose ThisPose;
+    VAR pose InitPose;
+    
+    ThisPose.trans := OffsetPos.trans;
+    ThisPose.rot := OffsetPos.rot;
+    
+    IF Present(Gframe) THEN
+        InitPose := Gframe.uframe;
+    ELSE
+        InitPose := [[0,0,0],[1,0,0,0]];
+    ENDIF
+    
+    Sframe.uframe := PoseMult(InitPose, ThisPose);
+    
+endproc
+
+endmodule

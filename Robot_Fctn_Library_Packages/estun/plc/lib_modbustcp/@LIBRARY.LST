@@ -1,0 +1,6 @@
+Library List, V40
+USER;C:\Users\Public\Documents\MULTIPROG ACONTIS EtherCAT\Libraries\ER_CNT2PLC_Status;LIST;0
+USER;C:\Users\Public\Documents\MULTIPROG ACONTIS EtherCAT\Libraries\ER_PLC2CNT_Command;LIST;0
+USER;C:\Users\Public\Documents\MULTIPROG ACONTIS EtherCAT\Libraries\ER_IO_LIB;LIST;0
+FW;D:\MutliProg\PLC\eCLR;eCLR;0
+FW;D:\MutliProg\PLC;IEC;3

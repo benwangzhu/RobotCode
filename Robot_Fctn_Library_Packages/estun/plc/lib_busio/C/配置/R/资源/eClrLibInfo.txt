@@ -1,0 +1,1 @@
+C:\ProgramData\PHOENIX CONTACT Software\MULTIPROG Express\5_50_10228\plc\FW_LIB\pointer\pointer.DLL

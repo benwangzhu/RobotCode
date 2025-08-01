@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfIpAddressAssignment>
+  <IpAddressAssignment ProcType="I486_LE_MSC12_ACONTIS" IpAddress="172.31.6.18 -p41100" />
+</ArrayOfIpAddressAssignment>

@@ -1,0 +1,39 @@
+// InstParseVersion: V1.02
+Start:
+CALL mixsort_copy
+CALL mixsort_dt2plc
+CALL mixsort_pick01
+IF t_p.CfgBoxOrConv.value ~= true THEN
+    IF t_p.CopyPlaceId.value == 1 THEN
+        CALL mixsort_drop01
+    ELSIF t_p.CopyPlaceId.value == 2 THEN
+        CALL mixsort_drop02
+    ELSIF t_p.CopyPlaceId.value == 3 THEN
+        CALL mixsort_drop03
+    ELSIF t_p.CopyPlaceId.value == 4 THEN
+        CALL mixsort_drop04
+    ELSE
+        SetRtToErr{msg="Invalid Place Id",eid=90001}
+    ENDIF
+ELSE
+    IF t_p.CopyPlaceId.value == 1 THEN
+        CALL mixsort_place01
+    ELSIF t_p.CopyPlaceId.value == 2 THEN
+        CALL mixsort_place02
+    ELSIF t_p.CopyPlaceId.value == 3 THEN
+        CALL mixsort_place03
+    ELSIF t_p.CopyPlaceId.value == 4 THEN
+        CALL mixsort_place04
+    ELSIF t_p.CopyPlaceId.value == 5 THEN
+        CALL mixsort_place05
+    ELSIF t_p.CopyPlaceId.value == 6 THEN
+        CALL mixsort_place06
+    ELSIF t_p.CopyPlaceId.value == 7 THEN
+        CALL mixsort_place07
+    ELSIF t_p.CopyPlaceId.value == 8 THEN
+        CALL mixsort_place08
+        SetRtToErr{msg="Invalid Place Id",eid=90001}
+    ELSE
+    ENDIF
+ENDIF
+End;

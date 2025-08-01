@@ -1,0 +1,409 @@
+&access RP
+&comment Lib math-h 221122
+defdat  lib_math_t public
+;***********************************************************
+;
+; Copyright 2018 - 2023 speedbot All Rights reserved.
+;
+; File Name: lib_math.src
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2022 - 05 - 05
+;   Modification Data    ==   2022 - 08 - 09
+;
+; Author: speedbot
+;
+; Version: 2.0
+;*********************************************************************************************************;
+;                                                                                                         ;
+;                                                      .^^^                                               ;
+;                                               .,~<c+{{{{{{t,                                            ; 
+;                                       `^,"!t{{{{{{{{{{{{{{{{+,                                          ;
+;                                 .:"c+{{{{{{{{{{{{{{{{{{{{{{{{{+,                                        ;
+;                                "{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{~                                       ;
+;                               ^{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{!.  `^                                    ;
+;                               c{{{{{{{{{{{{{c~,^`  `.^:<+{{{!.  `<{{+,                                  ;
+;                              ^{{{{{{{{{{{!^              `,.  `<{{{{{{+:                                ;
+;                              t{{{{{{{{{!`                    ~{{{{{{{{{{+,                              ;
+;                             ,{{{{{{{{{:      ,uDWMMH^        `c{{{{{{{{{{{~                             ;
+;                             +{{{{{{{{:     ,XMMMMMMw           t{{{{{{{{{{t                             ;
+;                            ,{{{{{{{{t     :MMMMMMMMM"          ^{{{{{{{{{{~                             ;
+;                            +{{{{{{{{~     8MMMMMMMMMMWD8##      {{{{{{{{{+                              ;
+;                           :{{{{{{{{{~     8MMMMMMMMMMMMMMH      {{{{{{{{{~                              ;
+;                           +{{{{{{{{{c     :MMMMMMMMMMMMMMc     ^{{{{{{{{+                               ;
+;                          ^{{{{{{{{{{{,     ,%MMMMMMMMMMH"      c{{{{{{{{:                               ;
+;                          `+{{{{{{{{{{{^      :uDWMMMX0"       !{{{{{{{{+                                ;
+;                           `c{{{{{{{{{{{"                    ^t{{{{{{{{{,                                ;
+;                             ^c{{{{{{{{{{{".               ,c{{{{{{{{{{t                                 ;
+;                               ^c{{{{{{{{{{{+<,^`     .^~c{{{{{{{{{{{{{,                                 ;
+;                                 ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t                                  ;
+;                                   ^c{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{t`                                  ;
+;                                     ^c{{{{{{{{{{{{{{{{{{{{{{{{{{+c"^                                    ;                         
+;                                       ^c{{{{{{{{{{{{{{{{{+!":^.                                         ;
+;                                         ^!{{{{{{{{t!",^`                                                ;
+;                                                                                                         ;
+;*********************************************************************************************************;
+;
+global const real DEG_2_RAD             = 0.017453
+
+global const real RAD_2_DEG             = 57.29578
+
+global const int MIN_DINT	            =  -2147483648
+global const int MAX_DINT	            =  2147483647
+
+global const int MIN_INT	            =  -32768
+global const int MAX_INT	            =  32767
+
+global const int MIN_SINT	            =  -128
+global const int MAX_SINT	            =  127
+
+global const int MIN_UINT	            =  0
+global const int MAX_UINT	            =  65535
+
+global const int MIN_USINT	            =  0
+global const int MAX_USINT	            =  255
+
+global const int SIZE_OF_BYTE           = 1
+global const int SIZE_OF_REAL           = 4
+global const int SIZE_OF_INT            = 4
+
+global const int MASK8[8]
+MASK8[1]    = 1
+MASK8[2]    = 2
+MASK8[3]    = 4
+MASK8[4]    = 8
+MASK8[5]    = 16
+MASK8[6]    = 32
+MASK8[7]    = 64
+MASK8[8]    = -128
+
+global const int UMASK8[8]
+UMASK8[1]    = 1
+UMASK8[2]    = 2
+UMASK8[3]    = 4
+UMASK8[4]    = 8
+UMASK8[5]    = 16
+UMASK8[6]    = 32
+UMASK8[7]    = 64
+UMASK8[8]    = 128
+
+global const int MASK16[16]
+MASK16[1]    = 1
+MASK16[2]    = 2
+MASK16[3]    = 4
+MASK16[4]    = 8
+MASK16[5]    = 16
+MASK16[6]    = 32
+MASK16[7]    = 64
+MASK16[8]    = 128
+MASK16[9]    = 256
+MASK16[10]   = 512
+MASK16[11]   = 1024
+MASK16[12]   = 2048
+MASK16[13]   = 4096
+MASK16[14]   = 8192
+MASK16[15]   = 16384
+MASK16[16]   = -32768
+
+global const int UMASK16[16]
+UMASK16[1]    = 1
+UMASK16[2]    = 2
+UMASK16[3]    = 4
+UMASK16[4]    = 8
+UMASK16[5]    = 16
+UMASK16[6]    = 32
+UMASK16[7]    = 64
+UMASK16[8]    = 128
+UMASK16[9]    = 256
+UMASK16[10]   = 512
+UMASK16[11]   = 1024
+UMASK16[12]   = 2048
+UMASK16[13]   = 4096
+UMASK16[14]   = 8192
+UMASK16[15]   = 16384
+UMASK16[16]   = 32768
+
+global struc vector_t real X, real Y, real Z
+
+global enum int_type_t SINT, SHORT, DINT, USINT, USHORT
+
+global enum io_type_t IO_DIN, IO_DOUT, IO_FLAG
+
+;***********************************************************
+; func mod_()
+;***********************************************************
+;     in : Dividend    * int    * The number to be divided (Dividend) *
+;     in : Divisor     * int    * The number by which to divide (Divisor) *
+; return:              * int    * Returns the remainder *
+;***********************************************************
+; Perform division between two positive integers and return the remainder
+;***********************************************************
+extfct int mod_(int : in, int : in)
+
+;***********************************************************
+; func random_()
+;***********************************************************
+;     in : MinNum    * int    * Minimum random number *
+;     in : MaxNum    * int    * Maximum random number *
+; return:              * int    * Returns a random number *
+;***********************************************************
+; Return a random number within the specified range
+;***********************************************************
+extfct int random_(int : in, int : in)
+
+;***********************************************************
+; func deg_to_rad_()
+;***********************************************************
+;     in : Rdeg      * real   * Angle in degrees *
+; return:             * real  * Returns angle in radians *
+;***********************************************************
+; Convert degrees to radians
+;***********************************************************
+extfct real deg_to_rad_(real : in)
+
+;***********************************************************
+; func rad_to_deg_()
+;***********************************************************
+;     in : Rrad      * real   * Radians *
+; return:             * real  * Degrees *
+;***********************************************************
+; Convert radians to degrees
+;***********************************************************
+extfct real rad_to_deg_(real : in)
+
+;***********************************************************
+; func bol_to_int_()
+;***********************************************************
+;     in : Boolean   * bool  * Boolean value *
+; return:             * int   * Integer value *
+;***********************************************************
+; Convert Boolean value to integer
+; TRUE -- 1
+; FALSE -- 0
+;***********************************************************
+extfct int bol_to_int_(bool : in)
+
+;***********************************************************
+; func int_to_bol_()
+;***********************************************************
+;     in : Integer    * int    * Integer value *
+; return:             * bool   * Boolean value *
+;***********************************************************
+; Convert integer value to Boolean
+; Integer > 0 -- TRUE 
+; Integer <= 0 -- FALSE
+;***********************************************************
+extfct bool int_to_bol_(int : in)
+
+extfct real sq_(real : in)
+
+extfct real pow_(real : in)
+
+extfct real x_pow_(real : in, int : in)
+
+;***********************************************************
+; func round_()
+;***********************************************************
+;     in : RealVal    * real   * Floating-point number *
+; return:             * int    * Integer value *
+;***********************************************************
+; Round to the nearest integer
+; 
+;***********************************************************
+extfct int round_(real : in)
+
+;***********************************************************
+; func int_2bits_()
+;***********************************************************
+;     in : IntVal      * int           * Input integer data, defaults to 0 if not specified *
+;     in : IntType     * int_type_t    * Type of the input data, defaults to #DINT if not specified *
+;     in : Reversed[]  * bool          * True for little-endian mode, false for big-endian mode, defaults to little-endian if not specified *
+;    out : ByteAry[]   * int           * If specified, assigns the converted BYTE array *
+;    out : boolAry[]   * bool          * If specified, assigns the converted BOOL array *
+;***********************************************************
+; Convert the specified INT data to BYTE data or BOOL data
+; The specified INT data must match the IntType
+;***********************************************************
+ext int_2bits_(int : in, int_type_t : in, bool : in, int[] : out, bool[] : out)
+
+extfct int trunc_(real : in)
+
+
+;***********************************************************
+; func bits_2int_()
+;***********************************************************
+;     in : ByteAry[]    * int *         * Specify this parameter to convert from a BYTE array *
+;     in : boolAry[]    * bool *        * Specify this parameter to convert from a BOOL array *
+;     in : Reversed[]   * bool *        * True for little-endian mode, false for big-endian mode, defaults to little-endian if not specified *
+;     in : IntType      * int_type_t *  * Type of the input data, defaults to #DINT if not specified *
+;    out : IntVal   	* int *	        * Output converted integer data *
+;***********************************************************
+; Convert the specified BYTE data or BOOL data to INT data
+;***********************************************************
+ext bits_2int_(int[] : out, bool[] : out, bool : in, int_type_t : in, int : out)
+
+;***********************************************************
+; func rel_2bits_()
+;***********************************************************
+;     in : RelVal   	* real *	    * Input floating-point data, defaults to 0.0 if not specified *
+;     in : Reversed[]   * bool *        * True for little-endian mode, false for big-endian mode, defaults to little-endian if not specified *
+;    out : ByteAry[]    * int *         * If specified, assigns the converted BYTE array *
+;    out : boolAry[]    * bool *        * If specified, assigns the converted BOOL array *
+;***********************************************************
+; Convert the specified REAL data to BYTE data or BOOL data
+;***********************************************************
+ext rel_2bits_(real : in, bool : in, int[] : out, bool[] : out)
+
+;***********************************************************
+; func bits_2rel_()
+;***********************************************************
+;     in : ByteAry[]    * int *         * Specify this parameter to convert from a BYTE array *
+;     in : boolAry[]    * bool *        * Specify this parameter to convert from a BOOL array *
+;     in : Reversed[]   * bool *        * True for little-endian mode, false for big-endian mode, defaults to little-endian if not specified *
+;     in : IntType      * int_type_t *  * Type of the input data, defaults to #DINT if not specified *
+;    out : RelVal   	* real *	    * Output converted floating-point data *
+;***********************************************************
+; Convert the specified BYTE data or BOOL data to REAL data
+;***********************************************************
+ext bits_2rel_(int[] : out, bool[] : out, bool : in, real : out)
+
+;***********************************************************
+; func io_2byte_()
+;***********************************************************
+;     in : PortType   	* io_type_t *	* IO type, default is #IO_DOUT *
+;     in : StartPt      * int *         * Signal start number, default is 1 *
+;     in : EndPt        * int *         * Signal end number, default is 0 *
+;    out : ByteVal[]    * char *        * Converted BYTE array *
+;***********************************************************
+; Convert IO to BYTE data
+;***********************************************************
+ext io_2byte_(io_type_t : in, int : in, int : in, char[] : out)
+
+;***********************************************************
+; func byte_2io_()
+;***********************************************************
+;     in : ByteVal[]   	* char *	    * BYTE array to be converted *
+;     in : StartPt      * int *         * Signal start number, default is 1 *
+;     in : EndPt        * int *         * Signal end number, default is 0 *
+;     in : SetPt        * int *         * Start setting number, default is StartPt *
+;***********************************************************
+; Convert BYTE data to $OUT output
+;***********************************************************
+ext byte_2io_(char[] : in, int : in, int : in, int : in)
+
+;***********************************************************
+; func max_()
+;***********************************************************
+;     in : Val1   	    * real *	    * Value 1 *
+;     in : Val2         * real *        * Value 2 *
+;     in : Val3         * real *        * Value 3 *
+; return :              * real *        * Returns the maximum value *
+;***********************************************************
+; Return the maximum value among two or three values
+;***********************************************************
+extfct real max_(real : in, real : in, real : in)
+
+;***********************************************************
+; func min_()
+;***********************************************************
+;     in : Val1   	    * real *	    * Value 1 *
+;     in : Val2         * real *        * Value 2 *
+;     in : Val3         * real *        * Value 3 *
+; return :              * real *        * Returns the minimum value *
+;***********************************************************
+; Return the minimum value among two or three values
+;***********************************************************
+extfct real min_(real : in, real : in, real : in)
+
+;***********************************************************
+; func tern_int_()
+;***********************************************************
+;     in : Exprsn   	* bool *	   * Expression *
+;     in : Val1         * int *        * Value 1 *
+;     in : Val2         * int *        * Value 2 *
+; return :              * int *        * Returns Val1 if Exprsn == true; otherwise returns Val2 *
+;***********************************************************
+; Ternary expression for integers
+;***********************************************************
+extfct int tern_int_(bool : in, int : in, int : in)
+
+;***********************************************************
+; func tern_real_()
+;***********************************************************
+;     in : Exprsn   	* bool *	    * Expression *
+;     in : Val1         * real *        * Value 1 *
+;     in : Val2         * real *        * Value 2 *
+; return :              * real *        * Returns Val1 if Exprsn == true; otherwise returns Val2 *
+;***********************************************************
+; Ternary expression for floating-point numbers
+;***********************************************************
+extfct real tern_real_(bool : in, real : in, real : in)
+
+;***********************************************************
+; func tern_bool_()
+;***********************************************************
+;     in : Exprsn   	* bool *	   * Expression *
+;     in : Val1         * bool *        * Value 1 *
+;     in : Val2         * bool *        * Value 2 *
+; return :              * bool *        * Returns Val1 if Exprsn == true; otherwise returns Val2 *
+;***********************************************************
+; Ternary expression for Boolean values
+;***********************************************************
+extfct bool tern_bool_(bool : in, bool : in, bool : in)
+
+;***********************************************************
+; func tern_chars_()
+;***********************************************************
+;     in : Exprsn    * bool        * Expression *
+;     in : Val1      * char[]      * Value1 *
+;     in : Val2      * char[]      * Value2 *
+; return:             * char[256]  * Returns Val1 if Exprsn == true; returns Val2 if Exprsn == false *
+;***********************************************************
+; Ternary expression for strings
+;***********************************************************
+extfct char[256] tern_chars_(bool : in, char[] : in, char[] : in)
+
+extfct char tern_char_(bool : in, char : in, char : in)
+
+;***********************************************************
+; func tern_cart_()
+;***********************************************************
+;     in : Exprsn    * bool    * Expression *
+;     in : Val1      * e6pos   * Value1 *
+;     in : Val2      * e6pos   * Value2 *
+; return:             * e6pos  * Returns Val1 if Exprsn == true; returns Val2 if Exprsn == false *
+;***********************************************************
+; Ternary expression for Cartesian positions
+;***********************************************************
+extfct e6pos tern_cart_(bool : in, e6pos : in, e6pos : in)
+
+;***********************************************************
+; func tern_axis_()
+;***********************************************************
+;     in : Exprsn    * bool    * Expression *
+;     in : Val1      * e6axis  * Value1 *
+;     in : Val2      * e6axis  * Value2 *
+; return:             * e6axis * Returns Val1 if Exprsn == true; returns Val2 if Exprsn == false *
+;***********************************************************
+; Ternary expression for axis positions
+;***********************************************************
+extfct e6axis tern_axis_(bool : in, e6axis : in, e6axis : in)
+
+;***********************************************************
+; func tern_frm_()
+;***********************************************************
+;     in : Exprsn    * bool    * Expression *
+;     in : Val1      * frame   * Value1 *
+;     in : Val2      * frame   * Value2 *
+; return:             * frame  * Returns Val1 if Exprsn == true; returns Val2 if Exprsn == false *
+;***********************************************************
+; Ternary expression for frames
+;***********************************************************
+extfct frame tern_frm_(bool : in, frame : in, frame : in)
+
+ext gg_frame_(frame : in, int : in, int : in)
+
+ext chk_pos_xyzabc_(pos : in, int : in, int : in, frame : in, frame : in, bool : out, int : in) 
+
+enddat

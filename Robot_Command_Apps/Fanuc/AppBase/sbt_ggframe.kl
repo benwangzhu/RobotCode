@@ -1,0 +1,46 @@
+program sbt_ggframe
+--***********************************************************
+--
+-- file Name: sbt_ggframe.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2024 - 04 - 01
+--   Modification Data    ==   2024 - 08 - 09
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--
+%comment = 'GgFrame 240809'
+%nolockgroup 
+%nopause = error + tpenable + command
+%include include\lib_math_t
+%include include\lib_logs_t
+%include include\lib_transform_t
+
+var
+
+    OffsPos                     : xyzwpr
+    OldUFrameNum                : integer
+    NewUFrameNum                : integer
+    
+    
+%include include\lib_logs_h
+%include include\lib_math_h
+%include include\lib_motion_h
+%include include\lib_string_h
+%include include\lib_tp_if_h
+
+begin
+    OffsPos = get_preg_(get_iparm_(1))
+    OldUFrameNum = get_iparm_(2)
+    NewUFrameNum = get_iparm_(3)
+
+    gg_frame_(get_preg_(get_iparm_(1)), get_iparm_(2), get_iparm_(3), 1)
+
+end sbt_ggframe

@@ -1,0 +1,150 @@
+program sbt_comm010
+--***********************************************************
+--
+-- file Name: sbt_comm010.kl
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2024 - 04 - 01
+--   Modification Data    ==   2024 - 04 - 07
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--
+%comment = 'Comm010 240421'
+%nolockgroup 
+%nopause = error + tpenable + command
+%include include\lib_busio_t
+%include include\lib_buscmd_t
+%include include\lib_math_t
+%include include\lib_logs_t
+%include sbt_comm010_t
+%include include\lib_transform_t
+
+var 
+
+    BusInput    in cmos from sbt_comm010    : busin_t               
+    BusOutput   in cmos from sbt_comm010    : busout_t
+    BusTimeout  in cmos from sbt_comm010    : integer
+    AddrTable   in cmos from sbt_comm010    : addr_table_t
+    DataTable           from sbt_comm010    : data_table_t
+    LimConfig   in cmos from sbt_comm010    : lim_cfg_t
+    WorkMode            from sbt_comm010    : integer
+    Status              from sbt_comm010    : integer
+    TaskId              from sbt_comm010    : integer
+    I                   from sbt_comm010    : integer
+%include include\lib_logs_h
+%include include\lib_math_h
+%include include\lib_motion_h
+%include include\lib_string_h
+%include include\lib_tp_if_h
+%include include\lib_busio_h
+%include include\lib_buscmd_h
+%include include\lib_thread_h
+
+routine p_init_ : integer           from sbt_comm010
+
+begin
+
+    --
+    -- 默认总线输入开始地址为 513 位
+    --
+    BusInput.BusIoSt = tern_int_(uninit(BusInput.BusIoSt), 513, BusInput.BusIoSt)
+    --
+    -- 默认总线输出开始地址为 513 位
+    --
+    BusOutput.BusIoSt = tern_int_(uninit(BusOutput.BusIoSt), 513, BusOutput.BusIoSt)
+
+    -- 超时时间初始化
+    BusTimeout = tern_int_(uninit(BusTimeout), 60000, BusTimeout)
+
+    using AddrTable do
+
+    ModeReg         = tern_int_(uninit(ModeReg),        REG_MODE,       ModeReg)        -- 初始化模式寄存器
+    TaskNumReg      = tern_int_(uninit(TaskNumReg),     REG_TSKNUM,     TaskNumReg)     -- 初始化任务编号寄存器
+    AreaReg         = tern_int_(uninit(AreaReg),        REG_AREA,       AreaReg)        -- 初始化区域寄存器
+    PipReg          = tern_int_(uninit(PipReg),         REG_PIP,        PipReg)         -- 初始化管道寄存器
+    BoxLenghtReg    = tern_int_(uninit(BoxLenghtReg),   REG_BOXLEN,     BoxLenghtReg)   -- 初始化箱子长度寄存器
+    BoxWidthReg     = tern_int_(uninit(BoxWidthReg),    REG_BOXWID,     BoxWidthReg)    -- 初始化箱子宽度寄存器
+    BoxHighReg      = tern_int_(uninit(BoxHighReg),     REG_BOXHIG,     BoxHighReg)     -- 初始化箱子高度寄存器
+    ObliPosReg      = tern_int_(uninit(ObliPosReg),     REG_OBLIPOS,    ObliPosReg)     -- 初始化倾斜位置寄存器
+    PickPosReg      = tern_int_(uninit(PickPosReg),     REG_PICKPOS,    PickPosReg)     -- 初始化拾取位置寄存器
+    PlacePosReg     = tern_int_(uninit(PlacePosReg),    REG_PLACEPOS,   PlacePosReg)    -- 初始化放置位置寄存器
+    FdTaskNumReg    = tern_int_(uninit(FdTaskNumReg),   REG_FDTSKNUM,   FdTaskNumReg)   -- 初始化故障检测任务编号寄存器
+    FdAreaReg       = tern_int_(uninit(FdAreaReg),      REG_FDAREA,     FdAreaReg)      -- 初始化故障检测区域寄存器
+    CmdIdReg        = tern_int_(uninit(CmdIdReg),       REG_CMD_ID,     CmdIdReg)       -- 初始化命令ID寄存器
+    RltIdReg        = tern_int_(uninit(RltIdReg),       REG_RLT_ID,     RltIdReg)       -- 初始化结果ID寄存器
+    RltFlg          = tern_int_(uninit(RltFlg),         FLG_RESULT,     RltFlg)         -- 初始化结果标志寄存器
+    
+    endusing
+
+    using LimConfig do
+    for I = 1 to array_len(LimitUp) do
+
+        LimitUp[I].x = 3000.0
+        LimitUp[I].y = 3000.0
+        LimitUp[I].z = 3000.0
+    endfor
+    for I = 1 to array_len(LimitDown) do
+
+        LimitDown[I].x = -3000.0
+        LimitDown[I].y = -3000.0
+        LimitDown[I].z = -3000.0
+    endfor
+    endusing
+    
+
+    set_ireg_(AddrTable.CmdIdReg, CMD_UNKNOWN)
+    set_ireg_(AddrTable.RltIdReg, RLT_UNKNOWN)
+    flg[AddrTable.RltFlg] = false
+
+    log_clear_
+
+    WorkMode = get_iparm_(1)
+
+    log_info_('COMM010', 'Initialize [WorkMode:' + int_2str_(WorkMode) + ']')
+
+    Status = p_init_
+
+    if Status = OK then 
+
+        log_info_('COMM010', 'Initialize Successful')
+        TaskId = thrd_create_(PROC_TASK_NM, 0, false)
+
+        if TaskId > 0 then
+
+            log_info_('COMM010', 'Create tsk_comm010 Succ !!!')
+            set_ireg_(AddrTable.RltIdReg, RLT_OK)
+        else
+
+            log_error_('COMM010', 'Falied Create tsk_comm010 !!!')
+            set_ireg_(AddrTable.RltIdReg, RLT_NOTOK)
+            --flg[AddrTable.RltFlg] = true
+        endif
+    else
+
+        log_error_('COMM010', 'Failed Initialize')
+        set_ireg_(AddrTable.RltIdReg, RLT_NOTOK)
+        --flg[AddrTable.RltFlg] = true
+    endif
+
+end sbt_comm010
+
+routine p_init_
+var
+    CmdType08       : cmd_typ08_t
+    Res             : integer
+begin
+    bus_init_(BusInput, BusOutput, 0, PTC_GEN_CMD)
+
+    CmdType08.Byte01 = WorkMode
+    Res = bus_cmd027_(BUSCMD_WRITE, BUSCMD_MST, BusInput, BusOutput, CmdType08, 0);
+    Res = bus_cmd001_(BUSCMD_READ, BUSCMD_MST, BusInput, BusOutput, BusTimeout);
+
+    return(Res)
+end p_init_

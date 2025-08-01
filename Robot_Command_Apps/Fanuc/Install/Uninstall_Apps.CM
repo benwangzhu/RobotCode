@@ -1,0 +1,285 @@
+
+! 应用卸载
+PRINT "**********************************"
+PRINT "**********************************"
+PRINT "FUNCTION : Uninstall Sbt Comm Apps"
+PRINT "USER		: Speedbot
+PRINT "**********************************"
+PRINT "**********************************"
+DELAY 1000
+
+PRINT "ABORT ALL"
+KCL ABORT ALL
+DELAY 200
+
+SPEP_OFF
+
+! 删除库 LIB PC程序
+PRINT "Deleting Library"
+PRINT "Deleting global_cfg.pc"
+DELPC global_cfg					! global_cfg.pc	
+PRINT "Deleting lib_buscmd.pc"
+DELPC lib_buscmd					! lib_buscmd.pc	
+PRINT "Deleting lib_busio.pc"
+DELPC lib_busio						! lib_busio.pc	
+PRINT "Deleting lib_dpm.pc"
+DELPC lib_dpm						! lib_dpm.pc	
+PRINT "Deleting lib_fsetup.pc"
+DELPC lib_fsetup					! lib_fsetup.pc	
+PRINT "Deleting lib_logs.pc"
+DELPC lib_logs						! lib_logs.pc	
+PRINT "Deleting lib_math.pc"
+DELPC lib_math						! lib_math.pc	
+PRINT "Deleting lib_momory.pc"
+DELPC lib_momory					! lib_momory.pc	
+PRINT "Deleting lib_motion.pc"
+DELPC lib_motion					! lib_motion.pc	
+PRINT "Deleting lib_path.pc"
+DELPC lib_path						! lib_path.pc	
+PRINT "Deleting lib_socket.pc"
+DELPC lib_socket					! lib_socket.pc	
+PRINT "Deleting lib_string.pc"
+DELPC lib_string					! lib_string.pc	
+PRINT "Deleting lib_thread.pc"
+DELPC lib_thread					! lib_thread.pc	
+PRINT "Deleting lib_tp_if.pc"
+DELPC lib_tp_if						! lib_tp_if.pc	
+PRINT "Deleting lib_tpe.pc"
+DELPC lib_tpe						! lib_tpe.pc	
+
+! 删除 SBT_COMM PC程序
+PRINT "Loading Sbt Pc"
+DELPC sbt_comm000					! sbt_comm000.pc
+DELPC sbt_comm002					! sbt_comm002.pc
+DELPC sbt_comm003					! sbt_comm003.pc
+DELPC sbt_comm004					! sbt_comm004.pc
+DELPC sbt_comm010					! sbt_comm010.pc
+DELPC sbt_comm010_process			! sbt_comm010_process.pc
+
+! 删除 BASE PC程序
+DELPC sbt_ggframe					! sbt_ggframe.pc
+DELPC sbt_pr2vr					    ! sbt_pr2vr.pc
+DELPC sbt_chkpos				    ! sbt_chkpos.pc
+DELPC commenting				    ! commenting.pc
+
+! 删除 焊接应用 PC程序
+DELPC sbt_Comm011_2dScanEd			! sbt_Comm011_2dScanEd.pc
+DELPC sbt_Comm011_2dScanSt			! sbt_Comm011_2dScanSt.pc
+DELPC sbt_Comm011_3dScanEd	        ! sbt_Comm011_3dScanEd.pc
+DELPC sbt_Comm011_3dScanSt			! sbt_Comm011_3dScanSt.pc
+DELPC sbt_Comm011_adap2Ed			! sbt_Comm011_adap2Ed.pc
+DELPC sbt_Comm011_adap2St			! sbt_Comm011_adap2St.pc
+DELPC sbt_Comm011_adapEd			! sbt_Comm011_adapEd.pc
+DELPC sbt_Comm011_adapSt			! sbt_Comm011_adapSt.pc
+DELPC sbt_Comm011_close			    ! sbt_Comm011_close.pc
+DELPC sbt_Comm011_GetPath			! sbt_Comm011_GetPath.pc
+DELPC sbt_Comm011_lsScanEd			! sbt_Comm011_lsScanEd.pc
+DELPC sbt_Comm011_lsScanSt			! sbt_Comm011_lsScanSt.pc
+DELPC sbt_Comm011_network			! sbt_Comm011_network.pc
+DELPC sbt_Comm011_open			    ! sbt_Comm011_open.pc
+DELPC sbt_Comm011_ParamEd			! sbt_Comm011_ParamEd.pc
+DELPC sbt_Comm011_ParamSt			! sbt_Comm011_ParamSt.pc
+DELPC sbt_Comm011_realtime			! sbt_Comm011_realtime.pc
+DELPC sbt_Comm011_addTeach			! sbt_Comm011_addTeach.pc
+
+! 删除 分拣 MIXSORT PC程序
+DELPC mixsort_sr			! mixsort_sr.pc
+DELPC second_cfg			! second_cfg.pc
+DELPC second_cpy			! second_cpy.pc
+DELPC second_fdbk			! second_fdbk.pc
+DELPC second_getq			! second_getq.pc
+DELPC second_sr			    ! second_sr.pc
+DELPC second_wpos			! second_wpos.pc
+DELPC track_frame			! track_frame.pc
+
+! 删除 码垛 SECONDSORT PC程序
+DELPC lib_second			! lib_second.pc
+DELPC mixsort_cfg			! mixsort_cfg.pc
+
+! 删除 控制器 PC程序
+DELPC sbt_comm128				    ! sbt_comm128.pc
+DELPC sbt_comm128_motion			! sbt_comm128_motion.pc
+DELPC sbt_comm128_state			    ! sbt_comm128_state.pc
+
+! 删除 宏程序
+PRINT "Loading Sbt Tpes"
+DELTP ENTRIZON					! ENTRIZON.tp
+DELTP EXITIZON					! EXITIZON.tp
+DELTP HOME_IO					! HOME_IO.tp
+DELTP MOV_HOME					! MOV_HOME.tp
+DELTP POUNCE					! POUNCE.tp
+DELTP REQ_CONT					! REQ_CONT.tp
+DELTP SET_SEGM					! SET_SEGM.tp
+DELTP SERVO01CTRL				! SERVO01CTRL.tp
+DELTP ECHOJOBINFO				! ECHOJOBINFO.tp
+DELTP ECHOCHANNEL				! ECHOCHANNEL.tp
+
+! 删除 拆码垛 TPE程序
+DELTP COMM010_SKILL				! COMM010_SKILL.tp
+DELTP P_STACK					! P_STACK.tp
+DELTP P_STACK_COPY				! P_STACK_COPY.tp
+DELTP P_STACK_INIT				! P_STACK_INIT.tp
+DELTP P_STACK_PICK01			! P_STACK_PICK01.tp
+DELTP P_STACK_PLACE01			! P_STACK_PLACE01.tp
+DELTP P_STACK_PLACE02			! P_STACK_PLACE02.tp
+DELTP P_UNSTACK					! P_UNSTACK.tp
+DELTP P_UNSTACK_INIT			! P_UNSTACK_INIT.tp
+DELTP P_UNSTACK_PICK01			! P_UNSTACK_PICK01.tp
+DELTP P_UNSTACK_PICK02			! P_UNSTACK_PICK02.tp
+DELTP P_UNSTACK_PLACE01			! P_UNSTACK_PLACE01.tp
+
+! 删除 分拣 MIXSORT TP程序
+DELTP MIXSORT_ACK				! MIXSORT_ACK.tp
+DELTP MIXSORT_COPY				! MIXSORT_COPY.tp
+DELTP MIXSORT_DROP01			! MIXSORT_DROP01.tp
+DELTP MIXSORT_DT2PLC			! MIXSORT_DT2PLC.tp
+DELTP MIXSORT_FORMAGOFF			! MIXSORT_FORMAGOFF.tp
+DELTP MIXSORT_FORMAGON			! MIXSORT_FORMAGON.tp
+DELTP MIXSORT_INIT				! MIXSORT_INIT.tp
+DELTP MIXSORT_MAGOFF			! MIXSORT_MAGOFF.tp
+DELTP MIXSORT_MAGON				! MIXSORT_MAGON.tp
+DELTP MIXSORT_PICK				! MIXSORT_PICK.tp
+DELTP MIXSORT_PICTURE			! MIXSORT_PICTURE.tp
+DELTP MIXSORT_PLACE01			! MIXSORT_PLACE01.tp
+DELTP MIXSORT_PLACE02			! MIXSORT_PLACE02.tp
+DELTP MIXSORT_PLACE03			! MIXSORT_PLACE03.tp
+DELTP MIXSORT_PLACE04			! MIXSORT_PLACE04.tp
+DELTP MIXSORT_PLACE05			! MIXSORT_PLACE05.tp
+DELTP MIXSORT_PLACE06			! MIXSORT_PLACE06.tp
+DELTP MIXSORT_WORK				! MIXSORT_WORK.tp
+DELTP MIXSORT_WPOS				! MIXSORT_WPOS.tp
+DELTP PNS0001					! PNS0001.tp
+
+! 删除 码垛 SECONDSORT TP程序
+DELTP SECOND_FORMAGOFF				! SECOND_FORMAGOFF.tp
+DELTP SECOND_FORMAGON				! SECOND_FORMAGON.tp
+DELTP SECOND_INIT			        ! SECOND_INIT.tp
+DELTP SECOND_PICK01			        ! SECOND_PICK01.tp
+DELTP SECOND_PICK02			        ! SECOND_PICK02.tp
+DELTP SECOND_PICK03			        ! SECOND_PICK03.tp
+DELTP SECOND_PICK04				    ! SECOND_PICK04.tp
+DELTP SECOND_PKCV_SELECT			! SECOND_PKCV_SELECT.tp
+DELTP SECOND_PLACE01				! SECOND_PLACE01.tp
+DELTP SECOND_PLACE02				! SECOND_PLACE02.tp
+DELTP SECOND_PLACE03			    ! SECOND_PLACE03.tp
+DELTP SECOND_PLACE04			    ! SECOND_PLACE04.tp
+DELTP SECOND_PLACE05			    ! SECOND_PLACE05.tp
+DELTP SECOND_PLACE06			    ! SECOND_PLACE06.tp
+DELTP SECOND_PLACE07			    ! SECOND_PLACE07.tp
+DELTP SECOND_PLACE08			    ! SECOND_PLACE08.tp
+DELTP SECOND_PLFS_SELECT			! SECOND_PLFS_SELECT.tp
+DELTP ENC_STAT				        ! ENC_STAT.tp
+DELTP PNS0001				        ! PNS0001.tp
+DELTP PNS0025					    ! PNS0025.tp
+
+! 删除 控制器 TP程序
+DELTP COMM128_INST01				! SBTCTRL_INST01.tp
+DELTP COMM128_INST02				! SBTCTRL_INST02.tp
+DELTP COMM128_MAIN			        ! COMM128_MAIN.tp
+DELTP COMM128_TJ			        ! COMM128_TJ.tp
+DELTP COMM128_TRAJE1			    ! COMM128_TRAJE1.tp
+DELTP COMM128_TRAJE2			    ! COMM128_TRAJE2.tp
+DELTP COMM128_TRAJE3			    ! COMM128_TRAJE3.tp
+DELTP COMM128_TRAJE4			    ! COMM128_TRAJE4.tp
+DELTP COMM128_TRAJE5			    ! COMM128_TRAJE5.tp
+
+! 删除 SBT_COMM VR变量
+PRINT "Deleting Vr"
+
+VRCLEAR sbt_comm000
+VRCLEAR sbt_comm002
+VRCLEAR sbt_comm003
+VRCLEAR sbt_comm004
+VRCLEAR sbt_comm010
+VRCLEAR sbt_comm010_process
+
+! 删除 BASE PC程序
+VRCLEAR sbt_ggframe			
+VRCLEAR sbt_pr2vr			
+VRCLEAR sbt_chkpos			
+VRCLEAR commenting			
+
+! 删除 焊接应用 VR变量
+VRCLEAR sbt_Comm011_2dScanEd			! sbt_Comm011_2dScanEd.pc
+VRCLEAR sbt_Comm011_2dScanSt			! sbt_Comm011_2dScanSt.pc
+VRCLEAR sbt_Comm011_3dScanEd	        ! sbt_Comm011_3dScanEd.pc
+VRCLEAR sbt_Comm011_3dScanSt			! sbt_Comm011_3dScanSt.pc
+VRCLEAR sbt_Comm011_adap2Ed			    ! sbt_Comm011_adap2Ed.pc
+VRCLEAR sbt_Comm011_adap2St			    ! sbt_Comm011_adap2St.pc
+VRCLEAR sbt_Comm011_adapEd			    ! sbt_Comm011_adapEd.pc
+VRCLEAR sbt_Comm011_adapSt			    ! sbt_Comm011_adapSt.pc
+VRCLEAR sbt_Comm011_close			    ! sbt_Comm011_close.pc
+VRCLEAR sbt_Comm011_GetPath			    ! sbt_Comm011_GetPath.pc
+VRCLEAR sbt_Comm011_lsScanEd			! sbt_Comm011_lsScanEd.pc
+VRCLEAR sbt_Comm011_lsScanSt			! sbt_Comm011_lsScanSt.pc
+VRCLEAR sbt_Comm011_open			    ! sbt_Comm011_open.pc
+VRCLEAR sbt_Comm011_ParamEd			    ! sbt_Comm011_ParamEd.pc
+VRCLEAR sbt_Comm011_ParamSt			    ! sbt_Comm011_ParamSt.pc
+VRCLEAR sbt_Comm011_realtime			! sbt_Comm011_realtime.pc
+VRCLEAR sbt_Comm011_network			    ! sbt_Comm011_network.pc
+VRCLEAR sbt_Comm011_addTeach		    ! sbt_Comm011_addTeach.pc
+
+! 删除 分拣 MIXSORT VR变量
+VRCLEAR mixsort_sr				! mixsort_sr.pc
+VRCLEAR mixsort_cfg				! mixsort_cfg.pc
+VRCLEAR mixsort_t				! mixsort_t.pc
+
+! 删除 码垛 SECONDSORT VR变量
+VRCLEAR lib_second				! lib_second.pc
+VRCLEAR second_cfg				! second_cfg.pc
+VRCLEAR second_cpy				! second_cpy.pc
+VRCLEAR second_fdbk				! second_fdbk.pc
+VRCLEAR second_getq				! second_getq.pc
+VRCLEAR second_sr				! second_sr.pc
+VRCLEAR second_wpos				! second_wpos.pc
+VRCLEAR track_frame				! track_frame.pc
+VRCLEAR second_t				! second_t.pc
+
+! 删除 控制器 VR变量
+VRCLEAR sbt_comm128_motion	        ! sbt_comm128_motion.pc
+VRCLEAR sbt_comm128_state	        ! sbt_comm128_state.pc
+VRCLEAR sbt_comm128				    ! sbt_comm128.pc
+
+! 删除库 LIB VR变量
+PRINT "Deleting global_cfg.vr"
+VRCLEAR global_cfg					! global_cfg.vr	
+PRINT "Deleting lib_buscmd.vr"
+VRCLEAR lib_buscmd					! lib_buscmd.vr	
+PRINT "Deleting lib_busio.vr"
+VRCLEAR lib_busio					! lib_busio.vr	
+PRINT "Deleting lib_dpm.vr"
+VRCLEAR lib_dpm						! lib_dpm.vr	
+PRINT "Deleting lib_fsetup.vr"
+VRCLEAR lib_fsetup					! lib_fsetup.vr	
+PRINT "Deleting lib_logs.vr"
+VRCLEAR lib_logs					! lib_logs.vr	
+PRINT "Deleting lib_math.vr"
+VRCLEAR lib_math					! lib_math.vr	
+PRINT "Deleting lib_momory.vr"
+VRCLEAR lib_momory					! lib_momory.vr	
+PRINT "Deleting lib_motion.vr"
+VRCLEAR lib_motion					! lib_motion.vr	
+PRINT "Deleting lib_path.vr"
+VRCLEAR lib_path					! lib_path.vr	
+PRINT "Deleting lib_socket.vr"
+VRCLEAR lib_socket					! lib_socket.vr	
+PRINT "Deleting lib_string.vr"
+VRCLEAR lib_string					! lib_string.vr	
+PRINT "Deleting lib_thread.vr"
+VRCLEAR lib_thread					! lib_thread.vr	
+PRINT "Deleting lib_tp_if.vr"
+VRCLEAR lib_tp_if					! lib_tp_if.vr	
+PRINT "Deleting lib_tpe.vr"
+VRCLEAR lib_tpe						! lib_tpe.vr	
+
+! 删除 参数显示 DT文件
+PRINT "Deleting Dt File"
+DELFR md:\argdispch91.dt
+DELFR md:\argdispeg91.dt
+
+SPEP_ON
+
+PRINT ""
+PRINT "Finished !!!"
+
+EXIT

@@ -1,0 +1,34 @@
+&ACCESS RO3
+&REL 1
+&COMMENT App128 State
+&PARAM DISKPATH = KRC:\R1\TP\SbtComm128
+DEFDAT  SBT_COMM128_STATE
+;***********************************************************
+; 
+; Copyright 2018 - 2024 speedbot All Rights reserved.
+; 
+; file Name: sbt_comm128_state.dat
+; 
+; Description:
+;   Language             ==   Karel for KUKA ROBOT
+;   Date                 ==   2022 - 02 - 26
+;   Modification Data    ==   2022 - 02 - 26
+; 
+; Author: speedbot
+; 
+; Version: 1.0
+;***********************************************************
+
+STRUC drv_stat_t pack_head_t DrvHead,CHAR State,NumOfRobAxis,NumOfRotAxis,Reserverd1,INT MoveId,CHAR DinVal[8],E6AXIS Joints,REAL ProcessPrm01,ProcessPrm02,ProcessPrm03,ProcessPrm04,ProcessPrm05,ProcessPrm06,pack_tail_t DrvTail
+
+DECL drv_stat_t StatePackage
+
+DECL INT Status=0
+DECL INT Offset=0
+
+DECL CHAR Packages[1025]
+
+DECL INT TempInt=239
+DECL REAL TempReal=0.0
+
+ENDDAT

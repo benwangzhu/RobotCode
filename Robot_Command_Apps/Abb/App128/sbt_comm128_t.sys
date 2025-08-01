@@ -1,0 +1,72 @@
+module sbt_comm128_t
+!***********************************************************
+!
+! Copyright 2018 - 2024 speedbot All Rights reserved.
+!
+! file Name: sbt_comm128_t
+! 
+!  Description:
+!    Language             ==   Karel for ABB ROBOT
+!    Date                 ==   2024 - 03 - 05
+!    Modification Data    ==   2024 - 03 - 05
+! 
+!  Author: speedbot
+! 
+!  Version: 3.0
+! ***********************************************************
+!
+
+
+record trajectory_pt_t
+    num TrjMoveId;
+    byte TrjMoveType;
+    byte TrjProcessType;
+    byte TrjAcc;
+    num TrjSmoot;
+    num TrjSpeed;
+    num TrjProcParm1;
+    num TrjProcParm2;
+    num TrjProcParm3;
+    robtarget TrjPose;
+endrecord
+
+
+const num STATE_FREQ                := 0.032;
+const num SHAKE_TIME                := 3;
+const num TRY_CONN_TM               := 1;
+
+const num CMD_CTRL                  := 1;       
+const num CMD_IO                    := 2;    
+const num CMD_STOP                  := 200;  
+
+const num ERR_SUCCESS               := 0;   
+const num ERR_MOVTYPE               := 10001;      
+const num ERR_ACC                   := 10002;       
+const num ERR_SMOOT                 := 10003;      
+const num ERR_VELOCITY              := 10004;     
+const num ERR_MOVEID                := 10005;     
+
+const num ERR_CFG_IO1               := 20001;    
+const num ERR_CFG_IO2               := 20002;      
+const num ERR_CFG_IO3               := 20003;      
+const num ERR_CFG_IO4               := 20004;  
+const num ERR_CFG_IO5               := 20005; 
+const num ERR_CFG_IO6               := 20006;
+const num ERR_CFG_IO7               := 20007;  
+const num ERR_CFG_IO8               := 20008; 
+
+
+const num MTN_MAX_SMT               := 200.0;                       ! 定义最大的拐弯半径
+const num MTN_MAX_TRAJE_LEN         := 800;
+const num MAX_TRAJ_LENGTH           := 1000;                        
+
+
+const num TYPE_ABB                  := 2;
+
+const BYTE MOVE_J                   := 6;
+const BYTE MOVE_L                   := 7;
+const BYTE MOVE_C1                  := 8;
+const BYTE MOVE_C2                  := 0;
+
+
+endmodule
