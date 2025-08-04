@@ -1,0 +1,98 @@
+program SbtHeadInit
+--***********************************************************
+--
+-- file Name: SbtHeadInit
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 05 - 06
+--
+-- Author: 
+--
+-- Version: 1.0
+%comment = 'SBT HEAD INIT 250507'
+%nolockgroup
+%nobusylamp
+%nopauseshft
+
+%include include/lib_logs_t
+%include include/lib_tpe_t
+%include include/lib_inst_t
+%include include/lib_socket_t
+%include include/lib_transform_t
+%include include/lib_math_t
+%include sbt_comm12_t
+%include sbt_comm12_global
+
+var
+    HeadInitFlag        in cmos         : boolean
+    GrindHedId                          : integer
+    JobId                               : integer 
+
+%include include/lib_inst_h
+%include include/lib_tp_if_h
+%include include/lib_string_h
+%include include/lib_math_h
+
+routine InitData from SbtHeadInit
+routine HeadStatus(GrindHeadId : integer) from Sbtheadctrl
+
+begin 
+    InitData
+
+    GrindHedId                              = get_iparm_(1)                 --获取对应打磨头ID
+    GrindHeadTol[GrindHedId].BindToolNum    = get_iparm_(2)                 --获取对应打磨头输出绑定起始地址
+    GrindHeadTol[GrindHedId].DoutputAddr    = get_iparm_(3)                 --获取对应打磨头输出绑定起始地址
+    GrindHeadTol[GrindHedId].DinputAddr     = get_iparm_(4)                 --获取对应打磨头输入绑定起始地址
+    GrindHeadTol[GrindHedId].MaxGrindSped   = get_rparm_(5)                 --获取对应打磨头最大速度 
+    set_ireg_(get_iparm_(6), GrindHeadTol[GrindHedId].DoutputAddr)        --将对应打磨头输出信号起始地址映射到R寄存器
+    GrindHeadTol[GrindHedId].HeadEnable     = int_to_bol_(get_iparm_(7))    --获取对应打磨头是否启用
+
+    HeadStatus(GrindHedId)
+end SbtHeadInit
+
+routine InitData
+var
+    I                           : integer
+begin
+    if not(uninit(HeadInitFlag)) then 
+        if HeadInitFlag = true then 
+            return
+        endif  
+    endif 
+
+    if uninit(GrindInform.CurGrindId) then              GrindInform.CurGrindId = 0;             endif
+    if uninit(GrindInform.CurGrindsped) then            GrindInform.CurGrindsped = 0.0;         endif
+
+    for I = 1 to array_len(GrindHeadTol) do
+        if uninit(GrindHeadTol[I].HeadEnable) then      GrindHeadTol[I].HeadEnable = false;     endif
+        if uninit(GrindHeadTol[I].DoutputAddr) then     GrindHeadTol[I].DoutputAddr = 0;        endif
+        if uninit(GrindHeadTol[I].DinputAddr) then      GrindHeadTol[I].DinputAddr = 0;         endif
+        if uninit(GrindHeadTol[I].BindToolNum) then     GrindHeadTol[I].BindToolNum = -1;       endif
+        if uninit(GrindHeadTol[I].MaxGrindSped) then    GrindHeadTol[I].MaxGrindSped = 6553.5;  endif
+        if uninit(GrindHeadTol[I].ErrorId) then         GrindHeadTol[I].ErrorId = 0;            endif
+    endfor 
+
+    for I = 1 to array_len(ManuGrinSped) do
+        if uninit(ManuGrinSped[I]) then                 ManuGrinSped[I] = 1000.0;               endif
+    endfor 
+
+    if uninit(GrindErrMsg[1]) then 
+        GrindErrMsg[1] = '打磨头紧急停止报警'
+    endif
+    if uninit(GrindErrMsg[2]) then 
+        GrindErrMsg[2] = '打磨头气压报警'
+    endif
+    if uninit(GrindErrMsg[3]) then 
+        GrindErrMsg[3] = '打磨头冷却器报警'
+    endif
+    if uninit(GrindErrMsg[4]) then 
+        GrindErrMsg[4] = '打磨头主轴碰撞报警'
+    endif
+    for I = 5 to array_len(GrindErrMsg) do
+        GrindErrMsg[I] = '打磨头未知警报'
+    endfor 
+
+    HeadInitFlag = true
+end InitData

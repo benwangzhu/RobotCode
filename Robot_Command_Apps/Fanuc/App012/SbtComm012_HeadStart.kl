@@ -1,0 +1,41 @@
+program SbtHeadStart
+--***********************************************************
+--
+-- file Name: SbtHeadStart
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 05 - 06
+--
+-- Author: 
+--
+-- Version: 1.0
+%comment = 'SBT HEAD START 250507'
+%nolockgroup
+%nobusylamp
+%nopauseshft
+
+%include include/lib_logs_t
+%include include/lib_tpe_t
+%include include/lib_inst_t
+%include include/lib_socket_t
+%include include/lib_transform_t
+%include sbt_comm12_t
+%include sbt_comm12_global
+
+%include include/lib_inst_h
+%include include/lib_tp_if_h
+
+routine IntrHedResum from Sbtheadctrl
+routine IntrHedAlarm from Sbtheadctrl
+routine HeadStarting(GrindHeadId : integer; Speed : real; TimeOut : integer) from Sbtheadctrl
+
+begin 
+    HeadStarting(get_iparm_(1), get_rparm_(2), round(get_rparm_(3) * 1000))
+
+    if GrindInform.CurGrindId > 0 then
+        IntrHedResum
+        IntrHedAlarm
+    endif 
+end SbtHeadStart

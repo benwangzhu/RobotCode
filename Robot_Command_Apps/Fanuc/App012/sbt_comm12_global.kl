@@ -6,8 +6,8 @@
 --
 -- Description:
 --   Language             ==   Karel for FANUC ROBOT
---   Date                 ==   2022 - 05 - 13
---   Modification Data    ==   2022 - 05 - 28
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 04 - 29
 --
 -- Author: speedbot
 --
@@ -15,4 +15,8 @@
 --***********************************************************
 --
 var 
-    PolishSock          in cmos from sbt_packinit       : sock_cfg_t
+    PolishSock          in cmos from sbt_comm12                 : sock_cfg_t
+    GrindInform         in cmos from sbt_comm12                 : grind_info_t
+    ManuGrinSped        in cmos from sbt_comm12                 : array[4] of real
+    GrindHeadTol        in cmos from sbt_comm12                 : array[MAX_GRINDNUM] of grind_head_t
+    GrindErrMsg         in shadow from sbt_comm12               : array[MAX_ERRORMSG] of string[70]

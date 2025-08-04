@@ -6,17 +6,19 @@ program SbtPoliPara
 -- Description:
 --   Language             ==   Karel for FANUC ROBOT
 --   Date                 ==   2025 - 04 - 29
---   Modification Data    ==   2025 - 05 - 06
+--   Modification Data    ==   2025 - 07 - 28
 --
 -- Author: 
 --
 -- Version: 1.0
-%comment = 'SBT POLISH PARA 250507'
+%comment = 'SBT POLISH PARA 250728'
 %nolockgroup
 %nobusylamp
+%nopauseshft
 %nopause = error + command + tpenable
 
 %include include/lib_logs_t
+%include include/lib_tpe_t
 %include include/lib_inst_t
 %include include/lib_socket_t
 %include include/lib_transform_t
@@ -25,28 +27,35 @@ program SbtPoliPara
 
 var
     JobId                               : integer 
-    ProcNum                             : integer
-    GrindNum                            : integer 
+    PathId                              : integer
+    GrindHeadId                         : integer 
     GrindSpeed                          : real 
-    HeadRegNum                          : integer   
-    SpeedRegNum                         : integer 
+    HeadIdReg                           : integer   
+    SpeedDataReg                        : integer
+    ToolNoReg                           : integer 
     Status                              : integer                 
 
 %include include/lib_inst_h
 %include include/lib_tp_if_h
 %include include/lib_string_h
 
+routine CheckHeadId(GrindHeadId : integer) from Sbtheadctrl
+
 begin 
     JobId           = get_iparm_(1)                 --获取任务编号
-    ProcNum         = get_iparm_(2)                 --获取路径编号
-    HeadRegNum      = get_iparm_(3)                 --获取打磨头编号写入的R寄存器编号
-    SpeedRegNum     = get_iparm_(4)                 --获取打磨头转速写入的R寄存器编号
+    PathId          = get_iparm_(2)                 --获取路径编号
+    HeadIdReg       = get_iparm_(3)                 --获取打磨头编号写入的R寄存器编号
+    SpeedDataReg    = get_iparm_(4)                 --获取打磨头转速写入的R寄存器编号
+    ToolNoReg       = get_iparm_(5)                 --获取打磨头工具号的R寄存器编号
     
-    Status = f003_it01_(PolishSock, JobId, ProcNum, GrindNum, GrindSpeed)
+    Status = f003_it01_(PolishSock, JobId, PathId, GrindHeadId, GrindSpeed)
     if Status <> OK then  
-        post_err(CC_UALARM, '打磨工艺参数获取失败![Status:' + int_to_str_(Status) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, '打磨工艺参数获取失败[Status:' + int_to_str_(Status) + ']', 0, CC_ABORT)
     endif 
 
-    set_ireg_(HeadRegNum, GrindNum)
-    set_rreg_(SpeedRegNum, GrindSpeed)
+    CheckHeadId(GrindHeadId)
+
+    set_ireg_(HeadIdReg, GrindHeadId)
+    set_rreg_(SpeedDataReg, GrindSpeed)
+    set_ireg_(ToolNoReg, GrindHeadTol[GrindHeadId].BindToolNum)
 end SbtPoliPara

@@ -1,0 +1,34 @@
+program SbtHeadRelea
+--***********************************************************
+--
+-- file Name: SbtHeadRelea
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 05 - 06
+--
+-- Author: 
+--
+-- Version: 1.0
+%comment = 'SBT HEAD RELEA 250507'
+%nolockgroup
+%nobusylamp
+%nopauseshft
+
+%include include/lib_logs_t
+%include include/lib_tpe_t
+%include include/lib_inst_t
+%include include/lib_socket_t
+%include include/lib_transform_t
+%include sbt_comm12_t
+%include sbt_comm12_global
+
+%include include/lib_inst_h
+%include include/lib_tp_if_h
+
+routine HeadRelease(GrindHeadId : integer; TimeOut : integer) from Sbtheadctrl
+
+begin 
+    HeadRelease(get_iparm_(1), round(get_rparm_(2) * 1000))
+end SbtHeadRelea

@@ -2,12 +2,12 @@
 --
 -- Copyright 2018 - 2024 speedbot All Rights reserved.
 --
--- file Name: sbt_comm128_t.kl
+-- file Name: sbt_comm12_t.kl
 --
 -- Description:
 --   Language             ==   Karel for FANUC ROBOT
---   Date                 ==   2022 - 05 - 13
---   Modification Data    ==   2022 - 05 - 28
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 04 - 29
 --
 -- Author: speedbot
 --
@@ -16,4 +16,71 @@
 --
 
 const         
-    POLISH_TAG                      = 'C6:'
+    POLISH_TAG                          = 'C6:'
+    INST_PORT                           = 12003
+
+    POLISH_APPR                         = 1
+    POLISH_GRIND                        = 2
+    POLISH_EXIT                         = 3
+
+    MAX_GRINDNUM                        = 4
+    MAX_ERRORMSG                        = 16
+
+    WAIT_CYCTIME                        = 20
+
+    INTR_RESUM                          = 55
+    INTR_ALARM                          = 56         
+
+    O_ENABLE                            = 0
+    O_REMOTE                            = 1
+    O_HEARTBEAT                         = 7
+    O_HEADSPEED                         = 16
+    O_HEADSTART                         = 32
+    O_HEADCLAMP                         = 48
+    O_HEADRELEAS                        = 49
+    O_DOOROPEN                          = 50
+    O_DOORCLOSE                         = 51
+
+    I_READY                             = 0
+    I_HEARTBEAT                         = 7
+    I_HEADSTART                         = 16
+    I_HEADCLAMP                         = 32
+    I_HEADRELEAS                        = 33
+    I_DOOROPEN                          = 34
+    I_DOORCLOSE                         = 35
+    I_HEADDETE1                         = 48
+    I_HEADDETE2                         = 49
+    I_HEADDETE3                         = 50
+    I_HEADDETE4                         = 51
+    I_HEADDETE5                         = 52
+    I_ERR_E01                           = 64
+    I_ERR_E02                           = 65
+    I_ERR_E03                           = 66
+    I_ERR_E04                           = 67
+    I_ERR_E05                           = 68
+    I_ERR_E06                           = 69
+    I_ERR_E07                           = 70
+    I_ERR_E08                           = 71
+    I_ERR_E09                           = 72
+    I_ERR_E10                           = 73
+    I_ERR_E11                           = 74
+    I_ERR_E12                           = 75
+    I_ERR_E13                           = 76
+    I_ERR_E14                           = 77
+    I_ERR_E15                           = 78
+    I_ERR_E16                           = 79
+
+type
+    grind_head_t from sbt_comm12_t = structure
+        HeadEnable                      : boolean 
+        DoutputAddr                     : integer 
+        DinputAddr                      : integer 
+        BindToolNum                     : integer 
+        MaxGrindSped                    : real
+        ErrorId                         : integer
+	endstructure
+
+    grind_info_t from sbt_comm12_t = structure
+        CurGrindId                      : integer 
+        CurGrindsped                    : real 
+	endstructure

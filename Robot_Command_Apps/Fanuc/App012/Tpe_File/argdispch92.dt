@@ -1,40 +1,127 @@
-{* -*-coding:chinese-gbk-*-}
 {Basic}
 
 [PROGRAM]
 NAME = "SBTPOLITRIG"
-ARGUMENT = '2'
+ARGUMENT = '3'
 [ARGUMENT]
-N01 = "Camer Id"  	 
-N02 = " Point Id"   
+N01 = "Camer Id"                        : '1'
+N02 = " Capture Id"                     : '1'
+N03 = " Wait Time"                      : '0.5'
 [ENDPROGRAM]
 
 [PROGRAM]
-NAME = "SBTPOLIPROC"
+NAME = "SBTPOLIPLAN"
 ARGUMENT = '3'
 [ARGUMENT]
-N01 = "Job Id"  	  
-N02 = " Plan Num"  	
-N03 = " Proc R[]" 
+N01 = "Job Id"                          : '1'
+N02 = " Plan Id"                        : '1'
+N03 = " PathNum R[]"                    : '10'
 [ENDPROGRAM]
 
 [PROGRAM]
 NAME = "SBTPOLIPARA"
-ARGUMENT = '4'
+ARGUMENT = '5'
 [ARGUMENT]
-N01 = "Job Id"  	  
-N02 = " Para Num"  	
-N03 = " Head R[]"      
-N04 = " Speed R[]"      
+N01 = "Job Id"                          : '1'
+N02 = " Path Id"                        : '1'
+N03 = " Head Id R[]"                    : '11'
+N04 = " Speed R[]"                      : '12'
+N05 = " ToolNo R[]"                     : '13'
 [ENDPROGRAM]
 
 [PROGRAM]
-NAME = "SBTPOLIPATH"
-ARGUMENT = '5'
+NAME = "SBTPOLIAPPR"
+ARGUMENT = '6'
 [ARGUMENT]
-N01 = "Job Id"	    
-V02 = " Appr Path" : '1' , " Proc Path" : '2' , " End Path" : '3'
-N03 = " Para Num"  
-N04 = " Inter Dis"    
-S05 = " Tpe Name"       : "PATH_PROC"
+N01 = "Job Id"                          : '1'
+N02 = " Path Id"                        : '1'
+N03 = " Distance"                       : '5.0'	    
+N04 = " Speed[cm/min]"                  : '300' 
+N05 = " EXTE Speed"                     : '0'
+S06 = " Tpe Name"                       : "POLIPATH_APPR"
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBTPOLIGRIND"
+ARGUMENT = '6'
+[ARGUMENT]
+N01 = "Job Id"                          : '1'
+N02 = " Path Id"                        : '1'
+N03 = " Distance"                       : '5.0'
+N04 = " Speed[cm/min]"                  : '300'
+N05 = " EXTE Speed"                     : '0'
+S06 = " Tpe Name"                       : "POLIPATH_GRIND"
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBTPOLIEXIT"
+ARGUMENT = '6'
+[ARGUMENT]
+N01 = "Job Id"                          : '1'
+N02 = " Path Id"                        : '1'
+N03 = " Distance"                       : '5.0'
+N04 = " Speed[cm/min]"                  : '300'
+N05 = " EXTE Speed"                     : '0'
+S06 = " Tpe Name"                       : "POLIPATH_EXIT"
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBTHEADINIT"
+ARGUMENT = '7'
+[ARGUMENT]
+N01 = "Head Id"                         : '1'
+N02 = " Tool Num"                       : '0'
+N03 = " Do Addr"                        : '0'
+N04 = " Di Addr"                        : '0'
+N05 = " Max Speed"                      : '6000.0'
+N06 = " Io Addr R[]"                    : '20'
+N07 = " Enable"                         : '0'
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBTHEADSTART"
+ARGUMENT = '3'
+[ARGUMENT]
+N01 = "Head Id"                         : '1'
+N02 = " Grind Speed"                    : '6000.0'
+N03 = " TimeOut[s]"                     : '1.0'
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBTHEADSTOP"
+ARGUMENT = '1'
+[ARGUMENT]
+N01 = "Head Id"                         : '1'
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBTHEADRELEA"
+ARGUMENT = '2'
+[ARGUMENT]
+N01 = "Head Id"                         : '1'
+N02 = " TimeOut[s]"                     : '1.0'
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBTHEADCLAMP"
+ARGUMENT = '2'
+[ARGUMENT]
+N01 = "Head Id"                         : '1'
+N02 = " TimeOut[s]"                     : '1.0'
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBTDOOROPEN"
+ARGUMENT = '2'
+[ARGUMENT]
+N01 = "Head Id"                         : '1'
+N02 = " TimeOut[s]"                     : '1.0'
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBTDOORCLOSE"
+ARGUMENT = '2'
+[ARGUMENT]
+N01 = "Head Id"                         : '1'
+N02 = " TimeOut[s]"                     : '1.0'
 [ENDPROGRAM]

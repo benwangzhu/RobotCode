@@ -6,17 +6,19 @@ program SbtPoliTrig
 -- Description:
 --   Language             ==   Karel for FANUC ROBOT
 --   Date                 ==   2025 - 04 - 29
---   Modification Data    ==   2025 - 05 - 06
+--   Modification Data    ==   2025 - 07 - 28
 --
 -- Author: 
 --
 -- Version: 1.0
-%comment = 'SBT POLISH TRIG 250507'
+%comment = 'SBT POLISH TRIG 250728'
 %nolockgroup
 %nobusylamp
+%nopauseshft
 %nopause = error + command + tpenable
 
 %include include/lib_socket_t
+%include include/lib_tpe_t
 %include include/lib_logs_t
 %include include/lib_transform_t
 %include sbt_comm12_t
@@ -24,8 +26,8 @@ program SbtPoliTrig
 
 var
     PhotoPint                           : xyzwprext
-    CamerNum                            : integer 
-    PointNum                            : integer 
+    CameraId                            : integer 
+    CaptureId                           : integer 
     Status                              : integer 
 
 %include include/lib_motion_h
@@ -34,13 +36,14 @@ var
 %include include/lib_string_h
 
 begin 
-    CamerNum = get_iparm_(1)             --获取相机编号
-    PointNum = get_iparm_(2)             --获取拍照点位编号
+    CameraId = get_iparm_(1)             --获取相机编号
+    CaptureId = get_iparm_(2)            --获取拍照点位编号
+    delay round(get_rparm_(3) * 1000)
 
     PhotoPint = cur_pos_(0, 0)
 
-    Status = f001_it01_(PolishSock, PhotoPint, CamerNum, PointNum)
+    Status = f001_it01_(PolishSock, PhotoPint, CameraId, CaptureId)
     if Status <> OK then  
-        post_err(CC_UALARM, '打磨相机拍照失败![Status:' + int_to_str_(Status) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, '打磨相机拍照失败[Status:' + int_to_str_(Status) + ']', 0, CC_ABORT)
     endif
 end SbtPoliTrig
