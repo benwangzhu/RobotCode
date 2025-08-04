@@ -46,6 +46,10 @@ begin
     CtrlType    = KeySelecFunc              --手动选择打磨头功能
     GrindHedId  = KeySelecHead              --手动选择打磨头
 
+    if (GrindHedId<= 0) or (GrindHedId > MAX_GRINDNUM) then 
+        post_err(CC_UALARM, '输入无效打磨头[ID:' + int_to_str_(GrindHedId) + ']', 0, CC_ABORT)
+    endif
+
     select (CtrlType) of
         case(1):
             KeyHeadStart(GrindHedId)

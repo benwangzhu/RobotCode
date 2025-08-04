@@ -28,11 +28,12 @@ program SbtPoliPara
 var
     JobId                               : integer 
     PathId                              : integer
-    GrindHeadId                         : integer 
+    GrindHeadId                         : integer
     GrindSpeed                          : real 
     HeadIdReg                           : integer   
     SpeedDataReg                        : integer
     ToolNoReg                           : integer 
+    CurIdReg                            : integer
     Status                              : integer                 
 
 %include include/lib_inst_h
@@ -46,8 +47,16 @@ begin
     PathId          = get_iparm_(2)                 --获取路径编号
     HeadIdReg       = get_iparm_(3)                 --获取打磨头编号写入的R寄存器编号
     SpeedDataReg    = get_iparm_(4)                 --获取打磨头转速写入的R寄存器编号
-    ToolNoReg       = get_iparm_(5)                 --获取打磨头工具号的R寄存器编号
-    
+    ToolNoReg       = get_iparm_(5)                 --获取打磨头存储工具号的R寄存器编号
+    CurIdReg        = get_iparm_(6)                 --获取打磨头存储当前工具ID的R寄存器编号
+
+    if (JobId < 1) or (JobId > 255) then 
+        post_err(CC_UALARM, '传入无效任务编号[JOB:' + int_to_str_(JobId) + ']', 0, CC_ABORT)
+    endif
+    if (PathId < 1) or (PathId > 255) then 
+        post_err(CC_UALARM, '传入无效路径编号[PATH:' + int_to_str_(PathId) + ']', 0, CC_ABORT)
+    endif
+
     Status = f003_it01_(PolishSock, JobId, PathId, GrindHeadId, GrindSpeed)
     if Status <> OK then  
         post_err(CC_UALARM, '打磨工艺参数获取失败[Status:' + int_to_str_(Status) + ']', 0, CC_ABORT)
@@ -58,4 +67,5 @@ begin
     set_ireg_(HeadIdReg, GrindHeadId)
     set_rreg_(SpeedDataReg, GrindSpeed)
     set_ireg_(ToolNoReg, GrindHeadTol[GrindHeadId].BindToolNum)
+    set_ireg_(CurIdReg, GrindInform.CurGrindId)
 end SbtPoliPara

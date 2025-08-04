@@ -49,6 +49,19 @@ begin
     SpeedEnable         = get_iparm_(5)             --获取是否使用外部出入运动速度
     TpeProgram          = get_sparm_(6)             --获取轨迹所生成在的TPE程序名
 
+    if (JobId < 1) or (JobId > 255) then 
+        post_err(CC_UALARM, '传入无效任务编号[JOB:' + int_to_str_(JobId) + ']', 0, CC_ABORT)
+    endif
+    if (PathId < 1) or (PathId > 255) then 
+        post_err(CC_UALARM, '传入无效路径编号[PATH:' + int_to_str_(PathId) + ']', 0, CC_ABORT)
+    endif
+    if (StepDistance < 0.01) or (StepDistance > 500.0) then 
+        post_err(CC_UALARM, '传入无效间距[DIST:' + rel_to_str_(StepDistance) + ']', 0, CC_ABORT)
+    endif
+    if (PolishMove.Speed < 1) or (PolishMove.Speed  > 12000) then 
+        post_err(CC_UALARM, '传入无效机器人速度[SPEED:' + rel_to_str_(PolishMove.Speed) + ']', 0, CC_ABORT)
+    endif
+
     PolishMove.PointNo      = 1
     PolishMove.MovType      = LM_MTN_JNT
     PolishMove.PointTyp     = LM_MTN_NPOS

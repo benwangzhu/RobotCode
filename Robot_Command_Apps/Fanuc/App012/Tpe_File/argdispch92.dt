@@ -20,13 +20,14 @@ N03 = " PathNum R[]"                    : '10'
 
 [PROGRAM]
 NAME = "SBTPOLIPARA"
-ARGUMENT = '5'
+ARGUMENT = '6'
 [ARGUMENT]
 N01 = "Job Id"                          : '1'
 N02 = " Path Id"                        : '1'
 N03 = " Head Id R[]"                    : '11'
 N04 = " Speed R[]"                      : '12'
 N05 = " ToolNo R[]"                     : '13'
+N06 = " CurId R[]"                      : '14'
 [ENDPROGRAM]
 
 [PROGRAM]

@@ -24,11 +24,26 @@ program SbtDoorOpen
 %include sbt_comm12_t
 %include sbt_comm12_global
 
+var
+    GrindHeadId                 : integer
+    TimeOut                     : real 
+
 %include include/lib_inst_h
 %include include/lib_tp_if_h
+%include include/lib_string_h
 
 routine DoorOpen(GrindHeadId : integer; TimeOut : integer) from Sbtheadctrl
 
 begin 
-    DoorOpen(get_iparm_(1), round(get_rparm_(2) * 1000))
+    GrindHeadId     = get_iparm_(1)
+    TimeOut         = get_rparm_(2)
+
+    if (GrindHeadId <= 0) or (GrindHeadId > MAX_GRINDNUM) then 
+        post_err(CC_UALARM, '传入无效打磨头[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_ABORT)
+    endif
+    if (TimeOut < 0.0) or (TimeOut > 60.0) then 
+        post_err(CC_UALARM, '传入时间超范围[TIME:' + rel_to_str_(TimeOut) + ']', 0, CC_ABORT)
+    endif
+
+    DoorOpen(GrindHeadId, round(TimeOut * 1000))
 end SbtDoorOpen

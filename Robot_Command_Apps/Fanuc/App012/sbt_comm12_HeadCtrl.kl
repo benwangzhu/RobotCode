@@ -326,8 +326,8 @@ var
     ModeKey                 : integer
 begin
     repeat
-        force_spmenu(TP_PANEL, SPI_TPUSER, 1)
         write tpdisplay(chr(137), chr(128))
+        force_spmenu(TP_PANEL, SPI_TPUSER, 1)
         write tpdisplay('选择手动操作打磨头的功能', cr)
         write tpdisplay('1.启动打磨头', cr)
         write tpdisplay('2.停止打磨头', cr)
@@ -345,8 +345,8 @@ var
     ModeKey                 : integer
 begin
     repeat
-        force_spmenu(TP_PANEL, SPI_TPUSER, 1)
         write tpdisplay(chr(137), chr(128))
+        force_spmenu(TP_PANEL, SPI_TPUSER, 1)
         write tpdisplay('输入需要操作的打磨头ID(1-' + (int_to_str_(MAX_GRINDNUM)) + ')', cr)
         read tpdisplay(ModeKey)
     until((ModeKey >= 1) and (ModeKey <= MAX_GRINDNUM))

@@ -28,6 +28,7 @@ var
     PhotoPint                           : xyzwprext
     CameraId                            : integer 
     CaptureId                           : integer 
+    DelayTime                           : real
     Status                              : integer 
 
 %include include/lib_motion_h
@@ -36,9 +37,21 @@ var
 %include include/lib_string_h
 
 begin 
-    CameraId = get_iparm_(1)             --获取相机编号
-    CaptureId = get_iparm_(2)            --获取拍照点位编号
-    delay round(get_rparm_(3) * 1000)
+    CameraId    = get_iparm_(1)             --获取相机编号
+    CaptureId   = get_iparm_(2)             --获取拍照点位编号
+    DelayTime   = get_rparm_(3)             --获取出发拍照延时
+
+    if (CameraId < 1) or (CameraId > 255) then 
+        post_err(CC_UALARM, '传入无效相机编号[CAMER:' + int_to_str_(CameraId) + ']', 0, CC_ABORT)
+    endif
+    if (CaptureId < 1) or (CaptureId > 65535) then 
+        post_err(CC_UALARM, '传入无效拍照点编号[CAPT:' + int_to_str_(CaptureId) + ']', 0, CC_ABORT)
+    endif
+    if (DelayTime < 0.0) or (DelayTime > 30.0) then 
+        post_err(CC_UALARM, '传入时间超范围[TIME:' + rel_to_str_(DelayTime) + ']', 0, CC_ABORT)
+    endif
+
+    delay round(DelayTime * 1000)
 
     PhotoPint = cur_pos_(0, 0)
 

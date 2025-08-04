@@ -24,13 +24,23 @@ program SbtHeadStop
 %include sbt_comm12_t
 %include sbt_comm12_global
 
+var
+    GrindHeadId                 : integer
+
 %include include/lib_inst_h
 %include include/lib_tp_if_h
+%include include/lib_string_h
 
 routine HeadStoping(GrindHeadId : integer) from Sbtheadctrl
 
 begin 
-    HeadStoping(get_iparm_(1))
+    GrindHeadId     = get_iparm_(1)
+
+    if (GrindHeadId <= 0) or (GrindHeadId > MAX_GRINDNUM) then 
+        post_err(CC_UALARM, '传入无效打磨头[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_ABORT)
+    endif
+
+    HeadStoping(GrindHeadId)
     
     if GrindInform.CurGrindId > 0 then
         disable condition[INTR_RESUM]
