@@ -22,3 +22,4 @@ var
     GrindErrMsg         in shadow from sbt_comm12               : array[MAX_ERRORMSG] of string[70]
 
     -- 测试一下
+    -- 再测试一下
