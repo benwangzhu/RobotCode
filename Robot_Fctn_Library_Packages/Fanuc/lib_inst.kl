@@ -213,12 +213,22 @@ begin
 
     Status = rpack_head_(ThisSocket, FileVar,  InstReadHead)
     Status = rpack_body_(ThisSocket, FileVar,  InstReadBody)
-    Status = pack_cmd021_(ThisSocket, FileVar, PACKCMD_READ, ReadCmdTyp01)
-    Status = rpack_tail_(ThisSocket, FileVar,  InstReadTail)
-    if Status = OK then 
+    if Status <> OK then  
+        return(Status)
+    endif 
+    if InstReadBody.ErrorId = 0 then 
+        Status = pack_cmd021_(ThisSocket, FileVar, PACKCMD_READ, ReadCmdTyp01)
+        if Status <> OK then  
+            return(Status)
+        endif 
         NumOfPath = ReadCmdTyp01.Byte01
     endif 
-    return(Status)
+    Status = rpack_tail_(ThisSocket, FileVar,  InstReadTail)
+    if Status <> OK then  
+        return(Status)
+    endif
+    
+    return(InstReadBody.ErrorId)
 end f002_it01_
 
 routine f003_it01_
@@ -259,13 +269,23 @@ begin
 
     Status = rpack_head_(ThisSocket, FileVar,  InstReadHead)
     Status = rpack_body_(ThisSocket, FileVar,  InstReadBody)
-    Status = pack_cmd148_(ThisSocket, FileVar, PACKCMD_READ, ReadCmdTyp08)
-    Status = rpack_tail_(ThisSocket, FileVar,  InstReadTail)
-    if Status = OK then 
+    if Status <> OK then  
+        return(Status)
+    endif
+    if InstReadBody.ErrorId = 0 then 
+        Status = pack_cmd148_(ThisSocket, FileVar, PACKCMD_READ, ReadCmdTyp08)
+        if Status <> OK then  
+            return(Status)
+        endif
         GrindHeadId = ReadCmdTyp08.Byte01
         GrindSpeed  = ReadCmdTyp08.Float13
-    endif 
-    return(Status)
+    endif
+    Status = rpack_tail_(ThisSocket, FileVar,  InstReadTail)
+    if Status <> OK then  
+        return(Status)
+    endif
+
+    return(InstReadBody.ErrorId)
 end f003_it01_
 
 routine f004_it01_
@@ -322,43 +342,45 @@ begin
         Status = rpack_body_(ThisSocket, FileVar,  InstReadBody)  
         if Status <> OK then 
             return(Status)
-        endif               
+        endif     
 
-        for I = 1 to InstReadHead.PacketCount do  
-            Status = pack_cmd132_(ThisSocket, FileVar, PACKCMD_READ, ReadCmdTyp07)
-            if Status <> OK then 
-                return(Status)
-            endif 
-            
-            AxisAry9[1] = ReadCmdTyp07.Float01 
-            AxisAry9[2] = ReadCmdTyp07.Float02
-            AxisAry9[3] = ReadCmdTyp07.Float03
-            AxisAry9[4] = ReadCmdTyp07.Float04
-            AxisAry9[5] = ReadCmdTyp07.Float05
-            AxisAry9[6] = ReadCmdTyp07.Float06
-            AxisAry9[7] = ReadCmdTyp07.Float07
-            AxisAry9[8] = ReadCmdTyp07.Float08
-            AxisAry9[9] = ReadCmdTyp07.Float09 
-            AxisPos = trans_axis_(AxisAry9)
+        if InstReadBody.ErrorId = 0 then 
+            for I = 1 to InstReadHead.PacketCount do  
+                Status = pack_cmd132_(ThisSocket, FileVar, PACKCMD_READ, ReadCmdTyp07)
+                if Status <> OK then 
+                    return(Status)
+                endif 
+                
+                AxisAry9[1] = ReadCmdTyp07.Float01 
+                AxisAry9[2] = ReadCmdTyp07.Float02
+                AxisAry9[3] = ReadCmdTyp07.Float03
+                AxisAry9[4] = ReadCmdTyp07.Float04
+                AxisAry9[5] = ReadCmdTyp07.Float05
+                AxisAry9[6] = ReadCmdTyp07.Float06
+                AxisAry9[7] = ReadCmdTyp07.Float07
+                AxisAry9[8] = ReadCmdTyp07.Float08
+                AxisAry9[9] = ReadCmdTyp07.Float09 
+                AxisPos = trans_axis_(AxisAry9)
 
-            if SpeedEnable = true then 
-                InstMove.Speed = ReadCmdTyp07.Int13
-            endif 
+                if SpeedEnable = true then 
+                    InstMove.Speed = ReadCmdTyp07.Int13
+                endif 
 
-            if InstMove.MovType = LM_MTN_JNT then 
-                InstMove.Speed = round((InstMove.Speed / 12000) * 100)
-            endif 
+                if InstMove.MovType = LM_MTN_JNT then 
+                    InstMove.Speed = round((InstMove.Speed / 12000) * 100)
+                endif 
 
-            if InstReadHead.Type_ = 1 then 
-                InstMove .Cnt = 0
-            else 
-                InstMove.Cnt = 100
-            endif 
-            tpe_it_mov_(TpeOpenId, InstMove, TpeLen)
-            tpe_s_jpos_(TpeOpenId, 1, (InstMove.PointNo), AxisPos)
+                if InstReadHead.Type_ = 1 then 
+                    InstMove .Cnt = 0
+                else 
+                    InstMove.Cnt = 100
+                endif 
+                tpe_it_mov_(TpeOpenId, InstMove, TpeLen)
+                tpe_s_jpos_(TpeOpenId, 1, (InstMove.PointNo), AxisPos)
 
-            InstMove.PointNo = InstMove.PointNo + 1
-        endfor 
+                InstMove.PointNo = InstMove.PointNo + 1
+            endfor 
+        endif
 
         Status = rpack_tail_(ThisSocket, FileVar,  InstReadTail)
         if Status <> OK then 
@@ -367,5 +389,6 @@ begin
     until(InstReadHead.Type_ = 1)   
 
     tpe_close_(TpeOpenId)
-    return(Status)
+
+    return(InstReadBody.ErrorId)
 end f004_it01_
