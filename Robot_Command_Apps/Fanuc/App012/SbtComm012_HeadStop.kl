@@ -44,8 +44,8 @@ begin
     
     if GrindInform.CurGrindId > 0 then
         disable condition[INTR_RESUM]
-        purge condition[INTR_RESUM]
         disable condition[INTR_ALARM]
+        purge condition[INTR_RESUM]
         purge condition[INTR_ALARM]
     endif
 end SbtHeadStop

@@ -56,6 +56,7 @@ program lib_inst
 %nobusylamp
 %nopause = error + command + tpenable
 
+%include klevtpe
 %include include/lib_busio_t
 %include include/lib_buscmd_t
 %include include/lib_packages_t
@@ -65,7 +66,6 @@ program lib_inst
 %include include/lib_math_t
 %include include/lib_inst_t
 %include include/lib_logs_t
-%include klevtpe
 var 
     FileVar                     : file 
     InstSendHead                : pack_head_t
@@ -97,12 +97,11 @@ begin
     InstSendHead.PacketCount    = 1
     InstSendHead.Cmd            = 253
     InstSendHead.Type_          = TYPE_FANUC
-    InstSendHead.Seq            = 0 
+    InstSendHead.Seq            = 1
     InstSendHead.VirtualRob     = bol_to_int_(is_vir_rob_)      --判断机器人是否为真实机器人，真实机器人为0，仿真机器人为1       
     InstSendTail                = PACK_TAIL
 
     ThisSocket.Connected        = false                 -- 设置 CtrlSock 连接状态为 false
-    ThisSocket.ServerPort       = INST_PORT             -- 设置 CtrlSock 的服务器端口号
     ThisSocket.NByte            = 0                     -- 设置 CtrlSock 的字节数
     ThisSocket.AtrTimeout       = 0                     -- 设置 CtrlSock 的超时属性
     ThisSocket.AtrBinary        = true                  -- 设置 CtrlSock 的二进制传输属性
@@ -159,8 +158,8 @@ begin
     SendCmdTyp07.Float10 = 0.0
     SendCmdTyp07.Float11 = 0.0
     SendCmdTyp07.Float12 = 0.0
-    SendCmdTyp07.Int13   = CamerNumber
-    SendCmdTyp07.Int14   = PointNumber
+    SendCmdTyp07.Int13   = CameraId
+    SendCmdTyp07.Int14   = CaptureId
     
     Status = spack_head_(ThisSocket, FileVar, InstSendHead)
     Status = spack_body_(ThisSocket, FileVar, InstSendBody)
@@ -191,11 +190,11 @@ begin
     InstSendHead.Type_          = 1
 
     InstSendBody.RobotId        = 2
-    InstSendBody.JobId          = JobIdData
+    InstSendBody.JobId          = JobId
     InstSendBody.ProtocolId     = 0
     InstSendBody.RobMsgType     = 21
 
-    SendCmdTyp01.Byte01         = PlanPara  
+    SendCmdTyp01.Byte01         = PlanningId  
     SendCmdTyp01.Byte02         = 0 
     SendCmdTyp01.Short03        = 0  
     SendCmdTyp01.Short04        = 0
@@ -217,7 +216,7 @@ begin
     Status = pack_cmd021_(ThisSocket, FileVar, PACKCMD_READ, ReadCmdTyp01)
     Status = rpack_tail_(ThisSocket, FileVar,  InstReadTail)
     if Status = OK then 
-        ProcNum = ReadCmdTyp01.Byte01
+        NumOfPath = ReadCmdTyp01.Byte01
     endif 
     return(Status)
 end f002_it01_
@@ -237,11 +236,11 @@ begin
     InstSendHead.Type_          = 1
 
     InstSendBody.RobotId        = 3
-    InstSendBody.JobId          = JobIdData
+    InstSendBody.JobId          = JobId
     InstSendBody.ProtocolId     = 0
     InstSendBody.RobMsgType     = 21
 
-    SendCmdTyp01.Byte01         = ProcNumber  
+    SendCmdTyp01.Byte01         = PathId  
     SendCmdTyp01.Byte02         = 0 
     SendCmdTyp01.Short03        = 0  
     SendCmdTyp01.Short04        = 0
@@ -263,7 +262,7 @@ begin
     Status = pack_cmd148_(ThisSocket, FileVar, PACKCMD_READ, ReadCmdTyp08)
     Status = rpack_tail_(ThisSocket, FileVar,  InstReadTail)
     if Status = OK then 
-        GrindNumber = ReadCmdTyp08.Byte01
+        GrindHeadId = ReadCmdTyp08.Byte01
         GrindSpeed  = ReadCmdTyp08.Float13
     endif 
     return(Status)
@@ -275,8 +274,8 @@ var
     TpeOpenId                   : integer 
     TpeLen                      : integer 
     Status                      : integer 
-    ConvPos                     : xyzwprext
-    InstMove                    : inst_move_t
+    AxisPos                     : jointpos
+    AxisAry9	                : array[9] of real
     SendCmdTyp01                : cmd_typ01_t
     ReadCmdTyp07                : cmd_typ07_t
 begin
@@ -285,25 +284,20 @@ begin
     InstSendHead.Type_          = 1
 
     InstSendBody.RobotId        = 4
-    InstSendBody.JobId          = JobIdData
+    InstSendBody.JobId          = JobId
     InstSendBody.ProtocolId     = 0
     InstSendBody.RobMsgType     = 21
 
     SendCmdTyp01.Byte01         = PointType  
-    SendCmdTyp01.Byte02         = ProcNumber
+    SendCmdTyp01.Byte02         = PathId
     SendCmdTyp01.Short03        = 0  
     SendCmdTyp01.Short04        = 0
     SendCmdTyp01.Int05          = 0
     SendCmdTyp01.Int06          = 0
-    SendCmdTyp01.Float07        = PointLen
+    SendCmdTyp01.Float07        = StepDistance
     SendCmdTyp01.Float08        = 0.0
 
     TpeLen = 0
-    InstMove.PointNo    = 1
-    InstMove.MovType    = LM_MTN_LIN
-    InstMove.PointTyp   = LM_MTN_NPOS
-    InstMove.SpeedTyp   = LM_MTN_CMMIN
-
     TpeOpenId = tpe_open_(TpeProgram, TPE_RWACC, TPE_NOREJ)
     if TpeOpenId <= 0 then 
         post_err(CC_UALARM, '路径程序打开错误', 0, CC_ABORT)
@@ -336,21 +330,32 @@ begin
                 return(Status)
             endif 
             
-            ConvPos   =  null_pos_
-            ConvPos.x = ReadCmdTyp07.Float01 
-            ConvPos.y = ReadCmdTyp07.Float02
-            ConvPos.z = ReadCmdTyp07.Float03
-            ConvPos.w = ReadCmdTyp07.Float04
-            ConvPos.p = ReadCmdTyp07.Float05
-            ConvPos.r = ReadCmdTyp07.Float06
-            ConvPos.ext1 = ReadCmdTyp07.Float07
-            ConvPos.ext2 = ReadCmdTyp07.Float08
-            ConvPos.ext3 = ReadCmdTyp07.Float09 
+            AxisAry9[1] = ReadCmdTyp07.Float01 
+            AxisAry9[2] = ReadCmdTyp07.Float02
+            AxisAry9[3] = ReadCmdTyp07.Float03
+            AxisAry9[4] = ReadCmdTyp07.Float04
+            AxisAry9[5] = ReadCmdTyp07.Float05
+            AxisAry9[6] = ReadCmdTyp07.Float06
+            AxisAry9[7] = ReadCmdTyp07.Float07
+            AxisAry9[8] = ReadCmdTyp07.Float08
+            AxisAry9[9] = ReadCmdTyp07.Float09 
+            AxisPos = trans_axis_(AxisAry9)
 
-            InstMove.Speed      = ReadCmdTyp07.Int13
-            InstMove.Cnt        = 100
+            if SpeedEnable = true then 
+                InstMove.Speed = ReadCmdTyp07.Int13
+            endif 
+
+            if InstMove.MovType = LM_MTN_JNT then 
+                InstMove.Speed = round((InstMove.Speed / 12000) * 100)
+            endif 
+
+            if InstReadHead.Type_ = 1 then 
+                InstMove .Cnt = 0
+            else 
+                InstMove.Cnt = 100
+            endif 
             tpe_it_mov_(TpeOpenId, InstMove, TpeLen)
-            tpe_s_cpos_(TpeOpenId, 1, (InstMove.PointNo), ConvPos)
+            tpe_s_jpos_(TpeOpenId, 1, (InstMove.PointNo), AxisPos)
 
             InstMove.PointNo = InstMove.PointNo + 1
         endfor 

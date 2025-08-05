@@ -12,6 +12,4 @@
 -- Version: 1.0
 --
 const 
-    TYPE_FANUC                          = 1
-    
-    INST_PORT                           = 12003   
+    TYPE_FANUC                          = 1 

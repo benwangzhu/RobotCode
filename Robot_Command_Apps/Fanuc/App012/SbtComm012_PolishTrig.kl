@@ -45,7 +45,7 @@ begin
         post_err(CC_UALARM, '传入无效相机编号[CAMER:' + int_to_str_(CameraId) + ']', 0, CC_ABORT)
     endif
     if (CaptureId < 1) or (CaptureId > 65535) then 
-        post_err(CC_UALARM, '传入无效拍照点编号[CAPT:' + int_to_str_(CaptureId) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, '传入无效拍照点编号[POINT:' + int_to_str_(CaptureId) + ']', 0, CC_ABORT)
     endif
     if (DelayTime < 0.0) or (DelayTime > 30.0) then 
         post_err(CC_UALARM, '传入时间超范围[TIME:' + rel_to_str_(DelayTime) + ']', 0, CC_ABORT)
