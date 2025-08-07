@@ -62,6 +62,7 @@ $flag[FLAG_CONV_QUE_ACQ[4]] = true
 PartData = CurQueue[4]
 PartData.PkcvOfs.X = CurQueue[4].PkcvOfs.X + PkCvCfg[4].ManualZerOfs.x
 PartData.PkcvOfs.y = CurQueue[4].PkcvOfs.y + PkCvCfg[4].ManualZerOfs.y
+PartData.PkcvOfs.z = CurQueue[4].PkcvOfs.z + PkCvCfg[4].ManualZerOfs.z
 DAT_DIST:
 
 ;FOLD SecondSort.CalcWaitPos IN Conveyer Id: LinConveyor4, IN Ref Point Dir: PickPos, IN Distance: 300, OUT Wait Point Dir: WaitPos, OUT Pkcv Dicision: PkcvDicision ;%{PE}
