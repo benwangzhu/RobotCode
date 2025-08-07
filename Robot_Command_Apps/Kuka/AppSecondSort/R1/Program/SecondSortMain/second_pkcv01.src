@@ -61,7 +61,8 @@ endif
 continue
 $flag[FLAG_CONV_QUE_ACQ[1]] = true
 PartData = CurQueue[1]
-
+PartData.PkcvOfs.X = CurQueue[1].PkcvOfs.X + PkCvCfg[1].ManualZerOfs.x
+PartData.PkcvOfs.y = CurQueue[1].PkcvOfs.y + PkCvCfg[1].ManualZerOfs.y
 DAT_DIST:
 
 ;FOLD SecondSort.CalcWaitPos IN Conveyer Id: LinConveyor1, IN Ref Point Dir: PickPos, IN Distance: 300, OUT Wait Point Dir: WaitPos, OUT Pkcv Dicision: PkcvDicision ;%{PE}

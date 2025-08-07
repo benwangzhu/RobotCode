@@ -41,4 +41,7 @@ decl global int GlobalTaskId = 0
 
 decl global int SEMixSortKey = 0
 
+decl global bool MixByPassPresent = false
+decl global int PickMaxRetryCount = 2
+
 enddat

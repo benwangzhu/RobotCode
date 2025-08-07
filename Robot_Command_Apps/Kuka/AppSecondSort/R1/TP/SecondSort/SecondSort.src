@@ -214,7 +214,7 @@ global def second_wpos(Conv : in, RefPkPos : in, GiveDist : in, WaitPos : out, D
         CurWaitPos = RefPkPos
         CurWaitPos.X = PkCvCfg[Conv].UpStream
         CurWaitPos.Y = CurWaitPos.y + CurQueue[Conv].PkcvOfs.y + PkCvCfg[Conv].ManualZerOfs.x
-        CurWaitPos.Z = CurWaitPos.z + CurQueue[Conv].PkcvOfs.z + PkCvCfg[Conv].ManualZerOfs.y
+        CurWaitPos.Z = CurWaitPos.z + CurQueue[Conv].PkcvOfs.z + PkCvCfg[Conv].ManualZerOfs.z
         CurWaitPos = machine_def[Conv_get_machine_index(Conv)].root : CurWaitPos
         
         WaitPos = RefPkPos
