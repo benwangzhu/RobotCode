@@ -38,9 +38,9 @@ routine IntrHedAlarm from Sbtheadctrl
 routine HeadStarting(GrindHeadId : integer; Speed : real; TimeOut : integer) from Sbtheadctrl
 
 begin 
-    GrindHeadId     = get_iparm_(1)
-    HeadSpeed       = get_rparm_(2)
-    TimeOut         = get_rparm_(3)
+    GrindHeadId     = get_iparm_(1)                 --获取打磨头ID
+    HeadSpeed       = get_rparm_(2)                 --获取打磨头速度
+    TimeOut         = get_rparm_(3)                 --获取超时时间 [s]
 
     if (GrindHeadId <= 0) or (GrindHeadId > MAX_GRINDNUM) then 
         post_err(CC_UALARM, '传入无效打磨头[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_ABORT)
