@@ -173,7 +173,7 @@ global deffct int f001_it01_(ThisSock : out, PosData : in, CamerNumber : in, Poi
     unpack_body_(ReadPackages[], InstReadBody, Offset)
     Status = unpack_tail_(ReadPackages[], InstReadTail, Offset)
     
-    return(Status)
+    return(InstReadBody.ErrorId)
 endfct
 ;ENDFOLD
 
