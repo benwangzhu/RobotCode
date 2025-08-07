@@ -1,0 +1,4 @@
+CopyTellId := PcTellId;
+CopyCmd := PcCmd;
+CopyPointNum := PcPointNum;
+CopyWriteArea := PcWriteArea;

@@ -171,10 +171,7 @@ global def Comm012PolishTrig(CameraId : in, CaptureId : in)
 
     Status = f001_it01_(PolishSock, PhotoPint, CameraId, CaptureId)
     if Status <> OK then 
-        Offset = 0
-        str_clear_(Msg[])
-        swrite(Msg[], State, Offset, "Polishing camera failed to take photos.[Status:%d]", Status)
-        log_error_(Msg[])
+        Comm012ErrorDisplay("Polishing camera failed to take photos.[Status:%d]", Status)
     endif 
 
 end 
@@ -191,10 +188,8 @@ global def Comm012PolishPlan(JobId : in, PlanningId : in, NumOfPath : out)
 
     Status = f002_it01_(PolishSock, JobId, PlanningId, NumOfPath)
     if Status <> OK then 
-        Offset = 0
-        str_clear_(Msg[])
-        swrite(Msg[], State, Offset, "Polishing path planning failed.[Status:%d]", Status)
-        log_error_(Msg[])
+
+        Comm012ErrorDisplay("Polishing path planning failed.[Status:%d]", Status)
     endif 
 
     if DEBUG then
@@ -222,10 +217,8 @@ global def Comm012PolishGetPara(JobId : in, PathId : in, GrindHeadId : out, Grin
 
     Status = f003_it01_(PolishSock, JobId, PathId, GrindHeadId, GrindSpeed)
     if Status <> OK then 
-        Offset = 0
-        str_clear_(Msg[])
-        swrite(Msg[], State, Offset, "Failed to obtain polish process parameters.[Status:%d]", Status)
-        log_error_(Msg[])
+
+        Comm012ErrorDisplay("Failed to obtain polish process parameters.[Status:%d]", Status)
     endif 
 
     if DEBUG then
@@ -278,10 +271,8 @@ global def Comm012PolishGetPath(JobId : in, PathId : in, StepDistance : in)
 
     Status = f004_it01_(PolishSock, JobId, 1, PathId, StepDistance, ApprPointData[],  ApprSpeedData[], NumOfApprPoint)
     if Status <> OK then 
-        Offset = 0
-        str_clear_(Msg[])
-        swrite(Msg[], State, Offset, "Get Appr trajectory acquisition failed.[Status:%d]", Status)
-        log_error_(Msg[])
+
+        Comm012ErrorDisplay("Get Appr trajectory acquisition failed.[Status:%d]", Status)
     endif 
     if DEBUG then
         Offset = 0
@@ -292,10 +283,8 @@ global def Comm012PolishGetPath(JobId : in, PathId : in, StepDistance : in)
 
     Status = f004_it01_(PolishSock, JobId, 2, PathId, StepDistance, PoliPointData[], PoliSpeedData[], NumOfPoliPoint)
     if Status <> OK then 
-        Offset = 0
-        str_clear_(Msg[])
-        swrite(Msg[], State, Offset, "Get Grinding trajectory acquisition failed.[Status:%d]", Status)
-        log_error_(Msg[])
+
+        Comm012ErrorDisplay("Get Grinding trajectory acquisition failed.[Status:%d]", Status)
     endif 
     if DEBUG then
         Offset = 0
@@ -306,10 +295,8 @@ global def Comm012PolishGetPath(JobId : in, PathId : in, StepDistance : in)
 
     Status = f004_it01_(PolishSock, JobId, 3, PathId, StepDistance, ExitPointData[], ExitSpeedData[], NumOfExitPoint)
     if Status <> OK then 
-        Offset = 0
-        str_clear_(Msg[])
-        swrite(Msg[], State, Offset, "Get Exit trajectory acquisition failed.[Status:%d]", Status)
-        log_error_(Msg[])
+
+        Comm012ErrorDisplay("Get Exit trajectory acquisition failed.[Status:%d]", Status)
     endif 
 
     if DEBUG then
@@ -1020,6 +1007,68 @@ def GrindHeadCheckAlarm(GrindHeadId : in)
         continue
         wait sec 0.024
     until ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_READY])
+end
+
+def Comm012ErrorDisplay(OtherErrMsg[] : in, ErrorId : in)
+    decl int ErrorId
+    decl char OtherErrMsg[]
+
+    Offset = 0
+    str_clear_(Msg[])
+    
+    if ErrorId < 0 then
+
+        swrite(Msg[], State, Offset, OtherErrMsg[], ErrorId)
+        log_error_(Msg[])
+        return
+    endif
+    
+    switch (ErrorId)
+    case 0
+        ;TODO
+    case 101
+        swrite(Msg[], State, Offset, E_COMM012_101_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 102
+        swrite(Msg[], State, Offset, E_COMM012_102_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 103
+        swrite(Msg[], State, Offset, E_COMM012_103_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 104
+        swrite(Msg[], State, Offset, E_COMM012_104_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 105
+        swrite(Msg[], State, Offset, E_COMM012_105_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 106
+        swrite(Msg[], State, Offset, E_COMM012_106_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 107
+        swrite(Msg[], State, Offset, E_COMM012_107_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 108
+        swrite(Msg[], State, Offset, E_COMM012_108_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 109
+        swrite(Msg[], State, Offset, E_COMM012_109_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 110
+        swrite(Msg[], State, Offset, E_COMM012_110_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 111
+        swrite(Msg[], State, Offset, E_COMM012_111_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 199
+        swrite(Msg[], State, Offset, E_COMM012_199_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 200
+        swrite(Msg[], State, Offset, E_COMM012_200_MSG[], ErrorId)
+        log_error_(Msg[])
+    default
+        swrite(Msg[], State, Offset, E_COMM012_UNKNOWN_MSG[], ErrorId)
+        log_error_(Msg[])
+    endswitch
 end
 
 ;ENDFOLD

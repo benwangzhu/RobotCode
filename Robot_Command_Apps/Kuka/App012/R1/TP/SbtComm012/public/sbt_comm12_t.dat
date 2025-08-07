@@ -104,4 +104,36 @@ E_BIT15_MSG[] = "Unknown Alarm.[Head ID:%d]"
 decl global const char E_BIT16_MSG[70]
 E_BIT16_MSG[] = "Unknown Alarm.[Head ID:%d]"
 
+; Add By 20250807 
+; Error code definitions
+
+decl global const char E_COMM012_101_MSG[70]
+E_COMM012_101_MSG[] = "Parse robot data fail.[Err:%d]"
+decl global const char E_COMM012_102_MSG[70]
+E_COMM012_102_MSG[] = "Feed vision fail.[Err:%d]"
+decl global const char E_COMM012_103_MSG[70]
+E_COMM012_103_MSG[] = "No recog cmd or fail.[Err:%d]"
+decl global const char E_COMM012_104_MSG[70]
+E_COMM012_104_MSG[] = "Get path fail.[Err:%d]"
+decl global const char E_COMM012_105_MSG[70]
+E_COMM012_105_MSG[] = "Camera shot fail.[Err:%d]"
+decl global const char E_COMM012_106_MSG[70]
+E_COMM012_106_MSG[] = "Vision fail.[Err:%d]"
+decl global const char E_COMM012_107_MSG[70]
+E_COMM012_107_MSG[] = "Get polish proc fail.[Err:%d]"
+decl global const char E_COMM012_108_MSG[70]
+E_COMM012_108_MSG[] = "Part not configured.[Err:%d]"
+decl global const char E_COMM012_109_MSG[70]
+E_COMM012_109_MSG[] = "Read part/plate ID fail.[Err:%d]"
+decl global const char E_COMM012_110_MSG[70]
+E_COMM012_110_MSG[] = "No pre cmd issued.[Err:%d]"
+decl global const char E_COMM012_111_MSG[70]
+E_COMM012_111_MSG[] = "Path planning fail.[Err:%d]"
+decl global const char E_COMM012_199_MSG[70]
+E_COMM012_199_MSG[] = "Polish SW error.[Err:%d]"
+decl global const char E_COMM012_200_MSG[70]
+E_COMM012_200_MSG[] = "Polish SW error.[Err:%d]"
+decl global const char E_COMM012_UNKNOWN_MSG[70]
+E_COMM012_UNKNOWN_MSG[] = "Polish SW Unknown error.[Err:%d]"
+
 enddat

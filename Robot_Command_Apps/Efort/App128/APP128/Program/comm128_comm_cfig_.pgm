@@ -1,0 +1,14 @@
+ALIAS(PcTellId, comutil.PC_INT[1]);
+ALIAS(PcCmd, comutil.PC_INT[2]);
+ALIAS(PcSep, comutil.PC_INT[3]);
+ALIAS(PcPointNum, comutil.PC_INT[4]);
+ALIAS(PcType, comutil.PC_INT[5]);
+ALIAS(RobotTellId, comutil.PC_INT[21]);
+ALIAS(RobotCmd, comutil.PC_INT[22]);
+ALIAS(RobotSep, comutil.PC_INT[23]);
+ALIAS(RobotAck, comutil.PC_INT[24]);
+ALIAS(GlbMoveId, comutil.PC_INT[41]);
+ALIAS(PcWriteArea, comutil.PC_INT[42]);
+ROBOT_AXIS := 8;
+EXT_AXIS := 0;
+ToolData := tool2;
