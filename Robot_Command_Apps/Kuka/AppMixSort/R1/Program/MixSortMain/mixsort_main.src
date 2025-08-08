@@ -68,7 +68,13 @@ LOOP
         default
             log_error_("Unkonwn GlobalTaskId!")
         endswitch
-        mixsort_place_select()
+        if (GlobalTaskId == 2) and (NOT $flag[F_PICKING]) THEN
+            WAIT SEC 1
+            mixsort_get_task()
+        ELSE
+            $flag[F_PICKING] = TRUE
+            mixsort_place_select()
+        ENDIF
     case #TO_TP_HOME
         exit    
     endswitch

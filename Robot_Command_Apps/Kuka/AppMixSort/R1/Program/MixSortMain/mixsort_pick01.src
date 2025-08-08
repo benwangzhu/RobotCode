@@ -1,5 +1,5 @@
-&ACCESS RVO1
-&REL 47
+&ACCESS RVEO
+&REL 49
 &COMMENT Sorting station
 &PARAM EDITMASK = *
 &PARAM DISKPATH = KRC:\R1\Program\MixSortMain
@@ -75,6 +75,10 @@ SPTP XP1 WITH $VEL_AXIS[1] = SVEL_JOINT(100.0), $TOOL = STOOL2(FP1), $BASE = SBA
 SLIN XPickPosUp WITH $VEL = SVEL_CP(1.5, , LCPDAT3), $TOOL = STOOL2(FPickPosUp), $BASE = SBASE(FPickPosUp.BASE_NO), $IPO_MODE = SIPO_MODE(FPickPosUp.IPO_FRAME), $LOAD = SLOAD(FPickPosUp.TOOL_NO), $ACC = SACC_CP(LCPDAT3), $ORI_TYPE = SORI_TYP(LCPDAT3), $APO = SAPO(LCPDAT3), $JERK = SJERK(LCPDAT3), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0) C_Spl
 ;ENDFOLD
 servo01_ctrl_(#WAITING)
+
+PickRetryCount = 0
+LOOP
+PickRetryCount = PickRetryCount + 1
 ;Move To Pick Pos
 ;FOLD SLIN PickPos Vel=0.6 m/s CPDAT2 Tool[1] Base[0] ;%{PE}
 ;FOLD Parameters ;%{h}
@@ -82,8 +86,9 @@ servo01_ctrl_(#WAITING)
 ;ENDFOLD
 SLIN XPickPos WITH $VEL = SVEL_CP(0.6, , LCPDAT2), $TOOL = STOOL2(FPickPos), $BASE = SBASE(FPickPos.BASE_NO), $IPO_MODE = SIPO_MODE(FPickPos.IPO_FRAME), $LOAD = SLOAD(FPickPos.TOOL_NO), $ACC = SACC_CP(LCPDAT2), $ORI_TYPE = SORI_TYP(LCPDAT2), $APO = SAPO(LCPDAT2), $JERK = SJERK(LCPDAT2), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0)
 ;ENDFOLD
-;Mag Ctrl On
-mag_tool_ctrl_(#ON,,500)
+;FOLD PLC.MagToolCtrl IN Ctrl Mode: ON, IN Timeout: 0, IN SleepTime: 500, OUT Success: Success1 ;%{PE}
+mag_tool_ctrl_(#ON, 0, 500, Success1)
+;ENDFOLD
 ;FOLD PLC.RequestToContinue ;%{PE}
 req_to_continue_()
 ;ENDFOLD
@@ -99,6 +104,19 @@ SLIN XPickPosRUp WITH $VEL = SVEL_CP(0.8, , LCPDAT4), $TOOL = STOOL2(FPickPosRUp
 ;FOLD PLC.RequestToContinue ;%{PE}
 req_to_continue_()
 ;ENDFOLD
+IF MixByPassPresent THEN
+   $FLAG[F_PICKING] = TRUE
+ELSE
+   $FLAG[F_PICKING] = Di047ToolEcho03
+ENDIF
+IF ($FLAG[F_PICKING]) then
+   exit
+endif
+mag_tool_ctrl_(#OFF, 0, 500, Success1)
+IF (PickRetryCount >= PickMaxRetryCount) then
+   exit
+endif
+ENDLOOP
 ;FOLD PLC.PathSegment IN Segment Nr: 22 ;%{PE}
 path_segment_(22)
 ;ENDFOLD
