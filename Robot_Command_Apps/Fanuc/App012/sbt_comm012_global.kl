@@ -1,0 +1,20 @@
+--***********************************************************
+--
+-- Copyright 2018 - 2024 speedbot All Rights reserved.
+--
+-- file Name: sbt_comm12_global.kl
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 04 - 29
+--
+-- Author: speedbot
+--
+-- Version: 3.0
+--***********************************************************
+--
+var 
+    PolishSock          in cmos from sbt_comm12                 : sock_cfg_t
+    PolishBlock         in cmos from sbt_comm12                 : poli_bloc_t
+    GrindBlock          in cmos from sbt_comm12                 : grind_bloc_t

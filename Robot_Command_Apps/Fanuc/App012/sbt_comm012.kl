@@ -1,0 +1,624 @@
+program sbt_comm012
+--***********************************************************
+--
+-- file Name: sbt_comm012
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 07 - 30
+--   Modification Data    ==   2025 - 07 - 30
+--
+-- Author: 
+--
+-- Version: 1.0
+%comment = 'SBT COMM012 250730'
+%nolockgroup
+%system
+%nobusylamp 
+%nopauseshft
+
+%include kliotyps
+%include klevccdf
+%include include/lib_socket_t
+%include include/lib_logs_t
+%include include/lib_transform_t
+%include include/lib_busio_t
+%include include/lib_math_t
+%include sbt_comm012_t
+%include sbt_comm012_global
+
+%include include/lib_tp_if_h
+%include include/lib_string_h
+%include include/lib_busio_h
+%include include/lib_math_h
+
+routine head_star_(GrindHeadId : integer; Speed : real; TimeOut : integer) from sbt_comm012
+routine head_stop_(GrindHeadId : integer) from sbt_comm012
+routine head_relea_(GrindHeadId : integer; TimeOut : integer) from sbt_comm012
+routine head_clamp_(GrindHeadId : integer; TimeOut : integer) from sbt_comm012
+routine dor_open_(GrindHeadId : integer; TimeOut : integer) from sbt_comm012
+routine dor_close_(GrindHeadId : integer; TimeOut : integer) from sbt_comm012
+routine ky_headstar_(GrindHeadId : integer) from sbt_comm012
+routine ky_headstop_(GrindHeadId : integer) from sbt_comm012
+routine ky_headrela_(GrindHeadId : integer) from sbt_comm012
+routine ky_headclmp_(GrindHeadId : integer) from sbt_comm012
+routine ky_doropen_(GrindHeadId : integer) from sbt_comm012
+routine ky_dorclose_(GrindHeadId : integer) from sbt_comm012
+routine ky_selefunc_ : integer from sbt_comm012
+routine ky_selehead_ : integer from sbt_comm012
+routine head_status_(GrindHeadId : integer) from sbt_comm012
+routine chck_hedid_(GrindHeadId : integer) from sbt_comm012
+routine chck_hedaim_(GrindHeadId : integer) from sbt_comm012
+routine get_headerr_(GrindHeadId : integer) : integer from sbt_comm012
+routine set_gohedsp_(GrindHeadId : integer; Speed : integer) from sbt_comm012
+routine get_gohedsp_(GrindHeadId : integer) : integer from sbt_comm012
+routine grnd_resum_ from sbt_comm012
+routine grind_alarm_ from sbt_comm012
+routine intr_hedres_ from sbt_comm012
+routine intr_hedala_ from sbt_comm012
+routine err_display_(OtherErrMsg : string; ErrorId : integer) from sbt_comm012
+
+begin 
+    
+end sbt_comm012
+
+routine head_star_
+var
+    TimerIndex                  : integer
+begin
+    if not(GrindBlock.HeadConfig[GrindHeadId].HeadEnable) then 
+        GrindBlock.HeadInform.CurGrindId = 0
+        return
+    endif 
+    head_status_(GrindHeadId)
+
+    set_gohedsp_(GrindHeadId, round(Speed * 10))
+
+    if dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADSTART] then
+        return
+    endif 
+
+    delay 12
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADSTART] = true 
+    delay 100
+
+    repeat
+
+        TimerIndex = $fast_clock
+        
+        if TimeOut > 0 then 
+            repeat
+                delay WAIT_CYCTIME
+            until((din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADSTART]) or (($fast_clock - TimerIndex) > TimeOut))
+        else 
+            wait for (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADSTART])
+        endif
+
+        if not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADSTART]) then 
+            post_err(CC_UALARM, '启动打磨头[ID:' + int_to_str_(GrindHeadId) + ']超时', 0, CC_PAUSE)
+        endif 
+        
+    until(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADSTART])
+
+    GrindBlock.HeadInform.CurGrindId = GrindHeadId
+end head_star_
+
+routine head_stop_
+begin
+    if not(GrindBlock.HeadConfig[GrindHeadId].HeadEnable) then 
+        return
+    endif 
+
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADSTART] = false
+
+    set_gohedsp_(GrindHeadId, 0)
+end head_stop_
+
+routine head_relea_
+var
+    TimerIndex                  : integer
+begin
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADCLAMP] = false
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADRELEAS] = true
+
+    repeat
+
+        TimerIndex = $fast_clock
+
+        if TimeOut > 0 then 
+            repeat
+                delay WAIT_CYCTIME
+            until(((din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADRELEAS]) and 
+                    not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADCLAMP])) or (($fast_clock - TimerIndex) > TimeOut))
+        else 
+            repeat
+                delay WAIT_CYCTIME
+            until((din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADRELEAS]) and 
+                  not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADCLAMP]))
+        endif
+
+        if not((din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADRELEAS]) and 
+                not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADCLAMP])) then 
+            post_err(CC_UALARM, '松开打磨头[ID:' + int_to_str_(GrindHeadId) + ']超时', 0, CC_PAUSE)
+        endif 
+        
+    until((din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADRELEAS]) and 
+           not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADCLAMP]))
+end head_relea_
+
+routine head_clamp_
+var
+    TimerIndex                  : integer
+begin
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADRELEAS] = false
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADCLAMP] = true
+
+    repeat
+
+        TimerIndex = $fast_clock
+
+        if TimeOut > 0 then 
+            repeat
+                delay WAIT_CYCTIME
+            until((not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADRELEAS]) and 
+                   (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADCLAMP])) or (($fast_clock - TimerIndex) > TimeOut))
+        else 
+            repeat
+                delay WAIT_CYCTIME
+            until(not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADRELEAS]) and 
+                  (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADCLAMP]))
+        endif
+
+        if not(not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADRELEAS]) and 
+               (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADCLAMP])) then 
+            post_err(CC_UALARM, '夹紧打磨头[ID:' + int_to_str_(GrindHeadId) + ']超时', 0, CC_PAUSE)
+        endif 
+        
+    until(not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADRELEAS]) and 
+          (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADCLAMP]))
+end head_clamp_
+
+routine dor_open_
+var
+    TimerIndex                  : integer
+begin
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_DOORCLOSE] = false
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_DOOROPEN] = true
+
+    repeat
+
+        TimerIndex = $fast_clock
+
+        if TimeOut > 0 then 
+            repeat
+                delay WAIT_CYCTIME
+            until((not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOORCLOSE]) and 
+                  (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOOROPEN])) or (($fast_clock - TimerIndex) > TimeOut))
+        else 
+            repeat
+                delay WAIT_CYCTIME
+            until(not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOORCLOSE]) and 
+                  (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOOROPEN]))
+        endif
+
+        if not(not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOORCLOSE]) and 
+              (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOOROPEN])) then 
+            post_err(CC_UALARM, '夹紧打磨头[ID:' + int_to_str_(GrindHeadId) + ']超时', 0, CC_PAUSE)
+        endif 
+        
+    until(not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOORCLOSE]) and 
+         (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOOROPEN]))
+end dor_open_
+
+routine dor_close_
+var
+    TimerIndex                  : integer
+begin
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_DOORCLOSE] = true
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_DOOROPEN] = false
+
+    repeat
+
+        TimerIndex = $fast_clock
+
+        if TimeOut > 0 then 
+            repeat
+                delay WAIT_CYCTIME
+            until(((din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOORCLOSE]) and 
+                   not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOOROPEN])) or (($fast_clock - TimerIndex) > TimeOut))
+        else 
+            repeat
+                delay WAIT_CYCTIME
+            until((din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOORCLOSE]) and 
+                  not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOOROPEN]))
+        endif
+
+        if not((din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOORCLOSE]) and 
+              not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOOROPEN])) then 
+            post_err(CC_UALARM, '松开打磨头[ID:' + int_to_str_(GrindHeadId) + ']超时', 0, CC_PAUSE)
+        endif 
+        
+    until((din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOORCLOSE]) and 
+          not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOOROPEN]))
+end dor_close_
+
+routine ky_headstar_
+begin
+    if (GrindBlock.HeadConfig[GrindHeadId].DoutputAddr <= 0) or (GrindBlock.HeadConfig[GrindHeadId].DoutputAddr >= $max_dig_prt) then 
+        post_err(CC_UALARM, '无效信号输出地址[ID:' + int_to_str_(GrindHeadId) + ',Addr:' + int_to_str_(GrindBlock.HeadConfig[GrindHeadId].DoutputAddr) + ']', 0, CC_ABORT)
+    endif 
+
+    if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_READY] then 
+
+        if not(dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADSTART]) then 
+            set_gohedsp_(GrindHeadId, round(GrindBlock.ManuHeadSped[GrindHeadId]) * 10)
+            dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADSTART] = true
+
+            post_err(CC_UALARM, '手动打磨启动[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_WARN)
+        else 
+            
+            if (get_gohedsp_(GrindHeadId) / 10.0 + 50) >= GrindBlock.HeadConfig[GrindHeadId].MaxGrindSped then
+                set_gohedsp_(GrindHeadId, round(GrindBlock.HeadConfig[GrindHeadId].MaxGrindSped * 10))
+            else
+                set_gohedsp_(GrindHeadId, round((get_gohedsp_(GrindHeadId) / 10.0 + 50) * 10))
+            endif
+        endif 
+    else
+        post_err(CC_UALARM, '打磨头没有准备就绪[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+    endif 
+end ky_headstar_
+
+routine ky_headstop_
+begin
+    if (GrindBlock.HeadConfig[GrindHeadId].DoutputAddr <= 0) or (GrindBlock.HeadConfig[GrindHeadId].DoutputAddr >= $max_dig_prt) then 
+        post_err(CC_UALARM, '无效信号输出地址[ID:' + int_to_str_(GrindHeadId) + ',Addr:' + int_to_str_(GrindBlock.HeadConfig[GrindHeadId].DoutputAddr) + ']', 0, CC_ABORT)
+    endif
+    
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADSTART] = false
+    set_gohedsp_(GrindHeadId, 0)
+
+    post_err(CC_UALARM, '手动打磨头停止[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_WARN)
+end ky_headstop_
+
+routine ky_headrela_
+begin
+    if (GrindBlock.HeadConfig[GrindHeadId].DoutputAddr <= 0) or (GrindBlock.HeadConfig[GrindHeadId].DoutputAddr >= $max_dig_prt) then 
+        post_err(CC_UALARM, '无效信号输出地址[ID:' + int_to_str_(GrindHeadId) + ',Addr:' + int_to_str_(GrindBlock.HeadConfig[GrindHeadId].DoutputAddr) + ']', 0, CC_ABORT)
+    endif
+
+    if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_READY] then 
+        
+        dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADCLAMP] = false
+        dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADRELEAS] = true
+
+        post_err(CC_UALARM, '手动打磨头松开[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_WARN)
+    else
+        post_err(CC_UALARM, '打磨头没有准备就绪[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+    endif 
+end ky_headrela_
+
+routine ky_headclmp_
+begin
+    if (GrindBlock.HeadConfig[GrindHeadId].DoutputAddr <= 0) or (GrindBlock.HeadConfig[GrindHeadId].DoutputAddr >= $max_dig_prt) then 
+        post_err(CC_UALARM, '无效信号输出地址[ID:' + int_to_str_(GrindHeadId) + ',Addr:' + int_to_str_(GrindBlock.HeadConfig[GrindHeadId].DoutputAddr) + ']', 0, CC_ABORT)
+    endif
+
+    if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_READY] then 
+        
+        dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADRELEAS] = false
+        dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADCLAMP] = true
+
+        post_err(CC_UALARM, '手动打磨头夹紧[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_WARN)
+    else
+        post_err(CC_UALARM, '打磨头没有准备就绪[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+    endif 
+end ky_headclmp_
+
+routine ky_doropen_
+begin
+    if (GrindBlock.HeadConfig[GrindHeadId].DoutputAddr <= 0) or (GrindBlock.HeadConfig[GrindHeadId].DoutputAddr >= $max_dig_prt) then 
+        post_err(CC_UALARM, '无效信号输出地址[ID:' + int_to_str_(GrindHeadId) + ',Addr:' + int_to_str_(GrindBlock.HeadConfig[GrindHeadId].DoutputAddr) + ']', 0, CC_ABORT)
+    endif
+
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_DOORCLOSE] = false
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_DOOROPEN] = true
+
+    post_err(CC_UALARM, '手动打磨头打开[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_WARN)
+end ky_doropen_
+
+routine ky_dorclose_
+begin
+    if (GrindBlock.HeadConfig[GrindHeadId].DoutputAddr <= 0) or (GrindBlock.HeadConfig[GrindHeadId].DoutputAddr >= $max_dig_prt) then 
+        post_err(CC_UALARM, '无效信号输出地址[ID:' + int_to_str_(GrindHeadId) + ', Addr:' + int_to_str_(GrindBlock.HeadConfig[GrindHeadId].DoutputAddr) + ']', 0, CC_ABORT)
+    endif
+
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_DOOROPEN] = false
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_DOORCLOSE] = true
+
+    post_err(CC_UALARM, '手动打磨头关闭[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_WARN)
+end ky_dorclose_
+
+routine ky_selefunc_
+var
+    ModeKey                 : integer
+begin
+    repeat
+        write tpdisplay(chr(137), chr(128))
+        force_spmenu(TP_PANEL, SPI_TPUSER, 1)
+        write tpdisplay('选择手动操作打磨头的功能', cr)
+        write tpdisplay('1.启动打磨头', cr)
+        write tpdisplay('2.停止打磨头', cr)
+        write tpdisplay('3.松开打磨头', cr)
+        write tpdisplay('4.夹紧打磨头', cr)
+        write tpdisplay('5.打开打磨头', cr)
+        write tpdisplay('6.关闭打磨头', cr)
+        read tpdisplay(ModeKey)
+    until((ModeKey >= 1) and (ModeKey <= 6))
+    return(ModeKey)
+end ky_selefunc_
+
+routine ky_selehead_
+var
+    ModeKey                 : integer
+begin
+    repeat
+        write tpdisplay(chr(137), chr(128))
+        force_spmenu(TP_PANEL, SPI_TPUSER, 1)
+        write tpdisplay('输入需要操作的打磨头ID(1-' + (int_to_str_(MAX_GRINDNUM)) + ')', cr)
+        read tpdisplay(ModeKey)
+    until((ModeKey >= 1) and (ModeKey <= MAX_GRINDNUM))
+    return(ModeKey)
+end ky_selehead_
+
+routine head_status_
+begin
+    if not(GrindBlock.HeadConfig[GrindHeadId].HeadEnable) then 
+        return
+    endif 
+
+    if (GrindHeadId <= 0) or (GrindHeadId > MAX_GRINDNUM) then 
+        post_err(CC_UALARM, '无效打磨头[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_ABORT)
+    endif 
+
+    if (GrindBlock.HeadConfig[GrindHeadId].DoutputAddr <= 0) or (GrindBlock.HeadConfig[GrindHeadId].DoutputAddr >= $max_dig_prt) then 
+        post_err(CC_UALARM, '无效信号输出地址[ID:' + int_to_str_(GrindHeadId) + ',Addr:' + int_to_str_(GrindBlock.HeadConfig[GrindHeadId].DoutputAddr) + ']', 0, CC_ABORT)
+    endif 
+
+    if (GrindBlock.HeadConfig[GrindHeadId].DinputAddr <= 0) or (GrindBlock.HeadConfig[GrindHeadId].DinputAddr >= $max_dig_prt) then 
+        post_err(CC_UALARM, '无效信号输入地址[ID:' + int_to_str_(GrindHeadId) + 'Addr:' + int_to_str_(GrindBlock.HeadConfig[GrindHeadId].DoutputAddr) + ']', 0, CC_ABORT)
+    endif 
+
+    chck_hedid_(GrindHeadId)
+
+    chck_hedaim_(GrindHeadId)
+
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_ENABLE] = true
+
+    if not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_READY]) then 
+        post_err(CC_UALARM, '等待打磨头准备就绪[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_WARN)
+        
+        wait for (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_READY])
+    endif
+end head_status_
+
+routine chck_hedid_
+begin
+    if (GrindHeadId <= 0) or (GrindHeadId > MAX_GRINDNUM) then 
+        post_err(CC_UALARM, '无效打磨头[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_ABORT)
+    endif 
+
+    if (GrindBlock.HeadConfig[GrindHeadId].BindToolNum <= 0) or (GrindBlock.HeadConfig[GrindHeadId].BindToolNum >= $scr.$maxnumutool) then 
+        post_err(CC_UALARM, '无效工具号[ID:' + int_to_str_(GrindHeadId) + ',Tool:' + int_to_str_(GrindBlock.HeadConfig[GrindHeadId].BindToolNum) + ']', 0, CC_ABORT)
+    endif 
+
+    post_err(CC_UALARM, '打磨头对应工具[ID:' + int_to_str_(GrindHeadId) + ',Tool:' + int_to_str_(GrindBlock.HeadConfig[GrindHeadId].BindToolNum) + ']', 0, CC_WARN)
+end chck_hedid_
+
+routine chck_hedaim_
+begin
+    if (GrindHeadId <= 0) or (GrindHeadId > MAX_GRINDNUM) then 
+        post_err(CC_UALARM, '无效打磨头[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_ABORT)
+    endif 
+
+    if not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_READY]) then 
+        post_err(CC_UALARM, '等待打磨头准备就绪[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_WARN)
+    endif
+    repeat
+        GrindBlock.HeadConfig[GrindHeadId].ErrorId = get_headerr_(GrindHeadId)
+
+        if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_ERR_E01] then 
+            post_err(CC_UALARM, GrindBlock.ErrorMsg[1] + '[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+        endif 
+
+        if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_ERR_E02] then 
+            post_err(CC_UALARM, GrindBlock.ErrorMsg[2] + '[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+        endif
+
+        if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_ERR_E03] then 
+            post_err(CC_UALARM, GrindBlock.ErrorMsg[3] + '[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+        endif
+
+        if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_ERR_E04] then 
+            post_err(CC_UALARM, GrindBlock.ErrorMsg[4] + '[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+        endif
+
+        if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_ERR_E05] then 
+            post_err(CC_UALARM, GrindBlock.ErrorMsg[5] + '[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+        endif
+
+        if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_ERR_E06] then 
+            post_err(CC_UALARM, GrindBlock.ErrorMsg[6] + '[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+        endif
+
+        if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_ERR_E07] then 
+            post_err(CC_UALARM, GrindBlock.ErrorMsg[7] + '[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+        endif
+
+        if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_ERR_E08] then 
+            post_err(CC_UALARM, GrindBlock.ErrorMsg[8] + '[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+        endif
+
+        if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_ERR_E09] then 
+            post_err(CC_UALARM, GrindBlock.ErrorMsg[9] + '[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+        endif
+
+        if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_ERR_E10] then 
+            post_err(CC_UALARM, GrindBlock.ErrorMsg[10] + '[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+        endif
+
+        if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_ERR_E11] then 
+            post_err(CC_UALARM, GrindBlock.ErrorMsg[11] + '[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+        endif
+
+        if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_ERR_E12] then 
+            post_err(CC_UALARM, GrindBlock.ErrorMsg[12] + '[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+        endif
+
+        if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_ERR_E13] then 
+            post_err(CC_UALARM, GrindBlock.ErrorMsg[13] + '[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+        endif
+
+        if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_ERR_E14] then 
+            post_err(CC_UALARM, GrindBlock.ErrorMsg[14] + '[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+        endif
+
+        if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_ERR_E15] then 
+            post_err(CC_UALARM, GrindBlock.ErrorMsg[15] + '[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+        endif
+
+        if din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_ERR_E16] then 
+            post_err(CC_UALARM, GrindBlock.ErrorMsg[16] + '[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+        endif
+
+        if not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_READY]) then 
+            delay WAIT_CYCTIME
+        endif 
+        
+    until(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_READY])
+end chck_hedaim_
+
+routine get_headerr_
+begin
+    if (GrindHeadId <= 0) or (GrindHeadId > MAX_GRINDNUM) then 
+        post_err(CC_UALARM, '无效的打磨头[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_ABORT)
+    endif 
+
+    return(bus_gusint_(IO_DIN, GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_ERR_E01))
+end get_headerr_
+
+routine set_gohedsp_
+begin
+    if (GrindHeadId <= 0) or (GrindHeadId > MAX_GRINDNUM) then 
+        post_err(CC_UALARM, '无效打磨头[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_ABORT)
+    endif 
+
+    bus_susint_(GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADSPEED, Speed)
+
+    GrindBlock.HeadInform.CurGrindsped = Speed / 10.0
+end set_gohedsp_
+
+routine get_gohedsp_
+begin
+    if (GrindHeadId <= 0) or (GrindHeadId > MAX_GRINDNUM) then 
+        post_err(CC_UALARM, '无效打磨头[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_ABORT)
+    endif 
+
+   GrindBlock.HeadInform.CurGrindsped = bus_gusint_(IO_DOUT, GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADSPEED) / 10
+   return(round(GrindBlock.HeadInform.CurGrindsped * 10))
+end get_gohedsp_
+
+routine grnd_resum_
+var
+    Status                  : boolean
+begin
+    stop
+    delay 500
+    if GrindBlock.HeadConfig[GrindBlock.HeadInform.CurGrindId].HeadEnable then 
+        head_star_(GrindBlock.HeadInform.CurGrindId, GrindBlock.HeadInform.CurGrindsped, 5000)
+    endif 
+    resume
+    enable condition[INTR_RESUM]
+end grnd_resum_
+
+routine grind_alarm_
+begin
+    dout[GrindBlock.HeadConfig[GrindBlock.HeadInform.CurGrindId].DoutputAddr + O_HEADSTART] = false
+    stop
+    delay 500
+    chck_hedaim_(GrindBlock.HeadInform.CurGrindId)
+    head_star_(GrindBlock.HeadInform.CurGrindId, GrindBlock.HeadInform.CurGrindsped, 5000)
+    resume
+    enable condition[INTR_ALARM]
+end grind_alarm_
+
+routine intr_hedres_
+begin
+    condition[INTR_RESUM]: with $scan_time = 20
+        when opout[1]+ do
+            grnd_resum_                
+    endcondition
+    enable condition[INTR_RESUM]  
+end intr_hedres_
+
+routine intr_hedala_
+begin
+    condition[INTR_ALARM]: with $scan_time = 20
+        when din[GrindBlock.HeadConfig[GrindBlock.HeadInform.CurGrindId].DinputAddr + I_READY] = false do  
+            grind_alarm_                
+    endcondition
+    enable condition[INTR_ALARM]  
+end intr_hedala_
+
+routine err_display_
+begin
+    if ErrorId < 0 then 
+        post_err(CC_UALARM, OtherErrMsg, 0, CC_ABORT)
+    endif 
+
+    select (ErrorId) of
+        case(0):
+
+        case(101):
+            post_err(CC_UALARM, PolishBlock.ErrorMsg[1] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
+
+        case(102):
+            post_err(CC_UALARM, PolishBlock.ErrorMsg[2] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
+
+        case(103):
+            post_err(CC_UALARM, PolishBlock.ErrorMsg[3] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
+
+        case(104):
+            post_err(CC_UALARM, PolishBlock.ErrorMsg[4] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
+
+        case(105):
+            post_err(CC_UALARM, PolishBlock.ErrorMsg[5] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
+
+        case(106):
+            post_err(CC_UALARM, PolishBlock.ErrorMsg[6] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
+
+        case(107):
+            post_err(CC_UALARM, PolishBlock.ErrorMsg[7] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
+
+        case(108):
+            post_err(CC_UALARM, PolishBlock.ErrorMsg[8] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
+
+        case(109):
+            post_err(CC_UALARM, PolishBlock.ErrorMsg[9] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
+        
+        case(110):
+            post_err(CC_UALARM, PolishBlock.ErrorMsg[10] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
+
+        case(111):
+            post_err(CC_UALARM, PolishBlock.ErrorMsg[11] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
+
+        case(199):
+            post_err(CC_UALARM, PolishBlock.ErrorMsg[12] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
+
+        case(200):
+            post_err(CC_UALARM, PolishBlock.ErrorMsg[13] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
+
+        else:
+            post_err(CC_UALARM, PolishBlock.ErrorMsg[14] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
+
+    endselect
+end err_display_
