@@ -59,8 +59,6 @@ global def second_SubMitLoop()
         on_error_proceed
         DoSysEnable = false
     endif
-
-
 end
 
 ;ENDFOLD
@@ -547,7 +545,7 @@ def second_sr_()
         if SensorPack.TaskId > 0 then  
             if second_chk_() <> OK then  
                 
-                SensorPack.TaskId = 0
+                SensorPack.TaskId = -2
                 ; goto ACK
             endif
         endif
@@ -558,7 +556,7 @@ def second_sr_()
             Offset = 0
             str_clear_(Msg[])
             swrite(Msg[], State, Offset, "$fast_meas_count Missing[Conv:%d, TaskId:%d, FastCount:%d, QueueCount:%d]", SensorPack.ConvId, SensorPack.TaskId, $fast_meas_count[SensorPack.ConvId], AddQueueCount[SensorPack.ConvId])
-            log_warn_(Msg[])
+            log_info_(Msg[])
             goto ACK
         endif
 
