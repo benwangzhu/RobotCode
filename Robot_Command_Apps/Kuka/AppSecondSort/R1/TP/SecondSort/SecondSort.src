@@ -54,6 +54,13 @@ global def second_SubMitLoop()
 
         SESecondSortKey = 0
     endif
+
+    if ($pro_state1 <> #P_ACTIVE) then
+        on_error_proceed
+        DoSysEnable = false
+    endif
+
+
 end
 
 ;ENDFOLD
