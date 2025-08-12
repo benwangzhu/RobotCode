@@ -188,6 +188,10 @@ global def mag_tool_ctrl_(CtrlMode : in, Timeout : in, SleepTime : in, Success :
     continue
     TimerIndex = $rob_timer
 
+    if (CtrlMode == #WOFF) or (CtrlMode == #OFF) then
+        interrupt off INTR_PART_PRESENT
+    endif
+
     switch (CtrlMode)
     case #ON, #OFF
 
@@ -250,6 +254,71 @@ global def mag_tool_forc_ctrl_(CtrlMode : in, SleepTime : in)
     endif
 end
 ;ENDFOLD
+
+;FOLD CHECK PART PRESENT
+global def check_present_on_(SleepTime : in,  Continuous : in)
+    decl int SleepTime
+    decl bool Continuous
+    
+    if (varstate("SleepTime") <> #initialized) then
+
+        SleepTime = 0
+    endif
+
+    wait sec 0.0
+
+    if (Di047ToolEcho03) or (ByPassPartPresent) then   
+        return
+    endif
+
+    wait sec (SleepTime / 1000.0)
+
+    while (not Di047ToolEcho03) and (not ByPassPartPresent)  
+
+        error_write_(2047, "No part detected!")
+    endwhile
+
+    if (not ByPassPartPresent) and (Continuous) then
+
+        global interrupt decl INTR_PART_PRESENT when Di047ToolEcho03 == false do present_alarm_()
+        interrupt on INTR_PART_PRESENT
+        continue
+        wait sec 0.012
+    endif
+end
+;ENDFOLD
+
+;FOLD CHECK NO PART PRESENT
+global def check_present_off_()
+
+    wait sec 0.0
+
+    interrupt off INTR_PART_PRESENT
+
+    if (not Di047ToolEcho03) or (ByPassPartPresent) then   
+        return
+    endif
+
+    while (Di047ToolEcho03) and (not ByPassPartPresent)  
+
+        error_write_(2047, "part detected!")
+    endwhile
+end
+;ENDFOLD
+
+def present_alarm_()
+
+    brake f
+    wait sec 0.5
+    while (not Di047ToolEcho03) and (not ByPassPartPresent)  
+        error_write_(2047, "No part detected!")
+    endwhile
+
+    if ByPassPartPresent then
+        interrupt off INTR_PART_PRESENT
+    endif
+end
+
 
 ;FOLD ZONE CONTROL
 global def zone_ctrl_(CtrlMode : in, ZoneNo : in)

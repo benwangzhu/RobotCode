@@ -242,6 +242,9 @@ global enum servo_ctrl_mode_ MOVING, WAITING
 
 global enum zone_mode_t I_ENTER, I_EXIT
 
+global const int INTR_PART_PRESENT = 5
+global bool ByPassPartPresent = false
+
 ;***********************************************************
 ; func echo_channel_()
 ;***********************************************************
@@ -297,6 +300,11 @@ ext mag_tool_ctrl_(tool_ctrl_mode_ : in, int : in, int : in, bool : out)
 ; Control magnetic tool pipeline with a sleep delay
 ;***********************************************************
 ext mag_tool_forc_ctrl_(tool_ctrl_mode_ : in, int : in)
+
+
+ext check_present_on_(int : in, bool : in)
+
+ext check_present_off_()
 
 ;***********************************************************
 ; func zone_ctrl_()

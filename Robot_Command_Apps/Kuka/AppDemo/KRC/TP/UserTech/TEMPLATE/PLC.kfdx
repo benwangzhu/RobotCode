@@ -29,6 +29,14 @@
 			</List>
 		</Param>
 
+		<Param Name="Timeout" ShortName="IN Timeout: " ShortCut="" Unit="ms" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="0" Max="1000000" Step="1000" Autolimit="" />
+		</Param>
+
+		<Param Name="SleepTime" ShortName="IN SleepTime: " ShortCut="" Unit="ms" Var="" Enable="">
+			<Value Type="NUMBER" Default="0" Min="0" Max="1000000" Step="1000" Autolimit="" />
+		</Param>
+
 		<!-- ================================ EchoProgNo ========================================= -->
 
 		<Param Name="ProgNo" ShortName="IN Program No.: " ShortCut="" Unit="" Var="" Enable="">
@@ -133,14 +141,6 @@
 			</List>
 		</Param>
 
-		<Param Name="Timeout" ShortName="IN Timeout: " ShortCut="" Unit="" Var="" Enable="">
-			<Value Type="NUMBER" Default="0" Min="0" Max="1000000" Step="1000" Autolimit="" />
-		</Param>
-
-		<Param Name="SleepTime" ShortName="IN SleepTime: " ShortCut="" Unit="" Var="" Enable="">
-			<Value Type="NUMBER" Default="0" Min="0" Max="1000000" Step="1000" Autolimit="" />
-		</Param>
-
 		<Param Name="Success" ShortName="OUT Success: " ShortCut="" Unit="" Var="" Enable="">
 			<Value Type="NAME" Default="Success" />
 		</Param>
@@ -161,15 +161,46 @@
 			<PRM Name="Success" />
 		</InlineForm>
 		
+		<!-- ================================ MagToolForcCtrl ========================================= -->
+		
 		<Fold Name="MagToolForcCtrlFold">									
 			<Line>mag_tool_forc_ctrl_(%MagToolCtrlMode/,%SleepTime/)</Line>		
 		</Fold>
 		<InlineForm Name="MagToolForcCtrl" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
-			<FLD Name="MagToolCtrlFold" />
+			<FLD Name="MagToolForcCtrlFold" />
 			<PRM Name="MagToolCtrlMode" />
 			<PRM Name="SleepTime" />
 		</InlineForm>
 		
+		<!-- ================================ MagToolForcCtrl ========================================= -->
+
+		<Param Name="Continuous" ShortName="Continuous" ShortCut="" Unit="" Var="" Enable="">
+		<Value Type="BOOL" Default="FALSE">
+			<False Disp="SINGLE" />
+			<True Disp="CONTINUOUS" />
+		</Value>
+		</Param>
+		
+		<!-- ================================ CheckPartPresent ========================================= -->
+		
+		<Fold Name="CheckPartPresentFold">									
+			<Line>check_present_on_(%SleepTime/, %Continuous/)</Line>		
+		</Fold>
+		<InlineForm Name="CheckPartPresent" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="CheckPartPresentFold" />
+			<PRM Name="SleepTime" />
+			<PRM Name="Continuous" />
+		</InlineForm>
+
+		<!-- ================================ CheckNoPartPresent ========================================= -->
+		
+		<Fold Name="CheckNoPartPresentFold">									
+			<Line>check_present_off_()</Line>		
+		</Fold>
+		<InlineForm Name="CheckNoPartPresent" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		
+			<FLD Name="CheckNoPartPresentFold" />
+		</InlineForm>
+
 	</Application>
 </KukaTechDescription>
 <!--checksum 1083941364 -->
