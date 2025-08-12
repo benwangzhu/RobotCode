@@ -1,0 +1,113 @@
+program head_init
+--***********************************************************
+--
+-- file Name: head_init
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 05 - 06
+--
+-- Author: 
+--
+-- Version: 1.0
+%comment = 'SBT HEAD INIT 250507'
+%nolockgroup
+%nobusylamp
+%nopauseshft
+
+%include include/lib_logs_t
+%include include/lib_tpe_t
+%include include/lib_inst_t
+%include include/lib_socket_t
+%include include/lib_transform_t
+%include include/lib_math_t
+%include sbt_comm012_t
+%include sbt_comm012_global
+
+var
+    GrindHedId                          : integer
+
+%include include/lib_inst_h
+%include include/lib_tp_if_h
+%include include/lib_string_h
+%include include/lib_math_h
+
+routine InitData from head_init
+routine head_status_(GrindHeadId : integer) from sbt_comm012
+
+begin 
+    InitData
+
+    GrindHedId                              = get_iparm_(1)                 --获取对应打磨头ID
+
+    if (GrindHedId <= 0) or (GrindHedId > MAX_GRINDNUM) then 
+        post_err(CC_UALARM, '传入无效打磨头[ID:' + int_to_str_(GrindHedId) + ']', 0, CC_ABORT)
+    endif
+    if (get_iparm_(2) < 0) or (get_iparm_(2) > $scr.$maxnumutool) then 
+        post_err(CC_UALARM, '传入无效工具号[TOOL:' + int_to_str_(get_iparm_(2)) + ']', 0, CC_ABORT)
+    endif
+    if (get_iparm_(3) < 0) or (get_iparm_(3) > $max_dig_prt) then 
+        post_err(CC_UALARM, '传入无效输出信号地址[DO:' + int_to_str_(get_iparm_(3)) + ']', 0, CC_ABORT)
+    endif
+    if (get_iparm_(4) < 0) or (get_iparm_(4) > $max_dig_prt) then 
+        post_err(CC_UALARM, '传入无效输入信号地址[DI:' + int_to_str_(get_iparm_(4)) + ']', 0, CC_ABORT)
+    endif
+    if (get_rparm_(5) < 0.1) or (get_rparm_(5) > 6553.5) then 
+        post_err(CC_UALARM, '传入无效打磨速度[SPEED:' + rel_to_str_(get_rparm_(5)) + ']', 0, CC_ABORT)
+    endif
+
+    GrindBlock.HeadConfig[GrindHedId].BindToolNum    = get_iparm_(2)                 --获取对应打磨头输出绑定起始地址
+    GrindBlock.HeadConfig[GrindHedId].DoutputAddr    = get_iparm_(3)                 --获取对应打磨头输出绑定起始地址
+    GrindBlock.HeadConfig[GrindHedId].DinputAddr     = get_iparm_(4)                 --获取对应打磨头输入绑定起始地址
+    GrindBlock.HeadConfig[GrindHedId].MaxGrindSped   = get_rparm_(5)                 --获取对应打磨头最大速度 
+    set_ireg_(get_iparm_(6), GrindBlock.HeadConfig[GrindHedId].DoutputAddr)          --将对应打磨头输出信号起始地址映射到R寄存器
+    GrindBlock.HeadConfig[GrindHedId].HeadEnable     = int_to_bol_(get_iparm_(7))    --获取对应打磨头是否启用
+
+    head_status_(GrindHedId)
+end head_init
+
+routine InitData
+var
+    I                           : integer
+begin
+    GrindBlock.InitFlag = tern_bool_(uninit(GrindBlock.InitFlag), false, GrindBlock.InitFlag)
+    if GrindBlock.InitFlag = true then return; endif
+
+    using GrindBlock do
+        HeadInform.CurGrindId   = tern_int_(uninit(HeadInform.CurGrindId), 0, HeadInform.CurGrindId)
+        HeadInform.CurGrindsped = tern_real_(uninit(HeadInform.CurGrindsped), 0.0, HeadInform.CurGrindsped)
+
+        for I = 1 to array_len(HeadConfig) do
+            HeadConfig[I].HeadEnable        = tern_bool_(uninit(HeadConfig[I].HeadEnable), false, HeadConfig[I].HeadEnable)
+            HeadConfig[I].DoutputAddr       = tern_int_(uninit(HeadConfig[I].DoutputAddr), 0, HeadConfig[I].DoutputAddr)
+            HeadConfig[I].DinputAddr        = tern_int_(uninit(HeadConfig[I].DinputAddr), 0, HeadConfig[I].DinputAddr)
+            HeadConfig[I].BindToolNum       = tern_int_(uninit(HeadConfig[I].BindToolNum), -1, HeadConfig[I].BindToolNum)
+            HeadConfig[I].MaxGrindSped      = tern_real_(uninit(HeadConfig[I].MaxGrindSped), 6553.5, HeadConfig[I].MaxGrindSped)
+            HeadConfig[I].ErrorId           = tern_int_(uninit(HeadConfig[I].ErrorId), 0, HeadConfig[I].ErrorId)
+        endfor
+
+        for I = 1 to array_len(ManuHeadSped) do
+            ManuHeadSped[I] = tern_real_(uninit(ManuHeadSped[I]), 1000.0, ManuHeadSped[I])
+        endfor
+
+        ErrorMsg[1]     = tern_str_(uninit(ErrorMsg[1]), '打磨头紧急停止报', ErrorMsg[1])
+        ErrorMsg[2]     = tern_str_(uninit(ErrorMsg[2]), '打磨头气压报警', ErrorMsg[2])
+        ErrorMsg[3]     = tern_str_(uninit(ErrorMsg[3]), '打磨头冷却器报警', ErrorMsg[3])
+        ErrorMsg[4]     = tern_str_(uninit(ErrorMsg[4]), '打磨头主轴碰撞报警', ErrorMsg[4])
+        ErrorMsg[5]     = tern_str_(uninit(ErrorMsg[5]), '打磨头未知警报', ErrorMsg[5])
+        ErrorMsg[6]     = tern_str_(uninit(ErrorMsg[6]), '打磨头未知警报', ErrorMsg[6])
+        ErrorMsg[7]     = tern_str_(uninit(ErrorMsg[7]), '打磨头未知警报', ErrorMsg[7])
+        ErrorMsg[8]     = tern_str_(uninit(ErrorMsg[8]), '打磨头未知警报', ErrorMsg[8])
+        ErrorMsg[9]     = tern_str_(uninit(ErrorMsg[9]), '打磨头未知警报', ErrorMsg[9])
+        ErrorMsg[10]    = tern_str_(uninit(ErrorMsg[10]), '打磨头未知警报', ErrorMsg[10])
+        ErrorMsg[11]    = tern_str_(uninit(ErrorMsg[11]), '打磨头未知警报', ErrorMsg[11])
+        ErrorMsg[12]    = tern_str_(uninit(ErrorMsg[12]), '打磨头未知警报', ErrorMsg[12])
+        ErrorMsg[13]    = tern_str_(uninit(ErrorMsg[13]), '打磨头未知警报', ErrorMsg[13])
+        ErrorMsg[14]    = tern_str_(uninit(ErrorMsg[14]), '打磨头未知警报', ErrorMsg[14])
+        ErrorMsg[15]    = tern_str_(uninit(ErrorMsg[15]), '打磨头未知警报', ErrorMsg[15])
+        ErrorMsg[16]    = tern_str_(uninit(ErrorMsg[16]), '打磨头未知警报', ErrorMsg[16])
+    endusing
+
+    GrindBlock.InitFlag = true
+end InitData

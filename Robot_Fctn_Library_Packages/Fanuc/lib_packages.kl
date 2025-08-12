@@ -150,7 +150,7 @@ begin
 
     Status = io_status(ThisFile)
     if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
-    return(Status)
+    return(-abs(Status))
 end spack_head_
 
 routine spack_body_
@@ -164,7 +164,7 @@ begin
 
     Status = io_status(ThisFile)
     if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
-    return(Status)
+    return(-abs(Status))
 end spack_body_
 
 routine spack_tail_
@@ -180,7 +180,7 @@ begin
 
     Status = io_status(ThisFile)
     if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
-    return(Status)
+    return(-abs(Status))
 end spack_tail_
 
 routine rpack_head_
@@ -194,7 +194,7 @@ begin
                    TmpStr::4)   
 
     Status = io_status(ThisFile)
-    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; return(Status)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; return(-abs(Status))
     else
         Header.Cmd          = ord(TmpStr, 1)
         Header.Type_        = ord(TmpStr, 2)
@@ -226,7 +226,7 @@ begin
         Bodyer.ErrorId  = ord(TmpStr, 3)
         Bodyer.MsgType  = ord(TmpStr, 4)
     endif
-     return(Status)
+     return(-abs(Status))
 end rpack_body_
 
 routine rpack_tail_
@@ -236,7 +236,7 @@ begin
     read ThisFile(Tail)
 
     Status = io_status(ThisFile)
-    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; return(Status); endif 
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; return(-abs(Status)); endif 
 
     if Tail <> PACK_TAIL then
 
@@ -286,7 +286,7 @@ begin
             return(CC_ERROR)
     endselect
 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd002_
 
 routine pack_cmd003_
@@ -319,7 +319,7 @@ begin
 
     Status = io_status(ThisFile)
     if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd003_
 
 routine pack_cmd009_
@@ -352,7 +352,7 @@ begin
 
     Status = io_status(ThisFile)
     if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd009_
 
 routine pack_cmd010_
@@ -385,7 +385,7 @@ begin
 
     Status = io_status(ThisFile)
     if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd010_
 
 routine pack_cmd011_
@@ -418,7 +418,7 @@ begin
 
     Status = io_status(ThisFile)
     if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd011_
 
 routine pack_cmd012_
@@ -460,7 +460,7 @@ begin
             return(CC_ERROR)
     endselect
 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd012_
 
 routine pack_cmd013_
@@ -502,7 +502,7 @@ begin
             return(CC_ERROR)
     endselect
 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd013_
 
 routine pack_cmd014_
@@ -544,7 +544,7 @@ begin
             return(CC_ERROR)
     endselect
 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd014_
 
 routine pack_cmd017_
@@ -592,7 +592,7 @@ begin
 
     Status = io_status(ThisFile)
     if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd017_
 
 routine pack_cmd018_
@@ -640,7 +640,7 @@ begin
 
     Status = io_status(ThisFile)
     if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd018_
 
 routine pack_cmd020_
@@ -673,7 +673,7 @@ begin
 
     Status = io_status(ThisFile)
     if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd020_
 
 routine pack_cmd021_
@@ -715,7 +715,7 @@ begin
             return(CC_ERROR)
     endselect
 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd021_
 
 routine pack_cmd022_
@@ -757,7 +757,7 @@ begin
             return(CC_ERROR)
     endselect
 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd022_
 
 routine pack_cmd026_
@@ -799,7 +799,7 @@ begin
             return(CC_ERROR)
     endselect
 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd026_
 
 routine pack_cmd027_
@@ -857,7 +857,7 @@ begin
             return(CC_ERROR)
     endselect
 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd027_
 
 routine pack_cmd129_
@@ -890,7 +890,7 @@ begin
 
     Status = io_status(ThisFile)
     if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd129_
 
 routine pack_cmd130_
@@ -925,7 +925,7 @@ begin
 
     Status = io_status(ThisFile)
     if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd130_
 
 routine pack_cmd131_
@@ -957,7 +957,7 @@ begin
 
     Status = io_status(ThisFile)
     if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd131_
 
 routine pack_cmd132_
@@ -1005,7 +1005,7 @@ begin
 
     Status = io_status(ThisFile)
     if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd132_
 
 routine pack_cmd133_
@@ -1053,7 +1053,7 @@ begin
 
     Status = io_status(ThisFile)
     if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd133_
 
 routine pack_cmd134_
@@ -1101,7 +1101,7 @@ begin
 
     Status = io_status(ThisFile)
     if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd134_
 
 routine pack_cmd137_
@@ -1163,7 +1163,7 @@ begin
             return(CC_ERROR)
     endselect
 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd137_
 
 routine pack_cmd145_
@@ -1205,7 +1205,7 @@ begin
             return(CC_ERROR)
     endselect
 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd145_
 
 routine pack_cmd148_
@@ -1263,7 +1263,7 @@ begin
             return(CC_ERROR)
     endselect
 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd148_
 
 routine pack_cmd151_
@@ -1301,7 +1301,7 @@ begin
             return(CC_ERROR)
     endselect
 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd151_
 
 routine pack_cmd254_
@@ -1349,7 +1349,7 @@ begin
 
     Status = io_status(ThisFile)
     if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd254_
 
 routine pack_cmd255_
@@ -1397,5 +1397,5 @@ begin
 
     Status = io_status(ThisFile)
     if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
-    return(Status)
+    return(-abs(Status))
 end pack_cmd255_

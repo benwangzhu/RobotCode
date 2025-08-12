@@ -172,7 +172,11 @@ begin
     Status = rpack_head_(ThisSocket, FileVar,  InstReadHead)
     Status = rpack_body_(ThisSocket, FileVar,  InstReadBody)
     Status = rpack_tail_(ThisSocket, FileVar,  InstReadTail)
-    return(Status)
+    if Status <> OK then  
+        return(Status)
+    endif 
+
+    return(InstReadBody.ErrorId)
 end f001_it01_
 
 routine f002_it01_

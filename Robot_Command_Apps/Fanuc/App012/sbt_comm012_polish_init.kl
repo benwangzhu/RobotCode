@@ -1,0 +1,76 @@
+program sbt_polinit
+--***********************************************************
+--
+-- file Name: sbt_polinit
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 07 - 28
+--
+-- Author: 
+--
+-- Version: 1.0
+%comment = 'SBT POLISH INIT 250728'
+%nolockgroup
+%nobusylamp
+%nopauseshft
+%nopause = error + command + tpenable
+
+%include include/lib_socket_t
+%include include/lib_tpe_t
+%include include/lib_transform_t
+%include include/lib_logs_t
+%include include/lib_math_t
+%include sbt_comm012_t
+%include sbt_comm012_global
+
+var 
+    Status                              : integer 
+
+%include include/lib_inst_h
+%include include/lib_string_h
+%include include/lib_math_h
+
+
+routine InitData from sbt_polinit
+
+begin 
+    InitData
+
+    Status = f000_it00_(PolishSock)
+    if Status <> OK then  
+        post_err(CC_UALARM, '打磨初始化失败[Status:' + int_to_str_(Status) + ']', 0, CC_ABORT)
+    endif 
+end sbt_polinit
+
+routine InitData
+begin
+    PolishBlock.InitFlag = tern_bool_(uninit(PolishBlock.InitFlag), false, PolishBlock.InitFlag)
+    if PolishBlock.InitFlag = true then return; endif
+
+    using PolishSock do
+        Host        = tern_str_(uninit(Host), '127.0.0.1', Host)                        -- 如果 PolishSock.Host 未初始化，则设置为本地地址
+        PortTag     = tern_str_(uninit(PortTag), POLISH_TAG, PortTag)                   -- 如果 PolishSock.PortTag 未初始化，则设置为 'C6:'
+        ServerPort  = tern_int_(uninit(ServerPort), INST_PORT, ServerPort)              -- 如果 PolishSock.ServerPort 未初始化，则设置为 '12003'
+    endusing
+
+    using PolishBlock do
+        ErrorMsg[1]     = tern_str_(uninit(ErrorMsg[1]), '解析机器人请求数据失败', ErrorMsg[1])
+        ErrorMsg[2]     = tern_str_(uninit(ErrorMsg[2]), '上料视觉识别失败', ErrorMsg[2])
+        ErrorMsg[3]     = tern_str_(uninit(ErrorMsg[3]), '未下发识别指令或视觉识别失败', ErrorMsg[3])
+        ErrorMsg[4]     = tern_str_(uninit(ErrorMsg[4]), '获取轨迹失败', ErrorMsg[4])
+        ErrorMsg[5]     = tern_str_(uninit(ErrorMsg[5]), '相机拍照失败', ErrorMsg[5])
+        ErrorMsg[6]     = tern_str_(uninit(ErrorMsg[6]), '视觉识别失败', ErrorMsg[6])
+        ErrorMsg[7]     = tern_str_(uninit(ErrorMsg[7]), '打磨工艺获取失败', ErrorMsg[7])
+        ErrorMsg[8]     = tern_str_(uninit(ErrorMsg[8]), '系统未配置的零件号', ErrorMsg[8])
+        ErrorMsg[9]     = tern_str_(uninit(ErrorMsg[9]), '读取电气零件和钢板编号异常', ErrorMsg[9])
+        ErrorMsg[10]    = tern_str_(uninit(ErrorMsg[10]), '未下发前置指令', ErrorMsg[10])
+        ErrorMsg[11]    = tern_str_(uninit(ErrorMsg[11]), '轨迹规划计算失败', ErrorMsg[11])
+        ErrorMsg[12]    = tern_str_(uninit(ErrorMsg[12]), '倒棱软件流程异常', ErrorMsg[12])
+        ErrorMsg[13]    = tern_str_(uninit(ErrorMsg[13]), '倒棱软件流程异常', ErrorMsg[13])
+        ErrorMsg[14]    = tern_str_(uninit(ErrorMsg[14]), '未知打磨报警', ErrorMsg[14])
+    endusing
+
+    PolishBlock.InitFlag = true
+end InitData
