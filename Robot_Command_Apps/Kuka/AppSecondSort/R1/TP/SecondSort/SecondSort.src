@@ -99,7 +99,7 @@ global def second_fdbk(Conv : in, PkCvState : in, ThisQueue : in)
         if DEBUG then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Feedback Pick State![TaskId:%d, ConvId:%d, PkCvState:%d]", ThisQueue.TaskId, Conv, 0)
+            swrite(Msg[], State, Offset, "Feedback Pick State![Task:%d, Conv:%d, PkCvState:%d]", ThisQueue.TaskId, Conv, 0)
             log_info_(Msg[])
         endif
         
@@ -119,7 +119,7 @@ global def second_fdbk(Conv : in, PkCvState : in, ThisQueue : in)
         if DEBUG then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Feedback Pick State![TaskId:%d, ConvId:%d, PkCvState:%d]", ThisQueue.TaskId, Conv, 1)
+            swrite(Msg[], State, Offset, "Feedback Pick State![Task:%d, Conv:%d, PkCvState:%d]", ThisQueue.TaskId, Conv, 1)
             log_info_(Msg[])
         endif
         
@@ -200,7 +200,7 @@ global def second_wpos(Conv : in, RefPkPos : in, GiveDist : in, WaitPos : out, D
 
         Offset = 0
         str_clear_(Msg[])
-        swrite(Msg[], State, Offset, "Not Part Present![Conv:%d, TaskId:%d]", Conv, CurQueue[Conv].TaskId)
+        swrite(Msg[], State, Offset, "Not Part Present![Conv:%d, Task:%d]", Conv, CurQueue[Conv].TaskId)
         log_warn_(Msg[])
         DsnState = #DCSN_SKIP
         return
@@ -363,7 +363,7 @@ def conv_trig_count_(Conv : in)
     if DEBUG then
         Offset = 0
         str_clear_(Msg[])
-        swrite(Msg[], State, Offset, "New Meas Taking Picture![ConvId:%d, Count:%d]", Conv, PkCvCfg[Conv].SrTrigCount)
+        swrite(Msg[], State, Offset, "New Meas Taking Picture![Conv:%d, Count:%d]", Conv, PkCvCfg[Conv].SrTrigCount)
         log_info_(Msg[])
     endif
 end
@@ -415,7 +415,7 @@ def second_initialize()
         if PkCvCfg[j].SrPortIndex <= 0 then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Meas Taking Picture Port Error![ConvId:%d, SrPortIndex]", j, PkCvCfg[j].SrPortIndex)
+            swrite(Msg[], State, Offset, "Meas Taking Picture Port Error![Conv:%d, SrPortIndex]", j, PkCvCfg[j].SrPortIndex)
             log_error_(Msg[])
         endif
 
@@ -477,7 +477,7 @@ def second_sr_()
         if DEBUG then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Receive workpiece data![TaskId:%d, ConvId:%d, BoxId:%d, Num:%d]", SensorPack.TaskId, SensorPack.ConvId, SensorPack.BoxId, SensorPack.Num)
+            swrite(Msg[], State, Offset, "Receive workpiece data![Task:%d, Conv:%d, BoxId:%d, Num:%d]", SensorPack.TaskId, SensorPack.ConvId, SensorPack.BoxId, SensorPack.Num)
             log_info_(Msg[])
         endif
 
@@ -536,7 +536,7 @@ def second_sr_()
         if DEBUG then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Add new task[TaskId:%d]", SensorPack.TaskId)
+            swrite(Msg[], State, Offset, "Add new task[Task:%d]", SensorPack.TaskId)
             log_info_(Msg[])
         endif
 
@@ -553,7 +553,7 @@ def second_sr_()
             SndErrNo = 202
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "$fast_meas_count Missing[Conv:%d, TaskId:%d, FastCount:%d, QueueCount:%d]", SensorPack.ConvId, SensorPack.TaskId, $fast_meas_count[SensorPack.ConvId], AddQueueCount[SensorPack.ConvId])
+            swrite(Msg[], State, Offset, "$fast_meas_count Missing[Conv:%d, Task:%d, FastCount:%d, QCount:%d]", SensorPack.ConvId, SensorPack.TaskId, $fast_meas_count[SensorPack.ConvId], AddQueueCount[SensorPack.ConvId])
             log_info_(Msg[])
             goto ACK
         endif
@@ -563,7 +563,7 @@ def second_sr_()
             SndErrNo = 201
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Workpiece failed to join queue[TaskId:%d]", SensorPack.TaskId)
+            swrite(Msg[], State, Offset, "Workpiece failed to join queue[Task:%d]", SensorPack.TaskId)
             log_error_(Msg[])
             goto ACK
         endif
@@ -576,7 +576,7 @@ def second_sr_()
         if DEBUG then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Successfully joined queue[TaskId:%d]", SensorPack.TaskId)
+            swrite(Msg[], State, Offset, "Successfully joined queue[Task:%d]", SensorPack.TaskId)
             log_info_(Msg[])
         endif
     case 2
@@ -584,7 +584,7 @@ def second_sr_()
         if DEBUG then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Modify task[TaskId:%d]", SensorPack.TaskId)
+            swrite(Msg[], State, Offset, "Modify task[Task:%d]", SensorPack.TaskId)
             log_info_(Msg[])
         endif
 
@@ -606,7 +606,7 @@ def second_sr_()
                 if DEBUG then
                     Offset = 0
                     str_clear_(Msg[])
-                    swrite(Msg[], State, Offset, "Successfully Modify task[TaskId:%d]", SensorPack.TaskId)
+                    swrite(Msg[], State, Offset, "Successfully Modify task[Task:%d]", SensorPack.TaskId)
                     log_info_(Msg[])
                 endif
             endif
@@ -617,7 +617,7 @@ def second_sr_()
             SndErrNo = 254
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Queue to modify not found[TaskId:%d]", SensorPack.TaskId)
+            swrite(Msg[], State, Offset, "Queue to modify not found[Task:%d]", SensorPack.TaskId)
             log_warn_(Msg[])
             goto ACK
         endif
@@ -667,7 +667,7 @@ deffct int second_chk_()
 
         Offset = 0
         str_clear_(Msg[])
-        swrite(Msg[], State, Offset, "ConvId error[ConvId:%d] !", SensorPack.ConvId)
+        swrite(Msg[], State, Offset, "ConvId error[Conv:%d] !", SensorPack.ConvId)
         log_warn_(Msg[])
         return(NG)
     endif
