@@ -37,7 +37,7 @@
     <StatKey Name="Stat4" Style="" Next="" Enable="" UserMode="">
       <Picture Default="C:\KRC\TP\UserTech\Template\KeyChange.ICO" KeyDown="" KeyDownMinus="" />
       <Text Top="" Center="" Bottom="" />
-      <Needs SafetySwitch="" DrivesOk="" Prostate0="" Prostate="" ModeOp="" />
+      <Needs SafetySwitch="False" DrivesOk="False" Prostate0="" Prostate="62" ModeOp="T1|T2|Aut|Ext" />
       <Scripts OnKeyDown="CHGStatkey" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
     </StatKey>
 

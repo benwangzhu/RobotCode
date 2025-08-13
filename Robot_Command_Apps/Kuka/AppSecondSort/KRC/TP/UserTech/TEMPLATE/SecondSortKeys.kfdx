@@ -37,7 +37,7 @@
     <StatKey Name="Stat4" Style="" Next="" Enable="" UserMode="">
       <Picture Default="C:\KRC\TP\UserTech\Template\KeyChange.ICO" KeyDown="" KeyDownMinus="" />
       <Text Top="" Center="" Bottom="" />
-      <Needs SafetySwitch="" DrivesOk="" Prostate0="" Prostate="" ModeOp="" />
+      <Needs SafetySwitch="False" DrivesOk="False" Prostate0="" Prostate="62" ModeOp="T1|T2|Aut|Ext" />
       <Scripts OnKeyDown="CHGStatkey" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
     </StatKey>
 
@@ -92,6 +92,21 @@
     </Script>
     
 		<!-- ================================ Change KeyState01 ========================================= -->
+    
+		<Script Name="Present1">
+			<Switch Dialog="TRUE" Condition="Disable empty grab sensor?">
+				<Case Value="YES" Do="SB07" />
+				<Case Value="NO" Do="SB08" />
+			</Switch>
+		</Script>
+
+		<Script Name="Present2">
+			<Switch Dialog="TRUE" Condition="Disable overpressure sensor?">
+				<Case Value="YES" Do="SB09" />
+				<Case Value="NO" Do="SB10" />
+			</Switch>
+		</Script>
+    
     <Script Name="SKB1">
       <ShowVar Fullpath="1" Param="BildNr" />
       <Set Name="Stat1" Enable="" UserMode="" Style="" Next="">
@@ -137,11 +152,35 @@
       </Set>
     </Script>
 
+		<!-- ================================ Change KeyState03 ========================================= -->
+    <Script Name="SKB3">
+      <ShowVar Fullpath="3" Param="BildNr" />
+      <Set Name="Stat1" Enable="" UserMode="" Style="" Next="">
+        <Picture Default="C:\KRC\TP\UserTech\Template\Present1.ICO" KeyDown="" KeyDownMinus="" />
+        <Text Top="" Center="" Bottom="" />
+        <Needs SafetySwitch="False" DrivesOk="" Prostate0="" Prostate="62" ModeOp="T1|T2|Aut|Ext" />
+        <Scripts OnKeyDown="Present1" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+      </Set>
+      <Set Name="Stat2" Enable="" UserMode="" Style="" Next="">
+        <Picture Default="C:\KRC\TP\UserTech\Template\Present2.ICO" KeyDown="" KeyDownMinus="" />
+        <Text Top="" Center="" Bottom="" />
+        <Needs SafetySwitch="False" DrivesOk="False" Prostate0="" Prostate="62" ModeOp="T1|T2|Aut|Ext" />
+        <Scripts OnKeyDown="Present2" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+      </Set>
+      <Set Name="Stat3" Enable="" UserMode="" Style="" Next="">
+        <Picture Default="C:\KRC\TP\UserTech\Template\Present3.ICO" KeyDown="" KeyDownMinus="" />
+        <Text Top="" Center="" Bottom="" />
+        <Needs SafetySwitch="False" DrivesOk="False" Prostate0="" Prostate="62" ModeOp="T1|T2|Aut|Ext" />
+        <Scripts OnKeyDown="SB11" OnKeyUp="" OnKeyShow="" OnKeyDownMinus="" OnKeyUpMinus="" OnKeyRepeat="" OnKeyRepeatMinus="" />
+      </Set>
+    </Script>
+
 		<!-- ================================ Switch KeyState ========================================= -->
     <Script Name="CHGStatkey">
       <Switch Dialog="FALSE" Condition="%BildNr">
         <Case Value="1" Do="SKB2" />
-        <Case Value="2" Do="SKB1" />
+        <Case Value="2" Do="SKB3" />
+        <Case Value="3" Do="SKB1" />
       </Switch>
     </Script>
 

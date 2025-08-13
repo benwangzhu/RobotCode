@@ -49,6 +49,18 @@ global def second_SubMitLoop()
             cwrite($cmd, State, mode, "CANCEL 1")
             cwrite($cmd, State, mode, "RUN/R1/CELL()")
             log_info_("Call Cell!")
+        case 7
+            ByPassPartPresent = true
+            log_info_("Disable empty grab sensor!")
+        case 8
+            ByPassPartPresent = false
+            log_info_("Enable empty grab sensor!")
+        case 9
+            ByPassOverpressure = true
+            log_info_("Disable overpressure sensor!")
+        case 10
+            ByPassOverpressure = false
+            log_info_("Enable overpressure sensor!")
         default
         endswitch
 
@@ -99,7 +111,7 @@ global def second_fdbk(Conv : in, PkCvState : in, ThisQueue : in)
         if DEBUG then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Feedback Pick State![Task:%d, Conv:%d, PkCvState:%d]", ThisQueue.TaskId, Conv, 0)
+            swrite(Msg[], State, Offset, "Feedback Pick State![Conv:%d,Task:%d,PkCvState:%d]", Conv, ThisQueue.TaskId, 0)
             log_info_(Msg[])
         endif
         
@@ -119,7 +131,7 @@ global def second_fdbk(Conv : in, PkCvState : in, ThisQueue : in)
         if DEBUG then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Feedback Pick State![Task:%d, Conv:%d, PkCvState:%d]", ThisQueue.TaskId, Conv, 1)
+            swrite(Msg[], State, Offset, "Feedback Pick State![Conv:%d,Task:%d,PkCvState:%d]", Conv, ThisQueue.TaskId, 1)
             log_info_(Msg[])
         endif
         
@@ -206,6 +218,20 @@ global def second_wpos(Conv : in, RefPkPos : in, GiveDist : in, WaitPos : out, D
         return
     endif
 
+    CurWaitPos = RefPkPos
+    CurWaitPos.X = PkCvCfg[Conv].UpStream
+    CurWaitPos.Y = CurWaitPos.y + CurQueue[Conv].PkcvOfs.y + PkCvCfg[Conv].ManualZerOfs.y
+    CurWaitPos.Z = CurWaitPos.z + CurQueue[Conv].PkcvOfs.z + PkCvCfg[Conv].ManualZerOfs.z
+    CurWaitPos = machine_def[Conv_get_machine_index(Conv)].root : CurWaitPos
+    
+    WaitPos = RefPkPos
+    WaitPos.x = CurWaitPos.x
+    WaitPos.y = CurWaitPos.y
+    WaitPos.z = CurWaitPos.z
+    WaitPos.a = CurWaitPos.a
+    WaitPos.b = CurWaitPos.b
+    WaitPos.c = CurWaitPos.c
+    
     if CurFlowDist[Conv] >= (PkCvCfg[Conv].DownStream - GiveDist) then  
 
         DsnState = #DCSN_SKIP
@@ -213,20 +239,6 @@ global def second_wpos(Conv : in, RefPkPos : in, GiveDist : in, WaitPos : out, D
     endif
 
     if (CurFlowDist[Conv] >= PkCvCfg[Conv].WaitPosStream) and (CurFlowDist[Conv] <= (PkCvCfg[Conv].UpStream - 300)) then
-
-        CurWaitPos = RefPkPos
-        CurWaitPos.X = PkCvCfg[Conv].UpStream
-        CurWaitPos.Y = CurWaitPos.y + CurQueue[Conv].PkcvOfs.y + PkCvCfg[Conv].ManualZerOfs.y
-        CurWaitPos.Z = CurWaitPos.z + CurQueue[Conv].PkcvOfs.z + PkCvCfg[Conv].ManualZerOfs.z
-        CurWaitPos = machine_def[Conv_get_machine_index(Conv)].root : CurWaitPos
-        
-        WaitPos = RefPkPos
-        WaitPos.x = CurWaitPos.x
-        WaitPos.y = CurWaitPos.y
-        WaitPos.z = CurWaitPos.z
-        WaitPos.a = CurWaitPos.a
-        WaitPos.b = CurWaitPos.b
-        WaitPos.c = CurWaitPos.c
 
         DsnState = #DCSN_WPOS
         return
@@ -474,12 +486,12 @@ def second_sr_()
         SensorPack.Weight       = bus_gsint_(#IO_DIN, BusInput.BusIoSt + 176) / 10.0
         SensorPack.Num          = bus_gbyte_(#IO_DIN, BusInput.BusIoSt + 192)
         
-        if DEBUG then
-            Offset = 0
-            str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Receive workpiece data![Task:%d, Conv:%d, BoxId:%d, Num:%d]", SensorPack.TaskId, SensorPack.ConvId, SensorPack.BoxId, SensorPack.Num)
-            log_info_(Msg[])
-        endif
+        ; if DEBUG then
+        ;     Offset = 0
+        ;     str_clear_(Msg[])
+        ;     swrite(Msg[], State, Offset, "Receive workpiece data![Task:%d, Conv:%d, BoxId:%d, Num:%d]", SensorPack.TaskId, SensorPack.ConvId, SensorPack.BoxId, SensorPack.Num)
+        ;     log_info_(Msg[])
+        ; endif
 
         bus_sbyte_(BusOutput.BusIoSt + 104, 0)
         bus_ftell_(BusInput, BusOutput)
@@ -493,12 +505,12 @@ def second_sr_()
         SensorPack.PkcvOfs.b   = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 192)
         SensorPack.PkcvOfs.c   = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 224)
 
-        if DEBUG then
-            Offset = 0
-            str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Receive Pick Pos![x:%.3f, y:%.3f, z:%.3f,]", SensorPack.PkcvOfs.x, SensorPack.PkcvOfs.y, SensorPack.PkcvOfs.z)
-            log_info_(Msg[])
-        endif
+        ; if DEBUG then
+        ;     Offset = 0
+        ;     str_clear_(Msg[])
+        ;     swrite(Msg[], State, Offset, "Receive Pick Pos![x:%.3f, y:%.3f, z:%.3f,]", SensorPack.PkcvOfs.x, SensorPack.PkcvOfs.y, SensorPack.PkcvOfs.z)
+        ;     log_info_(Msg[])
+        ; endif
 
         bus_sbyte_(BusOutput.BusIoSt + 104, 0)
         bus_ftell_(BusInput, BusOutput)
@@ -512,12 +524,12 @@ def second_sr_()
         SensorPack.PlacePosn.b = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 192)
         SensorPack.PlacePosn.c = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 224)
 
-        if DEBUG then
-            Offset = 0
-            str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Receive Place Pos![x:%.3f, y:%.3f, z:%.3f,]", SensorPack.PlacePosn.x, SensorPack.PlacePosn.y, SensorPack.PlacePosn.z)
-            log_info_(Msg[])
-        endif
+        ; if DEBUG then
+        ;     Offset = 0
+        ;     str_clear_(Msg[])
+        ;     swrite(Msg[], State, Offset, "Receive Place Pos![x:%.3f, y:%.3f, z:%.3f,]", SensorPack.PlacePosn.x, SensorPack.PlacePosn.y, SensorPack.PlacePosn.z)
+        ;     log_info_(Msg[])
+        ; endif
     default
 
         Offset = 0
@@ -533,12 +545,12 @@ def second_sr_()
     switch BusInput.JobId
     case 1
 
-        if DEBUG then
-            Offset = 0
-            str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Add new task[Task:%d]", SensorPack.TaskId)
-            log_info_(Msg[])
-        endif
+        ; if DEBUG then
+        ;     Offset = 0
+        ;     str_clear_(Msg[])
+        ;     swrite(Msg[], State, Offset, "Add new task[Task:%d]", SensorPack.TaskId)
+        ;     log_info_(Msg[])
+        ; endif
 
         if SensorPack.TaskId > 0 then  
             if second_chk_() <> OK then  
@@ -563,7 +575,7 @@ def second_sr_()
             SndErrNo = 201
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Workpiece failed to join queue[Task:%d]", SensorPack.TaskId)
+            swrite(Msg[], State, Offset, "failed join queue[Conv:%d,$fast_count:%d,Task:%d,Num:%d]", SensorPack.ConvId, $fast_meas_count[SensorPack.ConvId], SensorPack.TaskId, SensorPack.Num)
             log_error_(Msg[])
             goto ACK
         endif
@@ -576,17 +588,17 @@ def second_sr_()
         if DEBUG then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Successfully joined queue[Task:%d]", SensorPack.TaskId)
+            swrite(Msg[], State, Offset, "joined queue[Conv:%d,$fast_count:%d,Task:%d,Num:%d]", SensorPack.ConvId, $fast_meas_count[SensorPack.ConvId], SensorPack.TaskId, SensorPack.Num)
             log_info_(Msg[])
         endif
     case 2
 
-        if DEBUG then
-            Offset = 0
-            str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Modify task[Task:%d]", SensorPack.TaskId)
-            log_info_(Msg[])
-        endif
+        ; if DEBUG then
+        ;     Offset = 0
+        ;     str_clear_(Msg[])
+        ;     swrite(Msg[], State, Offset, "Modify task[Task:%d]", SensorPack.TaskId)
+        ;     log_info_(Msg[])
+        ; endif
 
         if second_chk_() <> OK then  
                 
@@ -606,7 +618,7 @@ def second_sr_()
                 if DEBUG then
                     Offset = 0
                     str_clear_(Msg[])
-                    swrite(Msg[], State, Offset, "Successfully Modify task[Task:%d]", SensorPack.TaskId)
+                    swrite(Msg[], State, Offset, "Successfully Modify task[Conv:%d,Task:%d]", SensorPack.ConvId, SensorPack.TaskId)
                     log_info_(Msg[])
                 endif
             endif
@@ -617,7 +629,7 @@ def second_sr_()
             SndErrNo = 254
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Queue to modify not found[Task:%d]", SensorPack.TaskId)
+            swrite(Msg[], State, Offset, "Queue to modify not found[Conv:%d,Task:%d]", SensorPack.ConvId, SensorPack.TaskId)
             log_warn_(Msg[])
             goto ACK
         endif
