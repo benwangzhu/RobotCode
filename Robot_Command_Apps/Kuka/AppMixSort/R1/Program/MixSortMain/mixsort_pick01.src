@@ -104,7 +104,7 @@ SLIN XPickPosRUp WITH $VEL = SVEL_CP(0.8, , LCPDAT4), $TOOL = STOOL2(FPickPosRUp
 ;FOLD PLC.RequestToContinue ;%{PE}
 req_to_continue_()
 ;ENDFOLD
-IF MixByPassPresent THEN
+IF ByPassPartPresent THEN
    $FLAG[F_PICKING] = TRUE
 ELSE
    $FLAG[F_PICKING] = Di047ToolEcho03

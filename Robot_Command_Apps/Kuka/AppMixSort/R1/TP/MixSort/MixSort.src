@@ -49,6 +49,18 @@ global def mixsort_SubMitLoop()
             cwrite($cmd, State, mode, "CANCEL 1")
             cwrite($cmd, State, mode, "RUN/R1/CELL()")
             log_info_("Call Cell!")
+        case 7
+            ByPassPartPresent = true
+            log_info_("Disable empty grab sensor!")
+        case 8
+            ByPassPartPresent = false
+            log_info_("Enable empty grab sensor!")
+        case 9
+            ByPassOverpressure = true
+            log_info_("Disable overpressure sensor!")
+        case 10
+            ByPassOverpressure = false
+            log_info_("Enable overpressure sensor!")
         default
         endswitch
 

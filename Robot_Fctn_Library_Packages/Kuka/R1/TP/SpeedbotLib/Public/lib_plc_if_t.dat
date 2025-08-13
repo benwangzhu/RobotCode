@@ -244,6 +244,7 @@ global enum zone_mode_t I_ENTER, I_EXIT
 
 global const int INTR_PART_PRESENT = 5
 global bool ByPassPartPresent = false
+global bool ByPassOverpressure = false
 
 ;***********************************************************
 ; func echo_channel_()
