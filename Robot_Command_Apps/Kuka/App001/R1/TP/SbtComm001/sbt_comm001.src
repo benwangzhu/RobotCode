@@ -47,7 +47,7 @@ global def SbtComm001Event(EventPrm1 : in, EventPrm2 : in, EventPrm3 : in, Event
         return
     endif
 
-
+    Comm001ErrorDisplay("Execution SbtComm001Event failed.[Status:%d]", Status)
 end
 
 global def SbtComm001Event2(EventPrm1 : in, EventPrm2 : in, EventPrm3 : in, EventPrm4 : in, EventPrm5 : in, EventPrm6 : in, EventPrm7 : in, EventPrm8 : in, OutputPrm1 : out, OutputPrm2 : out, OutputPose1 : out, OutputPose2 : out)
@@ -102,7 +102,7 @@ global def SbtComm001Event2(EventPrm1 : in, EventPrm2 : in, EventPrm3 : in, Even
         return
     endif
 
-
+    Comm001ErrorDisplay("Execution SbtComm001Event2 failed.[Status:%d]", Status)
 end
 
 global def SbtComm001Request(InputType : in, OutputPrm1 : out, OutputPrm2 : out, OutputPose1 : out, OutputPose2 : out)
@@ -140,4 +140,61 @@ global def SbtComm001Request(InputType : in, OutputPrm1 : out, OutputPrm2 : out,
         return
     endif
 
+    Comm001ErrorDisplay("Execution SbtComm001Request failed.[Status:%d]", Status)
 end
+
+def Comm001ErrorDisplay(OtherErrMsg[] : in, ErrorId : in)
+    decl int ErrorId
+    decl char OtherErrMsg[]
+
+    Offset = 0
+    str_clear_(Msg[])
+    
+    if ErrorId < 0 then
+
+        swrite(Msg[], State, Offset, OtherErrMsg[], ErrorId)
+        log_error_(Msg[])
+        return
+    endif
+    
+    switch (ErrorId)
+    case 0
+        ;TODO
+    case 101
+        swrite(Msg[], State, Offset, E_COMM001_101_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 102
+        swrite(Msg[], State, Offset, E_COMM001_102_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 103
+        swrite(Msg[], State, Offset, E_COMM001_103_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 104
+        swrite(Msg[], State, Offset, E_COMM001_104_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 105
+        swrite(Msg[], State, Offset, E_COMM001_105_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 106
+        swrite(Msg[], State, Offset, E_COMM001_106_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 107
+        swrite(Msg[], State, Offset, E_COMM001_107_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 108
+        swrite(Msg[], State, Offset, E_COMM001_108_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 109
+        swrite(Msg[], State, Offset, E_COMM001_109_MSG[], ErrorId)
+        log_error_(Msg[])
+    case 199
+        swrite(Msg[], State, Offset, E_COMM001_199_MSG[], ErrorId)
+        log_error_(Msg[])
+    default
+        swrite(Msg[], State, Offset, E_COMM001_UNKNOWN_MSG[], ErrorId)
+        log_error_(Msg[])
+    endswitch
+end
+
+
+

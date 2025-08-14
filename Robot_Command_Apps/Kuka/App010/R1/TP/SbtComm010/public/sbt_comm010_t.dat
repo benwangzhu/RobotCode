@@ -1,11 +1,11 @@
 &ACCESS RP
 &comment Sbt Comm010 T
-defdat sbt_comm10_t public
+defdat sbt_comm010_t public
 ;***********************************************************
 ;
 ; Copyright 2025 - 2025 speedbot All Rights reserved.
 ;
-; file Name: sbt_comm10_t.dat
+; file Name: sbt_comm010_t.dat
 ;
 ; Description:
 ;   Language             ==   Krl for KUKA ROBOT

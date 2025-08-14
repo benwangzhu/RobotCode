@@ -23,4 +23,10 @@ decl cmd_typ07_t CommType07 = {Float01 0.0, Float02 0.0, Float03 0.0, Float04 0.
 decl int Status = 0
 decl e6pos CurPos
 
+decl state_t State
+decl int Offset = 0
+decl char Msg[128]
+
+DECL modus_t mode
+
 enddat

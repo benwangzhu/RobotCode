@@ -1,0 +1,21 @@
+&ACCESS RP
+&comment Sbt Comm001 Global
+defdat sbt_comm001_global public
+;***********************************************************
+;
+; Copyright 2025 - 2025 speedbot All Rights reserved.
+;
+; file Name: sbt_comm001_global.dat
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2025 - 05 - 08
+;   Modification Data    ==   2025 - 05 - 08
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+
+
+enddat

@@ -1,0 +1,48 @@
+&ACCESS RP
+&comment Sbt Comm001 T
+defdat sbt_comm001_t public
+;***********************************************************
+;
+; Copyright 2025 - 2025 speedbot All Rights reserved.
+;
+; file Name: sbt_comm001_t.dat
+;
+; Description:
+;   Language             ==   Krl for KUKA ROBOT
+;   Date                 ==   2025 - 05 - 08
+;   Modification Data    ==   2025 - 06 - 03
+;
+; Author: speedbot
+;
+; Version: 1.0
+;***********************************************************
+;
+
+
+; Add By 20250807 
+; Error code definitions
+
+decl global const char E_COMM001_101_MSG[70]
+E_COMM001_101_MSG[] = "No feeding vision.[Err:%d]"
+decl global const char E_COMM001_102_MSG[70]
+E_COMM001_102_MSG[] = "Feeding failed.[Err:%d]"
+decl global const char E_COMM001_103_MSG[70]
+E_COMM001_103_MSG[] = "No unload request.[Err:%d]"
+decl global const char E_COMM001_104_MSG[70]
+E_COMM001_104_MSG[] = "Unload data fail.[Err:%d]"
+decl global const char E_COMM001_105_MSG[70]
+E_COMM001_105_MSG[] = "Camera fail.[Err:%d]"
+decl global const char E_COMM001_106_MSG[70]
+E_COMM001_106_MSG[] = "Vision fail.[Err:%d]"
+decl global const char E_COMM001_107_MSG[70]
+E_COMM001_107_MSG[] = "No free unload bin.[Err:%d]"
+decl global const char E_COMM001_108_MSG[70]
+E_COMM001_108_MSG[] = "Part not config.[Err:%d]"
+decl global const char E_COMM001_109_MSG[70]
+E_COMM001_109_MSG[] = "Teach error.[Err:%d]"
+decl global const char E_COMM001_199_MSG[70]
+E_COMM001_199_MSG[] = "nternal software error.[Err:%d]"
+decl global const char E_COMM001_UNKNOWN_MSG[70]
+E_COMM001_UNKNOWN_MSG[] = "SW Unknown error.[Err:%d]"
+
+enddat
