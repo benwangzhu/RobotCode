@@ -52,6 +52,8 @@ global const int LOGS_MAX_SIZE = 1024000
 global const int OK = 0
 global const int NG = -1
 
+ext log_message_(int : in, char[] : in, ekrlmsgtype : in, bool : in)
+
 ext err_write_(char[] : in, char[] : in, bool : in)
 
 ;***********************************************************

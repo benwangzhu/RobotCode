@@ -83,6 +83,53 @@ def lib_logs ()
 
 end
 
+global def log_message_(MsgNr : in, Msg[] : in, MsgType : in, Hold : in)
+    decl int MsgNr
+    decl char Msg[]
+    decl ekrlmsgtype MsgType
+    decl bool Hold
+    decl krlmsg_t ShowMsg
+    decl krlmsgpar_t Parameter[3]
+    decl krlmsgopt_t Option
+    decl int Handle
+
+    ShowMsg.MODUL[] = "Speedbot"
+    on_error_proceed
+    ShowMsg.NR = MsgNr
+    if ($err.number > 0) then
+      ShowMsg.NR = 1
+      err_clear($err)
+    endif
+    if ShowMsg.NR <= 0 then
+        ShowMsg.NR = 1
+    endif
+    if varstate("MsgType") <> #INITIALIZED then
+        MsgType = #NOTIFY
+    endif
+    if varstate("Hold") <> #INITIALIZED then
+        Hold = false
+    endif
+
+    ShowMsg.MSG_TXT[] = Msg[] 
+    switch (MsgType)
+    case #NOTIFY
+        Handle = set_krlmsg(#NOTIFY, ShowMsg, Parameter[], Option)
+    case #STATE
+        Handle = set_krlmsg(#STATE, ShowMsg, Parameter[], Option)
+    case #QUIT
+        Handle = set_krlmsg(#QUIT, ShowMsg, Parameter[], Option)
+        if Hold then
+            halt
+        endif
+        while (exists_krlmsg(Handle)) 
+            wait sec 0.1
+        endwhile
+    case #WAITING
+        Handle = set_krlmsg(#WAITING, ShowMsg, Parameter[], Option)
+    endswitch
+end 
+
+
 ;FOLD ERROR WRITE
 global def err_write_(ThisMod[] : in, ErrMsg[] : in, Kill : in)
     decl char ThisMod[]
