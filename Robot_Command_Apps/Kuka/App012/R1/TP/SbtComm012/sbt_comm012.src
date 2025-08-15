@@ -160,20 +160,23 @@ global def Comm012PolishTrig(CameraId : in, CaptureId : in)
     decl int CameraId, CaptureId
     decl e6pos PhotoPint
 
-    if DEBUG then
-        Offset = 0
-        str_clear_(Msg[])
-        swrite(Msg[], State, Offset, "Trigger camera to take photos.[Camera ID:%d, Capture ID:%d]", CameraId, CaptureId)
-        log_info_(Msg[])
-    endif
+    loop 
+        if DEBUG then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "Trigger camera to take photos.[Camera ID:%d, Capture ID:%d]", CameraId, CaptureId)
+            log_info_(Msg[])
+        endif
+        
+        PhotoPint = cur_pos_(0, 0)
 
-    PhotoPint = cur_pos_(0, 0)
-
-    Status = f001_it01_(PolishSock, PhotoPint, CameraId, CaptureId)
-    if Status <> OK then 
-        Comm012ErrorDisplay("Polishing camera failed to take photos.[Status:%d]", Status)
-    endif 
-
+        Status = f001_it01_(PolishSock, PhotoPint, CameraId, CaptureId)
+        if Status <> OK then 
+            Comm012ErrorDisplay("Polishing camera failed to take photos.[Status:%d]", Status)
+        else
+            exit
+        endif
+    endloop
 end 
 
 global def Comm012PolishPlan(JobId : in, PlanningId : in, NumOfPath : out)
@@ -580,15 +583,22 @@ global def HeadStarting(GrindHeadId : in, Speed : in, Timeout : in)
         return
     endif
 
-    continue
-    wait sec 0.012
-    continue
-    $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_START] = true
-    continue
-    wait sec 0.1
+    ; continue
+    ; wait sec 0.012
+    ; continue
+    ; $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_START] = true
+    ; continue
+    ; wait sec 0.1
 
     ; Wait for the grinding head speed to reach the target
     repeat
+
+        continue
+        wait sec 0.012
+        continue
+        $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_START] = true
+        continue
+        wait sec 0.1
 
         continue
         TimerIndex = $rob_timer
@@ -604,6 +614,9 @@ global def HeadStarting(GrindHeadId : in, Speed : in, Timeout : in)
         continue
         if not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START] then
 
+            continue
+            $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_START] = false
+            
             Offset = 0
             str_clear_(Msg[])
             swrite(Msg[], State, Offset, "Failed to Start Grinding Head (Timeout).[GrindHeadId:%d]", GrindHeadId)
@@ -1040,10 +1053,12 @@ def Comm012ErrorDisplay(OtherErrMsg[] : in, ErrorId : in)
         log_error_(Msg[])
     case 105
         swrite(Msg[], State, Offset, E_COMM012_105_MSG[], ErrorId)
-        log_error_(Msg[])
+        ; log_error_(Msg[])
+        error_write_(ErrorId, Msg[])
     case 106
         swrite(Msg[], State, Offset, E_COMM012_106_MSG[], ErrorId)
-        log_error_(Msg[])
+        error_write_(ErrorId, Msg[])
+        ; log_error_(Msg[])
     case 107
         swrite(Msg[], State, Offset, E_COMM012_107_MSG[], ErrorId)
         log_error_(Msg[])
