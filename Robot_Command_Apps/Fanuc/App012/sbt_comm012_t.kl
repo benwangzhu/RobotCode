@@ -15,42 +15,41 @@
 --***********************************************************
 --
 
-
 const         
     POLISH_TAG                          = 'C6:'
-    INST_PORT                           = 12003
+    INST_PORT                           = 12003                     --默认配置端口号
 
-    POLISH_APPR                         = 1
-    POLISH_GRIND                        = 2
-    POLISH_EXIT                         = 3
+    POLISH_APPR                         = 1                         --打磨进刀轨迹
+    POLISH_GRIND                        = 2                         --打磨轨迹
+    POLISH_EXIT                         = 3                         --打磨退刀轨迹
 
-    MAX_GRINDNUM                        = 4
-    MAX_GRINDERR                        = 16
-    MAX_POLIERR                         = 14
+    MAX_GRINDNUM                        = 4                         --配置最大打磨头数量
+    MAX_GRINDERR                        = 16                        --配置最大打磨头报警数量
+    MAX_POLIERR                         = 14                        --配置最大打磨系统报警数量
 
-    WAIT_CYCTIME                        = 20
+    WAIT_CYCTIME                        = 20                        --WAIT信号时扫描周期
 
-    INTR_RESUM                          = 55
-    INTR_ALARM                          = 56         
+    INTR_RESUM                          = 55                        --打磨复位中断编号
+    INTR_ALARM                          = 56                        --打磨报警中断编号
 
-    O_ENABLE                            = 0
+    O_ENABLE                            = 0                         --打磨头使能输出
     O_REMOTE                            = 1
-    O_HEARTBEAT                         = 7
-    O_HEADSPEED                         = 16
-    O_HEADSTART                         = 32
-    O_HEADCLAMP                         = 48
-    O_HEADRELEAS                        = 49
-    O_DOOROPEN                          = 50
-    O_DOORCLOSE                         = 51
+    O_HEARTBEAT                         = 7                         --打磨头心跳输出
+    O_HEADSPEED                         = 16                        --打磨头速度确认输出
+    O_HEADSTART                         = 32                        --打磨头使能输出
+    O_HEADCLAMP                         = 48                        --打磨头松开输出
+    O_HEADRELEAS                        = 49                        --打磨头加紧输出
+    O_DOOROPEN                          = 50                        --打磨头打开输出
+    O_DOORCLOSE                         = 51                        --打磨头关闭输出
 
-    I_READY                             = 0
-    I_HEARTBEAT                         = 7
-    I_HEADSTART                         = 16
-    I_HEADCLAMP                         = 32
-    I_HEADRELEAS                        = 33
-    I_DOOROPEN                          = 34
-    I_DOORCLOSE                         = 35
-    I_HEADDETE1                         = 48
+    I_READY                             = 0                         --打磨头准备就绪输入
+    I_HEARTBEAT                         = 7                         --打磨头心跳信号输入
+    I_HEADSTART                         = 16                        --打磨头启动完成输入
+    I_HEADCLAMP                         = 32                        --打磨头松开到位输入
+    I_HEADRELEAS                        = 33                        --打磨头夹紧到位输入
+    I_DOOROPEN                          = 34                        --打磨头打开到位输入
+    I_DOORCLOSE                         = 35                        --打磨头关闭到位输入
+    I_HEADDETE1                         = 48                        
     I_HEADDETE2                         = 49
     I_HEADDETE3                         = 50
     I_HEADDETE4                         = 51
@@ -74,21 +73,21 @@ const
 
 type
     grind_head_t from sbt_comm12_t  = structure
-        HeadEnable                      : boolean 
-        DoutputAddr                     : integer 
-        DinputAddr                      : integer 
-        BindToolNum                     : integer 
-        MaxGrindSped                    : real
-        ErrorId                         : integer
+        HeadEnable                      : boolean                   --打磨头是否启用
+        DoutputAddr                     : integer                   --打磨头配置输出IO起始地址
+        DinputAddr                      : integer                   --打磨头配置输入IO起始地址
+        BindToolNum                     : integer                   --打磨头绑定的工具号码
+        MaxGrindSped                    : real                      --打磨头最大速度
+        ErrorId                         : integer                   --打磨头当前报警代码
 	endstructure
 
     grind_info_t from sbt_comm12_t  = structure
-        CurGrindId                      : integer 
-        CurGrindsped                    : real 
+        CurGrindId                      : integer                   --当前打磨头Id
+        CurGrindsped                    : real                      --当前打磨头速度
 	endstructure
 
     grind_bloc_t from sbt_comm12_t  = structure
-        InitFlag                        : boolean
+        InitFlag                        : boolean                   --打磨头数据初始化标志
         HeadConfig                      : array[MAX_GRINDNUM] of grind_head_t
         HeadInform                      : grind_info_t
         ManuHeadSped                    : array[MAX_GRINDNUM] of real
@@ -96,6 +95,6 @@ type
     endstructure
 
     poli_bloc_t from sbt_comm12_t  = structure
-        InitFlag                        : boolean
+        InitFlag                        : boolean                   --打磨系统数据初始化标志
         ErrorMsg                        : array[MAX_POLIERR] of string[70]
     endstructure

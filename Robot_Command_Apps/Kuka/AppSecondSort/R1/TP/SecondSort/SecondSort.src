@@ -351,6 +351,60 @@ global def second_frame(Conv : in, Dist : in, BaseNo : in)
 
 end
 
+global def MoveDLin(PointName : in, Speed : in, Accu : in, UframeNo : in, UtoolNo : in, Acc : in)
+    decl e6pos PointName
+    decl real Speed
+    decl real Accu
+    decl int UframeNo
+    decl int UtoolNo
+    decl real Acc
+    decl fdat MoveDLinFP1
+    decl ldat MoveDLinLCPDAT1
+
+    if (varstate("Speed") <> #initialized) then
+
+        Speed = 15.0
+    endif
+    if (varstate("Accu") <> #initialized) then
+
+        Accu = 200.00
+    endif
+    if (varstate("UframeNo") <> #initialized) then
+
+        continue
+        UframeNo = $act_base
+    endif
+    if (varstate("UtoolNo") <> #initialized) then
+
+        continue
+        UtoolNo = $act_tool
+    endif
+    if (varstate("Acc") <> #initialized) then
+
+        Acc = 50.0
+    endif
+
+    MoveDLinFP1 = {TOOL_NO 0,BASE_NO 0,IPO_FRAME #BASE,POINT2[] " "}
+    MoveDLinLCPDAT1 = {VEL 2.00000,ACC 100.000,APO_DIST 500.000,APO_FAC 50.0000,AXIS_VEL 100.000,AXIS_ACC 100.000,ORI_TYP #VAR,CIRC_TYP #BASE,JERK_FAC 50.0000,GEAR_JERK 100.000,EXAX_IGN 0}
+
+    MoveDLinFP1.TOOL_NO = UtoolNo
+    MoveDLinFP1.BASE_NO = UframeNo
+    MoveDLinLCPDAT1.APO_DIST = Accu
+
+    $BWDSTART = FALSE
+    LDAT_ACT = MoveDLinLCPDAT1
+    FDAT_ACT = MoveDLinFP1
+    cp_dynlin(Speed, 2000 / 15.0 * Speed, 2000 / 15.0 * Speed, Acc, 5000 / 50.0 * Acc, 5000 / 50.0 * Acc)
+    set_cd_params (0)
+
+    if Accu <= 1.0 then
+        lin PointName 
+    else
+        lin PointName C_DIS C_DIS
+    endif      
+end
+
+
 ;ENDFOLD
 
 ;FOLD ----------------------------------------------- Local Function ----------------------------------------------
@@ -370,14 +424,14 @@ end
 
 def conv_trig_count_(Conv : in)
     decl int Conv
-    PkCvCfg[Conv].SrTrigCount = PkCvCfg[Conv].SrTrigCount + 1
-
-    if DEBUG then
-        Offset = 0
-        str_clear_(Msg[])
-        swrite(Msg[], State, Offset, "New Meas Taking Picture![Conv:%d, Count:%d]", Conv, PkCvCfg[Conv].SrTrigCount)
-        log_info_(Msg[])
-    endif
+    PkCvCfg[Conv].SrTrigCount = $fast_meas_count[Conv]
+    LastTrigConvCount[Conv] = $SEN_PREA_C[Conv + 10]
+    ; if DEBUG then
+    ;     Offset = 0
+    ;     str_clear_(Msg[])
+    ;     swrite(Msg[], State, Offset, "New Meas Taking Picture![Conv:%d, Count:%d]", Conv, PkCvCfg[Conv].SrTrigCount)
+    ;     log_info_(Msg[])
+    ; endif
 end
 
 def second_initialize()
@@ -433,16 +487,16 @@ def second_initialize()
 
         switch (j)
         case 1
-            global interrupt decl PRIO_CONV_SR_NO[1] when $in[PkCvCfg[1].SrPortIndex] == true do conv_trig_count_(1)
+            global interrupt decl PRIO_CONV_SR_NO[1] when PkCvCfg[1].SrTrigCount <> $fast_meas_count[1] do conv_trig_count_(1)
             interrupt on PRIO_CONV_SR_NO[1]
         case 2
-            global interrupt decl PRIO_CONV_SR_NO[2] when $in[PkCvCfg[2].SrPortIndex] == true do conv_trig_count_(2)
+            global interrupt decl PRIO_CONV_SR_NO[2] when PkCvCfg[2].SrTrigCount <> $fast_meas_count[2] do conv_trig_count_(2)
             interrupt on PRIO_CONV_SR_NO[2]
         case 3
-            global interrupt decl PRIO_CONV_SR_NO[3] when $in[PkCvCfg[3].SrPortIndex] == true do conv_trig_count_(3)
+            global interrupt decl PRIO_CONV_SR_NO[3] when PkCvCfg[3].SrTrigCount <> $fast_meas_count[3] do conv_trig_count_(3)
             interrupt on PRIO_CONV_SR_NO[3]
         case 4
-            global interrupt decl PRIO_CONV_SR_NO[4] when $in[PkCvCfg[4].SrPortIndex] == true do conv_trig_count_(4)
+            global interrupt decl PRIO_CONV_SR_NO[4] when PkCvCfg[4].SrTrigCount <> $fast_meas_count[4] do conv_trig_count_(4)
             interrupt on PRIO_CONV_SR_NO[4]
         endswitch
     endfor
@@ -481,7 +535,8 @@ def second_sr_()
         SensorPack.ConvId       = bus_gbyte_(#IO_DIN, BusInput.BusIoSt + 96)
         SensorPack.BoxId        = bus_gbyte_(#IO_DIN, BusInput.BusIoSt + 104)
         SensorPack.ServoDist    = bus_gsint_(#IO_DIN, BusInput.BusIoSt + 112) / 10.0
-        SensorPack.EncCount     = bus_gint_(#IO_DIN, BusInput.BusIoSt + 128) 
+        ; SensorPack.EncCount     = bus_gint_(#IO_DIN, BusInput.BusIoSt + 128) 
+        SensorPack.EncCount     = LastTrigConvCount[SensorPack.ConvId] 
         SensorPack.Thickness    = bus_gsint_(#IO_DIN, BusInput.BusIoSt + 160) / 10.0
         SensorPack.Weight       = bus_gsint_(#IO_DIN, BusInput.BusIoSt + 176) / 10.0
         SensorPack.Num          = bus_gbyte_(#IO_DIN, BusInput.BusIoSt + 192)

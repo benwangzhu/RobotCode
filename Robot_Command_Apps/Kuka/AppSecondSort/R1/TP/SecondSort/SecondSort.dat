@@ -29,6 +29,13 @@ PartPresent[2] = false
 PartPresent[3] = false
 PartPresent[4] = false
 
+DECL REAL LastTrigConvCount[4]
+LastTrigConvCount[1] = 0.0
+LastTrigConvCount[2] = 0.0
+LastTrigConvCount[3] = 0.0
+LastTrigConvCount[4] = 0.0
+
+
 decl frame PartFrame
 decl e6pos CurWaitPos
 
