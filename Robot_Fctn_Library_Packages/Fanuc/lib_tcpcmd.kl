@@ -627,7 +627,9 @@ begin
     SendTail                    = PACK_TAIL
 
     SockCfg.Connected           = false                 -- ?? CtrlSock ????? false
-    SockCfg.ServerPort          = INST_PORT             -- ?? CtrlSock ???????
+    if uninit(SockCfg.ServerPort) then
+        SockCfg.ServerPort          = INST_PORT             -- ?? CtrlSock ???????
+    endif
     SockCfg.NByte               = 0                     -- ?? CtrlSock ????
     SockCfg.AtrTimeout          = 3000                  -- ?? CtrlSock ?????
     SockCfg.AtrBinary           = true                  -- ?? CtrlSock ????????

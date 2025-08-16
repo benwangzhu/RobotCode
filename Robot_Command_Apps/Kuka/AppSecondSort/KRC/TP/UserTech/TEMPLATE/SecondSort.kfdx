@@ -316,7 +316,7 @@
 			<Value Type="REAL" Default="100" Min="0" Max="500" Step="10.0" Autolimit="TRUE" />
 		</Param>
 
-		<Param Name="SyncAcc" ShortName="IN Sync Acc: " ShortCut="" Unit="m/s?" Var="" Enable="">
+		<Param Name="SyncAcc" ShortName="IN Sync Acc: " ShortCut="" Unit="m/s^" Var="" Enable="">
 			<Value Type="REAL" Default="1" Min="0.001" Max="50.0" Step="0.1" Autolimit="TRUE" />
 		</Param>
 
@@ -357,7 +357,7 @@
 		</Script>
 
 		<Fold Name="SyncLinFold">									
-			<Line>MoveDLin(ufrm_offs_(X%SyncPoint/, %QueueData/.PkcvOfs.X, %QueueData/.PkcvOfs.Y, %QueueData/.PkcvOfs.Z) : %ToolOffs/, %SyncVel/ * 1000.0, %SyncApo/, , , %SyncAcc/)</Line>		
+			<Line>MoveDLin(ufrm_offs_(X%SyncPoint/, %QueueData/.PkcvOfs.X, %QueueData/.PkcvOfs.Y, %QueueData/.PkcvOfs.Z) : %ToolOffs/, %SyncVel, %SyncApo/, , , %SyncAcc/)</Line>		
 		</Fold>
 		<InlineForm Name="SyncLin" IlfType="" Style="" Focus="" Spline="" OnAccept="ExistSyncPoint" OnTouchUp="TouchSyncPoint" OnOpen="" > 		
 			<FLD Name="SyncLinFold" />	
