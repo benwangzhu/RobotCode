@@ -26,7 +26,7 @@ global def second_SubMitInit()
 end
 
 global def second_SubMitLoop()
-
+    decl int j, ErrNum
     if SESecondSortKey > 0 then
         switch (SESecondSortKey)
         case 1
@@ -69,6 +69,25 @@ global def second_SubMitLoop()
 
     on_error_proceed
     DoSysEnable = ($pro_state1 == #P_ACTIVE)
+
+    for j = 1 to 4 
+
+        if conv_base_index[j] > 0 then
+
+            if conv_get_state(j) == #ACTIVE then
+                on_error_proceed
+                RemainingTrigger[j] = conv_get_wp_count(j, ErrNum)
+                on_error_proceed
+                ConveyerSpeed[j] = conv_get_speed(j, ErrNum)
+
+                if $pro_state1 == #P_FREE then
+                    conv_ini_off(j)
+                endif
+            endif
+        else
+            RemainingTrigger[j] = 0
+        endif
+    endfor
 end
 
 ;ENDFOLD
@@ -92,7 +111,7 @@ global def second_fdbk(Conv : in, PkCvState : in, ThisQueue : in)
     decl int Conv
     decl part_dat_t ThisQueue
     decl pkcv_stat_t PkCvState
-    decl int FdbkStatus, j, k
+    decl int FdbkStatus, j, k, WpCount, ErrNum
 
     if (varstate("Conv") == #initialized) then
 
@@ -106,12 +125,14 @@ global def second_fdbk(Conv : in, PkCvState : in, ThisQueue : in)
     
     bus_sint_(BusOutput.BusIoSt + 64, ThisQueue.TaskId)
 
+    WpCount = conv_get_wp_count(Conv, ErrNum)
+
     if PkCvState == #PICK_SUCC then
 
         if DEBUG then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Feedback Pick State![Conv:%d,Task:%d,PkCvState:%d]", Conv, ThisQueue.TaskId, 0)
+            swrite(Msg[], State, Offset, "Pick Successful![Conv:%d,Task:%d,Num:%d,PkCvState:%d,RCount:%d]", Conv, ThisQueue.TaskId, ThisQueue.Num, 0, WpCount)
             log_info_(Msg[])
         endif
         
@@ -131,7 +152,7 @@ global def second_fdbk(Conv : in, PkCvState : in, ThisQueue : in)
         if DEBUG then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Feedback Pick State![Conv:%d,Task:%d,PkCvState:%d]", Conv, ThisQueue.TaskId, 1)
+            swrite(Msg[], State, Offset, "Pick Failed![Conv:%d,Task:%d,Num:%d,PkCvState:%d,RCount:%d]", Conv, ThisQueue.TaskId, ThisQueue.Num, 1, WpCount)
             log_info_(Msg[])
         endif
         
@@ -478,25 +499,25 @@ def second_initialize()
         CurFlowDist[j] = 0
         conv_part_nbr[conv_get_machine_index(j)] = 0
 
-        if PkCvCfg[j].SrPortIndex <= 0 then
-            Offset = 0
-            str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Meas Taking Picture Port Error![Conv:%d, SrPortIndex]", j, PkCvCfg[j].SrPortIndex)
-            log_error_(Msg[])
-        endif
+        ; if PkCvCfg[j].SrPortIndex <= 0 then
+        ;     Offset = 0
+        ;     str_clear_(Msg[])
+        ;     swrite(Msg[], State, Offset, "Meas Taking Picture Port Error![Conv:%d, SrPortIndex]", j, PkCvCfg[j].SrPortIndex)
+        ;     log_error_(Msg[])
+        ; endif
 
         switch (j)
         case 1
-            global interrupt decl PRIO_CONV_SR_NO[1] when PkCvCfg[1].SrTrigCount <> $fast_meas_count[1] do conv_trig_count_(1)
+            global interrupt decl PRIO_CONV_SR_NO[1] when $fast_meas_count[1] > PkCvCfg[1].SrTrigCount do conv_trig_count_(1)
             interrupt on PRIO_CONV_SR_NO[1]
         case 2
-            global interrupt decl PRIO_CONV_SR_NO[2] when PkCvCfg[2].SrTrigCount <> $fast_meas_count[2] do conv_trig_count_(2)
+            global interrupt decl PRIO_CONV_SR_NO[2] when $fast_meas_count[2] > PkCvCfg[2].SrTrigCount do conv_trig_count_(2)
             interrupt on PRIO_CONV_SR_NO[2]
         case 3
-            global interrupt decl PRIO_CONV_SR_NO[3] when PkCvCfg[3].SrTrigCount <> $fast_meas_count[3] do conv_trig_count_(3)
+            global interrupt decl PRIO_CONV_SR_NO[3] when $fast_meas_count[3] > PkCvCfg[3].SrTrigCount do conv_trig_count_(3)
             interrupt on PRIO_CONV_SR_NO[3]
         case 4
-            global interrupt decl PRIO_CONV_SR_NO[4] when PkCvCfg[4].SrTrigCount <> $fast_meas_count[4] do conv_trig_count_(4)
+            global interrupt decl PRIO_CONV_SR_NO[4] when $fast_meas_count[4] > PkCvCfg[4].SrTrigCount do conv_trig_count_(4)
             interrupt on PRIO_CONV_SR_NO[4]
         endswitch
     endfor

@@ -23,7 +23,7 @@ PRIO_CONV_SR_NO[4] = 14
 
 global const int PRIO_TELL_NO = 9
 global const int PRIO_GETQ_NO = 10
-global const int PRIO_QUEUE_FLOW_NO = 11
+global const int PRIO_QUEUE_FLOW_NO = 15
 global const int INTR_GETQ_TIME_IDX = 10
 global const int PRIO_QUEUE_FLOW_TIME_IDX = 11
 

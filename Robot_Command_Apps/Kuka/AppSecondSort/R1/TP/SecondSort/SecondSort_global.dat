@@ -125,6 +125,17 @@ FirstPicking[2] = false
 FirstPicking[3] = false
 FirstPicking[4] = false
 
+decl global int RemainingTrigger[4]
+RemainingTrigger[1] = 0
+RemainingTrigger[2] = 0
+RemainingTrigger[3] = 0
+RemainingTrigger[4] = 0
+
+decl global real ConveyerSpeed[4]
+ConveyerSpeed[1] = 0.0
+ConveyerSpeed[2] = 0.0
+ConveyerSpeed[3] = 0.0
+ConveyerSpeed[4] = 0.0
 
 decl global int SESecondSortKey = 0
 enddat
