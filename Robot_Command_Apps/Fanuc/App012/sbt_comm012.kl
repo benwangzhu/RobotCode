@@ -78,11 +78,11 @@ begin
         return
     endif 
 
-    delay 12
-    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADSTART] = true 
-    delay 100
-
     repeat
+
+        delay 12
+        dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADSTART] = true
+        delay 100
 
         TimerIndex = $fast_clock
         
@@ -95,6 +95,9 @@ begin
         endif
 
         if not(din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADSTART]) then 
+            
+            dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADSTART] = false
+
             post_err(CC_UALARM, '启动打磨头[ID:' + int_to_str_(GrindHeadId) + ']超时', 0, CC_PAUSE)
         endif 
         
@@ -591,10 +594,10 @@ begin
             post_err(CC_UALARM, PolishBlock.ErrorMsg[4] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
 
         case(105):
-            post_err(CC_UALARM, PolishBlock.ErrorMsg[5] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
+            post_err(CC_UALARM, PolishBlock.ErrorMsg[5] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_PAUSE)
 
         case(106):
-            post_err(CC_UALARM, PolishBlock.ErrorMsg[6] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
+            post_err(CC_UALARM, PolishBlock.ErrorMsg[6] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_PAUSE)
 
         case(107):
             post_err(CC_UALARM, PolishBlock.ErrorMsg[7] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
