@@ -116,6 +116,8 @@ global def second_fdbk(Conv : in, PkCvState : in, ThisQueue : in)
     if (varstate("Conv") == #initialized) then
 
         ThisQueue = CurQueue[Conv]
+    else
+        Conv = ThisQueue.ConvId
     endif
 
     if ThisQueue.TaskId <= 0 then  
@@ -415,7 +417,7 @@ global def MoveDLin(PointName : in, Speed : in, Accu : in, UframeNo : in, UtoolN
     $BWDSTART = FALSE
     LDAT_ACT = MoveDLinLCPDAT1
     FDAT_ACT = MoveDLinFP1
-    cp_dynlin(Speed, 300 / 15.0 * Speed, 300 / 15.0 * Speed, Acc, 300 / 50.0 * Acc, 300 / 50.0 * Acc)
+    cp_dynlin(Speed, 400 / 15.0 * Speed, 400 / 15.0 * Speed, Acc, 400 / 50.0 * Acc, 400 / 50.0 * Acc)
     set_cd_params (0)
 
     if Accu <= 1.0 then
@@ -424,7 +426,6 @@ global def MoveDLin(PointName : in, Speed : in, Accu : in, UframeNo : in, UtoolN
         lin PointName C_DIS C_DIS
     endif      
 end
-
 
 ;ENDFOLD
 
@@ -684,18 +685,35 @@ def second_sr_()
         PartFind = false
 
         for j = 1 to MAX_QUE_DAT
-            if SensorPack.TaskId == abs(QueueData[SensorPack.ConvId, j].TaskId) then  
+            if not PartFind then
 
-                QueueData[SensorPack.ConvId, j].BoxId = SensorPack.BoxId
-                QueueData[SensorPack.ConvId, j].TaskId = SensorPack.TaskId
-                QueueData[SensorPack.ConvId, j].PlacePosn = SensorPack.PlacePosn
-                PartFind = true
+                if SensorPack.TaskId == abs(QueueData[SensorPack.ConvId, j].TaskId) then  
 
-                if DEBUG then
-                    Offset = 0
-                    str_clear_(Msg[])
-                    swrite(Msg[], State, Offset, "Successfully Modify task[Conv:%d,Task:%d]", SensorPack.ConvId, SensorPack.TaskId)
-                    log_info_(Msg[])
+                    QueueData[SensorPack.ConvId, j].BoxId = SensorPack.BoxId
+                    QueueData[SensorPack.ConvId, j].TaskId = SensorPack.TaskId
+                    QueueData[SensorPack.ConvId, j].PlacePosn = SensorPack.PlacePosn
+                    PartFind = true
+
+                    if DEBUG then
+                        Offset = 0
+                        str_clear_(Msg[])
+                        swrite(Msg[], State, Offset, "Successfully Modify task[Conv:%d,Task:%d]", SensorPack.ConvId, SensorPack.TaskId)
+                        log_info_(Msg[])
+                    endif
+                else
+                    if SensorPack.TaskId == abs(CurQueue[SensorPack.ConvId].TaskId) then  
+                        CurQueue[SensorPack.ConvId].BoxId = SensorPack.BoxId
+                        CurQueue[SensorPack.ConvId].TaskId = SensorPack.TaskId
+                        CurQueue[SensorPack.ConvId].PlacePosn = SensorPack.PlacePosn
+                        PartFind = true
+
+                        if DEBUG then
+                            Offset = 0
+                            str_clear_(Msg[])
+                            swrite(Msg[], State, Offset, "Successfully Modify task[Conv:%d,Task:%d]", SensorPack.ConvId, SensorPack.TaskId)
+                            log_info_(Msg[])
+                        endif
+                    endif
                 endif
             endif
         endfor
@@ -866,6 +884,12 @@ def queue_overflow_()
             endif
         endfor
     endfor
+
+    continue
+    $timer[PRIO_QUEUE_FLOW_TIME_IDX] = -abs(TIME_QUEUE_FLOW)
+    continue
+    $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = false
+    
 end
 
 ;ENDFOLD

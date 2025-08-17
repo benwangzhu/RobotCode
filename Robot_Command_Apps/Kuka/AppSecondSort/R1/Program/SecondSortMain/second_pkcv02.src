@@ -1,5 +1,5 @@
-&ACCESS RVP
-&REL 56
+&ACCESS RVP1
+&REL 101
 &COMMENT Conveyor Pick02
 &PARAM DISKPATH = KRC:\R1\Program\SecondSortMain
 def second_pkcv02()
@@ -60,10 +60,12 @@ endif
 ; Successfully retrieved the queue
 continue
 $flag[FLAG_CONV_QUE_ACQ[2]] = true
+;FOLD COPY QUEUE
 PartData = CurQueue[2]
 PartData.PkcvOfs.X = CurQueue[2].PkcvOfs.X + PkCvCfg[2].ManualZerOfs.x
 PartData.PkcvOfs.y = CurQueue[2].PkcvOfs.y + PkCvCfg[2].ManualZerOfs.y
 PartData.PkcvOfs.z = CurQueue[2].PkcvOfs.z + PkCvCfg[2].ManualZerOfs.z
+;ENDFOLD
 DAT_DIST:
 
 ;FOLD SecondSort.CalcWaitPos IN Conveyer Id: LinConveyor2, IN Ref Point Dir: PickPos, IN Distance: 200, OUT Wait Point Dir: WaitPos, OUT Pkcv Dicision: PkcvDicision ;%{PE}
@@ -74,7 +76,7 @@ if PkcvDicision == #DCSN_WAIT then
     ; The component has not yet reached the upstream boundary
     goto SKIP_PKCV
 endif
-if PartData.TaskId < 0 then  
+if CurQueue[2].TaskId < 0 then  
     ;
     ; Do not pick up
     goto ACK_FAIL
@@ -86,11 +88,18 @@ if PkcvDicision == #DCSN_SKIP then
     goto ACK_FAIL
 endif
 
+;FOLD COPY QUEUE
+PartData = CurQueue[2]
+PartData.PkcvOfs.X = CurQueue[2].PkcvOfs.X + PkCvCfg[2].ManualZerOfs.x
+PartData.PkcvOfs.y = CurQueue[2].PkcvOfs.y + PkCvCfg[2].ManualZerOfs.y
+PartData.PkcvOfs.z = CurQueue[2].PkcvOfs.z + PkCvCfg[2].ManualZerOfs.z
+;ENDFOLD
+
 servo01_ctrl_(#MOVING, PartData.ServoDist)
 
 ; Cannot track the conveyor line in T1 mode
 continue
-wait for not $t1
+;wait for not $t1
 
 ToolUpOffs.a = PartData.PkcvOfs.a * (-1)
 ToolRUpOffs.a = PartData.PkcvOfs.a * (-1)
@@ -115,14 +124,14 @@ if (abs(ToolUpOffs.a) >= 170) and (PkcvDicision == #DCSN_PICK) then
    ToolUpTrans = ToolUpOffs
    ToolUpTrans.A = ToolUpTrans.A / 2
 
-;FOLD SecondSort.SyncLin IN Sync Dir: PickPos, IN Queue Data: PartData, IN ToolOffs: ToolUpTrans, IN Sync Vel: 1.5 m/s, IN Sync Apo: 100 ;%{PE}
-move_l_(ufrm_offs_(XPickPos, PartData.PkcvOfs.X, PartData.PkcvOfs.Y, PartData.PkcvOfs.Z) : ToolUpTrans, 1.5 * 1000.0, 100)
+;FOLD SecondSort.SyncLin IN Sync Dir: PickPos, IN Queue Data: PartData, IN ToolOffs: ToolUpTrans, IN Sync Vel: 5 m/s, IN Sync Apo: 100, IN Sync Acc: 50 m/s^ ;%{PE}
+MoveDLin(ufrm_offs_(XPickPos, PartData.PkcvOfs.X, PartData.PkcvOfs.Y, PartData.PkcvOfs.Z) : ToolUpTrans, 5, 100, , , 50)
 ;ENDFOLD
 endif
 ;ENDFOLD
 
-;FOLD SecondSort.SyncLin IN Sync Dir: PickPos, IN Queue Data: PartData, IN ToolOffs: ToolUpOffs, IN Sync Vel: 1.5 m/s, IN Sync Apo: 100 ;%{PE}
-move_l_(ufrm_offs_(XPickPos, PartData.PkcvOfs.X, PartData.PkcvOfs.Y, PartData.PkcvOfs.Z) : ToolUpOffs, 1.5 * 1000.0, 100)
+;FOLD SecondSort.SyncLin IN Sync Dir: PickPos, IN Queue Data: PartData, IN ToolOffs: ToolUpOffs, IN Sync Vel: 5 m/s, IN Sync Apo: 100, IN Sync Acc: 50 m/s^ ;%{PE}
+MoveDLin(ufrm_offs_(XPickPos, PartData.PkcvOfs.X, PartData.PkcvOfs.Y, PartData.PkcvOfs.Z) : ToolUpOffs, 5, 100, , , 50)
 ;ENDFOLD
 ;FOLD SecondSort.CalcWaitPos IN Conveyer Id: LinConveyor2, IN Ref Point Dir: PickPos, IN Distance: 200, OUT Wait Point Dir: WaitPos, OUT Pkcv Dicision: PkcvDicision ;%{PE}
 second_wpos(2, XPickPos, 200, XWaitPos , PkcvDicision)
@@ -136,14 +145,14 @@ endif
 
 ToolUpOffs.z = 0.0
 
-;FOLD SecondSort.SyncLin IN Sync Dir: PickPos, IN Queue Data: PartData, IN ToolOffs: ToolUpOffs, IN Sync Vel: 1.5 m/s, IN Sync Apo: 1 ;%{PE}
-move_l_(ufrm_offs_(XPickPos, PartData.PkcvOfs.X, PartData.PkcvOfs.Y, PartData.PkcvOfs.Z) : ToolUpOffs, 1.5 * 1000.0, 1)
+;FOLD SecondSort.SyncLin IN Sync Dir: PickPos, IN Queue Data: PartData, IN ToolOffs: ToolUpOffs, IN Sync Vel: 5 m/s, IN Sync Apo: 1, IN Sync Acc: 50 m/s^ ;%{PE}
+MoveDLin(ufrm_offs_(XPickPos, PartData.PkcvOfs.X, PartData.PkcvOfs.Y, PartData.PkcvOfs.Z) : ToolUpOffs, 5, 1, , , 50)
 ;ENDFOLD
 
 mag_tool_forc_ctrl_(#ON, 500)
 
-;FOLD SecondSort.SyncLin IN Sync Dir: PickPos, IN Queue Data: PartData, IN ToolOffs: ToolRUpOffs, IN Sync Vel: 1.5 m/s, IN Sync Apo: 100 ;%{PE}
-move_l_(ufrm_offs_(XPickPos, PartData.PkcvOfs.X, PartData.PkcvOfs.Y, PartData.PkcvOfs.Z) : ToolRUpOffs, 1.5 * 1000.0, 100)
+;FOLD SecondSort.SyncLin IN Sync Dir: PickPos, IN Queue Data: PartData, IN ToolOffs: ToolRUpOffs, IN Sync Vel: 5 m/s, IN Sync Apo: 100, IN Sync Acc: 50 m/s^ ;%{PE}
+MoveDLin(ufrm_offs_(XPickPos, PartData.PkcvOfs.X, PartData.PkcvOfs.Y, PartData.PkcvOfs.Z) : ToolRUpOffs, 5, 100, , , 50)
 ;ENDFOLD
 
 ; Pickup successful
@@ -155,12 +164,16 @@ if PartData.Num == 1 then
     Status = conv_delete_wps(2, 1, Status)
     conv_part_nbr[conv_get_machine_index(2)] = 1
     FirstPicking[2] = true
+else
+    conv_part_nbr[conv_get_machine_index(2)] = 0
 endif
 continue
 $flag[FLAG_CONV_QUE_ACQ[2]] = false
 GlbPartData = CurQueue[2]
 continue
 $flag[FLAG_CONV_PKSU] = true
+continue
+$advance = 3
 
 ;FOLD SecondSort.Feedback IN Conveyer Id: LinConveyor2, IN Pick State: Success ;%{PE}
 second_fdbk(2, #PICK_SUCC)
