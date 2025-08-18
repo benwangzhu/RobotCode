@@ -278,19 +278,27 @@ global def second_wpos(Conv : in, RefPkPos : in, GiveDist : in, WaitPos : out, D
 
 end
 
-global def second_mov_wpos(Conv : in, MovWPosStat : in, WaitPos : in, ToolOffs : in, Limit : in, State : out)
+global def second_mov_wpos(Conv : in, MovWPosStat : in, WaitPos : in, ToolOffs : in, Limit : in, Status : out)
     decl int Conv
     decl pkcv_dcsn_t MovWPosStat
     decl e6pos WaitPos
     decl frame ToolOffs
     decl xy_lim_t Limit
-    decl int State
+    decl int Status
     
-    State = OK
+    Status = OK
 
     ; Check if part is out of reach
     if (WaitPos.x >= Limit.MaxX) or (WaitPos.x <= Limit.MinX) or (WaitPos.y >= Limit.MaxY) or (WaitPos.y <= Limit.MinY) then
-        State = NG
+        
+        if DEBUG then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "WaitPos Lim![Conv:%d,Task:%d,Wy:%3.f,Ly:%3.f]", Conv, CurQueue[Conv].TaskId, SensorPack.TaskId, WaitPos.y, Limit.MaxY)
+            log_warn_(Msg[])
+        endif
+        
+        Status = NG
         return
     endif
 
@@ -310,7 +318,7 @@ global def second_mov_wpos(Conv : in, MovWPosStat : in, WaitPos : in, ToolOffs :
         
         if CurFlowDist[Conv] >= (PkCvCfg[Conv].DownStream) then  
 
-            State = NG
+            Status = NG
             return
         endif
 
@@ -664,7 +672,7 @@ def second_sr_()
         if DEBUG then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "joined queue[Conv:%d,$fast_count:%d,Task:%d,Num:%d]", SensorPack.ConvId, $fast_meas_count[SensorPack.ConvId], SensorPack.TaskId, SensorPack.Num)
+            swrite(Msg[], State, Offset, "joined queue[Conv:%d,$fastcnt:%d,Task:%d,Num:%d,SndErrNo:%d]", SensorPack.ConvId, $fast_meas_count[SensorPack.ConvId], SensorPack.TaskId, SensorPack.Num, SndErrNo)
             log_info_(Msg[])
         endif
     case 2
@@ -740,12 +748,12 @@ def second_sr_()
     ; bus_sbyte_(BusOutput.BusIoSt + 104, SndErrNo)
     ; bus_ftell_(BusInput, BusOutput)
 
-    if DEBUG then
-        Offset = 0
-        str_clear_(Msg[])
-        swrite(Msg[], State, Offset, "Feedback task success[SndErrNo:%d] !", SndErrNo)
-        log_info_(Msg[])
-    endif
+    ; if DEBUG then
+    ;     Offset = 0
+    ;     str_clear_(Msg[])
+    ;     swrite(Msg[], State, Offset, "Feedback task success[SndErrNo:%d] !", SndErrNo)
+    ;     log_info_(Msg[])
+    ; endif
 
     bus_sbyte_(BusOutput.BusIoSt + 104, SndErrNo)
     bus_ftell_(BusInput, BusOutput)
@@ -886,8 +894,8 @@ def queue_overflow_()
 
     continue
     $timer[PRIO_QUEUE_FLOW_TIME_IDX] = -abs(TIME_QUEUE_FLOW)
-    continue
-    $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = false
+    ; continue
+    ; $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = false
     
 end
 
