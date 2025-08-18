@@ -98,16 +98,16 @@ global def mixsort_edg_picture()
 	continue
 	$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = true
 
-	BusOutput.JobId = MIX_EDG_PIT
-	BusOutput.RobMsgType = 1
-	bus_stell_(BusInput, BusOutput)
-
 	if DEBUG then
 		Offset = 0
 		str_clear_(Msg[])
 		swrite(Msg[], State, Offset, "Edg Picture![BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
 		log_info_(Msg[])
 	endif
+	
+	BusOutput.JobId = MIX_EDG_PIT
+	BusOutput.RobMsgType = 1
+	bus_stell_(BusInput, BusOutput)
 
 	if BusTimeout > 0 then
 		continue
@@ -128,16 +128,16 @@ global def mixsort_get_picture()
 	continue
 	$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = true
 
-	BusOutput.JobId = MIX_PIT_DAT
-	BusOutput.RobMsgType = 1
-	bus_stell_(BusInput, BusOutput)
-
 	if DEBUG then
 		Offset = 0
 		str_clear_(Msg[])
 		swrite(Msg[], State, Offset, "Get Picture Pos![BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
 		log_info_(Msg[])
 	endif
+	
+	BusOutput.JobId = MIX_PIT_DAT
+	BusOutput.RobMsgType = 1
+	bus_stell_(BusInput, BusOutput)
 
 	if BusTimeout > 0 then
 		continue
@@ -155,18 +155,18 @@ global def mixsort_ltn_picture()
 	continue
 	$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = true
 
-	BusOutput.JobId = MIX_LTN_PIT
-	BusOutput.RobMsgType = 1
-
-	bus_scartp_(BusOutput.BusIoSt + 64, cur_pos_(0,0), 6)
-	bus_stell_(BusInput, BusOutput)
-
 	if DEBUG then
 		Offset = 0
 		str_clear_(Msg[])
 		swrite(Msg[], State, Offset, "Ltn Picture![BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
 		log_info_(Msg[])
 	endif
+	
+	BusOutput.JobId = MIX_LTN_PIT
+	BusOutput.RobMsgType = 1
+
+	bus_scartp_(BusOutput.BusIoSt + 64, cur_pos_(0,0), 6)
+	bus_stell_(BusInput, BusOutput)
 
 	if BusTimeout > 0 then
 		continue
@@ -182,6 +182,13 @@ global def mixsort_get_data()
 	AgentData.PartData = {IsUnrefId 0, FromRobId 0, PartLen 0, PlaceId 0, MagPip[] " ", OfsOrt 0, OfsRz 0, GripDist1 0, GripDist2 0, Thickness 0, Weight 0, PkPos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}, PlPos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}}
 	CurAgtData.PartData = {IsUnrefId 0, FromRobId 0, PartLen 0, PlaceId 0, MagPip[] " ", OfsOrt 0, OfsRz 0, GripDist1 0, GripDist2 0, Thickness 0, Weight 0, PkPos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}, PlPos {X 0.00,Y 0.0,Z 0.00,A 0.0,B 0.0000,C 0.0,S 2,T 2,E1 0.0,E2 0.0,E3 0.0,E4 0.0,E5 0.0,E6 0.0}}
 
+	if DEBUG then
+		Offset = 0
+		str_clear_(Msg[])
+		swrite(Msg[], State, Offset, "Get Data![BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
+		log_info_(Msg[])
+	endif
+	
 	interrupt off PRIO_MIXSORT_TIMEOUT_NO
 	continue
 	$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = true
@@ -199,13 +206,6 @@ global def mixsort_get_data()
 	BusOutput.RobMsgType = 1
 	bus_stell_(BusInput, BusOutput)
 
-	if DEBUG then
-		Offset = 0
-		str_clear_(Msg[])
-		swrite(Msg[], State, Offset, "Get Data![BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
-		log_info_(Msg[])
-	endif
-
 	if BusTimeout > 0 then
 		continue
 		$timer[MIXSORT_TIMEOUT_TIME_IDX] = -abs(BusTimeout)
@@ -221,6 +221,13 @@ global def mixsort_get_task()
 	continue
 	$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = true
 
+	if DEBUG then
+		Offset = 0
+		str_clear_(Msg[])
+		swrite(Msg[], State, Offset, "Get Task![BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
+		log_info_(Msg[])
+	endif
+	
 	; Code added on 2025.06.16
 	; Add feedback for Picking status
 	continue
@@ -234,13 +241,6 @@ global def mixsort_get_task()
 	BusOutput.JobId = MIX_GET_TASK
 	BusOutput.RobMsgType = 1
 	bus_stell_(BusInput, BusOutput)
-
-	if DEBUG then
-		Offset = 0
-		str_clear_(Msg[])
-		swrite(Msg[], State, Offset, "Get Task![BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
-		log_info_(Msg[])
-	endif
 
 	if BusTimeout > 0 then
 		continue
@@ -261,16 +261,16 @@ def mixsort_get_pickpos()
 	continue
 	$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = true
 
-	BusOutput.JobId = MIX_PIK_DAT
-	BusOutput.RobMsgType = BusOutput.RobMsgType + 1
-	bus_stell_(BusInput, BusOutput)
-
 	if DEBUG then
 		Offset = 0
 		str_clear_(Msg[])
 		swrite(Msg[], State, Offset, "Get Pick Pos![BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
 		log_info_(Msg[])
 	endif
+	
+	BusOutput.JobId = MIX_PIK_DAT
+	BusOutput.RobMsgType = BusOutput.RobMsgType + 1
+	bus_stell_(BusInput, BusOutput)
 
 	if BusTimeout > 0 then
 		continue
@@ -287,16 +287,16 @@ def mixsort_get_placepos()
 	continue
 	$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = true
 
-	BusOutput.JobId = MIX_PIK_DAT
-	BusOutput.RobMsgType = BusOutput.RobMsgType + 1
-	bus_stell_(BusInput, BusOutput)
-
 	if DEBUG then
 		Offset = 0
 		str_clear_(Msg[])
 		swrite(Msg[], State, Offset, "Get Place Pos![BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", BusOutput.JobId, BusOutput.RobMsgType)
 		log_info_(Msg[])
 	endif
+	
+	BusOutput.JobId = MIX_PIK_DAT
+	BusOutput.RobMsgType = BusOutput.RobMsgType + 1
+	bus_stell_(BusInput, BusOutput)
 
 	if BusTimeout > 0 then
 		continue
@@ -313,9 +313,6 @@ def mixsort_feedback(FeedbackId : in)
 	interrupt off PRIO_MIXSORT_TIMEOUT_NO
 	continue
 	$timer_stop[MIXSORT_TIMEOUT_TIME_IDX] = true
-	bus_sbyte_(BusOutput.BusIoSt + 64, FeedbackId)
-	BusOutput.RobMsgType = BusOutput.RobMsgType + 1
-	bus_stell_(BusInput, BusOutput)
 
 	if DEBUG then
 		Offset = 0
@@ -323,6 +320,10 @@ def mixsort_feedback(FeedbackId : in)
 		swrite(Msg[], State, Offset, "Feedback![FeedCode:%d, BusOutput.JobId:%d, BusOutput.RobMsgType:%d]", FeedbackId, BusOutput.JobId, BusOutput.RobMsgType)
 		log_info_(Msg[])
 	endif
+	
+	bus_sbyte_(BusOutput.BusIoSt + 64, FeedbackId)
+	BusOutput.RobMsgType = BusOutput.RobMsgType + 1
+	bus_stell_(BusInput, BusOutput)
 
 	if BusTimeout > 0 then
 		continue
