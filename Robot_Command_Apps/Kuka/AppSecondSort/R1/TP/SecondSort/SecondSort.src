@@ -125,8 +125,6 @@ global def second_fdbk(Conv : in, PkCvState : in, ThisQueue : in)
         return
     endif
     
-    bus_sint_(BusOutput.BusIoSt + 64, ThisQueue.TaskId)
-
     WpCount = conv_get_wp_count(Conv, ErrNum)
 
     if PkCvState == #PICK_SUCC then
@@ -139,6 +137,7 @@ global def second_fdbk(Conv : in, PkCvState : in, ThisQueue : in)
         endif
         
         bus_sbyte_(BusOutput.BusIoSt + 96, 0)
+        bus_sint_(BusOutput.BusIoSt + 64, ThisQueue.TaskId)
         FdbkStatus = bus_ntell_(BusInput, BusOutput, 0)
 
         ;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
