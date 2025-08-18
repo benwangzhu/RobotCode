@@ -137,6 +137,7 @@ global def second_fdbk(Conv : in, PkCvState : in, ThisQueue : in)
         endif
         
         bus_sbyte_(BusOutput.BusIoSt + 96, 0)
+        bus_sbyte_(BusOutput.BusIoSt + 104, Conv)
         bus_sint_(BusOutput.BusIoSt + 64, ThisQueue.TaskId)
         FdbkStatus = bus_ntell_(BusInput, BusOutput, 0)
 
