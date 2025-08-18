@@ -603,38 +603,120 @@ begin
 
     select Packages.Params.ParamType of
     case(1):                -- 焊接参数
+        set_sys_rel_('$aweupr[1].$max_det_tim', round(Packages.Params.Params[6])/1000)      -- 起弧超时时间(ms)
+        set_sys_rel_('$aweupr[1].$arc_los_tim', round(Packages.Params.Params[7])/1000)      -- 断弧重连时间(ms)
         if not get_sys_bol_('$awscfg.$wld_prc_ena') then 
             -- ARC START
             set_sys_rel_('$awesch[1,1].$cmd_pulse', 1)                              -- 手动电流电压模式
-            set_sys_rel_('$awesch[1,1].$cmd_volts', Packages.Params.Params[1])      -- 焊接电流
-            set_sys_rel_('$awesch[1,1].$cmd_wfs', Packages.Params.Params[2])        -- 焊接电压
+            set_sys_rel_('$awesch[1,1].$cmd_volts', Packages.Params.Params[3])      -- 焊接电流
+            set_sys_rel_('$awesch[1,1].$cmd_wfs', Packages.Params.Params[4])        -- 焊接电压
         else
             -- WELD START
-            set_var(Entry, 'awe1wp01', 'wpcfg.prg_cmnd', 1, Status)                                 -- 手动电流电压模式
+            set_var(Entry, 'awe1wp01', 'wpcfg.prg_cmnd', round(Packages.Params.Params[3]), Status)  -- 焊接模式(1、协同模式，2、脉冲协同，3、JOB模式)
             if Status <> OK then
-                post_err(CC_UALARM, '设置焊接模式失败', 0, CC_ABORT)
+                post_err(CC_UALARM, '设置焊接参数焊接模式失败', 0, CC_ABORT)
             endif
-            set_var(Entry, 'awe1wp01', 'sch[1].$cmd_wfs', Packages.Params.Params[1], Status)        -- 焊接电流
+            set_var(Entry, 'awe1wp01', 'sch[1].$cmd_wfs', Packages.Params.Params[3], Status)        -- 焊接电流
             if Status <> OK then
-                post_err(CC_UALARM, '设置焊接电流失败', 0, CC_ABORT)
+                post_err(CC_UALARM, '设置焊接参数焊接电流失败', 0, CC_ABORT)
             endif
-            set_var(Entry, 'awe1wp01', 'sch[1].$cmd_volts', Packages.Params.Params[2], Status)      -- 焊接电压
+            set_var(Entry, 'awe1wp01', 'sch[1].$cmd_volts', Packages.Params.Params[4], Status)      -- 焊接电压
             if Status <> OK then
-                post_err(CC_UALARM, '设置焊接电压失败', 0, CC_ABORT)
+                post_err(CC_UALARM, '设置焊接参数焊接电压失败', 0, CC_ABORT)
             endif
         endif
-    case(2):                -- 摆动参数
+
+    case(2):                -- 引弧参数
+        if get_sys_bol_('$awscfg.$wld_prc_ena') then
+            
+            set_var(Entry, 'awe1wp01', 'wpcfg.$runin_enabl', 1, Status)   -- 启动预处理
+            if Status <> OK then
+                post_err(CC_UALARM, '设置启动预处理失败', 0, CC_ABORT)
+            endif
+            set_var(Entry, 'awe1wp01', 'eupr.$as_pre_time', round(Packages.Params.Params[1]), Status)   -- 引弧时间
+            if Status <> OK then
+                post_err(CC_UALARM, '设置引弧参数引弧时间失败', 0, CC_ABORT)
+            endif
+            set_var(Entry, 'awe1wp01', 'sch[33].$cmd_wfs', Packages.Params.Params[2], Status)           -- 引弧电流
+            if Status <> OK then
+                post_err(CC_UALARM, '设置引弧参数电流失败', 0, CC_ABORT)
+            endif
+            set_var(Entry, 'awe1wp01', 'sch[33].$cmd_volts', Packages.Params.Params[3], Status)         -- 引弧电压
+            if Status <> OK then
+                post_err(CC_UALARM, '设置引弧参数电压失败', 0, CC_ABORT)
+            endif
+            set_var(Entry, 'awe1wp01', 'eupr.$preflow', round(Packages.Params.Params[5])/1000, Status)  -- 引气时间
+            if Status <> OK then
+                post_err(CC_UALARM, '设置引弧参数引气时间失败', 0, CC_ABORT)
+            endif
+        endif
+
+    case(3):                -- 收弧参数
+        if get_sys_bol_('$awscfg.$wld_prc_ena') then
+            
+            set_var(Entry, 'awe1wp01', 'eupr.$ae_pre_time', round(Packages.Params.Params[1]), Status)   -- 收弧时间
+            if Status <> OK then
+                post_err(CC_UALARM, '设置收弧参数收弧时间失败', 0, CC_ABORT)
+            endif
+            set_var(Entry, 'awe1wp01', 'sch[2].$cmd_wfs', Packages.Params.Params[2], Status)            -- 收弧电流
+            if Status <> OK then
+                post_err(CC_UALARM, '设置收弧参数电流失败', 0, CC_ABORT)
+            endif
+            set_var(Entry, 'awe1wp01', 'sch[2].$cmd_volts', Packages.Params.Params[3], Status)          -- 收弧电压
+            if Status <> OK then
+                post_err(CC_UALARM, '设置收弧参数电压失败', 0, CC_ABORT)
+            endif
+            set_var(Entry, 'awe1wp01', 'eupr.$postflow', round(Packages.Params.Params[5])/1000, Status) -- 收气时间
+            if Status <> OK then
+                post_err(CC_UALARM, '设置收气时间失败', 0, CC_ABORT)
+            endif
+        endif
+
+    case(4):                -- 摆动参数
+        set_sys_rel_('$wvsch[1].$amplitude', Packages.Params.Params[2])                             -- 振幅
+        set_sys_rel_('$wvsch[1].$frequency', Packages.Params.Params[4])                             -- 频率
+        set_sys_rel_('$wvsch[1].$dwell_right', Packages.Params.Params[5])                           -- 左停留时间 
+        set_sys_rel_('$wvsch[1].$dwell_left', Packages.Params.Params[6])                            -- 右停留时间
+        set_sys_rel_('$wvschext[1].$elevation', Packages.Params.Params[10])                         -- 仰角
+        set_sys_rel_('$wvschext[1].$azimuth', Packages.Params.Params[11])                           -- 方位角
+        set_sys_int_('$wvwpr.$dwell_type', round(Packages.Params.Params[12]))                       -- 摆动方式(1、移动，2、停止)
+
+    case(5):                -- 弧坑回填参数
+        set_var(Entry, 'awe1wp01', 'sch[2].$cmd_wfs', Packages.Params.Params[1], Status)            -- 回填电流
+        if Status <> OK then
+            post_err(CC_UALARM, '设置弧坑回填参数回填电流失败', 0, CC_ABORT)
+        endif
+        set_var(Entry, 'awe1wp01', 'sch[2].$cmd_volts', Packages.Params.Params[2], Status)          -- 回填电压
+        if Status <> OK then
+            post_err(CC_UALARM, '设置弧坑回填参数回填电压失败', 0, CC_ABORT)
+        endif
+        set_var(Entry, 'awe1wp01', 'sch[2].$cmd_time', Packages.Params.Params[4]/Packages.Params.Params[5], Status)        -- 回填时间
+        if Status <> OK then
+            post_err(CC_UALARM, '设置弧坑回填参数回填时间失败', 0, CC_ABORT)
+        endif
+
+    case(6):                -- 再起弧参数
+        set_sys_bol_('$awspcr.$prt_touch', true)                                                    -- 再起弧激活
+        set_sys_int_('$awspcr.$prt_tch_cnt', round(Packages.Params.Params[1]))                      -- 再起弧次数
+
+    case(7):                -- 刮擦起弧参数
+        set_sys_bol_('$awspcr.$bfd_scratch', true)                                                  -- 刮蹭起弧激活
+        set_sys_rel_('$awspcr.$bfd_scr_cnt', round(Packages.Params.Params[4]))                      -- 刮擦起弧次数
+        set_sys_rel_('$awspcr.$ss_dist', Packages.Params.Params[5])                                 -- 刮擦距离
+        set_sys_rel_('$awspcr.$ret_str_spd', Packages.Params.Params[6])                             -- 刮擦速度
     
-        set_sys_rel_('$wvsch[1].$frequency', Packages.Params.Params[1])   
-        set_sys_rel_('$wvsch[1].$amplitude', Packages.Params.Params[2])   
-        set_sys_rel_('$wvsch[1].$dwell_right', Packages.Params.Params[3])  
-        set_sys_rel_('$wvsch[1].$dwell_left', Packages.Params.Params[4])   
-        set_sys_rel_('$wvsch[1].$l_angle', Packages.Params.Params[5])   
-    
+    case(9):                -- 焊接使能
+        set_sys_bol_('$awepor[1].$arc_enable',(round(Packages.Params.Params[1]) >= 1))
+
+    case(10):               -- 机器人全局速度
+        if round(Packages.Params.Params[1]) <= 0 then 
+            Packages.Params.Params[1] = 1
+        endif 
+        set_sys_int_('$mcr.$genoverride', round(Packages.Params.Params[1]))
+
     else:
         post_err(CC_UALARM, '参数类型错误[' + int_2str_(Packages.Params.ParamType) + ']', 0, CC_ABORT)
     endselect
-    
 
     return(OK)
 end new_param_
@@ -836,17 +918,17 @@ begin
 		-- tpe_it_tked_(OpenId,Line)
 	
 		if not get_sys_bol_('$awscfg.$wld_prc_ena') then 
-            -- ARC START
+            -- ARC End
 
 			InstWeld.WeldNo     = 1
 			InstWeld.WdType     = TPE_ARC_END
 
 			tpe_it_wd_(OpenId, InstWeld, Line)
 		else
-            -- WELD START
+            -- WELD End
 			
 			InstWeld.WeldNo     = 1
-            InstWeld.ExtraInst1 = 1
+            InstWeld.ExtraInst1 = 2
 			InstWeld.WdType     = TPE_WLD_END
 
 			tpe_it_wd_(OpenId, InstWeld, Line)
