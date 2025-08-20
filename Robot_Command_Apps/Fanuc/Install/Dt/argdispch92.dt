@@ -61,7 +61,7 @@ I02 = " P[]"
 NAME = "MIXSORT_ACK"
 ARGUMENT = '1'
 [ARGUMENT] 
-V01 = "Edg Picture" : '1' , "Get Picture Posn" : '2' , "Location Picture" : '3' , "Get Pk Data" : '4',"detection Picture" : '5',"Finish" : '6'
+V01 = "Edg Picture" : '1' , "Get Picture Posn" : '2' , "Location Picture" : '3' , "Get Pk Data" : '4',"detection Picture" : '5',"Finish" : '6', "Get Task" : '255'
 [ENDPROGRAM]
 
 [PROGRAM]
