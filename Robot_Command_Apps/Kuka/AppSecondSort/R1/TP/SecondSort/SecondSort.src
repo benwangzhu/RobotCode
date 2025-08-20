@@ -83,6 +83,8 @@ global def second_SubMitLoop()
                 if $pro_state1 == #P_FREE then
                     ; conv_ini_off(j)
                 endif
+
+                queue_overflow_(j)
             endif
         else
             RemainingTrigger[j] = 0
@@ -112,6 +114,9 @@ global def second_fdbk(Conv : in, PkCvState : in, ThisQueue : in)
     decl part_dat_t ThisQueue
     decl pkcv_stat_t PkCvState
     decl int FdbkStatus, j, k, WpCount, ErrNum
+    decl int Offset
+    decl char Msg[128]
+    decl state_t State
 
     if (varstate("Conv") == #initialized) then
 
@@ -132,7 +137,7 @@ global def second_fdbk(Conv : in, PkCvState : in, ThisQueue : in)
         if DEBUG then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Pick Successful![Conv:%d,Task:%d,Num:%d,PkCvState:%d,RCount:%d]", Conv, ThisQueue.TaskId, ThisQueue.Num, 0, WpCount)
+            swrite(Msg[], State, Offset, "Pick Successful![Conv:%d,Task:%d,Num:%d,RCount:%d]", Conv, ThisQueue.TaskId, ThisQueue.Num, WpCount)
             log_info_(Msg[])
         endif
         
@@ -142,19 +147,19 @@ global def second_fdbk(Conv : in, PkCvState : in, ThisQueue : in)
         FdbkStatus = bus_ntell_(BusInput, BusOutput, 0)
 
         ;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        continue
-        $timer[PRIO_QUEUE_FLOW_TIME_IDX] = -abs(TIME_QUEUE_FLOW)
-        continue
-        $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = false
+        ; continue
+        ; $timer[PRIO_QUEUE_FLOW_TIME_IDX] = -abs(TIME_QUEUE_FLOW)
+        ; continue
+        ; $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = false
 
-        interrupt on PRIO_QUEUE_FLOW_NO
+        ; interrupt on PRIO_QUEUE_FLOW_NO
         ; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     else
 
         if DEBUG then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Pick Failed![Conv:%d,Task:%d,Num:%d,PkCvState:%d,RCount:%d]", Conv, ThisQueue.TaskId, ThisQueue.Num, 1, WpCount)
+            swrite(Msg[], State, Offset, "Pick Failed![Conv:%d,Task:%d,Num:%d,PkCvState:%d,RCount:%d,Dist:%.1f]", Conv, ThisQueue.TaskId, ThisQueue.Num, 1, WpCount, CurFlowDist[Conv])
             log_info_(Msg[])
         endif
         
@@ -179,6 +184,7 @@ global def second_getq(Conv : in, SleedTime : in, State : out)
     decl int Conv
     decl int State
     decl int SleedTime
+    decl int WpCount, ErrNum
 
     B_CALL_CONV_MOV = false
 
@@ -189,7 +195,7 @@ global def second_getq(Conv : in, SleedTime : in, State : out)
     continue
     $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = true
     
-    interrupt off PRIO_QUEUE_FLOW_NO
+    ; interrupt off PRIO_QUEUE_FLOW_NO
     
 
     CopyConv = Conv
@@ -212,6 +218,11 @@ global def second_getq(Conv : in, SleedTime : in, State : out)
     wait for CopyState <> -2
 
 
+    ; WpCount = conv_get_wp_count(CopyConv, ErrNum)
+    ; if (CopyState == OK) and (WpCount == 1) and (ErrNum == 0) then
+    ;     conv_part_nbr[conv_get_machine_index(CopyConv)] = 0
+    ;     FirstPicking[CopyConv] = false
+    ; endif
 
     interrupt off PRIO_GETQ_NO
     continue
@@ -297,7 +308,7 @@ global def second_mov_wpos(Conv : in, MovWPosStat : in, WaitPos : in, ToolOffs :
         if DEBUG then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "WaitPos Lim![Conv:%d,Task:%d,Wy:%3.f,Ly:%3.f]", Conv, CurQueue[Conv].TaskId, SensorPack.TaskId, WaitPos.y, Limit.MaxY)
+            swrite(Msg[], State, Offset, "WaitPos Lim![Conv:%d,Task:%d,Wy:%3.f,Ly:%3.f]", Conv, CurQueue[Conv].TaskId, WaitPos.y, Limit.MaxY)
             log_warn_(Msg[])
         endif
         
@@ -541,15 +552,15 @@ def second_initialize()
 
     init_queue_()
 
-    continue
-    $timer[PRIO_QUEUE_FLOW_TIME_IDX] = 0
-    continue
-    $timer_flag[PRIO_QUEUE_FLOW_TIME_IDX] = false
-    continue
-    $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = false
+    ; continue
+    ; $timer[PRIO_QUEUE_FLOW_TIME_IDX] = 0
+    ; continue
+    ; $timer_flag[PRIO_QUEUE_FLOW_TIME_IDX] = false
+    ; continue
+    ; $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = false
     
-    global interrupt decl PRIO_QUEUE_FLOW_NO when $timer_flag[PRIO_QUEUE_FLOW_TIME_IDX] == true do queue_overflow_()      
-    interrupt off PRIO_QUEUE_FLOW_NO
+    ; global interrupt decl PRIO_QUEUE_FLOW_NO when $timer_flag[PRIO_QUEUE_FLOW_TIME_IDX] == true do queue_overflow_()      
+    ; interrupt off PRIO_QUEUE_FLOW_NO
 end
 
 def second_sr_()
@@ -879,24 +890,41 @@ def get_queue_(Conv : in, ThisPart : out, Status : out)
     Status = OK
 end
 
-def queue_overflow_()
-    decl int j, k
+def queue_overflow_(Conv : in)
+    decl int j, k, Conv
     decl real Dist
     decl int Status
-    for j = 1 to PkPlCfg.NumOfConv
-        for k = 1 to QueueLength[j]
-            if QueueData[j, k].TaskId > 0 then
-                Dist = $sen_prea_c[j + 10] - QueueData[j, k].EncCount + QueueData[j, k].PkcvOfs.x
-                if Dist > PkCvCfg[j].DownStream then  
-                    second_fdbk( , #PICK_FAIL, QueueData[j, k])
-                    QueueData[j, k].TaskId = QueueData[j, k].TaskId * (-1)
-                endif
+
+    ; for j = 1 to PkPlCfg.NumOfConv
+    ;     for k = 1 to QueueLength[j]
+    ;         if QueueData[j, k].TaskId > 0 then
+    ;             Dist = $sen_prea_c[j + 10] - QueueData[j, k].EncCount + QueueData[j, k].PkcvOfs.x
+    ;             if Dist > PkCvCfg[j].DownStream then  
+    ;                 second_fdbk( , #PICK_FAIL, QueueData[j, k])
+    ;                 QueueData[j, k].TaskId = QueueData[j, k].TaskId * (-1)
+    ;             endif
+    ;         endif
+    ;     endfor
+    ; endfor
+
+    if QueueLength[Conv] <= 0 then
+        return
+    endif
+
+    for k = 1 to QueueLength[Conv]
+        if QueueData[Conv, k].TaskId > 0 then
+            Dist = $sen_prea_c[Conv + 10] - QueueData[Conv, k].EncCount + QueueData[Conv, k].PkcvOfs.x
+            if Dist > PkCvCfg[Conv].DownStream then  
+                second_fdbk( , #PICK_FAIL, QueueData[Conv, k])
+                QueueData[Conv, k].TaskId = QueueData[Conv, k].TaskId * (-1)
             endif
-        endfor
+        endif
     endfor
 
-    continue
-    $timer[PRIO_QUEUE_FLOW_TIME_IDX] = -abs(TIME_QUEUE_FLOW)
+
+
+    ; continue
+    ; $timer[PRIO_QUEUE_FLOW_TIME_IDX] = -abs(TIME_QUEUE_FLOW)
     ; continue
     ; $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = false
     
