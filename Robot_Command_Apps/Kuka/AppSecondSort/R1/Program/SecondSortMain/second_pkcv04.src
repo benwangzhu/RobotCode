@@ -1,4 +1,4 @@
-&ACCESS RVP
+&ACCESS RVO
 &REL 54
 &COMMENT Conveyor Pick04
 &PARAM DISKPATH = KRC:\R1\Program\SecondSortMain
@@ -59,12 +59,10 @@ endif
 ; Successfully retrieved the queue
 continue
 $flag[FLAG_CONV_QUE_ACQ[4]] = true
-;FOLD COPY QUEUE
 PartData = CurQueue[4]
 PartData.PkcvOfs.X = CurQueue[4].PkcvOfs.X + PkCvCfg[4].ManualZerOfs.x
 PartData.PkcvOfs.y = CurQueue[4].PkcvOfs.y + PkCvCfg[4].ManualZerOfs.y
 PartData.PkcvOfs.z = CurQueue[4].PkcvOfs.z + PkCvCfg[4].ManualZerOfs.z
-;ENDFOLD
 DAT_DIST:
 
 ;FOLD SecondSort.CalcWaitPos IN Conveyer Id: LinConveyor4, IN Ref Point Dir: PickPos, IN Distance: 300, OUT Wait Point Dir: WaitPos, OUT Pkcv Dicision: PkcvDicision ;%{PE}
@@ -75,7 +73,7 @@ if PkcvDicision == #DCSN_WAIT then
     ; The component has not yet reached the upstream boundary
     goto SKIP_PKCV
 endif
-if CurQueue[4].TaskId < 0 then  
+if PartData.TaskId < 0 then  
     ;
     ; Do not pick up
     goto ACK_FAIL
@@ -86,13 +84,6 @@ if PkcvDicision == #DCSN_SKIP then
     ; gripper abandoned pickup
     goto ACK_FAIL
 endif
-
-;FOLD COPY QUEUE
-PartData = CurQueue[4]
-PartData.PkcvOfs.X = CurQueue[4].PkcvOfs.X + PkCvCfg[4].ManualZerOfs.x
-PartData.PkcvOfs.y = CurQueue[4].PkcvOfs.y + PkCvCfg[4].ManualZerOfs.y
-PartData.PkcvOfs.z = CurQueue[4].PkcvOfs.z + PkCvCfg[4].ManualZerOfs.z
-;ENDFOLD
 
 servo01_ctrl_(#MOVING, PartData.ServoDist)
 
@@ -132,15 +123,6 @@ endif
 ;FOLD SecondSort.SyncLin IN Sync Dir: PickPos, IN Queue Data: PartData, IN ToolOffs: ToolUpOffs, IN Sync Vel: 5 m/s, IN Sync Apo: 100, IN Sync Acc: 50 m/s^ ;%{PE}
 MoveDLin(ufrm_offs_(XPickPos, PartData.PkcvOfs.X, PartData.PkcvOfs.Y, PartData.PkcvOfs.Z) : ToolUpOffs, 5, 100, , , 50)
 ;ENDFOLD
-;FOLD SecondSort.CalcWaitPos IN Conveyer Id: LinConveyor4, IN Ref Point Dir: PickPos, IN Distance: 200, OUT Wait Point Dir: WaitPos, OUT Pkcv Dicision: PkcvDicision ;%{PE}
-second_wpos(4, XPickPos, 200, XWaitPos , PkcvDicision)
-;ENDFOLD
-if PkcvDicision == #DCSN_SKIP then
-    ; 
-    ; Has moved past the downstream boundary of the conveyor
-    ; gripper abandoned pickup
-    goto ACK_FAIL
-endif
 
 ToolUpOffs.z = 0.0
 
@@ -157,10 +139,7 @@ MoveDLin(ufrm_offs_(XPickPos, PartData.PkcvOfs.X, PartData.PkcvOfs.Y, PartData.P
 ; Pickup successful
 ACK_SUCC:
 
-conv_quit(4, false)
 if PartData.Num == 1 then
-    conv_reset_sen_prea(4)
-    Status = conv_delete_wps(4, 1, Status)
     conv_part_nbr[conv_get_machine_index(4)] = 1
     FirstPicking[4] = true
 else
@@ -171,8 +150,6 @@ $flag[FLAG_CONV_QUE_ACQ[4]] = false
 GlbPartData = CurQueue[4]
 continue
 $flag[FLAG_CONV_PKSU] = true
-continue
-$advance = 3
 
 ;FOLD SecondSort.Feedback IN Conveyer Id: LinConveyor4, IN Pick State: Success ;%{PE}
 second_fdbk(4, #PICK_SUCC)
@@ -181,12 +158,14 @@ goto SKIP_PKCV
 
 ; Pickup failed
 ACK_FAIL:
-conv_quit(4, false)
 if PartData.Num == 1 then
-    conv_reset_sen_prea(4)
-    Status = conv_delete_wps(4, 1, Status)
+    Count = conv_delete_wps(4, 1, ErrNbr)
     conv_part_nbr[conv_get_machine_index(4)] = 1
-    FirstPicking[4] = true
+    IF FirstPicking[3] == true then
+      conv_part_nbr[conv_get_machine_index(4)] = 1
+    else
+      conv_part_nbr[conv_get_machine_index(4)] = 0
+    endif
 endif
 continue
 $flag[FLAG_CONV_QUE_ACQ[1]] = false
@@ -197,6 +176,8 @@ second_fdbk(4, #PICK_FAIL)
 RETURN
 
 SKIP_PKCV:
+continue
+$advance = 3
 end
 
 ;FOLD CONV_QUIT

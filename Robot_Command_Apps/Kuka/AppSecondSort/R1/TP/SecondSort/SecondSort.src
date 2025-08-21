@@ -510,6 +510,7 @@ def second_initialize()
     for j = 1 to PkPlCfg.NumOfConv  
         ; PkCvCfg[j].ConvName[] = conv_get_name(j)
         conv_ini_off(j)
+        wait sec 0.024
         conv_on(j)
         ; PkCvCfg[j].SrTrigCount = 0
         FirstTrigger[j] = false

@@ -1,5 +1,5 @@
-&ACCESS RVO1
-&REL 84
+&ACCESS RVO2
+&REL 100
 &COMMENT Conveyor Pick01
 &PARAM DISKPATH = KRC:\R1\Program\SecondSortMain
 def second_pkcv01()
@@ -133,15 +133,6 @@ endif
 ;FOLD SecondSort.SyncLin IN Sync Dir: PickPos, IN Queue Data: PartData, IN ToolOffs: ToolUpOffs, IN Sync Vel: 5 m/s, IN Sync Apo: 100, IN Sync Acc: 50 m/s^ ;%{PE}
 MoveDLin(ufrm_offs_(XPickPos, PartData.PkcvOfs.X, PartData.PkcvOfs.Y, PartData.PkcvOfs.Z) : ToolUpOffs, 5, 100, , , 50)
 ;ENDFOLD
-;FOLD SecondSort.CalcWaitPos IN Conveyer Id: LinConveyor1, IN Ref Point Dir: PickPos, IN Distance: 200, OUT Wait Point Dir: WaitPos, OUT Pkcv Dicision: PkcvDicision ;%{PE}
-second_wpos(1, XPickPos, 200, XWaitPos , PkcvDicision)
-;ENDFOLD
-if PkcvDicision == #DCSN_SKIP then
-    ; 
-    ; Has moved past the downstream boundary of the conveyor
-    ; gripper abandoned pickup
-    goto ACK_FAIL
-endif
 
 ToolUpOffs.z = 0.0
 
@@ -158,10 +149,7 @@ MoveDLin(ufrm_offs_(XPickPos, PartData.PkcvOfs.X, PartData.PkcvOfs.Y, PartData.P
 ; Pickup successful
 ACK_SUCC:
 
-conv_quit(1, false)
 if PartData.Num == 1 then
-    conv_reset_sen_prea(1)
-    Status = conv_delete_wps(1, 1, Status)
     conv_part_nbr[conv_get_machine_index(1)] = 1
     FirstPicking[1] = true
 else
@@ -174,7 +162,6 @@ continue
 $flag[FLAG_CONV_PKSU] = true
 continue
 $advance = 3
-
 ;FOLD SecondSort.Feedback [IN] Conveyer Id: LinConveyor1, [IN] Pick State: Success ;%{PE}
 second_fdbk(1, #PICK_SUCC)
 ;ENDFOLD
@@ -183,10 +170,8 @@ goto SKIP_PKCV
 
 ; Pickup failed
 ACK_FAIL:
-conv_quit(1, false)
 if PartData.Num == 1 then
-    conv_reset_sen_prea(1)
-    Status = conv_delete_wps(1, 1, Status)
+    Count = conv_delete_wps(1, 1, ErrNbr)
     if FirstPicking[1] == true then
       conv_part_nbr[conv_get_machine_index(1)] = 1
     else
