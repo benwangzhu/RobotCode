@@ -52,10 +52,10 @@ Version: 1.0
 struct package_realtime_t PackageRealtime;
 struct package_traje_t PackageTraje;
 
-LOCAL STATUS realtime_packages_();
-LOCAL STATUS traje_unpackage_();
+LOCAL STATUS RealtimePackages();
+LOCAL STATUS RealtimeUnPackages();
 
-STATUS realtime_packages_()
+STATUS RealtimePackages()
 {
     INT32 Status = OK;
     INT32 Offset = 0;
@@ -118,7 +118,7 @@ STATUS realtime_packages_()
     return OK;
 }
 
-STATUS traje_unpackage_()
+STATUS RealtimeUnPackages()
 {
     INT32 Status = OK;
     INT32 Offset = 0;
@@ -173,7 +173,7 @@ STATUS traje_unpackage_()
     return OK;
 }
 
-STATUS processReceived_sbt_comm011_data_()
+STATUS ProcessReceivedSbtComm011Data()
 {
     INT32 Status = ERROR;
     INT32 Offset = 0;
@@ -230,7 +230,7 @@ STATUS processReceived_sbt_comm011_data_()
                 return ERROR;
             }
 
-            Status = traje_unpackage_();
+            Status = RealtimeUnPackages();
 
             // set_variable_robot_position_
         }
@@ -254,7 +254,7 @@ STATUS processReceived_sbt_comm011_data_()
   return OK;
 }
 
-STATUS processCommand_sbt_comm011_open_()
+STATUS ProcessCommandSbtComm011Open()
 {
     INT32 Status = OK;
     
@@ -293,7 +293,7 @@ STATUS processCommand_sbt_comm011_open_()
     return OK;
 }
 
-STATUS processCommand_sbt_comm011_close_()
+STATUS ProcessCommandSbtComm011Close()
 {
 
     GlobalConnect = 0;
@@ -302,7 +302,7 @@ STATUS processCommand_sbt_comm011_close_()
     return OK;
 }
 
-STATUS processCommand_sbt_comm011_realtime_()
+STATUS ProcessCommandSbtComm011Realtime()
 {
 
     INT32 Status = OK;
@@ -316,7 +316,7 @@ STATUS processCommand_sbt_comm011_realtime_()
         return Status;
     }
 
-    Status = realtime_packages_();
+    Status = RealtimePackages();
     CHECK_RESULT(Status);
 
     GlobalSendDataLenght = PackageRealtime.Header.Length;
@@ -325,7 +325,7 @@ STATUS processCommand_sbt_comm011_realtime_()
     return OK;
 }
 
-STATUS processCommand_sbt_comm011_2dscan_start_()
+STATUS ProcessCommandSbtComm011ScanStart()
 {
 
     INT32 Status = OK;
@@ -339,7 +339,7 @@ STATUS processCommand_sbt_comm011_2dscan_start_()
         return Status;
     }
 
-    Status = realtime_packages_();
+    Status = RealtimePackages();
     CHECK_RESULT(Status);
 
     GlobalSendDataLenght = PackageRealtime.Header.Length;
@@ -348,7 +348,7 @@ STATUS processCommand_sbt_comm011_2dscan_start_()
     return OK;
 }
 
-STATUS processCommand_sbt_comm011_2dscan_stop_()
+STATUS ProcessCommandSbtComm011ScanStop()
 {
 
     INT32 Status = OK;
@@ -362,7 +362,7 @@ STATUS processCommand_sbt_comm011_2dscan_stop_()
         return Status;
     }
 
-    Status = realtime_packages_();
+    Status = RealtimePackages();
     CHECK_RESULT(Status);
 
     GlobalSendDataLenght = PackageRealtime.Header.Length;
@@ -371,7 +371,7 @@ STATUS processCommand_sbt_comm011_2dscan_stop_()
     return OK;
 }
 
-STATUS processCommand_sbt_comm011_get_path_()
+STATUS ProcessCommandSbtComm011GetPath()
 {
 
     INT32 Status = OK;
@@ -385,7 +385,7 @@ STATUS processCommand_sbt_comm011_get_path_()
         return Status;
     }
 
-    Status = realtime_packages_();
+    Status = RealtimePackages();
     CHECK_RESULT(Status);
 
     GlobalSendDataLenght = PackageRealtime.Header.Length;

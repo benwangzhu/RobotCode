@@ -141,7 +141,6 @@ ACK_SUCC:
 
 if PartData.Num == 1 then
     conv_part_nbr[conv_get_machine_index(4)] = 1
-    FirstPicking[4] = true
 else
     conv_part_nbr[conv_get_machine_index(4)] = 0
 endif
@@ -159,13 +158,7 @@ goto SKIP_PKCV
 ; Pickup failed
 ACK_FAIL:
 if PartData.Num == 1 then
-    Count = conv_delete_wps(4, 1, ErrNbr)
-    conv_part_nbr[conv_get_machine_index(4)] = 1
-    IF FirstPicking[3] == true then
-      conv_part_nbr[conv_get_machine_index(4)] = 1
-    else
-      conv_part_nbr[conv_get_machine_index(4)] = 0
-    endif
+    conv_part_nbr[conv_get_machine_index(4)] = conv_part_nbr[conv_get_machine_index(4)] + 1
 endif
 continue
 $flag[FLAG_CONV_QUE_ACQ[1]] = false

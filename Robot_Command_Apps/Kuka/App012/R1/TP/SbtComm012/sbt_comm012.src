@@ -574,12 +574,15 @@ global def HeadStarting(GrindHeadId : in, Speed : in, Timeout : in)
     endif 
     
     if varstate("Speed") == #initialized then
+        LastGrindSpeed[GrindHeadId] = Speed
         SetGoGrindSpeed(GrindHeadId, round_(Speed * 10))
+    else
+        Speed = LastGrindSpeed[GrindHeadId]
     endif
 
     ; Do not restart the grinding head once it has already been started.
     continue
-    if $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_START] then
+    if ($out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_START]) and ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START]) and (abs(Speed - LastGrindSpeed[GrindHeadId]) <= 0.01) then
         return
     endif
 
@@ -603,16 +606,16 @@ global def HeadStarting(GrindHeadId : in, Speed : in, Timeout : in)
         continue
         TimerIndex = $rob_timer
         
-        if Timeout > 0 then
+        ; if Timeout > 0 then
             continue
             wait for ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START]) or (($rob_timer - TimerIndex) > Timeout)
-        else
-            continue
-            wait for ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START])
-        endif
+        ; else
+        ;     continue
+        ;     wait for ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START])
+        ; endif
 
         continue
-        if not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START] then
+        if (not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START]) and (Timeout > 0) then
 
             continue
             $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_START] = false
@@ -624,7 +627,7 @@ global def HeadStarting(GrindHeadId : in, Speed : in, Timeout : in)
         endif
     
         continue
-    until ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START])
+    until ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START]) or (Timeout <= 0)
 
 
     ; Save the current enabled grinding head number
@@ -1290,7 +1293,7 @@ def IntrGrindResume()
     wait sec 0.5
     if GrindHeadTool[CurrentActiveGrindId].Enable then
 
-        HeadStarting(CurrentActiveGrindId, ,5000)
+        HeadStarting(CurrentActiveGrindId, ,10000)
     endif
 end
 
@@ -1300,7 +1303,7 @@ def IntrGrindAlarm()
     brake f
     wait sec 0.5
     GrindHeadCheckAlarm(CurrentActiveGrindId)
-    HeadStarting(CurrentActiveGrindId, ,5000)
+    HeadStarting(CurrentActiveGrindId, ,10000)
     ; halt
 end
 

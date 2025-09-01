@@ -217,7 +217,7 @@ STATUS encodedataframe_cartposition_(INOUT UCHAR* Buffer, INOUT INT32* Offset, I
 	return OK;
 }
 
-STATUS encodedataframe_coord_(INOUT UCHAR* Buffer, INT32* INOUT Offset, IN const MP_COORD* Value)
+STATUS encodedataframe_coord_(INOUT UCHAR* Buffer, INOUT INT32* Offset, IN const MP_COORD* Value)
 {
 	if (Buffer == NULL || Offset == NULL || Value == NULL)
 	{
@@ -261,6 +261,37 @@ STATUS encodedataframe_coord_(INOUT UCHAR* Buffer, INT32* INOUT Offset, IN const
 	return OK;
 }
 
+STATUS encodedataframe_header_(INOUT UCHAR *Buffer, INOUT INT32 *Offset, IN struct packages_head_t Header)
+{
+	INT32 Status = ERROR;
+	*Offset = 0;
+
+	Status = encodedataframe_int32_(Buffer, Offset, Header.Header);
+	CHECK_RESULT(Status);
+	Status = encodedataframe_int32_(Buffer, Offset, Header.Length);
+	CHECK_RESULT(Status);
+	Status = encodedataframe_int32_(Buffer, Offset, Header.PacketCount);
+	CHECK_RESULT(Status);
+	Buffer[12] = (UCHAR)Header.Cmd;
+	Buffer[13] = (UCHAR)Header.Type;
+	Buffer[14] = (UCHAR)Header.Seq;
+	Buffer[15] = (UCHAR)Header.VirtualRob;
+
+	*Offset += 4;
+
+	return(OK);
+}
+
+STATUS encodedataframe_tail_(INOUT UCHAR *Buffer, INOUT INT32 *Offset, IN packages_tail_t Tail)
+{
+	INT32 Status = ERROR;
+
+	Status = encodedataframe_int32_(Buffer, Offset, Tail);
+	CHECK_RESULT(Status);
+
+	return(OK);
+}
+
 STATUS decodedataframe_char_(IN const UCHAR* Buffer, INOUT INT32* Offset, OUT CHAR* Value)
 {
 	if (Buffer == NULL || Offset == NULL || Value == NULL)
@@ -291,7 +322,7 @@ STATUS decodedataframe_str_(IN const UCHAR* Buffer, INOUT INT32* Offset, OUT CHA
 	return OK;
 }
 
-STATUS  decodedataframe_int32_(IN const UCHAR* Buffer, INOUT INT32* Offset, OUT INT32* Value)
+STATUS decodedataframe_int32_(IN const UCHAR* Buffer, INOUT INT32* Offset, OUT INT32* Value)
 {
 	if (Buffer == NULL || Offset == NULL || Value == NULL)
 	{
@@ -424,37 +455,6 @@ STATUS decodedataframe_coord_(IN const UCHAR* Buffer, INOUT INT32* Offset, OUT M
 	*Offset += sizeof(FLOAT);
 	
 	return OK;
-}
-
-STATUS encodedataframe_header_(INOUT UCHAR *Buffer, INOUT INT32 *Offset, IN struct packages_head_t Header)
-{
-	INT32 Status = ERROR;
-	*Offset = 0;
-
-	Status = encodedataframe_int32_(Buffer, Offset, Header.Header);
-	CHECK_RESULT(Status);
-	Status = encodedataframe_int32_(Buffer, Offset, Header.Length);
-	CHECK_RESULT(Status);
-	Status = encodedataframe_int32_(Buffer, Offset, Header.PacketCount);
-	CHECK_RESULT(Status);
-	Buffer[12] = (UCHAR)Header.Cmd;
-	Buffer[13] = (UCHAR)Header.Type;
-	Buffer[14] = (UCHAR)Header.Seq;
-	Buffer[15] = (UCHAR)Header.VirtualRob;
-
-	*Offset += 4;
-
-	return(OK);
-}
-
-STATUS encodedataframe_tail_(INOUT UCHAR *Buffer, INOUT INT32 *Offset, IN packages_tail_t Tail)
-{
-	INT32 Status = ERROR;
-
-	Status = encodedataframe_int32_(Buffer, Offset, Tail);
-	CHECK_RESULT(Status);
-
-	return(OK);
 }
 
 STATUS decodedataframe_header_(IN const UCHAR* Buffer, INOUT INT32* Offset, OUT struct packages_head_t* Header)

@@ -172,7 +172,7 @@ VOID Network_Process_Task_(VOID)
 			switch (GlobalSocketPort)
 			{
 			case COMM011_SERVER_PORT:
-				Status = processReceived_sbt_comm011_data_();
+				Status = ProcessReceivedSbtComm011Data();
 				if (Status != OK)
 				{
 					// 出现通讯错误，退出通讯状态，等待新的链接

@@ -1,6 +1,6 @@
 /***********************************************************
 
-Copyright 2018 - 2023 speedbot All Rights reserved.
+Copyright 2018 - 2025 speedbot All Rights reserved.
 
 file Name: lib_mpbusio.c
 
@@ -515,7 +515,12 @@ STATUS bus_initialize_(INOUT struct businput_t* BusInput, INOUT struct busoutput
     BusOutput->JobId            = 0;
     BusOutput->ProtocolId       = ProtId;
     BusOutput->RobTellId        = 0;
-    BusOutput->RobMsgType       = 0;
+
+    // Code Modified on 2025.04.28
+    // 不初始化 RobMsgType, 以免 lib_mpbusio_cmd 函数传参受到影响 
+    //
+    // BusOutput->RobMsgType       = 0;
+    //
 
     Status = bus_update_output_(BusOutput);
 	CHECK_RESULT(Status);
@@ -794,11 +799,15 @@ STATUS bus_send_tell_(INOUT struct businput_t* BusInput, INOUT struct busoutput_
 	CHECK_RESULT(Status);
     Status = bus_get_byte_(BusOutput->BusIoStartAddr + 60, &BusOutput->RobTellId);
     CHECK_RESULT(Status);
+    BusOutput->SysEnable = (BOOL)get_io_value_(BusOutput->BusIoStartAddr);
 
-    if (BusInput->TellId != BusOutput->RobTellId)
+    // Code Modified on 2025.05.16
+    // 修复当机器人没有使能 SysEnable 信号时，重新进行初始化
+    if ((BusInput->TellId != BusOutput->RobTellId) || (!BusOutput->SysEnable))
     {
-        bus_initialize_(BusInput, BusOutput, BusOutput->RobotId, BusOutput->ProtocolId);
+        bus_initialize_(BusInput, BusOutput, BusOutput->RobotId, PTC_GEN_CMD);
     }
+    //
 
     BusOutput->RobTellId = (BusInput->TellId >= 255) ? 1 : (BusInput->TellId + 1);
 

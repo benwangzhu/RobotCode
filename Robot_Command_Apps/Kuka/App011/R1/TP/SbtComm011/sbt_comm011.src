@@ -189,7 +189,7 @@ def scan_handler_()
    
    Status = net_spack_(GlbSocketCfg,GlbPackRealTime)
    Temp = GlbPackRealTime.Header.Cmd
-   if Temp > 0 then 
+   if (Temp > 0) and ($flag[GlbSocketCfg.RecvFlagNo]) then 
       
       Status = net_rpack_(GlbSocketCfg, GlbPackTrajeInst)
    endif

@@ -1,5 +1,5 @@
 rem ************************************************************************************
-set LibPath=E:\Users\speedbot\Desktop\Robot_Code\Robot_Fctn_Library_Packages\Yaskawa
+set LibPath=E:\Users\speedbot\Desktop\RobotCode\Robot_Fctn_Library_Packages\Yaskawa
 rem ************************************************************************************
 @echo off
 chcp 65001

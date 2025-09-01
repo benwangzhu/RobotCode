@@ -33,7 +33,6 @@ PkCvCfg[1].SrTrigCount = 0
 PkCvCfg[1].WaitPosStream = 0
 PkCvCfg[1].UpStream = 0
 PkCvCfg[1].DownStream = 0
-PkCvCfg[1].ManualZerOfs = ManualZerOfs1
 ENDIF
 ;ENDFOLD
 ;FOLD SecondSort.ConvConfig IN Conveyer Id: LinConveyor2, IN SrPortIndex: 0, IN WaitPosStream: 0, IN UpStream: 0, IN DownStream: 0, IN ManualZerOfs: ManualZerOfs2 ;%{PE}
@@ -44,7 +43,6 @@ PkCvCfg[2].SrTrigCount = 0
 PkCvCfg[2].WaitPosStream = 0
 PkCvCfg[2].UpStream = 0
 PkCvCfg[2].DownStream = 0
-PkCvCfg[2].ManualZerOfs = ManualZerOfs2
 ENDIF
 ;ENDFOLD
 ;FOLD SecondSort.ConvConfig IN Conveyer Id: LinConveyor3, IN SrPortIndex: 0, IN WaitPosStream: 0, IN UpStream: 0, IN DownStream: 0, IN ManualZerOfs: ManualZerOfs3 ;%{PE}
@@ -55,7 +53,6 @@ PkCvCfg[3].SrTrigCount = 0
 PkCvCfg[3].WaitPosStream = 0
 PkCvCfg[3].UpStream = 0
 PkCvCfg[3].DownStream = 0
-PkCvCfg[3].ManualZerOfs = ManualZerOfs3
 ENDIF
 ;ENDFOLD
 ;FOLD SecondSort.ConvConfig IN Conveyer Id: LinConveyor4, IN SrPortIndex: 0, IN WaitPosStream: 0, IN UpStream: 0, IN DownStream: 0, IN ManualZerOfs: ManualZerOfs4 ;%{PE}
@@ -66,7 +63,6 @@ PkCvCfg[4].SrTrigCount = 0
 PkCvCfg[4].WaitPosStream = 0
 PkCvCfg[4].UpStream = 0
 PkCvCfg[4].DownStream = 0
-PkCvCfg[4].ManualZerOfs = ManualZerOfs4
 ENDIF
 ;ENDFOLD
 ;FOLD SecondSort.FsConfig IN Fs Id: 1, IN PlaceUpDst: 0, IN PlaceE7Pos: 0, IN LimUp: LimUp1, IN LimDown: LimDown1 ;%{PE}

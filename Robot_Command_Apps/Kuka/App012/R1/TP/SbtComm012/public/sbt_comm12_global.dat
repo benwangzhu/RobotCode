@@ -57,6 +57,13 @@ GrindHeadTool[2] = {Enable false, DoutputAddr 0, DinputAddr 0, BindToolNum -1, M
 GrindHeadTool[3] = {Enable false, DoutputAddr 0, DinputAddr 0, BindToolNum -1, MaxGrindingSpeed 6553.5, ErrorId 0}
 GrindHeadTool[4] = {Enable false, DoutputAddr 0, DinputAddr 0, BindToolNum -1, MaxGrindingSpeed 6553.5, ErrorId 0}
 
+
+decl global real LastGrindSpeed[4]
+LastGrindSpeed[1] = 0.0
+LastGrindSpeed[2] = 0.0
+LastGrindSpeed[3] = 0.0
+LastGrindSpeed[4] = 0.0
+
 decl global real CurGrindingSpeed = 0               ; Max Grinding Head Speed
 decl global real MaxGrindingSpeed = 6553.5          ; Max Grinding Head Speed
 decl global int GrindHeartbeatTimer = 0

@@ -63,7 +63,7 @@ struct packages_head_t
     UINT8 VirtualRob;
 };
 
-typedef	int		packages_tail_t;
+typedef	int	packages_tail_t;
 
 
 /************************************************************************************
@@ -145,8 +145,11 @@ extern STATUS encodedataframe_cartposition_(INOUT UCHAR* Buffer, INOUT INT32* Of
 *		  [IN] Value		MP_COORD指针											*
 * 返回值：编码结果																	*
 ************************************************************************************/
-extern STATUS encodedataframe_coord_(INOUT UCHAR* Buffer, INT32* INOUT Offset, IN const MP_COORD* Value);
+extern STATUS encodedataframe_coord_(INOUT UCHAR* Buffer, INOUT INT32* Offset, IN const MP_COORD* Value);
 
+extern STATUS encodedataframe_header_(INOUT UCHAR *Buffer, INOUT INT32 *Offset, IN struct packages_head_t Header);
+
+extern STATUS encodedataframe_tail_(INOUT UCHAR *Buffer, INOUT INT32 *Offset, IN packages_tail_t Tail);
 
 /***********************************解码相关的函数**********************************/
 
@@ -220,12 +223,6 @@ extern STATUS decodedataframe_cartposition_(IN const UCHAR* Buffer, INOUT INT32*
 * 返回值：编码结果																	*
 ************************************************************************************/
 extern STATUS decodedataframe_coord_(IN const UCHAR* Buffer, INOUT INT32* Offset, OUT MP_COORD* Value);
-
-
-extern STATUS encodedataframe_header_(INOUT UCHAR *Buffer, INOUT INT32 *Offset, IN struct packages_head_t Header);
-
-
-extern STATUS encodedataframe_tail_(INOUT UCHAR *Buffer, INOUT INT32 *Offset, IN packages_tail_t Tail);
 
 extern STATUS decodedataframe_header_(IN const UCHAR* Buffer, INOUT INT32* Offset, OUT struct packages_head_t* Header);
 
