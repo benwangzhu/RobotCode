@@ -70,6 +70,8 @@ decl global int GrindHeartbeatTimer = 0
 decl global real SafeToolRetreatDir = 0             ; Safe Tool Retreat Direction
 
 
+decl global real MaxRobStopGrindOffTime = 2.0       ; Maximum time to disable grinding head when robot is stationary [MIN]
+
 ; KEY SubCode
 decl global int SEComm012Key = 0
 ; Manual Grinding Head Speed

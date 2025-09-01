@@ -26,6 +26,17 @@ decl char Msg[128]
 
 DECL modus_t mode
 
+decl real GrindHeadOffTime[4]
+GrindHeadOffTime[1] = 0.0
+GrindHeadOffTime[2] = 0.0
+GrindHeadOffTime[3] = 0.0
+GrindHeadOffTime[4] = 0.0
+decl real GrindHeadActTime[4]
+GrindHeadActTime[1] = 0.0
+GrindHeadActTime[2] = 0.0
+GrindHeadActTime[3] = 0.0
+GrindHeadActTime[4] = 0.0
+
 const bool DEBUG = TRUE
 
 enddat

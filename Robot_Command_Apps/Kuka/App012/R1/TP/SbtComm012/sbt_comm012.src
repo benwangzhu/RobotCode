@@ -44,6 +44,7 @@ end
 
 global def Comm012SubMitLoop()
     decl int j
+    decl bool Dummy
     if SEComm012Key > 0 then
         switch (SEComm012Key)
         case 1
@@ -96,7 +97,29 @@ global def Comm012SubMitLoop()
             on_error_proceed
             $out[GrindHeadTool[j].DoutputAddr + O_ADR_HEAD_START] = false
         endif
+
+        on_error_proceed
+        Dummy = ($out[GrindHeadTool[j].DoutputAddr + O_ADR_HEAD_START]) and (GrindHeadTool[j].Enable)
+        if (not $ROB_STOPPED) or (not Dummy) or ($ERR.Number <> 0) then  
+            GrindHeadActTime[j] = $rob_timer / 1000.0 / 60.0
+            GrindHeadOffTime[j] = 0.0
+        else
+            GrindHeadOffTime[j] = $rob_timer / 1000.0 / 60.0 - GrindHeadActTime[j]
+        endif
     endfor
+
+    if (GrindHeadOffTime[1] > MaxRobStopGrindOffTime) or (GrindHeadOffTime[2] > MaxRobStopGrindOffTime) or (GrindHeadOffTime[3] > MaxRobStopGrindOffTime) or (GrindHeadOffTime[4] > MaxRobStopGrindOffTime) then
+        on_error_proceed
+        $out[GrindHeadTool[1].DoutputAddr + O_ADR_HEAD_START] = false
+        on_error_proceed
+        $out[GrindHeadTool[2].DoutputAddr + O_ADR_HEAD_START] = false
+        on_error_proceed
+        $out[GrindHeadTool[3].DoutputAddr + O_ADR_HEAD_START] = false
+        on_error_proceed
+        $out[GrindHeadTool[4].DoutputAddr + O_ADR_HEAD_START] = false
+    endif
+
+
 
     if abs($rob_timer - GrindHeartbeatTimer) > 1000 then
         GrindHeartbeatTimer = $rob_timer
