@@ -78,6 +78,7 @@ decl global int SEComm012Key = 0
 decl global int ManualGrindId = 1   
 decl global int CurrentActiveGrindId = 0
 
+decl global int MaxRetryPolishTrig = 3
 
 decl global bool GrindStaringEnable = false
 
