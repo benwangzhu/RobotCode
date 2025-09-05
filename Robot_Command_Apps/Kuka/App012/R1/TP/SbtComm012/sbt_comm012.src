@@ -182,7 +182,9 @@ end
 global def Comm012PolishTrig(CameraId : in, CaptureId : in)
     decl int CameraId, CaptureId
     decl e6pos PhotoPint
+    decl int RetryCount
 
+    RetryCount = 0
     loop 
         if DEBUG then
             Offset = 0
@@ -191,11 +193,18 @@ global def Comm012PolishTrig(CameraId : in, CaptureId : in)
             log_info_(Msg[])
         endif
         
+        RetryCount = RetryCount + 1
+
         PhotoPint = cur_pos_(0, 0)
 
         Status = f001_it01_(PolishSock, PhotoPint, CameraId, CaptureId)
         if Status <> OK then 
-            Comm012ErrorDisplay("Polishing camera failed to take photos.[Status:%d]", Status)
+            if (RetryCount > MaxRetryPolishTrig) or (Status < 0) then
+                Comm012ErrorDisplay("Polishing camera failed to take photos.[Status:%d]", Status)
+                RetryCount = 0
+            else
+                wait sec 0.1
+            endif
         else
             exit
         endif

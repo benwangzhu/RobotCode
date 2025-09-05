@@ -487,6 +487,8 @@ begin
         endif
     endfor
 
+    WRITE(Packages.Pos[4]::9::3, Packages.Pos[5]::9::3, Packages.Pos[6]::9::3, CR)
+
     read FileVar(Packages.ProcessPrm01, Packages.ProcessPrm02, Packages.ProcessPrm03, Packages.ProcessPrm04)
     status = io_status(FileVar)
     if status <> OK then 
