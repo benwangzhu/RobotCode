@@ -97,20 +97,20 @@ struct package_traje_t
 IMPORT struct package_realtime_t PackageRealtime;
 IMPORT struct package_traje_t PackageTraje;
 
-IMPORT STATUS processReceived_sbt_comm011_data_();
+IMPORT STATUS ProcessReceivedSbtComm011Data();
 
 IMPORT STATUS processCommand_sbt_comm011_init_();   // 初始化
 
-IMPORT STATUS processCommand_sbt_comm011_realtime_();   // 实时数据传输
+IMPORT STATUS ProcessCommandSbtComm011Realtime();   // 实时数据传输
 
-IMPORT STATUS processCommand_sbt_comm011_open_();   // 链接通讯
+IMPORT STATUS ProcessCommandSbtComm011Close();      // 链接通讯
 
 IMPORT STATUS processCommand_sbt_comm011_close_();   // 关闭通讯
 
-IMPORT STATUS processCommand_sbt_comm011_2dscan_start_();   // 2D扫描开始
+IMPORT STATUS ProcessCommandSbtComm011ScanStart();   // 2D扫描开始
 
-IMPORT STATUS processCommand_sbt_comm011_2dscan_stop_();   // 2D扫描结束
+IMPORT STATUS ProcessCommandSbtComm011ScanStop();   // 2D扫描结束
 
-IMPORT STATUS processCommand_sbt_comm011_get_path_();   // 获取焊接位置
+IMPORT STATUS ProcessCommandSbtComm011GetPath();    // 获取焊接位置
 
 #endif  /* __SBT_COMM011_H__ */

@@ -508,7 +508,6 @@ def mixsort_sr()
 			CurAgtData.PartData.Weight      = bus_gsint_(#IO_DIN, BusInput.BusIoSt + 216) / 10.0
 			CurAgtData.PartData.PlaceId     = bus_gbyte_(#IO_DIN, BusInput.BusIoSt + 232)
 			CurAgtData.PartData.GripDist2   = bus_gsint_(#IO_DIN, BusInput.BusIoSt + 240) / 10.0
-			mixsort_get_pickpos()
 
 			if DEBUG then
 				Offset = 0
@@ -516,6 +515,8 @@ def mixsort_sr()
 				swrite(Msg[], State, Offset, "GetData Successful![GripDist1:%.1f, PartLen:%.1f, PlaceId:%d]", CurAgtData.PartData.GripDist1, CurAgtData.PartData.PartLen, CurAgtData.PartData.PlaceId)
 				log_info_(Msg[])
 			endif
+
+			mixsort_get_pickpos()
 			return
 		case 2
 			
@@ -527,7 +528,6 @@ def mixsort_sr()
 			CartPos1.a = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 160)
 			CartPos1.b = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 192)
 			CartPos1.c = bus_gfloat2_(#IO_DIN, BusInput.BusIoSt + 224)
-			mixsort_get_placepos()
 
 			if DEBUG then
 				Offset = 0
@@ -535,6 +535,8 @@ def mixsort_sr()
 				swrite(Msg[], State, Offset, "GetPick Successful![x:%.1f, y:%.1f, z:%.1f]", CartPos1.x, CartPos1.y, CartPos1.z)
 				log_info_(Msg[])
 			endif
+
+			mixsort_get_placepos()
 			return
 		case 3
 			CartPos2 = cur_pos_(0, 0)

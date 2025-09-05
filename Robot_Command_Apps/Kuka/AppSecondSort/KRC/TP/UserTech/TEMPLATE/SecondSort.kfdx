@@ -81,7 +81,7 @@
 			<Line>PkCvCfg[%ConvId/].WaitPosStream = %WaitPosStream/</Line>		
 			<Line>PkCvCfg[%ConvId/].UpStream = %UpStream/</Line>		
 			<Line>PkCvCfg[%ConvId/].DownStream = %DownStream/</Line>		
-			<Line>PkCvCfg[%ConvId/].ManualZerOfs = %ManualZerOfs/</Line>		
+			<!-- <Line>PkCvCfg[%ConvId/].ManualZerOfs = %ManualZerOfs/</Line>		 -->
 			<Line>ENDIF</Line>		
 		</Fold>
 		<InlineForm Name="ConvConfig" IlfType="" Style="" Focus="" Spline="" OnAccept="" OnTouchUp="" OnOpen="" > 		

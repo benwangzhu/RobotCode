@@ -44,6 +44,7 @@ end
 
 global def Comm012SubMitLoop()
     decl int j
+    decl bool Dummy
     if SEComm012Key > 0 then
         switch (SEComm012Key)
         case 1
@@ -96,7 +97,29 @@ global def Comm012SubMitLoop()
             on_error_proceed
             $out[GrindHeadTool[j].DoutputAddr + O_ADR_HEAD_START] = false
         endif
+
+        on_error_proceed
+        Dummy = ($out[GrindHeadTool[j].DoutputAddr + O_ADR_HEAD_START]) and (GrindHeadTool[j].Enable)
+        if (not $ROB_STOPPED) or (not Dummy) or ($ERR.Number <> 0) then  
+            GrindHeadActTime[j] = $rob_timer / 1000.0 / 60.0
+            GrindHeadOffTime[j] = 0.0
+        else
+            GrindHeadOffTime[j] = $rob_timer / 1000.0 / 60.0 - GrindHeadActTime[j]
+        endif
     endfor
+
+    if (GrindHeadOffTime[1] > MaxRobStopGrindOffTime) or (GrindHeadOffTime[2] > MaxRobStopGrindOffTime) or (GrindHeadOffTime[3] > MaxRobStopGrindOffTime) or (GrindHeadOffTime[4] > MaxRobStopGrindOffTime) then
+        on_error_proceed
+        $out[GrindHeadTool[1].DoutputAddr + O_ADR_HEAD_START] = false
+        on_error_proceed
+        $out[GrindHeadTool[2].DoutputAddr + O_ADR_HEAD_START] = false
+        on_error_proceed
+        $out[GrindHeadTool[3].DoutputAddr + O_ADR_HEAD_START] = false
+        on_error_proceed
+        $out[GrindHeadTool[4].DoutputAddr + O_ADR_HEAD_START] = false
+    endif
+
+
 
     if abs($rob_timer - GrindHeartbeatTimer) > 1000 then
         GrindHeartbeatTimer = $rob_timer
@@ -574,12 +597,15 @@ global def HeadStarting(GrindHeadId : in, Speed : in, Timeout : in)
     endif 
     
     if varstate("Speed") == #initialized then
+        LastGrindSpeed[GrindHeadId] = Speed
         SetGoGrindSpeed(GrindHeadId, round_(Speed * 10))
+    else
+        Speed = LastGrindSpeed[GrindHeadId]
     endif
 
     ; Do not restart the grinding head once it has already been started.
     continue
-    if $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_START] then
+    if ($out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_START]) and ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START]) and (abs(Speed - LastGrindSpeed[GrindHeadId]) <= 0.01) then
         return
     endif
 
@@ -603,16 +629,16 @@ global def HeadStarting(GrindHeadId : in, Speed : in, Timeout : in)
         continue
         TimerIndex = $rob_timer
         
-        if Timeout > 0 then
+        ; if Timeout > 0 then
             continue
             wait for ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START]) or (($rob_timer - TimerIndex) > Timeout)
-        else
-            continue
-            wait for ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START])
-        endif
+        ; else
+        ;     continue
+        ;     wait for ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START])
+        ; endif
 
         continue
-        if not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START] then
+        if (not $in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START]) and (Timeout > 0) then
 
             continue
             $out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_START] = false
@@ -624,7 +650,7 @@ global def HeadStarting(GrindHeadId : in, Speed : in, Timeout : in)
         endif
     
         continue
-    until ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START])
+    until ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START]) or (Timeout <= 0)
 
 
     ; Save the current enabled grinding head number
@@ -1290,7 +1316,7 @@ def IntrGrindResume()
     wait sec 0.5
     if GrindHeadTool[CurrentActiveGrindId].Enable then
 
-        HeadStarting(CurrentActiveGrindId, ,5000)
+        HeadStarting(CurrentActiveGrindId, ,10000)
     endif
 end
 
@@ -1300,7 +1326,7 @@ def IntrGrindAlarm()
     brake f
     wait sec 0.5
     GrindHeadCheckAlarm(CurrentActiveGrindId)
-    HeadStarting(CurrentActiveGrindId, ,5000)
+    HeadStarting(CurrentActiveGrindId, ,10000)
     ; halt
 end
 

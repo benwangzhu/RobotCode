@@ -189,6 +189,8 @@ global def mag_tool_ctrl_(CtrlMode : in, Timeout : in, SleepTime : in, Success :
     TimerIndex = $rob_timer
 
     if (CtrlMode == #WOFF) or (CtrlMode == #OFF) then
+        Do047ToolCtrl03 = false
+        Do048ToolCtrl04 = false
         interrupt off INTR_PART_PRESENT
     endif
 

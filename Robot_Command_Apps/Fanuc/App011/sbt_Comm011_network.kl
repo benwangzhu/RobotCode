@@ -53,6 +53,7 @@ program sbt_network
 %include sbt_Comm011_t
 %include sbt_Comm011_global
 %include include/lib_transform_t
+%include kliotyps
 
 var
     InstFile                    : file
@@ -64,6 +65,8 @@ var
     VolGiIndex                  : integer
     CurGiIndex                  : integer
     i                           : integer
+    VolVal                      : integer
+    CurVal                      : integer
 %include include/lib_logs_h
 %include include/lib_thread_h
 %include include/lib_socket_h
@@ -209,8 +212,18 @@ begin
     endselect
 
     -- 读取出实时命令电流电压
-    -- Packages.ProcessPrm02 = gin[CurGiIndex] / get_sys_rel_('$aweprr[1].$current_fbk.$slope')
-    -- Packages.ProcessPrm03 = gin[VolGiIndex] / get_sys_rel_('$aweprr[1].$voltage_fbk.$slope')
+    Packages.ProcessPrm02 = 0.0
+    Packages.ProcessPrm03 = 0.0
+
+    get_port_val(IO_GPIN, CurGiIndex, CurVal, status)
+    if status = OK then
+        Packages.ProcessPrm02 = CurVal / get_sys_rel_('$aweprr[1].$current_fbk.$slope')
+    endif
+
+    get_port_val(IO_GPIN, VolGiIndex, VolVal, status)
+    if status = OK then
+        Packages.ProcessPrm03 = VolVal / get_sys_rel_('$aweprr[1].$voltage_fbk.$slope')
+    endif
 
     write FileVar(Packages.ProcessPrm01)
     write FileVar(Packages.ProcessPrm02)

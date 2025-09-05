@@ -1,4 +1,4 @@
-&ACCESS RVP
+&ACCESS RVO
 &REL 54
 &COMMENT Conveyor Pick04
 &PARAM DISKPATH = KRC:\R1\Program\SecondSortMain
@@ -19,7 +19,10 @@ DEFDAT  SECOND_PKCV04
 ; Version: 1.0
 ;***********************************************************
 
-DECL INT Status
+DECL INT Status = 0
+DECL INT ErrNbr = 0
+DECL INT Count = 0
+
 
 DECL part_dat_t PartData={ConvId 0,TaskId 0,BoxId 0,PkcvOfs {X 0.0,Y 0.0,Z 0.0,A 0.0},PlacePosn {X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0},EncCount 0,ServoDist 0.0,Thickness 0.0,Weight 0.0,Num 0}
 

@@ -83,6 +83,8 @@ global def second_SubMitLoop()
                 if $pro_state1 == #P_FREE then
                     ; conv_ini_off(j)
                 endif
+
+                queue_overflow_(j)
             endif
         else
             RemainingTrigger[j] = 0
@@ -112,6 +114,9 @@ global def second_fdbk(Conv : in, PkCvState : in, ThisQueue : in)
     decl part_dat_t ThisQueue
     decl pkcv_stat_t PkCvState
     decl int FdbkStatus, j, k, WpCount, ErrNum
+    decl int Offset
+    decl char Msg[128]
+    decl state_t State
 
     if (varstate("Conv") == #initialized) then
 
@@ -132,32 +137,35 @@ global def second_fdbk(Conv : in, PkCvState : in, ThisQueue : in)
         if DEBUG then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Pick Successful![Conv:%d,Task:%d,Num:%d,PkCvState:%d,RCount:%d]", Conv, ThisQueue.TaskId, ThisQueue.Num, 0, WpCount)
+            swrite(Msg[], State, Offset, "Pick Successful![Conv:%d,Task:%d,Num:%d,RCount:%d]", Conv, ThisQueue.TaskId, ThisQueue.Num, WpCount)
             log_info_(Msg[])
         endif
         
         bus_sbyte_(BusOutput.BusIoSt + 96, 0)
+        bus_sbyte_(BusOutput.BusIoSt + 144, Conv)
         bus_sint_(BusOutput.BusIoSt + 64, ThisQueue.TaskId)
         FdbkStatus = bus_ntell_(BusInput, BusOutput, 0)
 
         ;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        continue
-        $timer[PRIO_QUEUE_FLOW_TIME_IDX] = -abs(TIME_QUEUE_FLOW)
-        continue
-        $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = false
+        ; continue
+        ; $timer[PRIO_QUEUE_FLOW_TIME_IDX] = -abs(TIME_QUEUE_FLOW)
+        ; continue
+        ; $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = false
 
-        interrupt on PRIO_QUEUE_FLOW_NO
+        ; interrupt on PRIO_QUEUE_FLOW_NO
         ; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     else
 
         if DEBUG then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "Pick Failed![Conv:%d,Task:%d,Num:%d,PkCvState:%d,RCount:%d]", Conv, ThisQueue.TaskId, ThisQueue.Num, 1, WpCount)
+            swrite(Msg[], State, Offset, "Pick Failed![Conv:%d,Task:%d,Num:%d,PkCvState:%d,RCount:%d,Dist:%.1f]", Conv, ThisQueue.TaskId, ThisQueue.Num, 1, WpCount, CurFlowDist[Conv])
             log_info_(Msg[])
         endif
         
         bus_sbyte_(BusOutput.BusIoSt + 96, 1)
+        bus_sbyte_(BusOutput.BusIoSt + 144, Conv)
+        bus_sint_(BusOutput.BusIoSt + 64, ThisQueue.TaskId)
         for j = 1 to PkPlCfg.NumOfConv  
             for k = 1 to QueueLength[j]  
                 if (ThisQueue.BoxId == QueueData[j, k].BoxId) and (ThisQueue.PlacePosn.x == QueueData[j, k].PlacePosn.x) and (ThisQueue.PlacePosn.y == QueueData[j, k].PlacePosn.y) then  
@@ -176,6 +184,7 @@ global def second_getq(Conv : in, SleedTime : in, State : out)
     decl int Conv
     decl int State
     decl int SleedTime
+    decl int WpCount, ErrNum
 
     B_CALL_CONV_MOV = false
 
@@ -186,7 +195,7 @@ global def second_getq(Conv : in, SleedTime : in, State : out)
     continue
     $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = true
     
-    interrupt off PRIO_QUEUE_FLOW_NO
+    ; interrupt off PRIO_QUEUE_FLOW_NO
     
 
     CopyConv = Conv
@@ -209,6 +218,10 @@ global def second_getq(Conv : in, SleedTime : in, State : out)
     wait for CopyState <> -2
 
 
+    ; WpCount = conv_get_wp_count(CopyConv, ErrNum)
+    ; if (CopyState == OK) and (WpCount == 1) and (ErrNum == 0) then
+    ;     conv_part_nbr[conv_get_machine_index(CopyConv)] = 0
+    ; endif
 
     interrupt off PRIO_GETQ_NO
     continue
@@ -278,19 +291,27 @@ global def second_wpos(Conv : in, RefPkPos : in, GiveDist : in, WaitPos : out, D
 
 end
 
-global def second_mov_wpos(Conv : in, MovWPosStat : in, WaitPos : in, ToolOffs : in, Limit : in, State : out)
+global def second_mov_wpos(Conv : in, MovWPosStat : in, WaitPos : in, ToolOffs : in, Limit : in, Status : out)
     decl int Conv
     decl pkcv_dcsn_t MovWPosStat
     decl e6pos WaitPos
     decl frame ToolOffs
     decl xy_lim_t Limit
-    decl int State
+    decl int Status
     
-    State = OK
+    Status = OK
 
     ; Check if part is out of reach
     if (WaitPos.x >= Limit.MaxX) or (WaitPos.x <= Limit.MinX) or (WaitPos.y >= Limit.MaxY) or (WaitPos.y <= Limit.MinY) then
-        State = NG
+        
+        if DEBUG then
+            Offset = 0
+            str_clear_(Msg[])
+            swrite(Msg[], State, Offset, "WaitPos Lim![Conv:%d,Task:%d,Wy:%3.f,Ly:%3.f]", Conv, CurQueue[Conv].TaskId, WaitPos.y, Limit.MaxY)
+            log_warn_(Msg[])
+        endif
+        
+        Status = NG
         return
     endif
 
@@ -310,7 +331,7 @@ global def second_mov_wpos(Conv : in, MovWPosStat : in, WaitPos : in, ToolOffs :
         
         if CurFlowDist[Conv] >= (PkCvCfg[Conv].DownStream) then  
 
-            State = NG
+            Status = NG
             return
         endif
 
@@ -385,7 +406,7 @@ global def MoveDLin(PointName : in, Speed : in, Accu : in, UframeNo : in, UtoolN
 
     if (varstate("Speed") <> #initialized) then
 
-        Speed = 15.0
+        Speed = DEF_VEL_CP
     endif
     if (varstate("Accu") <> #initialized) then
 
@@ -403,7 +424,7 @@ global def MoveDLin(PointName : in, Speed : in, Accu : in, UframeNo : in, UtoolN
     endif
     if (varstate("Acc") <> #initialized) then
 
-        Acc = 50.0
+        Acc = 100.0
     endif
 
     MoveDLinFP1 = {TOOL_NO 0,BASE_NO 0,IPO_FRAME #BASE,POINT2[] " "}
@@ -412,15 +433,18 @@ global def MoveDLin(PointName : in, Speed : in, Accu : in, UframeNo : in, UtoolN
     MoveDLinFP1.TOOL_NO = UtoolNo
     MoveDLinFP1.BASE_NO = UframeNo
     MoveDLinLCPDAT1.APO_DIST = Accu
-
+    MoveDLinLCPDAT1.VEL = Speed
+    
     $BWDSTART = FALSE
     LDAT_ACT = MoveDLinLCPDAT1
     FDAT_ACT = MoveDLinFP1
-    cp_dynlin(Speed, 400 / 15.0 * Speed, 400 / 15.0 * Speed, Acc, 400 / 50.0 * Acc, 400 / 50.0 * Acc)
+    BAS(#CP_PARAMS, Speed)
+    ; cp_dynlin(Speed, 400 / 15.0 * Speed, 400 / 15.0 * Speed, Acc, 400 / 50.0 * Acc, 400 / 50.0 * Acc)
     set_cd_params (0)
 
     if Accu <= 1.0 then
         lin PointName 
+        wait sec 0.0
     else
         lin PointName C_DIS C_DIS
     endif      
@@ -445,7 +469,7 @@ end
 
 def conv_trig_count_(Conv : in)
     decl int Conv
-    PkCvCfg[Conv].SrTrigCount = $fast_meas_count[Conv]
+    PkCvCfg[Conv].SrTrigCount = PkCvCfg[Conv].SrTrigCount + 1
     LastTrigConvCount[Conv] = $SEN_PREA_C[Conv + 10]
     ; if DEBUG then
     ;     Offset = 0
@@ -488,10 +512,9 @@ def second_initialize()
     for j = 1 to PkPlCfg.NumOfConv  
         ; PkCvCfg[j].ConvName[] = conv_get_name(j)
         conv_ini_off(j)
+        wait sec 0.024
         conv_on(j)
         ; PkCvCfg[j].SrTrigCount = 0
-        FirstTrigger[j] = false
-        FirstPicking[j] = false
 
         ErrInt = conv_delete_all_wps(j, DelCount)
 
@@ -506,20 +529,36 @@ def second_initialize()
         ;     log_error_(Msg[])
         ; endif
 
+        ; switch (j)
+        ; case 1
+        ;     global interrupt decl PRIO_CONV_SR_NO[1] when $fast_meas_count[1] > PkCvCfg[1].SrTrigCount do conv_trig_count_(1)
+        ;     interrupt on PRIO_CONV_SR_NO[1]
+        ; case 2
+        ;     global interrupt decl PRIO_CONV_SR_NO[2] when $fast_meas_count[2] > PkCvCfg[2].SrTrigCount do conv_trig_count_(2)
+        ;     interrupt on PRIO_CONV_SR_NO[2]
+        ; case 3
+        ;     global interrupt decl PRIO_CONV_SR_NO[3] when $fast_meas_count[3] > PkCvCfg[3].SrTrigCount do conv_trig_count_(3)
+        ;     interrupt on PRIO_CONV_SR_NO[3]
+        ; case 4
+        ;     global interrupt decl PRIO_CONV_SR_NO[4] when $fast_meas_count[4] > PkCvCfg[4].SrTrigCount do conv_trig_count_(4)
+        ;     interrupt on PRIO_CONV_SR_NO[4]
+        ; endswitch
+    
         switch (j)
         case 1
-            global interrupt decl PRIO_CONV_SR_NO[1] when $fast_meas_count[1] > PkCvCfg[1].SrTrigCount do conv_trig_count_(1)
+            global interrupt decl PRIO_CONV_SR_NO[1] when $in[PkCvCfg[1].SrPortIndex] == true do conv_trig_count_(1)
             interrupt on PRIO_CONV_SR_NO[1]
         case 2
-            global interrupt decl PRIO_CONV_SR_NO[2] when $fast_meas_count[2] > PkCvCfg[2].SrTrigCount do conv_trig_count_(2)
+            global interrupt decl PRIO_CONV_SR_NO[2] when $in[PkCvCfg[2].SrPortIndex] == true do conv_trig_count_(2)
             interrupt on PRIO_CONV_SR_NO[2]
         case 3
-            global interrupt decl PRIO_CONV_SR_NO[3] when $fast_meas_count[3] > PkCvCfg[3].SrTrigCount do conv_trig_count_(3)
+            global interrupt decl PRIO_CONV_SR_NO[3] when $in[PkCvCfg[3].SrPortIndex] == true do conv_trig_count_(3)
             interrupt on PRIO_CONV_SR_NO[3]
         case 4
-            global interrupt decl PRIO_CONV_SR_NO[4] when $fast_meas_count[4] > PkCvCfg[4].SrTrigCount do conv_trig_count_(4)
+            global interrupt decl PRIO_CONV_SR_NO[4] when $in[PkCvCfg[4].SrPortIndex] == true do conv_trig_count_(4)
             interrupt on PRIO_CONV_SR_NO[4]
         endswitch
+    
     endfor
 
     $flag[FLAG_CONV_PKSU] = false
@@ -530,15 +569,15 @@ def second_initialize()
 
     init_queue_()
 
-    continue
-    $timer[PRIO_QUEUE_FLOW_TIME_IDX] = 0
-    continue
-    $timer_flag[PRIO_QUEUE_FLOW_TIME_IDX] = false
-    continue
-    $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = false
+    ; continue
+    ; $timer[PRIO_QUEUE_FLOW_TIME_IDX] = 0
+    ; continue
+    ; $timer_flag[PRIO_QUEUE_FLOW_TIME_IDX] = false
+    ; continue
+    ; $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = false
     
-    global interrupt decl PRIO_QUEUE_FLOW_NO when $timer_flag[PRIO_QUEUE_FLOW_TIME_IDX] == true do queue_overflow_()      
-    interrupt off PRIO_QUEUE_FLOW_NO
+    ; global interrupt decl PRIO_QUEUE_FLOW_NO when $timer_flag[PRIO_QUEUE_FLOW_TIME_IDX] == true do queue_overflow_()      
+    ; interrupt off PRIO_QUEUE_FLOW_NO
 end
 
 def second_sr_()
@@ -635,8 +674,17 @@ def second_sr_()
                 ; goto ACK
             endif
         endif
+        ; if $fast_meas_count[SensorPack.ConvId] <= AddQueueCount[SensorPack.ConvId] then  
 
-        if $fast_meas_count[SensorPack.ConvId] <= AddQueueCount[SensorPack.ConvId] then  
+        ;     SndErrNo = 202
+        ;     Offset = 0
+        ;     str_clear_(Msg[])
+        ;     swrite(Msg[], State, Offset, "$fast_meas_count Missing[Conv:%d, Task:%d, FastCount:%d, QCount:%d]", SensorPack.ConvId, SensorPack.TaskId, $fast_meas_count[SensorPack.ConvId], AddQueueCount[SensorPack.ConvId])
+        ;     log_info_(Msg[])
+        ;     goto ACK
+        ; endif
+
+        if PkCvCfg[SensorPack.ConvId].SrTrigCount <= AddQueueCount[SensorPack.ConvId] then  
 
             SndErrNo = 202
             Offset = 0
@@ -664,7 +712,7 @@ def second_sr_()
         if DEBUG then
             Offset = 0
             str_clear_(Msg[])
-            swrite(Msg[], State, Offset, "joined queue[Conv:%d,$fast_count:%d,Task:%d,Num:%d]", SensorPack.ConvId, $fast_meas_count[SensorPack.ConvId], SensorPack.TaskId, SensorPack.Num)
+            swrite(Msg[], State, Offset, "joined queue[Conv:%d,$fastcnt:%d,Task:%d,Num:%d,SndErrNo:%d]", SensorPack.ConvId, $fast_meas_count[SensorPack.ConvId], SensorPack.TaskId, SensorPack.Num, SndErrNo)
             log_info_(Msg[])
         endif
     case 2
@@ -740,12 +788,12 @@ def second_sr_()
     ; bus_sbyte_(BusOutput.BusIoSt + 104, SndErrNo)
     ; bus_ftell_(BusInput, BusOutput)
 
-    if DEBUG then
-        Offset = 0
-        str_clear_(Msg[])
-        swrite(Msg[], State, Offset, "Feedback task success[SndErrNo:%d] !", SndErrNo)
-        log_info_(Msg[])
-    endif
+    ; if DEBUG then
+    ;     Offset = 0
+    ;     str_clear_(Msg[])
+    ;     swrite(Msg[], State, Offset, "Feedback task success[SndErrNo:%d] !", SndErrNo)
+    ;     log_info_(Msg[])
+    ; endif
 
     bus_sbyte_(BusOutput.BusIoSt + 104, SndErrNo)
     bus_ftell_(BusInput, BusOutput)
@@ -868,26 +916,43 @@ def get_queue_(Conv : in, ThisPart : out, Status : out)
     Status = OK
 end
 
-def queue_overflow_()
-    decl int j, k
+def queue_overflow_(Conv : in)
+    decl int j, k, Conv
     decl real Dist
     decl int Status
-    for j = 1 to PkPlCfg.NumOfConv
-        for k = 1 to QueueLength[j]
-            if QueueData[j, k].TaskId > 0 then
-                Dist = $sen_prea_c[j + 10] - QueueData[j, k].EncCount + QueueData[j, k].PkcvOfs.x
-                if Dist > PkCvCfg[j].DownStream then  
-                    second_fdbk( , #PICK_FAIL, QueueData[j, k])
-                    QueueData[j, k].TaskId = QueueData[j, k].TaskId * (-1)
-                endif
+
+    ; for j = 1 to PkPlCfg.NumOfConv
+    ;     for k = 1 to QueueLength[j]
+    ;         if QueueData[j, k].TaskId > 0 then
+    ;             Dist = $sen_prea_c[j + 10] - QueueData[j, k].EncCount + QueueData[j, k].PkcvOfs.x
+    ;             if Dist > PkCvCfg[j].DownStream then  
+    ;                 second_fdbk( , #PICK_FAIL, QueueData[j, k])
+    ;                 QueueData[j, k].TaskId = QueueData[j, k].TaskId * (-1)
+    ;             endif
+    ;         endif
+    ;     endfor
+    ; endfor
+
+    if QueueLength[Conv] <= 0 then
+        return
+    endif
+
+    for k = 1 to QueueLength[Conv]
+        if QueueData[Conv, k].TaskId > 0 then
+            Dist = $sen_prea_c[Conv + 10] - QueueData[Conv, k].EncCount + QueueData[Conv, k].PkcvOfs.x
+            if Dist > PkCvCfg[Conv].DownStream then  
+                second_fdbk( , #PICK_FAIL, QueueData[Conv, k])
+                QueueData[Conv, k].TaskId = QueueData[Conv, k].TaskId * (-1)
             endif
-        endfor
+        endif
     endfor
 
-    continue
-    $timer[PRIO_QUEUE_FLOW_TIME_IDX] = -abs(TIME_QUEUE_FLOW)
-    continue
-    $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = false
+
+
+    ; continue
+    ; $timer[PRIO_QUEUE_FLOW_TIME_IDX] = -abs(TIME_QUEUE_FLOW)
+    ; continue
+    ; $timer_stop[PRIO_QUEUE_FLOW_TIME_IDX] = false
     
 end
 

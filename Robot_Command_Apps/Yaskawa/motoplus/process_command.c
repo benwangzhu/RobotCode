@@ -120,7 +120,7 @@ VOID Command_Receive_Task_(VOID)
 						{
 							DEBUG_INFO("Command Receive %s", COMMAND_SKILLSND_STR_COMM011_OPEN);
 
-							Status = processCommand_sbt_comm011_open_();
+							Status = ProcessCommandSbtComm011Open();
 							if (Status != OK)
 							{
 								DEBUG_ERROR("Connect Server Error![Server IP:%s, Port:%d]", GlobalSocketIp, GlobalSocketPort);
@@ -142,7 +142,7 @@ VOID Command_Receive_Task_(VOID)
 						{
 							DEBUG_INFO("Command Receive %s", COMMAND_SKILLSND_STR_COMM011_CLOSE);
 
-							Status = processCommand_sbt_comm011_close_();
+							Status = ProcessCommandSbtComm011Open();
 
 							GlobalCommandNo = COMMAND_UNKNOWN;
 						}	
@@ -380,10 +380,10 @@ VOID Command_Process_Task_(VOID)
 			case COMMAND_COMM011_REALTIME:
 			{
 
-				Status = processCommand_sbt_comm011_realtime_();
+				Status = ProcessCommandSbtComm011Realtime();
 				if (Status != OK)
 				{
-					DEBUG_ERROR("Execute processCommand_sbt_comm011_realtime_ Error![ErrorCode:%d]", Status);
+					DEBUG_ERROR("Execute ProcessCommandSbtComm011Realtime Error![ErrorCode:%d]", Status);
 					mpSemGive(GlobalSemSendBuffer2);
 				}
 				else
@@ -395,10 +395,10 @@ VOID Command_Process_Task_(VOID)
 			}
 			case COMMAND_COMM011_2DSCAN_START:
 			{
-				Status = processCommand_sbt_comm011_2dscan_start_();
+				Status = ProcessCommandSbtComm011ScanStart();
 				if (Status != OK)
 				{
-					DEBUG_ERROR("Execute processCommand_sbt_comm011_2dscan_start_ Error![ErrorCode:%d]", Status);
+					DEBUG_ERROR("Execute ProcessCommandSbtComm011ScanStart Error![ErrorCode:%d]", Status);
 					mpSemGive(GlobalSemSendBuffer2);
 				}
 				else
@@ -411,10 +411,10 @@ VOID Command_Process_Task_(VOID)
 			}
 			case COMMAND_COMM011_2DSCAN_STOP:
 			{
-				Status = processCommand_sbt_comm011_2dscan_stop_();
+				Status = ProcessCommandSbtComm011ScanStop();
 				if (Status != OK)
 				{
-					DEBUG_ERROR("Execute processCommand_sbt_comm011_2dscan_stop_ Error![ErrorCode:%d]", Status);
+					DEBUG_ERROR("Execute ProcessCommandSbtComm011ScanStop Error![ErrorCode:%d]", Status);
 					mpSemGive(GlobalSemSendBuffer2);
 				}
 				else
@@ -427,10 +427,10 @@ VOID Command_Process_Task_(VOID)
 			}
 			case COMMAND_COMM011_GET_PATH:
 			{
-				Status = processCommand_sbt_comm011_get_path_();
+				Status = ProcessCommandSbtComm011GetPath();
 				if (Status != OK)
 				{
-					DEBUG_ERROR("Execute processCommand_sbt_comm011_get_path_ Error![ErrorCode:%d]", Status);
+					DEBUG_ERROR("Execute ProcessCommandSbtComm011GetPath Error![ErrorCode:%d]", Status);
 					mpSemGive(GlobalSemSendBuffer2);
 				}
 				else

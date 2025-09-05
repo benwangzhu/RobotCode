@@ -1,5 +1,5 @@
 &ACCESS RVP
-&REL 131
+&REL 133
 &COMMENT Polish 250608
 &PARAM DISKPATH = KRC:\R1\Program\SbtComm012Polish
 def  PolishMain01 ( )
@@ -39,6 +39,10 @@ Comm012PolishGetPara(1, PathNumber, GrindHead, SpindleSpeed)
 BAS(#TOOL, GrindHeadTool[GrindHead].BindToolNum)
 ;FOLD SbtComm012.PolishGetPath IN Job Id: 1, IN Num Edges: PathNumber, IN Step Dist: 5 ;%{PE}
 Comm012PolishGetPath(1,  PathNumber, 5)
+;ENDFOLD
+;FOLD SbtComm012.HeadCtrlByName IN Ctrl Type: HEAD_STARTING, IN GrindHead Id: GrindHead, IN Spindle Speed: SpindleSpeed, IN Timeout: 0 sec ;%{PE}
+WAIT SEC 0.0
+Comm012HeadCtrl(#HEAD_STARTING, GrindHead, SpindleSpeed, 0 * 1000)
 ;ENDFOLD
 ;FOLD SbtComm012.PolishMoveAppr IN Speed Type: EXTERNAL, IN GrindHead Id: GrindHead, IN Move Speed: 300 cm/min ;%{PE}
 IF 1 == 1 THEN
