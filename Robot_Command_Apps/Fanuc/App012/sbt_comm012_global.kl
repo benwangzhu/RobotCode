@@ -15,6 +15,7 @@
 --***********************************************************
 --
 var 
-    PolishSock          in cmos from sbt_comm0012                : sock_cfg_t
-    PolishBlock         in cmos from sbt_comm012                 : poli_bloc_t
-    GrindBlock          in cmos from sbt_comm012                 : grind_bloc_t
+    PolishSock          in cmos from sbt_comm012                : sock_cfg_t
+    PolishBlock         in cmos from sbt_comm012                : poli_bloc_t
+    GrindBlock          in cmos from sbt_comm012                : grind_bloc_t
+    MaxRtyCnt           in cmos from sbt_comm012                : integer

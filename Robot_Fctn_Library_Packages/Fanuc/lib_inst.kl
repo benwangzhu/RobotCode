@@ -383,7 +383,7 @@ begin
                 endif 
 
                 if InstReadHead.Type_ = 1 then 
-                    InstMove .Cnt = 0
+                    InstMove.Cnt = 0
                 else 
                     InstMove.Cnt = 100
                 endif 

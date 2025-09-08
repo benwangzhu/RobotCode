@@ -43,7 +43,6 @@ var
 %include sbt_comm012_h
 
 begin 
-    RetryCount  = 0
     CameraId    = get_iparm_(1)             --获取相机编号
     CaptureId   = get_iparm_(2)             --获取拍照点位编号
     DelayTime   = get_rparm_(3)             --获取出发拍照延时
@@ -58,22 +57,26 @@ begin
         post_err(CC_UALARM, '传入时间超范围[TIME:' + rel_to_str_(DelayTime) + ']', 0, CC_ABORT)
     endif
 
-    delay round(DelayTime * 1000)
+    delay round(DelayTime * 1000.0)
 
-    while true do
+    if uninit(MaxRtyCnt) then
+
+        MaxRtyCnt = MAX_RETTRIG
+    endif
+
+    RetryCount = 0
+    repeat
         RetryCount = RetryCount + 1
         PhotoPint = cur_pos_(0, 0)
 
         Status = f001_it01_(PolishSock, PhotoPint, CameraId, CaptureId)
         if Status <> OK then  
-            if (RetryCount > MAX_RETTRIG) or (Status < 0) then
+            if (RetryCount > MaxRtyCnt) or (Status < 0) then
                 ErrDisplay('打磨相机拍照失败[Status:' + int_to_str_(Status) + ']', Status)
                 RetryCount = 0
             endif
-        else 
-            return
+        else
+            delay 100
         endif
-        
-        delay 20
-    endwhile
+    until (Status = OK)
 end sbt_poltrig
