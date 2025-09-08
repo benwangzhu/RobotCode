@@ -1,6 +1,8 @@
 program sbt_polexit
 --***********************************************************
 --
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
 -- file Name: sbt_polexit
 --
 -- Description:
@@ -11,7 +13,9 @@ program sbt_polexit
 -- Author: 
 --
 -- Version: 1.0
-%comment = 'SBT POLISH EXIT 250507'
+--***********************************************************
+--
+%comment = 'PolishGetExit'
 %nolockgroup
 %nobusylamp
 %nopauseshft
@@ -40,8 +44,7 @@ var
 %include include/lib_tp_if_h
 %include include/lib_string_h
 %include include/lib_math_h
-
-routine err_display_(OtherErrMsg : string; ErrorId : integer) from sbt_comm012
+%include sbt_comm012_h
 
 begin 
     JobId               = get_iparm_(1)             --ÈÎÎñ±àºÅ

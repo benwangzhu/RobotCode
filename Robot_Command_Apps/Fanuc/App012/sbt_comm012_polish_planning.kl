@@ -1,17 +1,21 @@
-program sbt_scanplan
+program sbt_polplan
 --***********************************************************
 --
--- file Name: sbt_scanplan
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
+-- file Name: sbt_polplan
 --
 -- Description:
 --   Language             ==   Karel for FANUC ROBOT
---   Date                 ==   2025 - 09 - 06
---   Modification Data    ==   2025 - 09 - 06
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 07 - 28
 --
 -- Author: 
 --
 -- Version: 1.0
-%comment = 'SBT SCAN PLAN 250906'
+--***********************************************************
+--
+%comment = 'PolishPlanning'
 %nolockgroup
 %nobusylamp
 %nopauseshft
@@ -34,8 +38,7 @@ var
 %include include/lib_inst_h
 %include include/lib_tp_if_h
 %include include/lib_string_h
-
-routine err_display_(OtherErrMsg : string; ErrorId : integer) from sbt_comm012
+%include sbt_comm012_h
 
 begin 
     JobId       = get_iparm_(1)                 --获取任务编号
@@ -49,10 +52,10 @@ begin
         post_err(CC_UALARM, '传入无效路径编号[PATH:' + int_to_str_(PlanningId) + ']', 0, CC_ABORT)
     endif 
 
-    Status = f011_it01_(PolishSock, JobId, PlanningId, NumOfPath)
+    Status = f002_it01_(PolishSock, JobId, PlanningId, NumOfPath)
     if Status <> OK then  
-        err_display_('扫描路径规划失败[Status:' + int_to_str_(Status) + ']', Status)
+        err_display_('打磨路径规划失败[Status:' + int_to_str_(Status) + ']', Status)
     endif 
 
     set_ireg_(PathNumReg, NumOfPath)
-end sbt_scanplan
+end sbt_polplan

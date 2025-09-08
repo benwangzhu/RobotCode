@@ -1,7 +1,9 @@
-program head_relea
+program head_release
 --***********************************************************
 --
--- file Name: head_relea
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
+-- file Name: head_release
 --
 -- Description:
 --   Language             ==   Karel for FANUC ROBOT
@@ -11,7 +13,9 @@ program head_relea
 -- Author: 
 --
 -- Version: 1.0
-%comment = 'SBT HEAD RELEA 250507'
+--***********************************************************
+--
+%comment = 'HeadRelease'
 %nolockgroup
 %nobusylamp
 %nopauseshft
@@ -31,8 +35,7 @@ var
 %include include/lib_inst_h
 %include include/lib_tp_if_h
 %include include/lib_string_h
-
-routine head_relea_(GrindHeadId : integer; TimeOut : integer) from sbt_comm012
+%include sbt_comm012_h
 
 begin 
     GrindHeadId     = get_iparm_(1)                 --获取打磨头ID
@@ -45,5 +48,5 @@ begin
         post_err(CC_UALARM, '传入时间超范围[TIME:' + rel_to_str_(TimeOut) + ']', 0, CC_ABORT)
     endif
 
-    head_relea_(GrindHeadId, round(TimeOut * 1000))
-end head_relea
+    HeadRelease(GrindHeadId, round(TimeOut * 1000))
+end head_release

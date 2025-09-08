@@ -1,6 +1,8 @@
 program sbt_poltrig
 --***********************************************************
 --
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
 -- file Name: sbt_poltrig
 --
 -- Description:
@@ -11,7 +13,9 @@ program sbt_poltrig
 -- Author: 
 --
 -- Version: 1.0
-%comment = 'SBT POLISH TRIG 250728'
+--***********************************************************
+--
+%comment = 'PolishTrigger'
 %nolockgroup
 %nobusylamp
 %nopauseshft
@@ -28,6 +32,7 @@ var
     PhotoPint                           : xyzwprext
     CameraId                            : integer 
     CaptureId                           : integer 
+    RetryCount                          : integer
     DelayTime                           : real
     Status                              : integer 
 
@@ -35,10 +40,10 @@ var
 %include include/lib_inst_h
 %include include/lib_tp_if_h
 %include include/lib_string_h
-
-routine err_display_(OtherErrMsg : string; ErrorId : integer) from sbt_comm012
+%include sbt_comm012_h
 
 begin 
+    RetryCount  = 0
     CameraId    = get_iparm_(1)             --获取相机编号
     CaptureId   = get_iparm_(2)             --获取拍照点位编号
     DelayTime   = get_rparm_(3)             --获取出发拍照延时
@@ -55,13 +60,16 @@ begin
 
     delay round(DelayTime * 1000)
 
-
     while true do
+        RetryCount = RetryCount + 1
         PhotoPint = cur_pos_(0, 0)
 
         Status = f001_it01_(PolishSock, PhotoPint, CameraId, CaptureId)
         if Status <> OK then  
-            err_display_('打磨相机拍照失败[Status:' + int_to_str_(Status) + ']', Status)
+            if (RetryCount > MAX_RETTRIG) or (Status < 0) then
+                err_display_('打磨相机拍照失败[Status:' + int_to_str_(Status) + ']', Status)
+                RetryCount = 0
+            endif
         else 
             return
         endif

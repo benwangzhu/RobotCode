@@ -1,6 +1,8 @@
 program sbt_polpara
 --***********************************************************
 --
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
 -- file Name: sbt_polpara
 --
 -- Description:
@@ -11,7 +13,9 @@ program sbt_polpara
 -- Author: 
 --
 -- Version: 1.0
-%comment = 'SBT POLISH PARA 250728'
+--***********************************************************
+--
+%comment = 'PolishGetParam'
 %nolockgroup
 %nobusylamp
 %nopauseshft
@@ -39,9 +43,7 @@ var
 %include include/lib_inst_h
 %include include/lib_tp_if_h
 %include include/lib_string_h
-
-routine chck_hedid_(GrindHeadId : integer) from sbt_comm012
-routine err_display_(OtherErrMsg : string; ErrorId : integer) from sbt_comm012
+%include sbt_comm012_h
 
 begin 
     JobId           = get_iparm_(1)                 --获取任务编号
@@ -63,7 +65,7 @@ begin
         err_display_('打磨工艺参数获取失败[Status:' + int_to_str_(Status) + ']', Status)
     endif 
 
-    chck_hedid_(GrindHeadId)
+    ChkHeadId(GrindHeadId)
 
     set_ireg_(HeadIdReg, GrindHeadId)
     set_rreg_(SpeedDataReg, GrindSpeed)

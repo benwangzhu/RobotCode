@@ -1,6 +1,8 @@
 program head_stop
 --***********************************************************
 --
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
 -- file Name: head_stop
 --
 -- Description:
@@ -11,7 +13,9 @@ program head_stop
 -- Author: 
 --
 -- Version: 1.0
-%comment = 'SBT HEAD STOP 250507'
+--***********************************************************
+--
+%comment = 'HeadStop'
 %nolockgroup
 %nobusylamp
 %nopauseshft
@@ -30,8 +34,7 @@ var
 %include include/lib_inst_h
 %include include/lib_tp_if_h
 %include include/lib_string_h
-
-routine head_stop_(GrindHeadId : integer) from sbt_comm012
+%include sbt_comm012_h
 
 begin 
     GrindHeadId     = get_iparm_(1)                 --获取打磨头ID
@@ -40,7 +43,7 @@ begin
         post_err(CC_UALARM, '传入无效打磨头[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_ABORT)
     endif
 
-    head_stop_(GrindHeadId)
+    HeadStop(GrindHeadId)
     
     if GrindBlock.HeadInform.CurGrindId > 0 then
         disable condition[INTR_RESUM]

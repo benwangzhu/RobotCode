@@ -1,7 +1,9 @@
-program sbt_fuctupd
+program head_change
 --***********************************************************
 --
--- file Name: sbt_fuctupd
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
+-- file Name: head_change
 --
 -- Description:
 --   Language             ==   Karel for FANUC ROBOT
@@ -11,7 +13,9 @@ program sbt_fuctupd
 -- Author: 
 --
 -- Version: 1.0
-%comment = 'SBT FUNCTION TOOL UPD 250906'
+--***********************************************************
+--
+%comment = 'HeadChange'
 %nolockgroup
 %nobusylamp
 %nopauseshft
@@ -39,8 +43,7 @@ var
 %include include/lib_inst_h
 %include include/lib_tp_if_h
 %include include/lib_string_h
-
-routine err_display_(OtherErrMsg : string; ErrorId : integer) from sbt_comm012
+%include sbt_comm012_h
 
 begin 
     JobId           = get_iparm_(1)                 --获取任务编号

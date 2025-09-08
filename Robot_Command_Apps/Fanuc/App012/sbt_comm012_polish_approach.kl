@@ -1,7 +1,9 @@
-program sbt_polgrind
+program sbt_polappr
 --***********************************************************
 --
--- file Name: sbt_polgrind
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
+-- file Name: sbt_polappr
 --
 -- Description:
 --   Language             ==   Karel for FANUC ROBOT
@@ -11,7 +13,9 @@ program sbt_polgrind
 -- Author: 
 --
 -- Version: 1.0
-%comment = 'SBT POLISH GRIND 250507'
+--***********************************************************
+--
+%comment = 'PolishGetAppr'
 %nolockgroup
 %nobusylamp
 %nopauseshft
@@ -40,8 +44,7 @@ var
 %include include/lib_tp_if_h
 %include include/lib_string_h
 %include include/lib_math_h
-
-routine err_display_(OtherErrMsg : string; ErrorId : integer) from sbt_comm012
+%include sbt_comm012_h
 
 begin 
     JobId               = get_iparm_(1)             --任务编号
@@ -65,12 +68,12 @@ begin
     endif
 
     PolishMove.PointNo      = 1
-    PolishMove.MovType      = LM_MTN_LIN
+    PolishMove.MovType      = LM_MTN_JNT 
     PolishMove.PointTyp     = LM_MTN_NPOS
-    PolishMove.SpeedTyp     = LM_MTN_CMMIN
+    PolishMove.SpeedTyp     = LM_MTN_PER
 
-    Status = f004_it01_(PolishSock, POLISH_GRIND, JobId, PathId, StepDistance, PolishMove, int_to_bol_(SpeedEnable), TpeProgram)
+    Status = f004_it01_(PolishSock, POLISH_APPR, JobId, PathId, StepDistance, PolishMove, int_to_bol_(SpeedEnable), TpeProgram)
     if Status <> OK then  
-        err_display_('打磨轨迹获取失败[Status:' + int_to_str_(Status) + ']', Status)
+        err_display_('打磨进刀轨迹获取失败[Status:' + int_to_str_(Status) + ']', Status)
     endif 
-end sbt_polgrind
+end sbt_polappr

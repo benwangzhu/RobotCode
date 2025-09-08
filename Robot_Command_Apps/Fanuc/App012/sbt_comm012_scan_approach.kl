@@ -1,17 +1,21 @@
-program sbt_polappr
+program sbt_scanappr
 --***********************************************************
 --
--- file Name: sbt_polappr
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
+-- file Name: sbt_scanappr
 --
 -- Description:
 --   Language             ==   Karel for FANUC ROBOT
---   Date                 ==   2025 - 04 - 29
---   Modification Data    ==   2025 - 05 - 06
+--   Date                 ==   2025 - 09 - 06
+--   Modification Data    ==   2025 - 09 - 06
 --
 -- Author: 
 --
 -- Version: 1.0
-%comment = 'SBT POLISH APPR 250507'
+--***********************************************************
+--
+%comment = 'ScanGetAppr'
 %nolockgroup
 %nobusylamp
 %nopauseshft
@@ -32,24 +36,25 @@ var
     PathId                              : integer 
     StepDistance                        : real 
     SpeedEnable                         : integer
-    TpeProgram                          : string[30]     
+    TpeProgram                          : string[30]  
+    CallProgram                         : string[30]   
     Status                              : integer        
-    PolishMove                          : inst_move_t    
+    ScanMove                            : inst_move_t    
+    ScanCallProg                        : inst_call_t
 
 %include include/lib_inst_h
 %include include/lib_tp_if_h
 %include include/lib_string_h
 %include include/lib_math_h
-
-routine err_display_(OtherErrMsg : string; ErrorId : integer) from sbt_comm012
+%include sbt_comm012_h
 
 begin 
     JobId               = get_iparm_(1)             --任务编号
     PathId              = get_iparm_(2)             --获取路径编号
     StepDistance        = get_rparm_(3)             --获取点位生成间距
-    PolishMove.Speed    = get_iparm_(4)             --获取机器人的运动速度
+    ScanMove.Speed      = get_iparm_(4)             --获取机器人的运动速度
     SpeedEnable         = get_iparm_(5)             --获取是否使用外部出入运动速度
-    TpeProgram          = get_sparm_(6)             --获取轨迹所生成在的TPE程序名
+    TpeProgram          = get_sparm_(6)             --获取打磨轨迹所生成在的TPE程序名
 
     if (JobId < 1) or (JobId > 255) then 
         post_err(CC_UALARM, '传入无效任务编号[JOB:' + int_to_str_(JobId) + ']', 0, CC_ABORT)
@@ -60,17 +65,17 @@ begin
     if (StepDistance < 0.01) or (StepDistance > 500.0) then 
         post_err(CC_UALARM, '传入无效间距[DIST:' + rel_to_str_(StepDistance) + ']', 0, CC_ABORT)
     endif
-    if (PolishMove.Speed < 1) or (PolishMove.Speed  > 12000) then 
-        post_err(CC_UALARM, '传入无效机器人速度[SPEED:' + rel_to_str_(PolishMove.Speed) + ']', 0, CC_ABORT)
+    if (ScanMove.Speed < 1) or (ScanMove.Speed  > 12000) then 
+        post_err(CC_UALARM, '传入无效机器人速度[SPEED:' + rel_to_str_(ScanMove.Speed) + ']', 0, CC_ABORT)
     endif
 
-    PolishMove.PointNo      = 1
-    PolishMove.MovType      = LM_MTN_JNT 
-    PolishMove.PointTyp     = LM_MTN_NPOS
-    PolishMove.SpeedTyp     = LM_MTN_PER
+    ScanMove.PointNo        = 1
+    ScanMove.MovType        = LM_MTN_JNT 
+    ScanMove.PointTyp       = LM_MTN_NPOS
+    ScanMove.SpeedTyp       = LM_MTN_PER
 
-    Status = f004_it01_(PolishSock, POLISH_APPR, JobId, PathId, StepDistance, PolishMove, int_to_bol_(SpeedEnable), TpeProgram)
+    Status = f012_it01_(PolishSock, POLISH_APPR, JobId, PathId, StepDistance, ScanMove, ScanCallProg, int_to_bol_(SpeedEnable), TpeProgram)
     if Status <> OK then  
-        err_display_('打磨进刀轨迹获取失败[Status:' + int_to_str_(Status) + ']', Status)
+        err_display_('扫描进入轨迹获取失败[Status:' + int_to_str_(Status) + ']', Status)
     endif 
-end sbt_polappr
+end sbt_scanappr

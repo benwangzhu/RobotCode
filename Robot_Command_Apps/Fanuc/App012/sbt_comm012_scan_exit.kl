@@ -1,6 +1,8 @@
 program sbt_scanexit
 --***********************************************************
 --
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
 -- file Name: sbt_scanexit
 --
 -- Description:
@@ -11,7 +13,9 @@ program sbt_scanexit
 -- Author: 
 --
 -- Version: 1.0
-%comment = 'SBT SCAN EXIT 250906'
+--***********************************************************
+--
+%comment = 'ScanGetExit 250906'
 %nolockgroup
 %nobusylamp
 %nopauseshft
@@ -42,8 +46,7 @@ var
 %include include/lib_tp_if_h
 %include include/lib_string_h
 %include include/lib_math_h
-
-routine err_display_(OtherErrMsg : string; ErrorId : integer) from sbt_comm012
+%include sbt_comm012_h
 
 begin 
     JobId               = get_iparm_(1)             --ÈÎÎñ±àºÅ

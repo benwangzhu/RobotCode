@@ -1,0 +1,66 @@
+--***********************************************************
+--
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
+-- file Name: sbt_comm12_h.kl
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 04 - 29
+--
+-- Author: speedbot
+--
+-- Version: 1.0
+--***********************************************************
+--
+
+routine HeadStart(GrindHeadId : integer; Speed : real; TimeOut : integer) from sbt_comm012
+
+routine HeadStop(GrindHeadId : integer) from sbt_comm012
+
+routine HeadRelease(GrindHeadId : integer; TimeOut : integer) from sbt_comm012
+
+routine HeadClamp(GrindHeadId : integer; TimeOut : integer) from sbt_comm012
+
+routine DoorOpen(GrindHeadId : integer; TimeOut : integer) from sbt_comm012
+
+routine DoorClose(GrindHeadId : integer; TimeOut : integer) from sbt_comm012
+
+routine KHeadStart(GrindHeadId : integer) from sbt_comm012
+
+routine KHeadStop(GrindHeadId : integer) from sbt_comm012
+
+routine KHeadRelease(GrindHeadId : integer) from sbt_comm012
+
+routine KHeadClamp(GrindHeadId : integer) from sbt_comm012
+
+routine KDoorOpen(GrindHeadId : integer) from sbt_comm012
+
+routine KDoorClose(GrindHeadId : integer) from sbt_comm012
+
+routine KSelectFunc : integer from sbt_comm012
+
+routine KSelectHead : integer from sbt_comm012
+
+routine HeadStatus(GrindHeadId : integer) from sbt_comm012
+
+routine ChkHeadId(GrindHeadId : integer) from sbt_comm012
+
+routine ChkHeadAlarm(GrindHeadId : integer) from sbt_comm012
+
+routine GetHeadAlarm(GrindHeadId : integer) : integer from sbt_comm012
+
+routine SetHeadSpeed(GrindHeadId : integer; Speed : integer) from sbt_comm012
+
+routine GetHeadSpeed(GrindHeadId : integer) : integer from sbt_comm012
+
+routine GrindResume from sbt_comm012
+
+routine GrindAlarm from sbt_comm012
+
+routine CondResume from sbt_comm012
+
+routine CondAlarm from sbt_comm012
+
+routine err_display_(OtherErrMsg : string; ErrorId : integer) from sbt_comm012

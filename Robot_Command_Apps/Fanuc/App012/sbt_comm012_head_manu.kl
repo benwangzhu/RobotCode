@@ -1,6 +1,8 @@
 program head_manu
 --***********************************************************
 --
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
 -- file Name: head_manu
 --
 -- Description:
@@ -11,7 +13,9 @@ program head_manu
 -- Author: 
 --
 -- Version: 1.0
-%comment = 'SBT HEAD MANU 250507'
+--***********************************************************
+--
+%comment = 'HeadManual'
 %nolockgroup
 %nobusylamp
 %nopauseshft
@@ -32,44 +36,36 @@ var
 %include include/lib_inst_h
 %include include/lib_string_h
 %include include/lib_tp_if_h
-
-routine ky_selefunc_ : integer from sbt_comm012
-routine ky_selehead_ : integer from sbt_comm012
-routine ky_headstar_(GrindHeadId : integer) from sbt_comm012
-routine ky_headstop_(GrindHeadId : integer) from sbt_comm012
-routine ky_headrela_(GrindHeadId : integer) from sbt_comm012
-routine ky_headclmp_(GrindHeadId : integer) from sbt_comm012
-routine ky_doropen_(GrindHeadId : integer) from sbt_comm012
-routine ky_dorclose_(GrindHeadId : integer) from sbt_comm012
+%include sbt_comm012_h
 
 begin 
-    CtrlType    = ky_selefunc_              --手动选择打磨头功能
-    GrindHedId  = ky_selehead_              --手动选择打磨头
+    CtrlType    = KSelectFunc              --手动选择打磨头功能
+    GrindHedId  = KSelectHead              --手动选择打磨头
 
     if (GrindHedId<= 0) or (GrindHedId > MAX_GRINDNUM) then 
         post_err(CC_UALARM, '输入无效打磨头[ID:' + int_to_str_(GrindHedId) + ']', 0, CC_ABORT)
     endif
 
     select (CtrlType) of
-        case(1):
-            ky_headstar_(GrindHedId)
+    case(1):
+        KHeadStart(GrindHedId)
 
-        case(2):
-            ky_headstop_(GrindHedId)
+    case(2):
+        KHeadStop(GrindHedId)
 
-        case(3):
-            ky_headrela_(GrindHedId)
+    case(3):
+        KHeadRelease(GrindHedId)
 
-        case(4):
-            ky_headclmp_(GrindHedId)
+    case(4):
+        KHeadClamp(GrindHedId)
 
-        case(5):
-            ky_doropen_(GrindHedId)
+    case(5):
+        KDoorOpen(GrindHedId)
 
-        case(6):
-            ky_dorclose_(GrindHedId)
+    case(6):
+        KDoorClose(GrindHedId)
 
-        else:
-            post_err(CC_UALARM, '不支持的手动操作打磨头类型.[CtrlType:' + int_to_str_(CtrlType) + ']', 0, CC_ABORT)
+    else:
+        post_err(CC_UALARM, '不支持的手动操作打磨头类型.[CtrlType:' + int_to_str_(CtrlType) + ']', 0, CC_ABORT)
     endselect
 end head_manu

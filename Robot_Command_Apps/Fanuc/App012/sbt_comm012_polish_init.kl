@@ -1,6 +1,8 @@
 program sbt_polinit
 --***********************************************************
 --
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
 -- file Name: sbt_polinit
 --
 -- Description:
@@ -11,7 +13,9 @@ program sbt_polinit
 -- Author: 
 --
 -- Version: 1.0
-%comment = 'SBT POLISH INIT 250728'
+--***********************************************************
+--
+%comment = 'PolishInit'
 %nolockgroup
 %nobusylamp
 %nopauseshft
@@ -31,7 +35,7 @@ var
 %include include/lib_inst_h
 %include include/lib_string_h
 %include include/lib_math_h
-
+%include sbt_comm012_h
 
 routine InitData from sbt_polinit
 

@@ -1,6 +1,6 @@
 --***********************************************************
 --
--- Copyright 2018 - 2024 speedbot All Rights reserved.
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
 --
 -- file Name: sbt_comm12_t.kl
 --
@@ -26,6 +26,7 @@ const
     MAX_GRINDNUM                        = 4                         --配置最大打磨头数量
     MAX_GRINDERR                        = 16                        --配置最大打磨头报警数量
     MAX_POLIERR                         = 14                        --配置最大打磨系统报警数量
+    MAX_RETTRIG                         = 3                         --相机最大重新拍照次数
 
     WAIT_CYCTIME                        = 20                        --WAIT信号时扫描周期
 
@@ -72,29 +73,29 @@ const
     I_ERR_E16                           = 79
 
 type
-    grind_head_t from sbt_comm12_t  = structure
-        HeadEnable                      : boolean                   --打磨头是否启用
-        DoutputAddr                     : integer                   --打磨头配置输出IO起始地址
-        DinputAddr                      : integer                   --打磨头配置输入IO起始地址
-        BindToolNum                     : integer                   --打磨头绑定的工具号码
-        MaxGrindSped                    : real                      --打磨头最大速度
-        ErrorId                         : integer                   --打磨头当前报警代码
+    grind_head_t from sbt_comm012  = structure
+        HeadEnable      : boolean                   --打磨头是否启用
+        DoutputAddr     : integer                   --打磨头配置输出IO起始地址
+        DinputAddr      : integer                   --打磨头配置输入IO起始地址
+        BindToolNum     : integer                   --打磨头绑定的工具号码
+        MaxGrindSped    : real                      --打磨头最大速度
+        ErrorId         : integer                   --打磨头当前报警代码
 	endstructure
 
-    grind_info_t from sbt_comm12_t  = structure
-        CurGrindId                      : integer                   --当前打磨头Id
-        CurGrindsped                    : real                      --当前打磨头速度
+    grind_info_t from sbt_comm012  = structure
+        CurGrindId      : integer                   --当前打磨头Id
+        CurGrindsped    : real                      --当前打磨头速度
 	endstructure
 
-    grind_bloc_t from sbt_comm12_t  = structure
-        InitFlag                        : boolean                   --打磨头数据初始化标志
-        HeadConfig                      : array[MAX_GRINDNUM] of grind_head_t
-        HeadInform                      : grind_info_t
-        ManuHeadSped                    : array[MAX_GRINDNUM] of real
-        ErrorMsg                        : array[MAX_GRINDERR] of string[70]
+    grind_bloc_t from sbt_comm012  = structure
+        InitFlag        : boolean                   --打磨头数据初始化标志
+        HeadConfig      : array[MAX_GRINDNUM] of grind_head_t
+        HeadInform      : grind_info_t
+        ManuHeadSped    : array[MAX_GRINDNUM] of real
+        ErrorMsg        : array[MAX_GRINDERR] of string[70]
     endstructure
 
-    poli_bloc_t from sbt_comm12_t  = structure
-        InitFlag                        : boolean                   --打磨系统数据初始化标志
-        ErrorMsg                        : array[MAX_POLIERR] of string[70]
+    poli_bloc_t from sbt_comm012  = structure
+        InitFlag        : boolean                   --打磨系统数据初始化标志
+        ErrorMsg        : array[MAX_POLIERR] of string[70]
     endstructure

@@ -1,6 +1,8 @@
 program head_init
 --***********************************************************
 --
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
 -- file Name: head_init
 --
 -- Description:
@@ -11,7 +13,9 @@ program head_init
 -- Author: 
 --
 -- Version: 1.0
-%comment = 'SBT HEAD INIT 250507'
+--***********************************************************
+--
+%comment = 'HeadInit'
 %nolockgroup
 %nobusylamp
 %nopauseshft
@@ -32,9 +36,9 @@ var
 %include include/lib_tp_if_h
 %include include/lib_string_h
 %include include/lib_math_h
+%include sbt_comm012_h
 
 routine InitData from head_init
-routine head_status_(GrindHeadId : integer) from sbt_comm012
 
 begin 
     InitData
@@ -64,7 +68,7 @@ begin
     set_ireg_(get_iparm_(6), GrindBlock.HeadConfig[GrindHedId].DoutputAddr)          --将对应打磨头输出信号起始地址映射到R寄存器
     GrindBlock.HeadConfig[GrindHedId].HeadEnable     = int_to_bol_(get_iparm_(7))    --获取对应打磨头是否启用
 
-    head_status_(GrindHedId)
+    HeadStatus(GrindHedId)
 end head_init
 
 routine InitData

@@ -1,6 +1,8 @@
 program head_start
 --***********************************************************
 --
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
 -- file Name: head_start
 --
 -- Description:
@@ -11,7 +13,9 @@ program head_start
 -- Author: 
 --
 -- Version: 1.0
-%comment = 'SBT HEAD START 250507'
+--***********************************************************
+--
+%comment = 'HeadStart'
 %nolockgroup
 %nobusylamp
 %nopauseshft
@@ -32,10 +36,7 @@ var
 %include include/lib_inst_h
 %include include/lib_tp_if_h
 %include include/lib_string_h
-
-routine intr_hedres_ from sbt_comm012
-routine intr_hedala_ from sbt_comm012
-routine head_star_(GrindHeadId : integer; Speed : real; TimeOut : integer) from sbt_comm012
+%include sbt_comm012_h
 
 begin 
     GrindHeadId     = get_iparm_(1)                 --获取打磨头ID
@@ -52,10 +53,10 @@ begin
         post_err(CC_UALARM, '传入时间超范围[TIME:' + rel_to_str_(TimeOut) + ']', 0, CC_ABORT)
     endif
 
-    head_star_(GrindHeadId, HeadSpeed, round(TimeOut * 1000))
+    HeadStart(GrindHeadId, HeadSpeed, round(TimeOut * 1000))
 
     if GrindBlock.HeadInform.CurGrindId > 0 then
-        intr_hedres_
-        intr_hedala_
+        CondResume
+        CondAlarm
     endif 
 end head_start

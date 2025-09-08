@@ -1,6 +1,8 @@
 program door_close
 --***********************************************************
 --
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
 -- file Name: door_close
 --
 -- Description:
@@ -11,7 +13,9 @@ program door_close
 -- Author: 
 --
 -- Version: 1.0
-%comment = 'SBT DOOR CLOSE 250507'
+--***********************************************************
+--
+%comment = 'DoorClose'
 %nolockgroup
 %nobusylamp
 %nopauseshft
@@ -31,8 +35,7 @@ var
 %include include/lib_inst_h
 %include include/lib_tp_if_h
 %include include/lib_string_h
-
-routine dor_close_(GrindHeadId : integer; TimeOut : integer) from sbt_comm012
+%include sbt_comm012_h
 
 begin
     GrindHeadId     = get_iparm_(1)                 --获取打磨头ID
@@ -45,5 +48,5 @@ begin
         post_err(CC_UALARM, '传入时间超范围[TIME:' + rel_to_str_(TimeOut) + ']', 0, CC_ABORT)
     endif
 
-    dor_close_(GrindHeadId, round(TimeOut * 1000))
+    DoorClose(GrindHeadId, round(TimeOut * 1000))
 end door_close
