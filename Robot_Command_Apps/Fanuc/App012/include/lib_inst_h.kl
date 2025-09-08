@@ -43,8 +43,8 @@
 --***********************************************************
 -- func f000_it00_()
 --***********************************************************
---     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
--- return :               * integer *	        * 返回通讯状态 *
+--     in : ThisSock        * sock_cfg_t *	    * SOCKET接口参数 *
+-- return :                 * integer *	        * 返回通讯状态 *
 --***********************************************************	
 --	通用协议激活与软件的SOCKET通讯，复位数据
 --***********************************************************
@@ -53,11 +53,11 @@ routine f000_it00_(ThisSocket : sock_cfg_t) : integer from lib_inst
 --***********************************************************
 -- func f001_it01_()
 --***********************************************************
---     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
---     in : PosData       * xyzwprext *		    * 拍照点位 *
---     in : CameraId      * integer *		    * 相机编号 *
---     in : CaptureId     * integer *		    * 点位号 *
--- return :               * integer *	        * 返回通讯状态 *
+--     in : ThisSock        * sock_cfg_t *		* SOCKET接口参数 *
+--     in : PosData         * xyzwprext *		    * 拍照点位 *
+--     in : CameraId        * integer *		    * 相机编号 *
+--     in : CaptureId       * integer *		    * 点位号 *
+-- return :                 * integer *	        * 返回通讯状态 *
 --***********************************************************	
 --	触发对应相机拍照，对应通用协议FunctionId1里的1号程序
 --***********************************************************
@@ -69,11 +69,11 @@ routine f001_it01_(ThisSocket : sock_cfg_t;
 --***********************************************************
 -- func f002_it01_()
 --***********************************************************
---     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
---     in : JobId         * integer *		    * 任务号 *
---     in : PlanningId    * integer *		    * 路径规划参数 *
---    out : NumOfPath     * integer *		    * 工艺段数 *
--- return :               * integer *	        * 返回通讯状态 *
+--     in : ThisSock        * sock_cfg_t *		* SOCKET接口参数 *
+--     in : JobId           * integer *		    * 任务号 *
+--     in : PlanningId      * integer *		    * 路径规划参数 *
+--    out : NumOfPath       * integer *		    * 工艺段数 *
+-- return :                 * integer *	        * 返回通讯状态 *
 --***********************************************************	
 --	通知软件加工的轨迹规划方式，并获取工艺段数，对应通用协议FunctionId2里的1号程序
 --***********************************************************
@@ -85,12 +85,12 @@ routine f002_it01_(ThisSocket : sock_cfg_t;
 --***********************************************************
 -- func f003_it01_()
 --***********************************************************
---     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
---     in : JobId         * integer *		    * 任务号 *
---     in : PathId        * integer *		    * 工艺路径段编号 *
---    out : GrindHeadId   * integer *		    * 打磨头编号 *
---    out : GrindSpeed    * real *		        * 打磨头转速 *
--- return :               * integer *	        * 返回通讯状态 *
+--     in : ThisSock        * sock_cfg_t *		* SOCKET接口参数 *
+--     in : JobId           * integer *		    * 任务号 *
+--     in : PathId          * integer *		    * 工艺路径段编号 *
+--    out : GrindHeadId     * integer *		    * 打磨头编号 *
+--    out : GrindSpeed      * real *		        * 打磨头转速 *
+-- return :                 * integer *	        * 返回通讯状态 *
 --***********************************************************	
 --	获取对应工艺编号的工艺参数，对应通用协议FunctionId3里的1号程序
 --***********************************************************
@@ -103,15 +103,15 @@ routine f003_it01_(ThisSocket : sock_cfg_t;
 --***********************************************************
 -- func f004_it01_()
 --***********************************************************
---     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
---     in : PointType     * integer *		    * 点位请求类型 *
---     in : JobId         * integer *		    * 任务号 *
---     in : PathId        * integer *		    * 工艺路径段编号 *
---     in : StepDistance  * real *		        * 点位间距 *
---     in : InstMove      * inst_move_t *		* 运动方式配置 *
---     in : SpeedEnable   * boolean *		    * 是否使用外部速度 *
---     in : TpeProgram    * string *		    * 轨迹生成程序名 *
--- return :               * integer *	        * 返回通讯状态 *
+--     in : ThisSock        * sock_cfg_t *		* SOCKET接口参数 *
+--     in : PointType       * integer *		    * 点位请求类型 *
+--     in : JobId           * integer *		    * 任务号 *
+--     in : PathId          * integer *		    * 工艺路径段编号 *
+--     in : StepDistance    * real *		        * 点位间距 *
+--     in : InstMove        * inst_move_t *		* 运动方式配置 *
+--     in : SpeedEnable     * boolean *		    * 是否使用外部速度 *
+--     in : TpeProgram      * string *		    * 轨迹生成程序名 *
+-- return :                 * integer *	        * 返回通讯状态 *
 --***********************************************************	
 --	获取对应工艺段加工轨迹和速度，对应通用协议FunctionId4里的1号程序
 --***********************************************************
@@ -123,3 +123,81 @@ routine f004_it01_(ThisSocket : sock_cfg_t;
                    InstMove : inst_move_t;
                    SpeedEnable : boolean;
                    TpeProgram : string) : integer from lib_inst
+
+--***********************************************************
+-- func f011_it01_()
+--***********************************************************
+--     in : ThisSock        * sock_cfg_t *		* SOCKET接口参数 *
+--     in : JobId           * integer *		    * 任务号 *
+--     in : PlanningId      * integer *		    * 路径规划参数 *
+--    out : NumOfPath       * integer *		    * 工艺段数 *
+-- return :                 * integer *	        * 返回通讯状态 *
+--***********************************************************	
+--	通知软件相机扫描的轨迹规划方式，并获取工艺段数，对应通用协议FunctionId11里的1号程序
+--***********************************************************
+routine f011_it01_(ThisSocket : sock_cfg_t; 
+                   JobId : integer;
+                   PlanningId : integer; 
+                   NumOfPath : integer) : integer from lib_inst
+
+--***********************************************************
+-- func f012_it01_()
+--***********************************************************
+--     in : ThisSock        * sock_cfg_t *		* SOCKET接口参数 *
+--     in : PointType       * integer *		    * 点位请求类型 *
+--     in : JobId           * integer *		    * 任务号 *
+--     in : PathId          * integer *		    * 工艺路径段编号 *
+--     in : StepDistance    * real *		    * 点位间距 *
+--     in : InstMove        * inst_move_t *		* 运动方式配置 *
+--     in : InstProg        * inst_call_t *		* 调用程序配置 *
+--     in : SpeedEnable     * boolean *		    * 是否使用外部速度 *
+--     in : TpeProgram      * string *		    * 轨迹生成程序名 *
+-- return :                 * integer *	        * 返回通讯状态 *
+--***********************************************************	
+--	获取对应扫描轨迹和速度，对应通用协议FunctionId12里的1号程序
+--***********************************************************
+routine f012_it01_(ThisSocket : sock_cfg_t;
+                   PointType : integer;
+                   JobId : integer; 
+                   PathId : integer;
+                   StepDistance : real;
+                   InstMove : inst_move_t;
+                   InstProg : inst_call_t;
+                   SpeedEnable : boolean;
+                   TpeProgram : string) : integer from lib_inst
+
+--***********************************************************
+-- func f013_it01_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : JobId         * integer *		    * 任务号 *
+--     in : FunctionId    * integer *		    * 功能Id *
+--    out : FunctionFeed  * integer *		    * 功能反馈 *
+-- return :               * integer *	        * 返回通讯状态 *
+--***********************************************************	
+--	通知软件是否执行执行该步骤功能，对应通用协议FunctionId13里的1号程序
+--***********************************************************
+routine f013_it01_(ThisSocket : sock_cfg_t; 
+                   JobId : integer;
+                   FunctionId : integer; 
+                   FunctionFeed : integer) : integer from lib_inst
+
+--***********************************************************
+-- func f013_it02_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : JobId         * integer *		    * 任务号 *
+--     in : ToolUpdType   * integer *		    * 刀具更新类型 *
+--     in : CurTool       * integer *		    * 当前刀具号 *
+--    out : ToolUpdFlag   * integer *		    * 需要换刀标志 *
+--    out : ToolUpdNo     * integer *		    * 更换刀具号 *
+-- return :               * integer *	        * 返回通讯状态 *
+--***********************************************************	
+--	通知软件是否去刀库更新刀具，对应通用协议FunctionId13里的2号程序
+--***********************************************************
+routine f013_it02_(ThisSocket : sock_cfg_t; 
+                   JobId : integer;
+                   ToolUpdType : integer; 
+                   CurTool : integer;
+                   ToolUpdFlag : integer;
+                   ToolUpdNo : integer) : integer from lib_inst
