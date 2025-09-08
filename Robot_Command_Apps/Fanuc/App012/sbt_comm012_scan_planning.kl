@@ -54,7 +54,7 @@ begin
 
     Status = f011_it01_(PolishSock, JobId, PlanningId, NumOfPath)
     if Status <> OK then  
-        err_display_('扫描路径规划失败[Status:' + int_to_str_(Status) + ']', Status)
+        ErrDisplay('扫描路径规划失败[Status:' + int_to_str_(Status) + ']', Status)
     endif 
 
     set_ireg_(PathNumReg, NumOfPath)

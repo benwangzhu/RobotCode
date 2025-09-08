@@ -62,7 +62,7 @@ begin
 
     Status = f003_it01_(PolishSock, JobId, PathId, GrindHeadId, GrindSpeed)
     if Status <> OK then  
-        err_display_('打磨工艺参数获取失败[Status:' + int_to_str_(Status) + ']', Status)
+        ErrDisplay('打磨工艺参数获取失败[Status:' + int_to_str_(Status) + ']', Status)
     endif 
 
     ChkHeadId(GrindHeadId)

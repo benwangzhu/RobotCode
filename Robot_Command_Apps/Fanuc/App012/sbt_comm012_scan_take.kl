@@ -79,6 +79,6 @@ begin
 
     Status = f012_it01_(PolishSock, POLISH_APPR, JobId, PathId, StepDistance, ScanMove, ScanCallProg, int_to_bol_(SpeedEnable), TpeProgram)
     if Status <> OK then  
-        err_display_('…®√ËπÏº£ªÒ»° ß∞‹[Status:' + int_to_str_(Status) + ']', Status)
+        ErrDisplay('…®√ËπÏº£ªÒ»° ß∞‹[Status:' + int_to_str_(Status) + ']', Status)
     endif 
 end sbt_scantake

@@ -63,4 +63,4 @@ routine CondResume from sbt_comm012
 
 routine CondAlarm from sbt_comm012
 
-routine err_display_(OtherErrMsg : string; ErrorId : integer) from sbt_comm012
+routine ErrDisplay(OtherErrMsg : string; ErrorId : integer) from sbt_comm012

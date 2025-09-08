@@ -57,7 +57,7 @@ begin
 
     Status = f013_it01_(PolishSock, JobId, FunctionId, FunctionStat)
     if Status <> OK then  
-        err_display_('功能执行确认失败[Status:' + int_to_str_(Status) + ']', Status)
+        ErrDisplay('功能执行确认失败[Status:' + int_to_str_(Status) + ']', Status)
     endif
 
     set_ireg_(StatusReg, FunctionStat)

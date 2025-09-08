@@ -76,6 +76,6 @@ begin
 
     Status = f012_it01_(PolishSock, POLISH_APPR, JobId, PathId, StepDistance, ScanMove, ScanCallProg, int_to_bol_(SpeedEnable), TpeProgram)
     if Status <> OK then  
-        err_display_('扫描进入轨迹获取失败[Status:' + int_to_str_(Status) + ']', Status)
+        ErrDisplay('扫描进入轨迹获取失败[Status:' + int_to_str_(Status) + ']', Status)
     endif 
 end sbt_scanappr

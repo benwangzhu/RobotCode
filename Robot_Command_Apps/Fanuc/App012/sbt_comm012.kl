@@ -551,7 +551,7 @@ begin
     enable condition[INTR_ALARM]  
 end CondAlarm
 
-routine err_display_
+routine ErrDisplay
 begin
     if ErrorId < 0 then 
         post_err(CC_UALARM, OtherErrMsg, 0, CC_ABORT)
@@ -603,4 +603,4 @@ begin
         post_err(CC_UALARM, PolishBlock.ErrorMsg[14] + '[Err:' + int_to_str_(ErrorId) + ']', 0, CC_ABORT)
 
     endselect
-end err_display_
+end ErrDisplay

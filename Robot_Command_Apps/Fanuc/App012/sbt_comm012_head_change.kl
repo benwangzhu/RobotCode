@@ -60,7 +60,7 @@ begin
 
     Status = f013_it02_(PolishSock, JobId, ToolUpdType, GrindBlock.HeadInform.CurGrindId, ToolUpdFlag, UpdToolNo)
     if Status <> OK then  
-        err_display_('刀库更新刀确认失败[Status:' + int_to_str_(Status) + ']', Status)
+        ErrDisplay('刀库更新刀确认失败[Status:' + int_to_str_(Status) + ']', Status)
     endif 
 
     set_ireg_(StatusReg, ToolUpdFlag)

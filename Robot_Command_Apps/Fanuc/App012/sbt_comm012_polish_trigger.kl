@@ -67,7 +67,7 @@ begin
         Status = f001_it01_(PolishSock, PhotoPint, CameraId, CaptureId)
         if Status <> OK then  
             if (RetryCount > MAX_RETTRIG) or (Status < 0) then
-                err_display_('´òÄ¥Ïà»úÅÄÕÕÊ§°Ü[Status:' + int_to_str_(Status) + ']', Status)
+                ErrDisplay('´òÄ¥Ïà»úÅÄÕÕÊ§°Ü[Status:' + int_to_str_(Status) + ']', Status)
                 RetryCount = 0
             endif
         else 

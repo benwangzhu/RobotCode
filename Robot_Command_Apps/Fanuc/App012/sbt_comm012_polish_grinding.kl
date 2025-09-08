@@ -74,6 +74,6 @@ begin
 
     Status = f004_it01_(PolishSock, POLISH_GRIND, JobId, PathId, StepDistance, PolishMove, int_to_bol_(SpeedEnable), TpeProgram)
     if Status <> OK then  
-        err_display_('打磨轨迹获取失败[Status:' + int_to_str_(Status) + ']', Status)
+        ErrDisplay('打磨轨迹获取失败[Status:' + int_to_str_(Status) + ']', Status)
     endif 
 end sbt_polgrind
