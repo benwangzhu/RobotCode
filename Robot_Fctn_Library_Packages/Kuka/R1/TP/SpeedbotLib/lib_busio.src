@@ -790,6 +790,7 @@ endfct
 global def bus_stell_(BusIn : out, BusOut : out)
     decl busin_t BusIn
     decl busout_t BusOut
+    decl busout_t OldBusOut
 
     continue
     BusIn.TellId        = GiTellId
@@ -798,12 +799,18 @@ global def bus_stell_(BusIn : out, BusOut : out)
     continue
     BusOut.SysEnable    = DoSysEnable
 
+    OldBusOut = BusOut
+
     ; Code Modified on 2025.05.16
     ; 修复当机器人没有使能 SysEnable 信号时，重新进行初始化
     if (BusIn.TellId <> BusOut.RobTellId) or (BusOut.SysEnable == false) then  
         
         BusOut.ProtocolId = PTC_GEN_CMD
         bus_init_(BusIn, BusOut, BusOut.RobotId, BusOut.ProtocolId)
+
+        BusOut.RobotId = OldBusOut.RobotId
+        BusOut.JobId = OldBusOut.JobId
+        BusOut.RobMsgType = OldBusOut.RobMsgType
     endif
     ;
 
