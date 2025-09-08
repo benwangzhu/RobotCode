@@ -1,0 +1,51 @@
+program head_stop
+--***********************************************************
+--
+-- file Name: head_stop
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 05 - 06
+--
+-- Author: 
+--
+-- Version: 1.0
+%comment = 'SBT HEAD STOP 250507'
+%nolockgroup
+%nobusylamp
+%nopauseshft
+
+%include include/lib_logs_t
+%include include/lib_tpe_t
+%include include/lib_inst_t
+%include include/lib_socket_t
+%include include/lib_transform_t
+%include sbt_comm012_t
+%include sbt_comm012_global
+
+var
+    GrindHeadId                 : integer
+
+%include include/lib_inst_h
+%include include/lib_tp_if_h
+%include include/lib_string_h
+
+routine head_stop_(GrindHeadId : integer) from sbt_comm012
+
+begin 
+    GrindHeadId     = get_iparm_(1)                 --获取打磨头ID
+
+    if (GrindHeadId <= 0) or (GrindHeadId > MAX_GRINDNUM) then 
+        post_err(CC_UALARM, '传入无效打磨头[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_ABORT)
+    endif
+
+    head_stop_(GrindHeadId)
+    
+    if GrindBlock.HeadInform.CurGrindId > 0 then
+        disable condition[INTR_RESUM]
+        disable condition[INTR_ALARM]
+        purge condition[INTR_RESUM]
+        purge condition[INTR_ALARM]
+    endif
+end head_stop
