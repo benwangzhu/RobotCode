@@ -1,0 +1,61 @@
+program sbt_fucturn
+--***********************************************************
+--
+-- file Name: sbt_fucturn
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 09 - 06
+--   Modification Data    ==   2025 - 09 - 06
+--
+-- Author: 
+--
+-- Version: 1.0
+%comment = 'SBT FUNCTION TURN 250906'
+%nolockgroup
+%nobusylamp
+%nopauseshft
+%nopause = error + command + tpenable
+
+%include klevtpe
+%include include/lib_logs_t
+%include include/lib_tpe_t
+%include include/lib_inst_t
+%include include/lib_socket_t
+%include include/lib_transform_t
+%include include/lib_math_t
+%include sbt_comm012_t
+%include sbt_comm012_global
+
+var
+    JobId                               : integer 
+    FunctionId                          : integer 
+    FunctionStat                        : integer 
+    StatusReg                           : integer
+    Status                              : integer                   
+
+%include include/lib_inst_h
+%include include/lib_tp_if_h
+%include include/lib_string_h
+
+routine err_display_(OtherErrMsg : string; ErrorId : integer) from sbt_comm012
+
+begin 
+    JobId       = get_iparm_(1)                 --获取任务编号
+    FunctionId  = get_iparm_(2)                 --需要确认的功能编号   
+    StatusReg   = get_iparm_(3)                 --获取对应功能编号状态储在的R寄存器号  
+
+    if (JobId < 1) or (JobId > 255) then 
+        post_err(CC_UALARM, '传入无效任务编号[JOB:' + int_to_str_(JobId) + ']', 0, CC_ABORT)
+    endif
+    if (FunctionId < 1) or (FunctionId > 255) then 
+        post_err(CC_UALARM, '传入无效功能编号[PATH:' + int_to_str_(FunctionId) + ']', 0, CC_ABORT)
+    endif 
+
+    Status = f013_it01_(PolishSock, JobId, FunctionId, FunctionStat)
+    if Status <> OK then  
+        err_display_('功能执行确认失败[Status:' + int_to_str_(Status) + ']', Status)
+    endif 
+
+    set_ireg_(StatusReg, FunctionStat)
+end sbt_fucturn

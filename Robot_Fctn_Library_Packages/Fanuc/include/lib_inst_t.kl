@@ -13,4 +13,3 @@
 --
 const 
     TYPE_FANUC                          = 1 
-    INST_PORT                           = 12003
