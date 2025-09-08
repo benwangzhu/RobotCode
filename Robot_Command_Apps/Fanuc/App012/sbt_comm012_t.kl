@@ -26,6 +26,7 @@ const
     MAX_GRINDNUM                        = 4                         --配置最大打磨头数量
     MAX_GRINDERR                        = 16                        --配置最大打磨头报警数量
     MAX_POLIERR                         = 14                        --配置最大打磨系统报警数量
+    MAX_RETTRIG                         = 3                         --相机最大重新拍照次数
 
     WAIT_CYCTIME                        = 20                        --WAIT信号时扫描周期
 
