@@ -13,3 +13,7 @@
 --
 const 
     TYPE_FANUC                          = 1 
+
+    INST_APRPATH                        = 1             -- ´òÄ¥½øµ¶¹ì¼£
+    INST_GRIPATH                        = 2             -- ´òÄ¥¹ì¼£
+    INST_EXIPATH                        = 3             -- ´òÄ¥³öµ¶¹ì¼£
