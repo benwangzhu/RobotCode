@@ -15,7 +15,7 @@ program sbt_scanexit
 -- Version: 1.0
 --***********************************************************
 --
-%comment = 'ScanGetExit 250906'
+%comment = 'ScanGetExit'
 %nolockgroup
 %nobusylamp
 %nopauseshft

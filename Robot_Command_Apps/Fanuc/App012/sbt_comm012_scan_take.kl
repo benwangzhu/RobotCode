@@ -15,7 +15,7 @@ program sbt_scantake
 -- Version: 1.0
 --***********************************************************
 --
-%comment = 'SBT SCAN TAKE 250906'
+%comment = 'ScanGetTake'
 %nolockgroup
 %nobusylamp
 %nopauseshft

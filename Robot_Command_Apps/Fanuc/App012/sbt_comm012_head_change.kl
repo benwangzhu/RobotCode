@@ -65,4 +65,4 @@ begin
 
     set_ireg_(StatusReg, ToolUpdFlag)
     set_ireg_(UpdToolNoReg, UpdToolNo)
-end sbt_fuctupd
+end head_change

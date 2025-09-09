@@ -15,7 +15,7 @@ program sbt_scanplan
 -- Version: 1.0
 --***********************************************************
 --
-%comment = 'SBT SCAN PLAN 250906'
+%comment = 'ScanPlanning'
 %nolockgroup
 %nobusylamp
 %nopauseshft

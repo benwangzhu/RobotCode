@@ -1,4 +1,4 @@
-program head_manu
+program head_manual
 --***********************************************************
 --
 -- Copyright 2018 - 2025 speedbot All Rights reserved.
@@ -68,4 +68,4 @@ begin
     else:
         post_err(CC_UALARM, '不支持的手动操作打磨头类型.[CtrlType:' + int_to_str_(CtrlType) + ']', 0, CC_ABORT)
     endselect
-end head_manu
+end head_manual
