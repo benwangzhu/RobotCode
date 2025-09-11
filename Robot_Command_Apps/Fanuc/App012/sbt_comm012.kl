@@ -139,7 +139,7 @@ begin
             wait for (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADRELEAS]) and (not din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADCLAMP])
         endif
 
-        if not (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADRELEAS] and (not din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADCLAMP])) then 
+        if not (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADRELEAS]) then 
             post_err(CC_UALARM, 'RelaxGrindHead(Timeout).[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
         endif 
         
@@ -167,7 +167,7 @@ begin
             wait for (not din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADRELEAS]) and (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADCLAMP])
         endif
 
-        if not ((not din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADRELEAS]) and din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADCLAMP]) then 
+        if not (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADCLAMP]) then 
             post_err(CC_UALARM, 'ClampGrindHead(Timeout).[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
         endif 
         
@@ -194,7 +194,7 @@ begin
             wait for (not din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOORCLOSE]) and (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOOROPEN])
         endif
 
-        if not ((not din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOORCLOSE]) and din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOOROPEN]) then 
+        if not (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOOROPEN]) then 
             post_err(CC_UALARM, 'DoorOpen(Timeout).[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
         endif 
         
@@ -220,7 +220,7 @@ begin
             wait for (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOORCLOSE]) and (not din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOOROPEN])
         endif
 
-        if not ((din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOORCLOSE]) and (not din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOOROPEN])) then 
+        if not (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOORCLOSE]) then 
             post_err(CC_UALARM, 'DoorClose(Timeout).[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
         endif 
         

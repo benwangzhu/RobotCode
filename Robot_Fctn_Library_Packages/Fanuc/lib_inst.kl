@@ -382,11 +382,23 @@ begin
                     InstMove.Speed = round((InstMove.Speed / 12000) * 100)
                 endif 
 
+<<<<<<< HEAD
                 if (I = InstReadHead.PacketCount) and (InstReadHead.Type_ = 1) then 
                     InstMove.Cnt = 0
                 else 
                     InstMove.Cnt = 100
                 endif
+=======
+                if PointType = INST_GRIPATH then 
+                    if I = InstReadHead.PacketCount then 
+                        InstMove.Cnt = 0
+                    else 
+                        InstMove.Cnt = 100
+                    endif 
+                else 
+                    InstMove.Cnt = 100
+                endif 
+>>>>>>> 0b096aebaa5b38583ed476261b76fe5277ff259c
 
                 tpe_it_mov_(TpeOpenId, InstMove, TpeLen)
                 tpe_s_jpos_(TpeOpenId, 1, (InstMove.PointNo), AxisPos)
