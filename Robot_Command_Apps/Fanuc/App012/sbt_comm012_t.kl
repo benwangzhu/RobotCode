@@ -55,6 +55,7 @@ const
     I_HEADDETE3                         = 50
     I_HEADDETE4                         = 51
     I_HEADDETE5                         = 52
+    I_HEADDETE6                         = 53
     I_ERR_E01                           = 64
     I_ERR_E02                           = 65
     I_ERR_E03                           = 66
