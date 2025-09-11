@@ -54,15 +54,15 @@ begin
     CurIdReg        = get_iparm_(6)                 --获取打磨头存储当前工具ID的R寄存器编号
 
     if (JobId < 1) or (JobId > 255) then 
-        post_err(CC_UALARM, '传入无效任务编号[JOB:' + int_to_str_(JobId) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'InvalidJobID.[JOB:' + int_to_str_(JobId) + ']', 0, CC_ABORT)
     endif
     if (PathId < 1) or (PathId > 255) then 
-        post_err(CC_UALARM, '传入无效路径编号[PATH:' + int_to_str_(PathId) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'InvalidPathID.[PATH:' + int_to_str_(PathId) + ']', 0, CC_ABORT)
     endif
 
     Status = f003_it01_(PolishSock, JobId, PathId, GrindHeadId, GrindSpeed)
     if Status <> OK then  
-        ErrDisplay('打磨工艺参数获取失败[Status:' + int_to_str_(Status) + ']', Status)
+        ErrDisplay('PolishGetParamFail.[E:' + int_to_str_(Status) + ']', Status)
     endif 
 
     ChkHeadId(GrindHeadId)

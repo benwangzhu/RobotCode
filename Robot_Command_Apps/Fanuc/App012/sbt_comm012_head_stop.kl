@@ -40,7 +40,7 @@ begin
     GrindHeadId     = get_iparm_(1)                 --获取打磨头ID
 
     if (GrindHeadId <= 0) or (GrindHeadId > MAX_GRINDNUM) then 
-        post_err(CC_UALARM, '传入无效打磨头[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'InvalidGrindHead.[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_ABORT)
     endif
 
     HeadStop(GrindHeadId)

@@ -72,6 +72,43 @@ const
     I_ERR_E15                           = 78
     I_ERR_E16                           = 79
 
+    BG_LOGIC_NM                         = 'comm012_bg'
+
+    -- Grind Head Alarm Msg
+
+    E_BIT01_MSG                         = 'GrindHeadEStop.'
+    E_BIT02_MSG                         = 'GrindHeadAir.'
+    E_BIT03_MSG                         = 'GrindHeadChiller.'
+    E_BIT04_MSG                         = 'GrindHeadColl.'
+    E_BIT05_MSG                         = 'GrindHeadUnknown.'
+    E_BIT06_MSG                         = 'GrindHeadUnknown.'
+    E_BIT07_MSG                         = 'GrindHeadUnknown.'
+    E_BIT08_MSG                         = 'GrindHeadUnknown.'
+    E_BIT09_MSG                         = 'GrindHeadUnknown.'
+    E_BIT10_MSG                         = 'GrindHeadUnknown.'
+    E_BIT11_MSG                         = 'GrindHeadUnknown.'
+    E_BIT12_MSG                         = 'GrindHeadUnknown.'
+    E_BIT13_MSG                         = 'GrindHeadUnknown.'
+    E_BIT14_MSG                         = 'GrindHeadUnknown.'
+    E_BIT15_MSG                         = 'GrindHeadUnknown.'
+    E_BIT16_MSG                         = 'GrindHeadUnknown.'
+
+    -- Polish Software Alarm Msg
+    E_101_MSG                           = 'ParseDataFail.'
+    E_102_MSG                           = 'FeedVisionFail.'
+    E_103_MSG                           = 'NoRecogCmdOrFail.'
+    E_104_MSG                           = 'GetPathFail.'
+    E_105_MSG                           = 'CameraShotFail.'
+    E_106_MSG                           = 'VisionFail.'
+    E_107_MSG                           = 'GetPolishProcFail.'
+    E_108_MSG                           = 'PartNotCfg.'
+    E_109_MSG                           = 'RPart/PIDFail.'
+    E_110_MSG                           = 'NoPreCmdIssued.'
+    E_111_MSG                           = 'PathPlanFail.'
+    E_199_MSG                           = 'PolishSWErr.'
+    E_200_MSG                           = 'PolishSWErr.'
+    E_OTH_MSG                           = 'PolishSWUnknown.'
+
 type
     grind_head_t from sbt_comm012  = structure
         HeadEnable      : boolean                   --打磨头是否启用
@@ -88,14 +125,13 @@ type
 	endstructure
 
     grind_bloc_t from sbt_comm012  = structure
-        InitFlag        : boolean                   --打磨头数据初始化标志
+        -- InitFlag        : boolean                   --打磨头数据初始化标志
         HeadConfig      : array[MAX_GRINDNUM] of grind_head_t
         HeadInform      : grind_info_t
-        ManuHeadSped    : array[MAX_GRINDNUM] of real
-        ErrorMsg        : array[MAX_GRINDERR] of string[70]
+        MaxOffTime      : real 
     endstructure
 
-    poli_bloc_t from sbt_comm012  = structure
-        InitFlag        : boolean                   --打磨系统数据初始化标志
-        ErrorMsg        : array[MAX_POLIERR] of string[70]
-    endstructure
+    -- poli_bloc_t from sbt_comm012  = structure
+    --     InitFlag        : boolean                   --打磨系统数据初始化标志
+    --     ErrorMsg        : array[MAX_POLIERR] of string[70]
+    -- endstructure

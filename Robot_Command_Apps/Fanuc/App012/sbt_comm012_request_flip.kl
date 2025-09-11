@@ -49,15 +49,15 @@ begin
     StatusReg   = get_iparm_(3)                 --获取对应功能编号状态储在的R寄存器号  
 
     if (JobId < 1) or (JobId > 255) then 
-        post_err(CC_UALARM, '传入无效任务编号[JOB:' + int_to_str_(JobId) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'InvalidJobID.[JOB:' + int_to_str_(JobId) + ']', 0, CC_ABORT)
     endif
     if (FunctionId < 1) or (FunctionId > 255) then 
-        post_err(CC_UALARM, '传入无效功能编号[PATH:' + int_to_str_(FunctionId) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'InvalidStepDist.[PATH:' + int_to_str_(FunctionId) + ']', 0, CC_ABORT)
     endif 
 
     Status = f013_it01_(PolishSock, JobId, FunctionId, FunctionStat)
     if Status <> OK then  
-        ErrDisplay('功能执行确认失败[Status:' + int_to_str_(Status) + ']', Status)
+        ErrDisplay('PolishReqFlipFail.[E:' + int_to_str_(Status) + ']', Status)
     endif
 
     set_ireg_(StatusReg, FunctionStat)

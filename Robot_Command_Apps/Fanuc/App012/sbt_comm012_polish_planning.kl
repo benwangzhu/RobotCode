@@ -46,15 +46,15 @@ begin
     PathNumReg  = get_iparm_(3)                 --获取工艺段数存储在的R寄存器号  
 
     if (JobId < 1) or (JobId > 255) then 
-        post_err(CC_UALARM, '传入无效任务编号[JOB:' + int_to_str_(JobId) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'InvalidJobID.[JOB:' + int_to_str_(JobId) + ']', 0, CC_ABORT)
     endif
     if (PlanningId < 1) or (PlanningId > 255) then 
-        post_err(CC_UALARM, '传入无效路径编号[PATH:' + int_to_str_(PlanningId) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'InvalidPlanID.[PLAN:' + int_to_str_(PlanningId) + ']', 0, CC_ABORT)
     endif 
 
     Status = f002_it01_(PolishSock, JobId, PlanningId, NumOfPath)
     if Status <> OK then  
-        ErrDisplay('打磨路径规划失败[Status:' + int_to_str_(Status) + ']', Status)
+        ErrDisplay('PolishPlanningFail.[E:' + int_to_str_(Status) + ']', Status)
     endif 
 
     set_ireg_(PathNumReg, NumOfPath)

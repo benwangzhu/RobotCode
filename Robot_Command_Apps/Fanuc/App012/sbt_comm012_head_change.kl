@@ -52,15 +52,15 @@ begin
     UpdToolNoReg    = get_iparm_(4)                 --获取对应功能刀具号储在的R寄存器号 
 
     if (JobId < 1) or (JobId > 255) then 
-        post_err(CC_UALARM, '传入无效任务编号[JOB:' + int_to_str_(JobId) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'InvalidJobID.[JOB:' + int_to_str_(JobId) + ']', 0, CC_ABORT)
     endif
     if (ToolUpdType < 1) or (ToolUpdType > 255) then 
-        post_err(CC_UALARM, '传入无效功能编号[PATH:' + int_to_str_(ToolUpdType) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'InvalidFuncID[FUNC:' + int_to_str_(ToolUpdType) + ']', 0, CC_ABORT)
     endif 
 
     Status = f013_it02_(PolishSock, JobId, ToolUpdType, GrindBlock.HeadInform.CurGrindId, ToolUpdFlag, UpdToolNo)
     if Status <> OK then  
-        ErrDisplay('刀库更新刀确认失败[Status:' + int_to_str_(Status) + ']', Status)
+        ErrDisplay('ReqHeadChangeFail.[E:' + int_to_str_(Status) + ']', Status)
     endif 
 
     set_ireg_(StatusReg, ToolUpdFlag)

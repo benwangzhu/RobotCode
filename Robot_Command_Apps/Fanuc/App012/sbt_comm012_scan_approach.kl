@@ -57,16 +57,16 @@ begin
     TpeProgram          = get_sparm_(6)             --获取打磨轨迹所生成在的TPE程序名
 
     if (JobId < 1) or (JobId > 255) then 
-        post_err(CC_UALARM, '传入无效任务编号[JOB:' + int_to_str_(JobId) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'InvalidJobID.[JOB:' + int_to_str_(JobId) + ']', 0, CC_ABORT)
     endif
     if (PathId < 1) or (PathId > 255) then 
-        post_err(CC_UALARM, '传入无效路径编号[PATH:' + int_to_str_(PathId) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'InvalidPathID.[PATH:' + int_to_str_(PathId) + ']', 0, CC_ABORT)
     endif
     if (StepDistance < 0.01) or (StepDistance > 500.0) then 
-        post_err(CC_UALARM, '传入无效间距[DIST:' + rel_to_str_(StepDistance) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'InvalidStepDist.[DIST:' + rel_to_str_(StepDistance) + ']', 0, CC_ABORT)
     endif
     if (ScanMove.Speed < 1) or (ScanMove.Speed  > 12000) then 
-        post_err(CC_UALARM, '传入无效机器人速度[SPEED:' + rel_to_str_(ScanMove.Speed) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'InvalidRobSpd.[SPEED:' + rel_to_str_(ScanMove.Speed) + ']', 0, CC_ABORT)
     endif
 
     ScanMove.PointNo        = 1
@@ -76,6 +76,6 @@ begin
 
     Status = f012_it01_(PolishSock, POLISH_APPR, JobId, PathId, StepDistance, ScanMove, ScanCallProg, int_to_bol_(SpeedEnable), TpeProgram)
     if Status <> OK then  
-        ErrDisplay('扫描进入轨迹获取失败[Status:' + int_to_str_(Status) + ']', Status)
+        ErrDisplay('ScanGetApprTjFail.[E:' + int_to_str_(Status) + ']', Status)
     endif 
 end sbt_scanappr

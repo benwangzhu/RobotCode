@@ -568,6 +568,10 @@ program lib_tcpcmd
 %include include/lib_logs_t
 %include include/lib_math_t
 
+const
+
+    INST_PORT               = 12003
+
 var  
 
     FileVar                 : file 

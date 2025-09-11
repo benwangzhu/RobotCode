@@ -1,0 +1,130 @@
+program comm012_bg
+--***********************************************************
+--
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
+-- file Name: head_stop
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 05 - 06
+--
+-- Author: 
+--
+-- Version: 1.0
+--***********************************************************
+--
+%comment = 'Comm012BgLogic'
+%nobusylamp
+%nopause = error + command + tpenable
+%noabort = error + command
+%nolockgroup
+%system
+
+%include include/lib_logs_t
+%include include/lib_tpe_t
+%include include/lib_inst_t
+%include include/lib_socket_t
+%include include/lib_transform_t
+%include sbt_comm012_t
+%include sbt_comm012_global
+%include kliotyps
+
+var
+
+    TimerCount                  : integer
+    TimerCount2                 : integer
+    i                           : integer
+    HeatbeatStat                : boolean
+
+    HeadActTime                 : array[MAX_GRINDNUM] of real
+    HeadOffTime                 : array[MAX_GRINDNUM] of real
+
+%include include/lib_motion_h
+%include include/lib_inst_h
+%include include/lib_tp_if_h
+%include include/lib_string_h
+%include sbt_comm012_h
+
+begin 
+
+    HeadChkInit
+
+    TimerCount = 0
+    TimerCount2 = 0
+    connect timer to TimerCount
+
+    HeatbeatStat = false
+
+    for i = 1 to MAX_GRINDNUM do
+
+        HeadActTime[i] = 0.0
+        HeadOffTime[i] = 0.0
+    endfor
+
+   repeat
+
+        for i = 1 to MAX_GRINDNUM do
+            
+            -- 机器人准备就绪并且设置了打磨头启用时, 输出使能信号
+            if io_is_cfg_(IO_DOUT, GrindBlock.HeadConfig[i].DoutputAddr + O_ENABLE) and (GrindBlock.HeadConfig[i].DoutputAddr > 0) then  
+                dout[GrindBlock.HeadConfig[i].DoutputAddr + O_ENABLE] = (is_ready_ and (GrindBlock.HeadConfig[i].HeadEnable))
+            endif
+
+            -- The grinding head will stop when a stop, reset, or end condition occurs.
+            if io_is_cfg_(IO_DOUT, GrindBlock.HeadConfig[i].DoutputAddr + O_HEADSTART) and (GrindBlock.HeadConfig[i].DoutputAddr > 0) then  
+                if not is_ready_ then
+                    dout[GrindBlock.HeadConfig[i].DoutputAddr + O_HEADSTART] = false
+                endif
+
+                if (not ((dout[GrindBlock.HeadConfig[i].DoutputAddr + O_HEADSTART]) and (GrindBlock.HeadConfig[i].HeadEnable))) or (is_moving_) then
+
+                    HeadActTime[i] = TimerCount / 1000.0 / 60.0
+                    HeadOffTime[i] = 0.0
+                else
+
+                    HeadOffTime[i] = TimerCount / 1000.0 / 60.0 - HeadActTime[i]
+                endif
+            endif
+        endfor
+
+        if (HeadOffTime[1] > GrindBlock.MaxOffTime) or (HeadOffTime[2] > GrindBlock.MaxOffTime) or (HeadOffTime[3] > GrindBlock.MaxOffTime) or (HeadOffTime[4] > GrindBlock.MaxOffTime) then
+            
+            if io_is_cfg_(IO_DOUT, GrindBlock.HeadConfig[1].DoutputAddr + O_HEADSTART) and (GrindBlock.HeadConfig[1].DoutputAddr > 0) then  
+                dout[GrindBlock.HeadConfig[1].DoutputAddr + O_HEADSTART] = false
+            endif
+            if io_is_cfg_(IO_DOUT, GrindBlock.HeadConfig[2].DoutputAddr + O_HEADSTART) and (GrindBlock.HeadConfig[2].DoutputAddr > 0) then  
+                dout[GrindBlock.HeadConfig[2].DoutputAddr + O_HEADSTART] = false
+            endif
+            if io_is_cfg_(IO_DOUT, GrindBlock.HeadConfig[3].DoutputAddr + O_HEADSTART) and (GrindBlock.HeadConfig[3].DoutputAddr > 0) then  
+                dout[GrindBlock.HeadConfig[3].DoutputAddr + O_HEADSTART] = false
+            endif
+            if io_is_cfg_(IO_DOUT, GrindBlock.HeadConfig[4].DoutputAddr + O_HEADSTART) and (GrindBlock.HeadConfig[4].DoutputAddr > 0) then  
+                dout[GrindBlock.HeadConfig[4].DoutputAddr + O_HEADSTART] = false
+            endif
+        endif
+
+        if (TimerCount - TimerCount2) > 1000 then
+        
+            TimerCount2 = TimerCount
+            HeatbeatStat = not HeatbeatStat
+
+            if io_is_cfg_(IO_DOUT, GrindBlock.HeadConfig[1].DoutputAddr + O_HEARTBEAT) and (GrindBlock.HeadConfig[1].DoutputAddr > 0) then  
+                dout[GrindBlock.HeadConfig[1].DoutputAddr + O_HEARTBEAT] = HeatbeatStat
+            endif
+            if io_is_cfg_(IO_DOUT, GrindBlock.HeadConfig[2].DoutputAddr + O_HEARTBEAT) and (GrindBlock.HeadConfig[2].DoutputAddr > 0) then  
+                dout[GrindBlock.HeadConfig[2].DoutputAddr + O_HEARTBEAT] = HeatbeatStat
+            endif
+            if io_is_cfg_(IO_DOUT, GrindBlock.HeadConfig[3].DoutputAddr + O_HEARTBEAT) and (GrindBlock.HeadConfig[3].DoutputAddr > 0) then  
+                dout[GrindBlock.HeadConfig[3].DoutputAddr + O_HEARTBEAT] = HeatbeatStat
+            endif
+            if io_is_cfg_(IO_DOUT, GrindBlock.HeadConfig[4].DoutputAddr + O_HEARTBEAT) and (GrindBlock.HeadConfig[4].DoutputAddr > 0) then  
+                dout[GrindBlock.HeadConfig[4].DoutputAddr + O_HEARTBEAT] = HeatbeatStat
+            endif
+        endif
+
+        delay 16
+
+    until false
+end comm012_bg

@@ -42,10 +42,10 @@ begin
     TimeOut         = get_rparm_(2)                 --获取超时时间 [s]
 
     if (GrindHeadId <= 0) or (GrindHeadId > MAX_GRINDNUM) then 
-        post_err(CC_UALARM, '传入无效打磨头[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'InvalidGrindHead.[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_ABORT)
     endif
     if (TimeOut < 0.0) or (TimeOut > 60.0) then 
-        post_err(CC_UALARM, '传入时间超范围[TIME:' + rel_to_str_(TimeOut) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'TimeoutOutOfRange.[T:' + rel_to_str_(TimeOut) + ']', 0, CC_ABORT)
     endif
 
     DoorClose(GrindHeadId, round(TimeOut * 1000))

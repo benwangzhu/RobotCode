@@ -604,18 +604,18 @@ global def HeadStarting(GrindHeadId : in, Speed : in, Timeout : in)
     if varstate("Timeout") <> #initialized then 
         Timeout = 0
     endif 
+
+    ; Do not restart the grinding head once it has already been started.
+    continue
+    if ($out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_START]) and ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START]) and (abs(Speed - LastGrindSpeed[GrindHeadId]) <= 0.01) then
+        return
+    endif
     
     if varstate("Speed") == #initialized then
         LastGrindSpeed[GrindHeadId] = Speed
         SetGoGrindSpeed(GrindHeadId, round_(Speed * 10))
     else
         Speed = LastGrindSpeed[GrindHeadId]
-    endif
-
-    ; Do not restart the grinding head once it has already been started.
-    continue
-    if ($out[GrindHeadTool[GrindHeadId].DoutputAddr + O_ADR_HEAD_START]) and ($in[GrindHeadTool[GrindHeadId].DinputAddr + I_ADR_HEAD_START]) and (abs(Speed - LastGrindSpeed[GrindHeadId]) <= 0.01) then
-        return
     endif
 
     ; continue

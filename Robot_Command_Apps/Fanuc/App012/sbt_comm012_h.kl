@@ -15,6 +15,8 @@
 --***********************************************************
 --
 
+routine HeadChkInit from sbt_comm012
+
 routine HeadStart(GrindHeadId : integer; Speed : real; TimeOut : integer) from sbt_comm012
 
 routine HeadStop(GrindHeadId : integer) from sbt_comm012
@@ -27,21 +29,21 @@ routine DoorOpen(GrindHeadId : integer; TimeOut : integer) from sbt_comm012
 
 routine DoorClose(GrindHeadId : integer; TimeOut : integer) from sbt_comm012
 
-routine KHeadStart(GrindHeadId : integer) from sbt_comm012
+-- routine KHeadStart(GrindHeadId : integer) from sbt_comm012
 
-routine KHeadStop(GrindHeadId : integer) from sbt_comm012
+-- routine KHeadStop(GrindHeadId : integer) from sbt_comm012
 
-routine KHeadRelease(GrindHeadId : integer) from sbt_comm012
+-- routine KHeadRelease(GrindHeadId : integer) from sbt_comm012
 
-routine KHeadClamp(GrindHeadId : integer) from sbt_comm012
+-- routine KHeadClamp(GrindHeadId : integer) from sbt_comm012
 
-routine KDoorOpen(GrindHeadId : integer) from sbt_comm012
+-- routine KDoorOpen(GrindHeadId : integer) from sbt_comm012
 
-routine KDoorClose(GrindHeadId : integer) from sbt_comm012
+-- routine KDoorClose(GrindHeadId : integer) from sbt_comm012
 
-routine KSelectFunc : integer from sbt_comm012
+-- routine KSelectFunc : integer from sbt_comm012
 
-routine KSelectHead : integer from sbt_comm012
+-- routine KSelectHead : integer from sbt_comm012
 
 routine HeadStatus(GrindHeadId : integer) from sbt_comm012
 

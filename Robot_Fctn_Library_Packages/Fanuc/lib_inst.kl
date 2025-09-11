@@ -382,11 +382,12 @@ begin
                     InstMove.Speed = round((InstMove.Speed / 12000) * 100)
                 endif 
 
-                if InstReadHead.Type_ = 1 then 
+                if (I = InstReadHead.PacketCount) and (InstReadHead.Type_ = 1) then 
                     InstMove.Cnt = 0
                 else 
                     InstMove.Cnt = 100
-                endif 
+                endif
+
                 tpe_it_mov_(TpeOpenId, InstMove, TpeLen)
                 tpe_s_jpos_(TpeOpenId, 1, (InstMove.PointNo), AxisPos)
 

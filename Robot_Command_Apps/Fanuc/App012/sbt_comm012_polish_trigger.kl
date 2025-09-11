@@ -48,13 +48,13 @@ begin
     DelayTime   = get_rparm_(3)             --获取出发拍照延时
 
     if (CameraId < 1) or (CameraId > 255) then 
-        post_err(CC_UALARM, '传入无效相机编号[CAMER:' + int_to_str_(CameraId) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'InvalidCameraID.[CAMER:' + int_to_str_(CameraId) + ']', 0, CC_ABORT)
     endif
     if (CaptureId < 1) or (CaptureId > 65535) then 
-        post_err(CC_UALARM, '传入无效拍照点编号[POINT:' + int_to_str_(CaptureId) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'InvalidCaptureID[POINT:' + int_to_str_(CaptureId) + ']', 0, CC_ABORT)
     endif
     if (DelayTime < 0.0) or (DelayTime > 30.0) then 
-        post_err(CC_UALARM, '传入时间超范围[TIME:' + rel_to_str_(DelayTime) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'InvalidDelayTime[TIME:' + rel_to_str_(DelayTime) + ']', 0, CC_ABORT)
     endif
 
     delay round(DelayTime * 1000.0)
@@ -72,7 +72,7 @@ begin
         Status = f001_it01_(PolishSock, PhotoPint, CameraId, CaptureId)
         if Status <> OK then  
             if (RetryCount > MaxRtyCnt) or (Status < 0) then
-                ErrDisplay('打磨相机拍照失败[Status:' + int_to_str_(Status) + ']', Status)
+                ErrDisplay('PolishTakePhotosFail.[E:' + int_to_str_(Status) + ']', Status)
                 RetryCount = 0
             endif
         else

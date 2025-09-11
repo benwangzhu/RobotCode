@@ -120,8 +120,8 @@ N04 = "Stat Reg"
 NAME = "SBT_POLTRIG"
 ARGUMENT = '3'
 [ARGUMENT]
-N01 = "Camer Id"                        : '1'
-N02 = " Capture Id"                     : '1'
+N01 = "Camer ID"                        : '1'
+N02 = " Capture ID"                     : '1'
 N03 = " Wait Time"                      : '0.5'
 [ENDPROGRAM]
 
@@ -129,8 +129,8 @@ N03 = " Wait Time"                      : '0.5'
 NAME = "SBT_POLPLAN"
 ARGUMENT = '3'
 [ARGUMENT]
-N01 = "Job Id"                          : '1'
-N02 = " Plan Id"                        : '1'
+N01 = "Job ID"                          : '1'
+N02 = " Plan ID"                        : '1'
 N03 = " PathNum R[]"                    : '10'
 [ENDPROGRAM]
 
@@ -150,8 +150,8 @@ N06 = " CurId R[]"                      : '14'
 NAME = "SBT_POLAPPR"
 ARGUMENT = '6'
 [ARGUMENT]
-N01 = "Job Id"                          : '1'
-N02 = " Path Id"                        : '1'
+N01 = "Job ID"                          : '1'
+N02 = " Path ID"                        : '1'
 N03 = " Distance"                       : '5.0'	    
 N04 = " Speed[cm/min]"                  : '300' 
 V05 = " LOCALSPEED" : '0', " EXTLSPEED" : '1' 
@@ -162,8 +162,8 @@ S06 = " Tpe Name"                       : "POLIPATH_APPR"
 NAME = "SBT_POLGRIND"
 ARGUMENT = '6'
 [ARGUMENT]
-N01 = "Job Id"                          : '1'
-N02 = " Path Id"                        : '1'
+N01 = "Job ID"                          : '1'
+N02 = " Path ID"                        : '1'
 N03 = " Distance"                       : '5.0'
 N04 = " Speed[cm/min]"                  : '300'
 V05 = " LOCALSPEED" : '0', " EXTLSPEED" : '1' 
@@ -174,8 +174,8 @@ S06 = " Tpe Name"                       : "POLIPATH_GRIND"
 NAME = "SBT_POLEXIT"
 ARGUMENT = '6'
 [ARGUMENT]
-N01 = "Job Id"                          : '1'
-N02 = " Path Id"                        : '1'
+N01 = "Job ID"                          : '1'
+N02 = " Path ID"                        : '1'
 N03 = " Distance"                       : '5.0'
 N04 = " Speed[cm/min]"                  : '300'
 V05 = " LOCALSPEED" : '0', " EXTLSPEED" : '1' 
@@ -186,8 +186,8 @@ S06 = " Tpe Name"                       : "POLIPATH_EXIT"
 NAME = "SBT_FUCTURN"
 ARGUMENT = '3'
 [ARGUMENT]
-N01 = "Job Id"                          : '1'
-N02 = " Function Id"                    : '1'
+N01 = "Job ID"                          : '1'
+N02 = " Function ID"                    : '1'
 N03 = " Status R[]"                     : '15'
 [ENDPROGRAM]
 
@@ -195,7 +195,7 @@ N03 = " Status R[]"                     : '15'
 NAME = "HEAD_CHANGE"
 ARGUMENT = '4'
 [ARGUMENT]
-N01 = "Job Id"                          : '1'
+N01 = "Job ID"                          : '1'
 N02 = " Upd Type"                       : '1'
 N03 = " Status R[]"                     : '15'
 N04 = " Upd Tool R[]"                   : '16'
@@ -205,8 +205,8 @@ N04 = " Upd Tool R[]"                   : '16'
 NAME = "SBT_SCANPLAN"
 ARGUMENT = '3'
 [ARGUMENT]
-N01 = "Job Id"                          : '1'
-N02 = " Plan Id"                        : '1'
+N01 = "Job ID"                          : '1'
+N02 = " Plan ID"                        : '1'
 N03 = " PathNum R[]"                    : '10'
 [ENDPROGRAM]
 
@@ -226,8 +226,8 @@ S06 = " Tpe Name"                       : "SCANPATH_APPR"
 NAME = "SBT_SCANTAKE"
 ARGUMENT = '7'
 [ARGUMENT]
-N01 = "Job Id"                          : '1'
-N02 = " Path Id"                        : '1'
+N01 = "Job ID"                          : '1'
+N02 = " Path ID"                        : '1'
 N03 = " Distance"                       : '5.0'
 N04 = " Speed[cm/min]"                  : '300'
 V05 = " LOCALSPEED" : '0', " EXTLSPEED" : '1' 
@@ -239,8 +239,8 @@ S07 = " Call Name"                      : "SCAN_TAKEPHOTO"
 NAME = "SBT_SCANEXIT"
 ARGUMENT = '6'
 [ARGUMENT]
-N01 = "Job Id"                          : '1'
-N02 = " Path Id"                        : '1'
+N01 = "Job ID"                          : '1'
+N02 = " Path ID"                        : '1'
 N03 = " Distance"                       : '5.0'
 N04 = " Speed[cm/min]"                  : '300'
 V05 = " LOCALSPEED" : '0', " EXTLSPEED" : '1' 
@@ -249,22 +249,21 @@ S06 = " Tpe Name"                       : "SCANPATH_EXIT"
 
 [PROGRAM]
 NAME = "HEAD_INIT"
-ARGUMENT = '7'
+ARGUMENT = '6'
 [ARGUMENT]
-N01 = "Head Id"                         : '1'
+N01 = "Head ID"                         : '1'
 N02 = " Tool Num"                       : '0'
 N03 = " Do Addr"                        : '0'
 N04 = " Di Addr"                        : '0'
 N05 = " Max Speed"                      : '6000.0'
-N06 = " Io Addr R[]"                    : '20'
-V07 = " DISABLE" : '0', " ENABLE" : '1' 
+V06 = " DISABLE" : '0', " ENABLE" : '1' 
 [ENDPROGRAM]
 
 [PROGRAM]
 NAME = "HEAD_START"
 ARGUMENT = '3'
 [ARGUMENT]
-N01 = "Head Id"                         : '1'
+N01 = "Head ID"                         : '1'
 N02 = " Grind Speed"                    : '6000.0'
 N03 = " TimeOut[s]"                     : '1.0'
 [ENDPROGRAM]
@@ -273,14 +272,14 @@ N03 = " TimeOut[s]"                     : '1.0'
 NAME = "HEAD_STOP"
 ARGUMENT = '1'
 [ARGUMENT]
-N01 = "Head Id"                         : '1'
+N01 = "Head ID"                         : '1'
 [ENDPROGRAM]
 
 [PROGRAM]
 NAME = "HEAD_RELEASE"
 ARGUMENT = '2'
 [ARGUMENT]
-N01 = "Head Id"                         : '1'
+N01 = "Head ID"                         : '1'
 N02 = " TimeOut[s]"                     : '1.0'
 [ENDPROGRAM]
 
@@ -288,7 +287,7 @@ N02 = " TimeOut[s]"                     : '1.0'
 NAME = "HEAD_CLAMP"
 ARGUMENT = '2'
 [ARGUMENT]
-N01 = "Head Id"                         : '1'
+N01 = "Head ID"                         : '1'
 N02 = " TimeOut[s]"                     : '1.0'
 [ENDPROGRAM]
 
@@ -296,7 +295,7 @@ N02 = " TimeOut[s]"                     : '1.0'
 NAME = "DOOR_OPEN"
 ARGUMENT = '2'
 [ARGUMENT]
-N01 = "Head Id"                         : '1'
+N01 = "Head ID"                         : '1'
 N02 = " TimeOut[s]"                     : '1.0'
 [ENDPROGRAM]
 
@@ -304,7 +303,7 @@ N02 = " TimeOut[s]"                     : '1.0'
 NAME = "DOOR_CLOSE"
 ARGUMENT = '2'
 [ARGUMENT]
-N01 = "Head Id"                         : '1'
+N01 = "Head ID"                         : '1'
 N02 = " TimeOut[s]"                     : '1.0'
 [ENDPROGRAM]
 
