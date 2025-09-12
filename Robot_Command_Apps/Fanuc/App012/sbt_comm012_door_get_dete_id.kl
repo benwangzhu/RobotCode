@@ -1,0 +1,54 @@
+program door_getdete
+--***********************************************************
+--
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
+-- file Name: door_getdete
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 05 - 06
+--
+-- Author: 
+--
+-- Version: 1.0
+--***********************************************************
+--
+%comment = 'DoorGetDeteID'
+%nolockgroup
+%nobusylamp
+%nopauseshft
+
+%include include/lib_logs_t
+%include include/lib_tpe_t
+%include include/lib_inst_t
+%include include/lib_socket_t
+%include include/lib_transform_t
+%include sbt_comm012_t
+%include sbt_comm012_global
+
+var
+    GrindHeadId             : integer
+    DeteStatus              : integer
+    DeteIdReg               : integer   
+    DeteId                  : integer
+
+%include include/lib_inst_h
+%include include/lib_tp_if_h
+%include include/lib_string_h
+%include sbt_comm012_h
+
+begin 
+    GrindHeadId     = get_iparm_(1)                 --获取更换的打磨头ID
+    DeteStatus      = get_iparm_(2)                 --需要查找传感器状态
+    DeteIdReg       = get_iparm_(3)                 --存储刀库点的寄存器编号
+
+    if (GrindHeadId <= 0) or (GrindHeadId > MAX_GRINDNUM) then 
+        post_err(CC_UALARM, 'InvalidGrindHead.[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_ABORT)
+    endif
+
+    DeteId = DoorGDeteID(GrindHeadId, DeteStatus > 0)
+
+    set_ireg_(DeteIdReg, DeteId)
+end door_getdete

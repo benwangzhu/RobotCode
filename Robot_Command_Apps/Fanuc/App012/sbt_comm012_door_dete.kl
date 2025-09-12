@@ -1,0 +1,52 @@
+program door_dete
+--***********************************************************
+--
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
+-- file Name: door_dete
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 04 - 29
+--   Modification Data    ==   2025 - 05 - 06
+--
+-- Author: 
+--
+-- Version: 1.0
+--***********************************************************
+--
+%comment = 'DoorDete'
+%nolockgroup
+%nobusylamp
+%nopauseshft
+
+%include include/lib_logs_t
+%include include/lib_tpe_t
+%include include/lib_inst_t
+%include include/lib_socket_t
+%include include/lib_transform_t
+%include sbt_comm012_t
+%include sbt_comm012_global
+
+var
+    DeteId                  : integer
+    DeteStatus              : integer
+
+%include include/lib_inst_h
+%include include/lib_tp_if_h
+%include include/lib_string_h
+%include sbt_comm012_h
+
+begin 
+    DeteId          = get_iparm_(1)                 --获取倒库检测点ID
+    DeteStatus      = get_iparm_(2)                 --获取需要检测的状态
+
+    if ((DeteId div 10) <= 0) or ((DeteId div 10) > MAX_GRINDNUM) then
+        post_err(CC_UALARM, 'InvalidDeteID.[ID:' + int_to_str_(DeteId) + ']', 0, CC_ABORT)
+    endif
+    if ((DeteId mod 10) <= 0) or ((DeteId mod 10) > MAX_DOORDETE) then
+        post_err(CC_UALARM, 'InvalidDeteID.[ID:' + int_to_str_(DeteId) + ']', 0, CC_ABORT)
+    endif
+
+    DoorDete(DeteId, DeteStatus > 0)
+end door_dete

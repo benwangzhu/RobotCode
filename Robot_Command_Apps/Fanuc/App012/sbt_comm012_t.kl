@@ -24,6 +24,7 @@ const
     POLISH_EXIT                         = 3                         --打磨退刀轨迹
 
     MAX_GRINDNUM                        = 4                         --配置最大打磨头数量
+    MAX_DOORDETE                        = 12                        --配置一个刀架最大的刀头数量
     MAX_GRINDERR                        = 16                        --配置最大打磨头报警数量
     MAX_POLIERR                         = 14                        --配置最大打磨系统报警数量
     MAX_RETTRIG                         = 3                         --相机最大重新拍照次数
@@ -37,7 +38,8 @@ const
     O_REMOTE                            = 1
     O_HEARTBEAT                         = 7                         --打磨头心跳输出
     O_HEADSPEED                         = 16                        --打磨头速度确认输出
-    O_HEADSTART                         = 32                        --打磨头使能输出
+    O_HEADSTART                         = 32                        --打磨头旋转
+    O_SOFEFLOAT                         = 33                        --打磨头软浮开启
     O_HEADCLAMP                         = 48                        --打磨头松开输出
     O_HEADRELEAS                        = 49                        --打磨头加紧输出
     O_DOOROPEN                          = 50                        --打磨头打开输出
@@ -132,6 +134,7 @@ type
         MaxOffTime      : real 
     endstructure
 
+    
     -- poli_bloc_t from sbt_comm012  = structure
     --     InitFlag        : boolean                   --打磨系统数据初始化标志
     --     ErrorMsg        : array[MAX_POLIERR] of string[70]

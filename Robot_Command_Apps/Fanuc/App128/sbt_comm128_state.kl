@@ -55,6 +55,12 @@ routine new_state_(SockCfg : sock_cfg_t; FileVar : file) : integer from comm128_
 
 begin
 
+    if OnlyCollect then 
+
+        -- 设置为开机自启动时，等待网卡启动
+        delay(5000)
+    endif
+
 CONNECTING::                -- 通讯链接标签, 有任何通讯错误都会跳转到这个标签
 
     -- 通讯链接操作

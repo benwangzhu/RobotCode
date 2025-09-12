@@ -29,6 +29,11 @@ routine DoorOpen(GrindHeadId : integer; TimeOut : integer) from sbt_comm012
 
 routine DoorClose(GrindHeadId : integer; TimeOut : integer) from sbt_comm012
 
+routine DoorDete(DeteId : integer; DeteStatus : boolean) from sbt_comm012
+
+routine DoorGDeteID(GrindHeadId : integer; DeteStatus : boolean) : integer from sbt_comm012
+
+
 -- routine KHeadStart(GrindHeadId : integer) from sbt_comm012
 
 -- routine KHeadStop(GrindHeadId : integer) from sbt_comm012

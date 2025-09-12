@@ -138,12 +138,12 @@ N03 = " PathNum R[]"                    : '10'
 NAME = "SBT_POLPARA"
 ARGUMENT = '6'
 [ARGUMENT]
-N01 = "Job Id"                          : '1'
-N02 = " Path Id"                        : '1'
-N03 = " Head Id R[]"                    : '11'
+N01 = "Job ID"                          : '1'
+N02 = " Path ID"                        : '1'
+N03 = " Head ID R[]"                    : '11'
 N04 = " Speed R[]"                      : '12'
 N05 = " ToolNo R[]"                     : '13'
-N06 = " CurId R[]"                      : '14'
+N06 = " CurID R[]"                      : '14'
 [ENDPROGRAM]
 
 [PROGRAM]
@@ -214,8 +214,8 @@ N03 = " PathNum R[]"                    : '10'
 NAME = "SBT_SCANAPPR"
 ARGUMENT = '6'
 [ARGUMENT]
-N01 = "Job Id"                          : '1'
-N02 = " Path Id"                        : '1'
+N01 = "Job ID"                          : '1'
+N02 = " Path ID"                        : '1'
 N03 = " Distance"                       : '5.0'
 N04 = " Speed[cm/min]"                  : '300'
 V05 = " LOCALSPEED" : '0', " EXTLSPEED" : '1' 
@@ -307,3 +307,19 @@ N01 = "Head ID"                         : '1'
 N02 = " TimeOut[s]"                     : '1.0'
 [ENDPROGRAM]
 
+[PROGRAM]
+NAME = "DOOR_DETE"
+ARGUMENT = '2'
+[ARGUMENT]
+N01 = "Dete ID"                         : '11'
+V02 = " FALSE" : '0', " TRUE" : '1' 
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "DOOR_GETDETE"
+ARGUMENT = '3'
+[ARGUMENT]
+N01 = "Head ID"                         : '1'
+V02 = " FALSE" : '0', " TRUE" : '1' 
+N03 = "Dete ID R[]"                     : '21'
+[ENDPROGRAM]

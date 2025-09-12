@@ -15,7 +15,7 @@ program sbt_comm012
 -- Version: 1.0
 --***********************************************************
 --
-%comment = 'SbtComm012 250730'
+%comment = 'SbtComm012'
 %nolockgroup
 %system
 %nobusylamp 
@@ -44,7 +44,7 @@ end sbt_comm012
 
 routine HeadChkInit
 var
-    i                           : integer
+    i, j                    : integer
 begin
 
     using GrindBlock do
@@ -63,6 +63,14 @@ begin
     MaxOffTime = 2.0
     endusing
 
+    -- 检查初始化刀架信息配置
+    for i = 1 to MAX_GRINDNUM do  
+        for j = 1 to MAX_DOORDETE do  
+            DoorBlock[i, j] = tern_int_(uninit(DoorBlock[i, j]), 0, DoorBlock[i, j])
+        endfor
+    endfor
+
+
     while task_status_(BG_LOGIC_NM) <> PG_RUNNING do   
 
         post_err(CC_UALARM, 'BGLogicNotRunning.', 0, CC_PAUSE)
@@ -76,7 +84,7 @@ begin
 
 
     if not (GrindBlock.HeadConfig[GrindHeadId].HeadEnable) then 
-        GrindBlock.HeadInform.CurGrindId = 0
+        GrindBlock.HeadInform.CurGrindId = GrindHeadId
         return
     endif 
 
@@ -93,6 +101,7 @@ begin
     repeat
 
         delay 12
+        dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_SOFEFLOAT] = true
         dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADSTART] = true
         delay 100
 
@@ -133,6 +142,8 @@ begin
 
     repeat
 
+        delay(8)
+
         if TimeOut > 0 then 
             wait for (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADRELEAS]) or ($fast_clock > eval(TmpTimeout + $fast_clock))
         else 
@@ -144,6 +155,9 @@ begin
         endif 
         
     until (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADRELEAS] and (not din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADCLAMP]))
+
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADCLAMP] = false
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADRELEAS] = false
 
     -- 存储当前激活的打磨头 ID
     GrindBlock.HeadInform.CurGrindId = 0
@@ -160,6 +174,8 @@ begin
 
     repeat
 
+        delay(8)
+
         if TimeOut > 0 then 
 
             wait for (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADCLAMP]) or ($fast_clock > eval(TmpTimeout + $fast_clock))
@@ -172,6 +188,9 @@ begin
         endif 
         
     until ((not din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADRELEAS]) and din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_HEADCLAMP])
+
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADRELEAS] = false
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_HEADCLAMP] = false
 
     -- 存储当前激活的打磨头 ID
     GrindBlock.HeadInform.CurGrindId = GrindHeadId
@@ -188,6 +207,8 @@ begin
 
     repeat
 
+        delay(8)
+
         if TimeOut > 0 then 
             wait for (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOOROPEN]) or ($fast_clock > eval(TmpTimeout + $fast_clock))
         else 
@@ -199,6 +220,9 @@ begin
         endif 
         
     until (not din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOORCLOSE]) and (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOOROPEN])
+
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_DOORCLOSE] = false
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_DOOROPEN] = false
 
 end DoorOpen
 
@@ -213,6 +237,8 @@ begin
 
     repeat
 
+        delay(8)
+
         if TimeOut > 0 then 
 
             wait for (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOORCLOSE]) or ($fast_clock > eval(TmpTimeout + $fast_clock))
@@ -226,7 +252,57 @@ begin
         
     until (din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOORCLOSE]) and (not din[GrindBlock.HeadConfig[GrindHeadId].DinputAddr + I_DOOROPEN])
 
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_DOORCLOSE] = false
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_DOOROPEN] = false
+
 end DoorClose
+
+routine DoorDete
+
+begin
+
+    if GrindBlock.HeadConfig[DeteId div 10].DinputAddr <= 0 then
+        post_err(CC_UALARM, 'InvalidDinputAddr.[ID:' + int_to_str_(DeteId div 10) + ']', 0, CC_ABORT)
+    endif
+
+    repeat
+        delay(8)
+        if not (din[GrindBlock.HeadConfig[DeteId div 10].DinputAddr + I_HEADDETE1 + (DeteId mod 10) - 1] = DeteStatus) then
+            post_err(CC_UALARM, 'DoorNotDete.[ID:' + int_to_str_(DeteId) + ',DI:' + int_to_str_(GrindBlock.HeadConfig[DeteId div 10].DinputAddr + I_HEADDETE1 + (DeteId mod 10) - 1) + ']', 0, CC_PAUSE)
+        endif
+    until (din[GrindBlock.HeadConfig[DeteId div 10].DinputAddr + I_HEADDETE1 + (DeteId mod 10) - 1] = DeteStatus)
+
+    dout[GrindBlock.HeadConfig[DeteId div 10].DoutputAddr + O_SOFEFLOAT] = false
+end DoorDete
+
+routine DoorGDeteID
+var 
+
+    DeteId          : integer
+    i, j            : integer
+begin
+
+    repeat
+        for i = 1 to MAX_GRINDNUM do  
+            for j = 1 to MAX_DOORDETE do
+                if (GrindHeadId = DoorBlock[i, j]) then
+                    if GrindBlock.HeadConfig[i].DinputAddr <= 0 then
+                        post_err(CC_UALARM, 'InvalidDinputAddr.[ID:' + int_to_str_(i) + ']', 0, CC_ABORT)
+                    endif
+                    if din[GrindBlock.HeadConfig[i].DinputAddr + I_HEADDETE1 + j - 1] = DeteStatus then
+                        post_err(CC_UALARM, 'DoorGDeteID.[ID:' + int_to_str_(i * 10 + j) + ']', 0, CC_WARN)
+                        return(i * 10 + j)
+                    endif
+                endif
+            endfor
+        endfor
+
+        -- 刀架上没有找到合适的点
+        post_err(CC_UALARM, 'DeteNotFound.[ID:' + int_to_str_(GrindHeadId) + ']', 0, CC_PAUSE)
+    until (false)
+
+    dout[GrindBlock.HeadConfig[GrindHeadId].DoutputAddr + O_SOFEFLOAT] = false
+end DoorGDeteID
 
 -- routine KHeadStart
 -- begin
