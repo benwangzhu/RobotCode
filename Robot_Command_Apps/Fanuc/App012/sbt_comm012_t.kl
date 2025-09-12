@@ -19,7 +19,7 @@ const
     POLISH_TAG                          = 'C6:'
     INST_PORT                           = 12003                     --默认配置端口号
 
-
+    --
 
     POLISH_APPR                         = 1                         --打磨进刀轨迹
     POLISH_GRIND                        = 2                         --打磨轨迹
