@@ -167,11 +167,11 @@ routine f012_it01_(ThisSocket : sock_cfg_t;
 --***********************************************************
 -- func f013_it01_()
 --***********************************************************
---     in : ThisSocket      * sock_cfg_t *		* SOCKET接口参数 *
---     in : JobId           * integer *		    * 任务号 *
---     in : FunctionId      * integer *		    * 功能Id *
---    out : FunctionFeed    * integer *		    * 功能反馈 *
--- return :                 * integer *	        * 返回通讯状态 *
+--     in : ThisSocket    * sock_cfg_t *		* SOCKET接口参数 *
+--     in : JobId         * integer *		    * 任务号 *
+--     in : FunctionId    * integer *		    * 功能Id *
+--    out : FunctionFeed  * integer *		    * 功能反馈 *
+-- return :               * integer *	        * 返回通讯状态 *
 --***********************************************************	
 --	通知软件是否执行执行该步骤功能，对应通用协议FunctionId13里的1号程序
 --***********************************************************
@@ -183,13 +183,13 @@ routine f013_it01_(ThisSocket : sock_cfg_t;
 --***********************************************************
 -- func f013_it02_()
 --***********************************************************
---     in : ThisSocket      * sock_cfg_t *		* SOCKET接口参数 *
---     in : JobId           * integer *		    * 任务号 *
---     in : ToolUpdType     * integer *		    * 刀具更新类型 *
---     in : CurTool         * integer *		    * 当前刀具号 *
---    out : ToolUpdFlag     * integer *		    * 需要换刀标志 *
---    out : ToolUpdNo       * integer *		    * 更换刀具号 *
--- return :                 * integer *	        * 返回通讯状态 *
+--     in : ThisSocket    * sock_cfg_t *		* SOCKET接口参数 *
+--     in : JobId         * integer *		    * 任务号 *
+--     in : ToolUpdType   * integer *		    * 刀具更新类型 *
+--     in : CurTool       * integer *		    * 当前刀具号 *
+--    out : ToolUpdFlag   * integer *		    * 需要换刀标志 *
+--    out : ToolUpdNo     * integer *		    * 更换刀具号 *
+-- return :               * integer *	        * 返回通讯状态 *
 --***********************************************************	
 --	通知软件是否去刀库更新刀具，对应通用协议FunctionId13里的2号程序
 --***********************************************************
@@ -199,19 +199,3 @@ routine f013_it02_(ThisSocket : sock_cfg_t;
                    CurTool : integer;
                    ToolUpdFlag : integer;
                    ToolUpdNo : integer) : integer from lib_inst
-
---***********************************************************
--- func f013_it03_()
---***********************************************************
---     in : ThisSocket      * sock_cfg_t *		* SOCKET接口参数 *
---     in : JobId           * integer *		    * 任务号 *
---     in : PathId          * integer *		    * 工艺路径段编号 *
---     in : SanStatus       * integer *		    * 扫描状态 *
--- return :                 * integer *	        * 返回通讯状态 *
---***********************************************************	
---	通知软件扫描结果，对应通用协议FunctionId13里的3号程序
---***********************************************************
-routine f013_it03_(ThisSocket : sock_cfg_t; 
-                   JobId : integer;
-                   PathId : integer; 
-                   SanStatus : integer) : integer from lib_inst

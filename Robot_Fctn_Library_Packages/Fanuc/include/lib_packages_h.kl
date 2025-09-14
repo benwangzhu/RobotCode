@@ -439,6 +439,20 @@ routine pack_cmd148_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer
 --***********************************************************
 routine pack_cmd151_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ06_t) : integer from lib_packages
 
+
+--***********************************************************
+-- func pack_cmd156_()
+--***********************************************************
+--     in : ThisSock      * sock_cfg_t *		* SOCKET接口参数 *
+--     in : ThisFile      * file *		        * 与 SOCKET 绑定的 FILE 变量 *
+--     in : PackMsSel     * integer *		    * 处理模式，两种模式分别为PACKCMD_READ读取，PACKCMD_WRITE写入*
+--    out : PackData      * cmd_typ10_t *		* 需要处理的数据形式 *
+-- return :               * integer *	        * 返回值 *
+--***********************************************************	
+--	通用协议cmd156协议处理
+--***********************************************************
+routine pack_cmd156_(ThisSock : sock_cfg_t; ThisFile : file; PackMsSel : integer; PackData : cmd_typ10_t) : integer from lib_packages
+
 --***********************************************************
 -- func pack_cmd254_()
 --***********************************************************

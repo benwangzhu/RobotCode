@@ -1,9 +1,9 @@
-program sbt_fucturn
+program sbt_reqfunc
 --***********************************************************
 --
 -- Copyright 2018 - 2025 speedbot All Rights reserved.
 --
--- file Name: sbt_fucturn
+-- file Name: sbt_reqfunc
 --
 -- Description:
 --   Language             ==   Karel for FANUC ROBOT
@@ -15,7 +15,7 @@ program sbt_fucturn
 -- Version: 1.0
 --***********************************************************
 --
-%comment = 'RequestFlip'
+%comment = 'RequestFunc'
 %nolockgroup
 %nobusylamp
 %nopauseshft
@@ -52,13 +52,13 @@ begin
         post_err(CC_UALARM, 'InvalidJobID.[JOB:' + int_to_str_(JobId) + ']', 0, CC_ABORT)
     endif
     if (FunctionId < 1) or (FunctionId > 255) then 
-        post_err(CC_UALARM, 'InvalidStepDist.[PATH:' + int_to_str_(FunctionId) + ']', 0, CC_ABORT)
+        post_err(CC_UALARM, 'InvalidFunctionId.[FUNC:' + int_to_str_(FunctionId) + ']', 0, CC_ABORT)
     endif 
 
     Status = f013_it01_(PolishSock, JobId, FunctionId, FunctionStat)
     if Status <> OK then  
-        ErrDisplay('PolishReqFlipFail.[E:' + int_to_str_(Status) + ']', Status)
+        ErrDisplay('PolishReqFuncFail.[E:' + int_to_str_(Status) + ']', Status)
     endif
 
     set_ireg_(StatusReg, FunctionStat)
-end sbt_fucturn
+end sbt_reqfunc

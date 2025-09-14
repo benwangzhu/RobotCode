@@ -82,5 +82,7 @@ const
     DPM_CORR_Y                          = 2         -- 方向 Y
     DPM_CORR_Z                          = 3         -- 方向 Z
 
-
+    DPM_INL_USR                         = 1         -- INLINE 模式用户自定义控制方式
+    DPM_INL_SPR                         = 2         -- INLINE 模式单 PR 控制方式
+    DPM_INL_MPR                         = 3         -- INLINE 模式多 PR 控制方式
 

@@ -133,11 +133,16 @@ const
     TPE_WELD_SPD                    = 198
 
 
-    TPE_TOOL_OFS                    = 219
-
+    TPE_TOOL_OFS                    = 219               -- TOOL OFFSET
+    TPE_USER_OFS                    = 205               -- USER OFFSET
+    TPE_TOUCH                       = 212               -- TOUCH SEARCH
+    TPE_COORD                       = 201               -- COORD
     TPE_PTH_CRD                     = 445               -- PTH & COORD
     TPE_PTH                         = 244               -- PTH
     TPE_PTH_OFS                     = 449               -- PTH & USER OFFSET
+    TPE_IO                          = 246
+    TPE_DPM                         = 158               -- DPM
+    TPE_CRD_DPM                     = 359               -- COORD & DPM
 
     -- Ñ°Î»Ö¸Áî FUNC Âë 
     TCH_SR_ST                       = 1                 

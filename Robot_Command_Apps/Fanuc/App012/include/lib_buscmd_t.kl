@@ -421,6 +421,27 @@ type
         Float14     : real
     endstructure
 
+    cmd_typ10_t from lib_buscmd = structure
+        Float01     : real
+        Float02     : real
+        Float03     : real
+        Float04     : real
+        Float05     : real
+        Float06     : real
+        Float07     : real
+        Float08     : real
+        Float09     : real
+        Float10     : real
+        Float11     : real
+        Float12     : real
+        Int13       : integer
+        Int14       : integer
+        Int15       : integer
+        Int16       : integer
+        Int17       : integer
+        Int18       : integer
+    endstructure
+
 
 
 

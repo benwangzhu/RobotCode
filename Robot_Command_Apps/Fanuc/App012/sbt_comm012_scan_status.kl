@@ -1,0 +1,65 @@
+program sbt_scanstat
+--***********************************************************
+--
+-- Copyright 2018 - 2025 speedbot All Rights reserved.
+--
+-- file Name: sbt_scanstat
+--
+-- Description:
+--   Language             ==   Karel for FANUC ROBOT
+--   Date                 ==   2025 - 09 - 13
+--   Modification Data    ==   2025 - 09 - 13
+--
+-- Author: 
+--
+-- Version: 1.0
+--***********************************************************
+--
+%comment = 'ScanSendStatus'
+%nolockgroup
+%nobusylamp
+%nopauseshft
+%nopause = error + command + tpenable
+
+%include klevtpe
+%include include/lib_logs_t
+%include include/lib_tpe_t
+%include include/lib_inst_t
+%include include/lib_socket_t
+%include include/lib_transform_t
+%include include/lib_math_t
+%include sbt_comm012_t
+%include sbt_comm012_global
+
+var
+    JobId                               : integer 
+    PathId                              : integer
+    ScanStatus                          : integer
+    Status                              : integer        
+
+%include include/lib_inst_h
+%include include/lib_tp_if_h
+%include include/lib_string_h
+%include include/lib_math_h
+%include sbt_comm012_h
+
+begin 
+    JobId               = get_iparm_(1)             -- 任务编号
+    PathId              = get_iparm_(2)             -- 获取路径编号
+    ScanStatus          = get_iparm_(3)             -- 获取扫描状态
+
+    if (JobId < 1) or (JobId > 255) then 
+        post_err(CC_UALARM, 'InvalidJobID.[JOB:' + int_to_str_(JobId) + ']', 0, CC_ABORT)
+    endif
+    if (PathId < 1) or (PathId > 255) then 
+        post_err(CC_UALARM, 'InvalidPathID.[PATH:' + int_to_str_(PathId) + ']', 0, CC_ABORT)
+    endif
+    if (ScanStatus < 1) or (ScanStatus > 255) then 
+        post_err(CC_UALARM, 'InvalidScanStatus.[Status:' + int_to_str_(ScanStatus) + ']', 0, CC_ABORT)
+    endif
+
+    Status = f013_it03_(PolishSock, JobId, PathId, ScanStatus)
+    if Status <> OK then 
+        ErrDisplay('ScanSendStatus.[E:' + int_to_str_(Status) + ']', Status)
+    endif 
+end sbt_scanstat

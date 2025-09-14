@@ -382,23 +382,11 @@ begin
                     InstMove.Speed = round((InstMove.Speed / 12000) * 100)
                 endif 
 
-<<<<<<< HEAD
                 if (I = InstReadHead.PacketCount) and (InstReadHead.Type_ = 1) then 
                     InstMove.Cnt = 0
                 else 
                     InstMove.Cnt = 100
                 endif
-=======
-                if PointType = INST_GRIPATH then 
-                    if I = InstReadHead.PacketCount then 
-                        InstMove.Cnt = 0
-                    else 
-                        InstMove.Cnt = 100
-                    endif 
-                else 
-                    InstMove.Cnt = 100
-                endif 
->>>>>>> 0b096aebaa5b38583ed476261b76fe5277ff259c
 
                 tpe_it_mov_(TpeOpenId, InstMove, TpeLen)
                 tpe_s_jpos_(TpeOpenId, 1, (InstMove.PointNo), AxisPos)
@@ -483,7 +471,7 @@ var
     AxisPos                     : jointpos
     AxisAry9	                : array[9] of real
     SendCmdTyp01                : cmd_typ01_t
-    ReadCmdTyp07                : cmd_typ07_t
+    ReadCmdTyp10                : cmd_typ10_t
 begin
     InstSendHead.Length         = 50
     InstSendHead.Cmd            = 64
@@ -494,8 +482,8 @@ begin
     InstSendBody.ProtocolId     = 0
     InstSendBody.RobMsgType     = 21
 
-    SendCmdTyp01.Byte01         = PointType  
-    SendCmdTyp01.Byte02         = PathId
+    SendCmdTyp01.Byte01         = PathId  
+    SendCmdTyp01.Byte02         = 0
     SendCmdTyp01.Short03        = 0  
     SendCmdTyp01.Short04        = 0
     SendCmdTyp01.Int05          = 0
@@ -532,32 +520,37 @@ begin
 
         if InstReadBody.ErrorId = 0 then 
             for I = 1 to InstReadHead.PacketCount do  
-                Status = pack_cmd132_(ThisSocket, FileVar, PACKCMD_READ, ReadCmdTyp07)
+                Status = pack_cmd156_(ThisSocket, FileVar, PACKCMD_READ, ReadCmdTyp10)
                 if Status <> OK then 
                     return(Status)
                 endif 
                 
-                AxisAry9[1] = ReadCmdTyp07.Float01 
-                AxisAry9[2] = ReadCmdTyp07.Float02
-                AxisAry9[3] = ReadCmdTyp07.Float03
-                AxisAry9[4] = ReadCmdTyp07.Float04
-                AxisAry9[5] = ReadCmdTyp07.Float05
-                AxisAry9[6] = ReadCmdTyp07.Float06
-                AxisAry9[7] = ReadCmdTyp07.Float07
-                AxisAry9[8] = ReadCmdTyp07.Float08
-                AxisAry9[9] = ReadCmdTyp07.Float09 
+                AxisAry9[1] = ReadCmdTyp10.Float01 
+                AxisAry9[2] = ReadCmdTyp10.Float02
+                AxisAry9[3] = ReadCmdTyp10.Float03
+                AxisAry9[4] = ReadCmdTyp10.Float04
+                AxisAry9[5] = ReadCmdTyp10.Float05
+                AxisAry9[6] = ReadCmdTyp10.Float06
+                AxisAry9[7] = ReadCmdTyp10.Float07
+                AxisAry9[8] = ReadCmdTyp10.Float08
+                AxisAry9[9] = ReadCmdTyp10.Float09 
                 AxisPos = trans_axis_(AxisAry9)
 
                 if SpeedEnable = true then 
-                    InstMove.Speed = ReadCmdTyp07.Int13
+                    InstMove.Speed = ReadCmdTyp10.Int14
                 endif 
 
-                if InstMove.MovType = LM_MTN_JNT then 
+                if ReadCmdTyp10.Int13 = LM_MTN_JNT then 
+                    InstMove.MovType = LM_MTN_JNT
+                    InstMove.SpeedTyp = LM_MTN_PER
                     InstMove.Speed = round((InstMove.Speed / 12000) * 100)
+                else
+                    InstMove.MovType = LM_MTN_LIN
+                    InstMove.SpeedTyp = LM_MTN_CMMIN
                 endif 
 
-                if (InstReadHead.Type_ = 1) or (ReadCmdTyp07.Int14 <> 0) then 
-                    InstMove .Cnt = 0
+                if (ReadCmdTyp10.Int15 <> 0) or ((InstReadHead.Type_ = 1) and (I = InstReadHead.PacketCount)) then 
+                    InstMove.Cnt = 0
                 else 
                     InstMove.Cnt = 100
                 endif 
@@ -565,7 +558,7 @@ begin
                 tpe_it_mov_(TpeOpenId, InstMove, TpeLen)
                 tpe_s_jpos_(TpeOpenId, 1, (InstMove.PointNo), AxisPos)
 
-                if (ReadCmdTyp07.Int14 <> 0) and not(uninit(InstProg.Name)) then 
+                if ReadCmdTyp10.Int15 <> 0 then 
                     tpe_it_call_(TpeOpenId, InstProg, TpeLen)
                 endif 
 
@@ -598,7 +591,7 @@ begin
     InstSendHead.Cmd            = 64
     InstSendHead.Type_          = 1
 
-    InstSendBody.RobotId        = 15
+    InstSendBody.RobotId        = 13
     InstSendBody.JobId          = JobId
     InstSendBody.ProtocolId     = 0
     InstSendBody.RobMsgType     = 21
@@ -654,7 +647,7 @@ begin
     InstSendHead.Cmd            = 64
     InstSendHead.Type_          = 1
 
-    InstSendBody.RobotId        = 15
+    InstSendBody.RobotId        = 13
     InstSendBody.JobId          = JobId
     InstSendBody.ProtocolId     = 0
     InstSendBody.RobMsgType     = 145
@@ -696,3 +689,49 @@ begin
     
     return(InstReadBody.ErrorId)
 end f013_it02_
+
+routine f013_it03_
+var
+    Status                      : integer 
+    SendCmdTyp01                : cmd_typ01_t
+    ReadCmdTyp01                : cmd_typ01_t
+begin
+    InstSendHead.Seq = InstSendHead.Seq + 1
+    if InstSendHead.Seq > 255 then 
+        InstSendHead.Seq = 1
+    endif
+    InstSendHead.Length         = 50
+    InstSendHead.Cmd            = 64
+    InstSendHead.Type_          = 1
+
+    InstSendBody.RobotId        = 13
+    InstSendBody.JobId          = JobId
+    InstSendBody.ProtocolId     = 0
+    InstSendBody.RobMsgType     = 22
+
+    SendCmdTyp01.Byte01         = PathId  
+    SendCmdTyp01.Byte02         = SanStatus 
+    SendCmdTyp01.Short03        = 0  
+    SendCmdTyp01.Short04        = 0
+    SendCmdTyp01.Int05          = 0
+    SendCmdTyp01.Int06          = 0
+    SendCmdTyp01.Float07        = 0.0
+    SendCmdTyp01.Float08        = 0.0
+    
+    Status = spack_head_(ThisSocket, FileVar, InstSendHead)
+    Status = spack_body_(ThisSocket, FileVar, InstSendBody)
+    Status = pack_cmd022_(ThisSocket, FileVar, PACKCMD_WRIT, SendCmdTyp01)
+    Status = spack_tail_(ThisSocket, FileVar, InstSendTail)
+    if Status <> OK then  
+        return(Status)
+    endif 
+
+    Status = rpack_head_(ThisSocket, FileVar,  InstReadHead)
+    Status = rpack_body_(ThisSocket, FileVar,  InstReadBody)
+    Status = rpack_tail_(ThisSocket, FileVar,  InstReadTail)
+    if Status <> OK then  
+        return(Status)
+    endif
+    
+    return(InstReadBody.ErrorId)
+end f013_it03_

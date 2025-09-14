@@ -345,3 +345,11 @@ routine dpm_lin_(VectorDist : real;
                  SwingDire : boolean;
                  CorrDire : integer) : dpm_ini_t from lib_dpm
 
+routine dpm_inl_crl_(DpmSch : integer;
+                     DpmGrp : integer;
+                     CtrlType : integer) from lib_dpm
+
+routine dpm_inl_pr_(DpmSch : integer;
+                    DpmGrp : integer;
+                    PrIndex : integer) from lib_dpm
+                     

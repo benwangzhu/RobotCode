@@ -30,10 +30,13 @@ program comm128_stat
 %include sbt_comm128_t  
 %include include/lib_socket_t
 %include include/lib_busio_t
+%include include/lib_buscmd_t
 %include include/lib_math_t
 %include include/lib_logs_t
 %include kliotyps
 %include sbt_comm128_global
+-- %include include/lib_packages_t        --
+
 var
 
     StatePackage                                : drv_stat_t
@@ -49,7 +52,8 @@ var
 %include include/lib_socket_h
 %include include/lib_math_h
 %include include/lib_busio_h
-%include include/lib_packages_h
+%include include/lib_tcpcmd_h        --
+%include include/lib_packages_h                 -- 引用数据包处理函数库
 
 routine new_state_(SockCfg : sock_cfg_t; FileVar : file) : integer from comm128_stat
 

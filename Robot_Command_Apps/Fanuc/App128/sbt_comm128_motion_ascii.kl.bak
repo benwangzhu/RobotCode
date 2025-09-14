@@ -33,6 +33,8 @@ program comm128_mtn
 %include kliotyps                   -- 包含 kliotyps 类型定义
 %include klevtpe                    -- 包含 klevtpe 类型定义
 %include sbt_comm128_global             -- 包含全局变量定义
+%include include/lib_packages_t        --
+
 var  -- 定义变量
 
     FileVar                                 : file              -- 文件句柄

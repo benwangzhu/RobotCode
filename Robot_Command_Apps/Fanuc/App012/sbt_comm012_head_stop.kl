@@ -45,7 +45,7 @@ begin
 
     HeadStop(GrindHeadId)
     
-    if GrindBlock.HeadInform.CurGrindId > 0 then
+    if GrindBlock.HeadConfig[GrindHeadId].HeadEnable then
         disable condition[INTR_RESUM]
         disable condition[INTR_ALARM]
         purge condition[INTR_RESUM]

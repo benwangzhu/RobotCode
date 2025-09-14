@@ -1304,6 +1304,62 @@ begin
     return(-abs(Status))
 end pack_cmd151_
 
+routine pack_cmd156_
+var
+    Status              : integer
+begin
+    select PackMsSel of
+        case(PACKCMD_READ):
+
+            read  ThisFile( PackData.Float01, &
+                            PackData.Float02, &
+                            PackData.Float03, &
+                            PackData.Float04, &
+                            PackData.Float05, &
+                            PackData.Float06, &
+                            PackData.Float07, &
+                            PackData.Float08, &
+                            PackData.Float09, &
+                            PackData.Float10, &
+                            PackData.Float11, &
+                            PackData.Float12, &
+                            PackData.Int13,   &
+                            PackData.Int14,   &
+                            PackData.Int15,   &
+                            PackData.Int16,   &
+                            PackData.Int17,   &
+                            PackData.Int18)
+        case(PACKCMD_WRIT):
+
+            write ThisFile( PackData.Float01, &
+                            PackData.Float02, &
+                            PackData.Float03, &
+                            PackData.Float04, &
+                            PackData.Float05, &
+                            PackData.Float06, &
+                            PackData.Float07, &
+                            PackData.Float08, &
+                            PackData.Float09, &
+                            PackData.Float10, &
+                            PackData.Float11, &
+                            PackData.Float12, &
+                            PackData.Int13,   &
+                            PackData.Int14,   &
+                            PackData.Int15,   &
+                            PackData.Int16,   &
+                            PackData.Int17,   &
+                            PackData.Int18)
+        else:
+
+            post_err(CC_UALARM, 'pack cmd156 param3 err', 0, CC_ABORT)
+            return(CC_ERROR)
+    endselect
+
+    Status = io_status(ThisFile)
+    if Status <> OK then clr_io_stat(ThisFile); ThisSock.Connected = false; endif 
+    return(-abs(Status))
+end pack_cmd156_
+
 routine pack_cmd254_
 var
     Status              : integer 

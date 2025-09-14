@@ -36,8 +36,7 @@ var
     PathId                              : integer 
     StepDistance                        : real 
     SpeedEnable                         : integer
-    TpeProgram                          : string[30]  
-    CallProgram                         : string[30]   
+    TpeProgram                          : string[30]    
     Status                              : integer        
     ScanMove                            : inst_move_t    
     ScanCallProg                        : inst_call_t
@@ -49,13 +48,13 @@ var
 %include sbt_comm012_h
 
 begin 
-    JobId               = get_iparm_(1)             --任务编号
-    PathId              = get_iparm_(2)             --获取路径编号
-    StepDistance        = get_rparm_(3)             --获取点位生成间距
-    ScanMove.Speed      = get_iparm_(4)             --获取机器人的运动速度
-    SpeedEnable         = get_iparm_(5)             --获取是否使用外部出入运动速度
-    TpeProgram          = get_sparm_(6)             --获取打磨轨迹所生成在的TPE程序名
-    CallProgram         = get_sparm_(7)             --获取扫描轨迹所生成在的TPE程序名
+    JobId               = get_iparm_(1)             -- 任务编号
+    PathId              = get_iparm_(2)             -- 获取路径编号
+    StepDistance        = get_rparm_(3)             -- 获取点位生成间距
+    ScanMove.Speed      = get_iparm_(4)             -- 获取机器人的运动速度
+    SpeedEnable         = get_iparm_(5)             -- 获取是否使用外部出入运动速度
+    TpeProgram          = get_sparm_(6)             -- 获取打磨轨迹所生成在的TPE程序名
+    ScanCallProg.Name   = get_sparm_(7)             -- 获取扫描轨迹所生成在的TPE程序名
 
     if (JobId < 1) or (JobId > 255) then 
         post_err(CC_UALARM, 'InvalidJobID.[JOB:' + int_to_str_(JobId) + ']', 0, CC_ABORT)
@@ -71,13 +70,9 @@ begin
     endif
 
     ScanMove.PointNo        = 1
-    ScanMove.MovType        = LM_MTN_JNT 
-    ScanMove.PointTyp       = LM_MTN_LIN
-    ScanMove.SpeedTyp       = LM_MTN_CMMIN
+    ScanMove.PointTyp       = LM_MTN_NPOS
 
-    ScanCallProg.Name       = CallProgram
-
-    Status = f012_it01_(PolishSock, POLISH_APPR, JobId, PathId, StepDistance, ScanMove, ScanCallProg, int_to_bol_(SpeedEnable), TpeProgram)
+    Status = f012_it01_(PolishSock, JobId, PathId, StepDistance, ScanMove, ScanCallProg, int_to_bol_(SpeedEnable), TpeProgram)
     if Status <> OK then  
         ErrDisplay('ScanGetTakeTjFail.[E:' + int_to_str_(Status) + ']', Status)
     endif 

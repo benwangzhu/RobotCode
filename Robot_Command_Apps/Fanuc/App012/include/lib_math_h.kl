@@ -479,3 +479,13 @@ routine ts_frame_(OfsPosn : xyzwprext;
                   OfsFrameNo : integer;
                   NewFrameNo : integer;
                   GrpNo : integer) : xyzwprext from lib_math                  
+
+
+routine rob_2cd_(RobPosn : xyzwprext;
+                 DynPosn : xyzwprext;
+                 CdFrame : xyzwprext) : xyzwprext from lib_math
+
+routine cd_2rob_(CdPosn : xyzwprext;
+                 DynPosn : xyzwprext;
+                 CdFrame : xyzwprext) : xyzwprext from lib_math
+

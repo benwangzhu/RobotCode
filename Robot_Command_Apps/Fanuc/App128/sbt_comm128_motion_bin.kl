@@ -28,11 +28,13 @@ program comm128_mtn
 %include include/lib_momory_t       -- 包含内存管理类型定义s
 %include include/lib_socket_t       -- 包含 socket 类型定义
 %include include/lib_busio_t        -- 包含 BUS IO 类型定义
+%include include/lib_buscmd_t
 %include include/lib_tpe_t          -- 包含 TPE 类型定义
 %include include/lib_transform_t    -- 包含坐标变换类型定义
 %include kliotyps                   -- 包含 kliotyps 类型定义
 %include klevtpe                    -- 包含 klevtpe 类型定义
 %include sbt_comm128_global             -- 包含全局变量定义
+-- %include include/lib_packages_t        --
 var  -- 定义变量
 
     FileVar                                 : file              -- 文件句柄
@@ -64,6 +66,7 @@ var  -- 定义变量
 %include include/lib_socket_h                   -- 引用 Socket 函数库
 %include include/lib_thread_h                   -- 引用 任务控制 函数库
 %include include/lib_tpe_h                      -- 引用 TPE 函数库
+%include include/lib_tcpcmd_h        --
 %include include/lib_packages_h                 -- 引用数据包处理函数库
 
 --***********************************************************

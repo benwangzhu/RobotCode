@@ -1,5 +1,5 @@
 rem ************************************************************************************
-set IncludePath=E:\Users\speedbot\Desktop\Robot_Code\Robot_Fctn_Library_Packages\Fanuc
+set IncludePath=E:\Users\speedbot\Desktop\RobotCode\Robot_Fctn_Library_Packages\Fanuc
 rem ************************************************************************************
 @echo off
 chcp 65001

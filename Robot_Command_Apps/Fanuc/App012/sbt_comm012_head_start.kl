@@ -55,7 +55,7 @@ begin
 
     HeadStart(GrindHeadId, HeadSpeed, round(TimeOut * 1000))
 
-    if GrindBlock.HeadInform.CurGrindId > 0 then
+    if GrindBlock.HeadConfig[GrindHeadId].HeadEnable then
         CondResume
         CondAlarm
     endif 

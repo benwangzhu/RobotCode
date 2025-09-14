@@ -69,10 +69,12 @@ begin
             
             -- 机器人准备就绪并且设置了打磨头启用时, 输出使能信号
             if io_is_cfg_(IO_DOUT, GrindBlock.HeadConfig[i].DoutputAddr + O_ENABLE) and (GrindBlock.HeadConfig[i].DoutputAddr > 0) then  
-                dout[GrindBlock.HeadConfig[i].DoutputAddr + O_ENABLE] = (is_ready_ and (GrindBlock.HeadConfig[i].HeadEnable))
+
+                -- 机器人准备就绪才输出 ENABLE 信号
+                dout[GrindBlock.HeadConfig[i].DoutputAddr + O_ENABLE] = (is_ready_) 
             endif
 
-            -- The grinding head will stop when a stop, reset, or end condition occurs.
+            -- 刀开始旋转后，机器人长时间没有运动时停止旋转
             if io_is_cfg_(IO_DOUT, GrindBlock.HeadConfig[i].DoutputAddr + O_HEADSTART) and (GrindBlock.HeadConfig[i].DoutputAddr > 0) then  
                 if not is_ready_ then
                     dout[GrindBlock.HeadConfig[i].DoutputAddr + O_HEADSTART] = false
@@ -104,7 +106,9 @@ begin
                 dout[GrindBlock.HeadConfig[4].DoutputAddr + O_HEADSTART] = false
             endif
         endif
+        --
 
+        -- 心跳信号
         if (TimerCount - TimerCount2) > 1000 then
         
             TimerCount2 = TimerCount

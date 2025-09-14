@@ -587,7 +587,7 @@ begin
         endif
     endfor
 
-    return(true)
+    return(not opout[3])
 end is_ready_
 
 routine jnt_2cart_

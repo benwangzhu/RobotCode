@@ -82,9 +82,9 @@ var
     TmpTimeout                  : integer
 begin
 
+    -- GrindBlock.HeadInform.CurGrindId = GrindHeadId
 
     if not (GrindBlock.HeadConfig[GrindHeadId].HeadEnable) then 
-        GrindBlock.HeadInform.CurGrindId = GrindHeadId
         return
     endif 
 

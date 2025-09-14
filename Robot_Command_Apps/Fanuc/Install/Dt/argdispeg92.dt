@@ -183,11 +183,11 @@ S06 = " Tpe Name"                       : "POLIPATH_EXIT"
 [ENDPROGRAM]
 
 [PROGRAM]
-NAME = "SBT_FUCTURN"
+NAME = "SBT_REQFUNC"
 ARGUMENT = '3'
 [ARGUMENT]
 N01 = "Job ID"                          : '1'
-N02 = " Function ID"                    : '1'
+N02 = " Func ID"                    : '1'
 N03 = " Status R[]"                     : '15'
 [ENDPROGRAM]
 
@@ -210,17 +210,6 @@ N02 = " Plan ID"                        : '1'
 N03 = " PathNum R[]"                    : '10'
 [ENDPROGRAM]
 
-[PROGRAM]
-NAME = "SBT_SCANAPPR"
-ARGUMENT = '6'
-[ARGUMENT]
-N01 = "Job ID"                          : '1'
-N02 = " Path ID"                        : '1'
-N03 = " Distance"                       : '5.0'
-N04 = " Speed[cm/min]"                  : '300'
-V05 = " LOCALSPEED" : '0', " EXTLSPEED" : '1' 
-S06 = " Tpe Name"                       : "SCANPATH_APPR"
-[ENDPROGRAM]
 
 [PROGRAM]
 NAME = "SBT_SCANTAKE"
@@ -233,18 +222,6 @@ N04 = " Speed[cm/min]"                  : '300'
 V05 = " LOCALSPEED" : '0', " EXTLSPEED" : '1' 
 S06 = " Tpe Name"                       : "SCANPATH_TAKE"
 S07 = " Call Name"                      : "SCAN_TAKEPHOTO"
-[ENDPROGRAM]
-
-[PROGRAM]
-NAME = "SBT_SCANEXIT"
-ARGUMENT = '6'
-[ARGUMENT]
-N01 = "Job ID"                          : '1'
-N02 = " Path ID"                        : '1'
-N03 = " Distance"                       : '5.0'
-N04 = " Speed[cm/min]"                  : '300'
-V05 = " LOCALSPEED" : '0', " EXTLSPEED" : '1' 
-S06 = " Tpe Name"                       : "SCANPATH_EXIT"
 [ENDPROGRAM]
 
 [PROGRAM]
@@ -322,4 +299,13 @@ ARGUMENT = '3'
 N01 = "Head ID"                         : '1'
 V02 = " FALSE" : '0', " TRUE" : '1' 
 N03 = "Dete ID R[]"                     : '21'
+[ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBT_SCANSTAT"
+ARGUMENT = '3'
+[ARGUMENT]
+N01 = "Job ID"                          : '1'
+N02 = " Path ID"                        : '1'
+N03 = " ScanStatus"                     : '0'
 [ENDPROGRAM]
