@@ -309,3 +309,16 @@ N01 = "Job ID"                          : '1'
 N02 = " Path ID"                        : '1'
 N03 = " ScanStatus"                     : '0'
 [ENDPROGRAM]
+
+[PROGRAM]
+NAME = "SBT_COMM"
+ARGUMENT = '5'
+[ARGUMENT]
+N01 = "Model ID"                        : '1'
+N02 = " Part ID"                        : '1'
+N03 = " Pict ID"                        : '1'
+N04 = " Rob ID"                         : '1'
+N05 = " Rlt R[]"                        : '0'
+[ENDPROGRAM]
+
+
